@@ -150,6 +150,12 @@
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   }
   #seek-bar.show{display:flex;align-items:center;gap:10px}
+  #seek-reset{
+    border:none;background:none;color:inherit;cursor:pointer;
+    font-size:14px;opacity:0.5;padding:2px 4px;flex:none;
+    transition:opacity 0.2s;
+  }
+  #seek-reset:hover,#seek-reset:active{opacity:0.9}
   #seek-bar .seek-label{
     font-size:10px;min-width:32px;text-align:center;
     font-variant-numeric:tabular-nums;opacity:0.6;
@@ -241,6 +247,7 @@
 
 <!-- Seek Bar -->
 <div id="seek-bar">
+  <button id="seek-reset" title="最初から読む">⏮</button>
   <span class="seek-label" id="seek-cur">1</span>
   <input type="range" id="seek-range" min="0" max="1" value="0" step="1">
   <span class="seek-label" id="seek-total">1</span>
@@ -436,8 +443,9 @@ async function renderPdf(num,mw,mh) {
       const tr=document.createElement('canvas'), nw=c.width-cp;
       tr.width=nw; tr.height=c.height;
       tr.getContext('2d').drawImage(c,side==='left'?cp:0,0,nw,c.height,0,0,nw,c.height);
-      const dc=Math.round(cm*MM_TO_PT*fit);
-      tr.style.width=(dv.width-dc)+'px'; tr.style.height=dv.height+'px';
+      // Keep display width at original size — fills viewport with no gap.
+      // The ~3% horizontal stretch from trimming ~4.75mm is imperceptible.
+      tr.style.width=dv.width+'px'; tr.style.height=dv.height+'px';
       tr.className='page-canvas'; return tr;
     }
   }
@@ -659,6 +667,13 @@ $seekRange.addEventListener('input', () => {
   $seekCur.textContent = idx + 1;
   currentIdx = idx;
   display();
+});
+
+// Reset to page 1
+$('seek-reset').addEventListener('click', () => {
+  currentIdx = 0;
+  display();
+  updateSeekBar();
 });
 
 // Close seek bar on tap outside
