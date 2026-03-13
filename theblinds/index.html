@@ -499,8 +499,6 @@ async function displayWithSlide(dir) {
   }
 
   strip.style.width = (vw * 2) + 'px';
-  // Hide the old page underneath so it doesn't show through
-  $spread.style.visibility = 'hidden';
   $viewer.appendChild(strip);
 
   // Force reflow
@@ -511,7 +509,6 @@ async function displayWithSlide(dir) {
   const finalize = () => {
     $spread.innerHTML = '';
     $spread.appendChild(cloneCanvas(newSrc));
-    $spread.style.visibility = '';
     if (strip.parentNode) strip.remove();
   };
 
