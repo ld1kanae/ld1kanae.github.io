@@ -104,6 +104,23 @@
     transition:width 0.35s ease;z-index:50;opacity:0.25;
   }
 
+  /* --- Navigation Hint Arrow --- */
+  #nav-hint{
+    position:fixed;
+    bottom:max(44px, calc(env(safe-area-inset-bottom, 12px) + 32px));
+    pointer-events:none;z-index:40;
+    opacity:0;
+    transition:opacity 1.2s ease;
+  }
+  #nav-hint.show{opacity:1}
+  #nav-hint svg{
+    width:28px;height:28px;
+    stroke-width:1.5;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    fill:none;
+  }
+
   /* --- Settings --- */
   #settings-btn{
     position:fixed;top:max(10px, env(safe-area-inset-top, 10px));right:10px;
@@ -133,13 +150,6 @@
     color:inherit;font-size:10px;cursor:pointer;opacity:0.35;transition:all 0.2s;
   }
   .setting-toggle button.active{opacity:0.9;background:rgba(128,128,128,0.18)}
-
-  /* --- Fullscreen hint --- */
-  #fs-hint{
-    position:fixed;bottom:50px;left:50%;transform:translateX(-50%);
-    font-size:10px;opacity:0;pointer-events:none;z-index:50;
-    letter-spacing:0.05em;transition:opacity 0.3s;
-  }
 </style>
 </head>
 <body>
@@ -163,6 +173,14 @@
 
 <div id="page-indicator"></div>
 <div id="progress-bar"></div>
+
+<!-- Navigation Hint Arrow -->
+<div id="nav-hint">
+  <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+    <polyline id="nav-hint-arrow" points="10,6 18,14 10,22"/>
+  </svg>
+</div>
+
 <button id="settings-btn">⚙</button>
 <div id="settings-panel">
   <div class="setting-row">
@@ -175,8 +193,8 @@
   <div class="setting-row">
     <span class="setting-label">開き</span>
     <div class="setting-toggle" id="dir-toggle">
-      <button data-value="rtl" class="active">右開き</button>
-      <button data-value="ltr">左開き</button>
+      <button data-value="rtl">右開き</button>
+      <button data-value="ltr" class="active">左開き</button>
     </div>
   </div>
 </div>
@@ -186,36 +204,50 @@
    ★ 設定 — 作品ごとに以下を編集してください
    ================================================================ */
 const CONFIG = {
-  // PDFファイルのパス（HTMLと同じディレクトリに置く場合はファイル名のみ）
-  // 例: 'book.pdf' または './assets/mynovel.pdf'
+  // 本文PDFファイルのパス
   pdfPath: 'book.pdf',
 
-  // 背景色: 'black'（黒）または 'white'（白）
+  // 表紙・裏表紙の画像パス（PNG/JPG）不要なら '' に
+  frontCover: 'cover-front.png',
+  backCover:  'cover-back.png',
+
+  // 背景色: 'black' / 'white'
   backgroundColor: 'black',
 
-  // 開き方向: 'rtl'（右開き＝縦書き日本語） / 'ltr'（左開き＝横書き・欧文）
+  // 開き方向: 'rtl'（右開き＝縦書き） / 'ltr'（左開き＝横書き）
   readingDirection: 'ltr',
 
-  // 描画品質倍率（1.0〜2.0 / 高いほど鮮明だがメモリ消費増）
+  // 描画品質倍率（1.0〜2.0）
   quality: 1.5,
 
-  // 黒補正: PDFの暗い色を真っ黒に補正する強度
-  // 0 = 補正なし / 1〜100 = この値以下のRGB値を純黒(0)に置換（推奨: 30〜50）
+  // 黒補正: この値以下のRGBを純黒に（0 = 無効）
   blackCorrection: 40,
+
+  // ── ノド補正（単ページ表示時のみ適用） ──
+  // true で有効化。ノド余白を小口に揃えてトリミングする
+  gutterCorrection: true,
+  gutterMargin: 16.75,   // PDF上のノド（綴じ側）余白 mm
+  foreEdgeMargin: 12,     // PDF上の小口（外側）余白 mm
 };
 /* ================================================================ */
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// ── Constants ──
+const MM_TO_PT = 72 / 25.4; // 1mm ≈ 2.8346 PDF points
+
 // ── State ──
-let pdfDoc = null, totalPages = 0;
+let pdfDoc = null;
+let virtualPages = []; // [{type:'cover',img},{type:'pdf',num}]
+let totalVirtual = 0;
 let spreads = [], currentIdx = 0;
 let isSpread = false;
 let pageCache = new Map();
 let bgColor = CONFIG.backgroundColor;
 let readDir = CONFIG.readingDirection;
 let indicatorTimer = null, settingsOpen = false, navigating = false;
+let hintTimer = null, hintVisible = false;
 
 // ── DOM ──
 const $ = id => document.getElementById(id);
@@ -224,6 +256,7 @@ const $viewer = $('viewer'), $spread = $('spread-container');
 const $indicator = $('page-indicator'), $progress = $('progress-bar');
 const $navL = $('nav-left'), $navR = $('nav-right'), $navC = $('nav-center');
 const $setBtn = $('settings-btn'), $setPanel = $('settings-panel');
+const $hint = $('nav-hint'), $hintArrow = $('nav-hint-arrow');
 
 // ── Theme ──
 function applyTheme() {
@@ -237,82 +270,158 @@ function applyTheme() {
   $setPanel.style.backgroundColor = dk ? 'rgba(20,20,20,0.95)' : 'rgba(255,255,255,0.95)';
   $setPanel.style.color = dk ? '#bbb' : '#444';
   $setPanel.style.border = `1px solid ${dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`;
+  $hintArrow.style.stroke = dk ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
+}
+
+// ── Navigation Hint ──
+function updateHintPosition() {
+  if (readDir === 'ltr') {
+    $hint.style.right = '16px'; $hint.style.left = '';
+    $hintArrow.setAttribute('points', '10,6 18,14 10,22'); // →
+  } else {
+    $hint.style.left = '16px'; $hint.style.right = '';
+    $hintArrow.setAttribute('points', '18,6 10,14 18,22'); // ←
+  }
+}
+
+function resetHintTimer() {
+  if (hintVisible) { $hint.classList.remove('show'); hintVisible = false; }
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => {
+    if (currentIdx < spreads.length - 1) {
+      $hint.classList.add('show'); hintVisible = true;
+      setTimeout(() => { $hint.classList.remove('show'); hintVisible = false; }, 3000);
+    }
+  }, 4000);
 }
 
 // ── Layout Detection ──
 function detectSpread() {
-  const w = window.innerWidth, h = window.innerHeight;
-  return w > h && w >= 600;
+  return window.innerWidth > window.innerHeight && window.innerWidth >= 600;
 }
 
-// ── Build Spreads ──
+// ── Load Cover Image ──
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    if (!src) { reject('no src'); return; }
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject('Failed: ' + src);
+    img.src = src;
+  });
+}
+
+// ── Build Virtual Page List ──
+function buildVirtualPages(frontImg, backImg) {
+  virtualPages = [];
+  if (frontImg) virtualPages.push({ type: 'cover', img: frontImg, label: '表紙' });
+  for (let i = 1; i <= pdfDoc.numPages; i++) virtualPages.push({ type: 'pdf', num: i });
+  if (backImg) virtualPages.push({ type: 'cover', img: backImg, label: '裏表紙' });
+  totalVirtual = virtualPages.length;
+}
+
+// ── Build Spreads (0-based virtual indices) ──
 function buildSpreads() {
   spreads = [];
-  if (!totalPages) return;
+  if (!totalVirtual) return;
 
   if (!isSpread) {
-    for (let i = 1; i <= totalPages; i++) spreads.push([i]);
+    for (let i = 0; i < totalVirtual; i++) spreads.push([i]);
     return;
   }
 
-  // Page 1 = single cover
-  spreads.push([1]);
-  if (totalPages <= 1) return;
-  if (totalPages === 2) { spreads.push([2]); return; }
+  spreads.push([0]);
+  if (totalVirtual <= 1) return;
+  if (totalVirtual === 2) { spreads.push([1]); return; }
 
-  // Middle pages paired, last page single
-  let i = 2;
-  const lastInternal = totalPages - 1;
-
-  while (i <= lastInternal) {
-    if (i + 1 <= lastInternal) {
-      spreads.push([i, i + 1]);
-      i += 2;
-    } else {
-      // Orphan middle page — pair with final page instead of leaving two singles
-      spreads.push([i, totalPages]);
-      return;
-    }
+  let i = 1;
+  const last = totalVirtual - 2;
+  while (i <= last) {
+    if (i + 1 <= last) { spreads.push([i, i + 1]); i += 2; }
+    else { spreads.push([i, totalVirtual - 1]); return; }
   }
-  spreads.push([totalPages]);
+  spreads.push([totalVirtual - 1]);
 }
 
-// ── Render Page ──
-async function renderPage(num, maxW, maxH) {
-  const key = `${num}:${Math.round(maxW)}:${Math.round(maxH)}`;
-  if (pageCache.has(key)) return pageCache.get(key);
+// ── Gutter Side ──
+// LTR: odd PDF pages (recto, right-hand) → gutter on LEFT; even (verso) → gutter on RIGHT
+function gutterSide(pdfPageNum) {
+  if (readDir === 'ltr') return (pdfPageNum % 2 === 1) ? 'left' : 'right';
+  else return (pdfPageNum % 2 === 1) ? 'right' : 'left';
+}
 
+// ── Render Cover ──
+function renderCover(img, maxW, maxH) {
+  const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+  const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+  const pxr = window.devicePixelRatio || 1;
+  const c = document.createElement('canvas');
+  c.width = dw * pxr; c.height = dh * pxr;
+  c.style.width = dw + 'px'; c.style.height = dh + 'px';
+  c.className = 'page-canvas';
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+
+// ── Render PDF Page ──
+async function renderPdfPage(num, maxW, maxH, trimGutter) {
   const page = await pdfDoc.getPage(num);
   const vp = page.getViewport({ scale: 1 });
   const fit = Math.min(maxW / vp.width, maxH / vp.height);
-  const render = fit * CONFIG.quality * (window.devicePixelRatio || 1);
-  const svp = page.getViewport({ scale: render });
+  const pxr = window.devicePixelRatio || 1;
+  const rScale = fit * CONFIG.quality * pxr;
+  const svp = page.getViewport({ scale: rScale });
   const dvp = page.getViewport({ scale: fit });
 
   const c = document.createElement('canvas');
   c.width = svp.width; c.height = svp.height;
-  c.style.width = dvp.width + 'px';
-  c.style.height = dvp.height + 'px';
+  c.style.width = dvp.width + 'px'; c.style.height = dvp.height + 'px';
   c.className = 'page-canvas';
 
-  await page.render({ canvasContext: c.getContext('2d'), viewport: svp }).promise;
+  const ctx = c.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport: svp }).promise;
 
-  // Black level correction
+  // Black correction
   if (CONFIG.blackCorrection > 0) {
-    const ctx = c.getContext('2d');
-    const img = ctx.getImageData(0, 0, c.width, c.height);
-    const d = img.data;
-    const t = CONFIG.blackCorrection;
+    const imgData = ctx.getImageData(0, 0, c.width, c.height);
+    const d = imgData.data, t = CONFIG.blackCorrection;
     for (let i = 0, len = d.length; i < len; i += 4) {
-      if (d[i] <= t && d[i+1] <= t && d[i+2] <= t) {
-        d[i] = d[i+1] = d[i+2] = 0;
-      }
+      if (d[i] <= t && d[i+1] <= t && d[i+2] <= t) d[i] = d[i+1] = d[i+2] = 0;
     }
-    ctx.putImageData(img, 0, 0);
+    ctx.putImageData(imgData, 0, 0);
   }
 
-  pageCache.set(key, c);
+  // Gutter trim
+  if (trimGutter && CONFIG.gutterCorrection) {
+    const cropMm = CONFIG.gutterMargin - CONFIG.foreEdgeMargin;
+    if (cropMm > 0) {
+      const cropPx = Math.round(cropMm * MM_TO_PT * rScale);
+      const side = gutterSide(num);
+      const trimmed = document.createElement('canvas');
+      const nw = c.width - cropPx;
+      trimmed.width = nw; trimmed.height = c.height;
+      const sx = (side === 'left') ? cropPx : 0;
+      trimmed.getContext('2d').drawImage(c, sx, 0, nw, c.height, 0, 0, nw, c.height);
+      const displayCrop = Math.round(cropMm * MM_TO_PT * fit);
+      trimmed.style.width = (dvp.width - displayCrop) + 'px';
+      trimmed.style.height = dvp.height + 'px';
+      trimmed.className = 'page-canvas';
+      return trimmed;
+    }
+  }
   return c;
+}
+
+// ── Unified Render ──
+async function renderVPage(vIdx, maxW, maxH, trimGutter) {
+  const key = `${vIdx}:${Math.round(maxW)}:${Math.round(maxH)}:${trimGutter?1:0}:${readDir}`;
+  if (pageCache.has(key)) return pageCache.get(key);
+  const vp = virtualPages[vIdx];
+  const canvas = vp.type === 'cover'
+    ? renderCover(vp.img, maxW, maxH)
+    : await renderPdfPage(vp.num, maxW, maxH, trimGutter);
+  pageCache.set(key, canvas);
+  return canvas;
 }
 
 function cloneCanvas(src) {
@@ -329,31 +438,22 @@ async function display() {
   if (!spreads.length) return;
   const sp = spreads[currentIdx];
   const vw = window.innerWidth, vh = window.innerHeight;
+  const single = !isSpread;
 
   let mw, mh = vh;
-  if (sp.length === 2) {
-    mw = (vw / 2) - 1;
-  } else {
-    mw = isSpread ? Math.min(vw * 0.48, vh * 0.75) : vw;
-  }
+  if (sp.length === 2) mw = (vw / 2) - 1;
+  else mw = isSpread ? Math.min(vw * 0.48, vh * 0.75) : vw;
 
   const nodes = [];
-  for (const p of sp) {
-    const src = await renderPage(p, mw, mh);
+  for (const vi of sp) {
+    const src = await renderVPage(vi, mw, mh, single);
     nodes.push(cloneCanvas(src));
   }
 
   $spread.innerHTML = '';
-
   if (sp.length === 2) {
-    if (readDir === 'rtl') {
-      $spread.appendChild(nodes[1]); // higher page on left
-      $spread.appendChild(nodes[0]); // lower page on right
-    } else {
-      $spread.appendChild(nodes[0]);
-      $spread.appendChild(nodes[1]);
-    }
-    // Spine shadow
+    if (readDir === 'rtl') { $spread.appendChild(nodes[1]); $spread.appendChild(nodes[0]); }
+    else { $spread.appendChild(nodes[0]); $spread.appendChild(nodes[1]); }
     const spine = document.createElement('div');
     spine.className = 'spine-shadow';
     $spread.appendChild(spine);
@@ -361,37 +461,40 @@ async function display() {
     $spread.appendChild(nodes[0]);
   }
 
-  // Indicator
+  updateIndicator(sp);
+  $progress.style.width = ((currentIdx + 1) / spreads.length * 100) + '%';
+  resetHintTimer();
+  preload();
+}
+
+function updateIndicator(sp) {
+  const labels = sp.map(i => {
+    const v = virtualPages[i];
+    return v.type === 'cover' ? v.label : '' + v.num;
+  });
   let txt;
   if (sp.length === 2) {
     txt = readDir === 'rtl'
-      ? `${sp[1]}–${sp[0]} / ${totalPages}`
-      : `${sp[0]}–${sp[1]} / ${totalPages}`;
+      ? `${labels[1]}–${labels[0]} / ${totalVirtual}`
+      : `${labels[0]}–${labels[1]} / ${totalVirtual}`;
   } else {
-    txt = `${sp[0]} / ${totalPages}`;
+    txt = `${labels[0]} / ${totalVirtual}`;
   }
   $indicator.textContent = txt;
   $indicator.classList.add('show');
   clearTimeout(indicatorTimer);
   indicatorTimer = setTimeout(() => $indicator.classList.remove('show'), 2200);
-
-  // Progress
-  $progress.style.width = ((currentIdx + 1) / spreads.length * 100) + '%';
-
-  // Preload adjacent
-  preload();
 }
 
 async function preload() {
   const vw = window.innerWidth, vh = window.innerHeight;
+  const single = !isSpread;
   for (const di of [-1, 1]) {
     const idx = currentIdx + di;
     if (idx < 0 || idx >= spreads.length) continue;
     const sp = spreads[idx];
-    const mw = sp.length === 2 ? (vw / 2) - 1 : (isSpread ? Math.min(vw * 0.48, vh * 0.75) : vw);
-    for (const p of sp) {
-      renderPage(p, mw, vh).catch(() => {});
-    }
+    const mw = sp.length === 2 ? (vw/2)-1 : (isSpread ? Math.min(vw*0.48, vh*0.75) : vw);
+    for (const vi of sp) renderVPage(vi, mw, vh, single).catch(() => {});
   }
 }
 
@@ -409,68 +512,47 @@ function prev() {
 function forward() { next(); }
 function backward() { prev(); }
 
-// Click zones
-$navL.addEventListener('click', e => {
-  e.preventDefault();
-  readDir === 'rtl' ? forward() : backward();
-});
-$navR.addEventListener('click', e => {
-  e.preventDefault();
-  readDir === 'rtl' ? backward() : forward();
-});
-$navC.addEventListener('click', e => {
-  e.preventDefault();
-  $indicator.classList.add('show');
-  clearTimeout(indicatorTimer);
-  indicatorTimer = setTimeout(() => $indicator.classList.remove('show'), 2200);
-});
+$navL.addEventListener('click', e => { e.preventDefault(); readDir === 'rtl' ? forward() : backward(); });
+$navR.addEventListener('click', e => { e.preventDefault(); readDir === 'rtl' ? backward() : forward(); });
+$navC.addEventListener('click', e => { e.preventDefault(); updateIndicator(spreads[currentIdx]); });
 
-// Keyboard
 document.addEventListener('keydown', e => {
   const k = e.key;
-  if (k === 'ArrowLeft') { e.preventDefault(); readDir === 'rtl' ? forward() : backward(); }
-  else if (k === 'ArrowRight') { e.preventDefault(); readDir === 'rtl' ? backward() : forward(); }
-  else if (k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); forward(); }
-  else if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); backward(); }
-  else if (k === 'Home') { e.preventDefault(); currentIdx = 0; display(); }
-  else if (k === 'End') { e.preventDefault(); currentIdx = spreads.length - 1; display(); }
+  if (k==='ArrowLeft') { e.preventDefault(); readDir==='rtl' ? forward() : backward(); }
+  else if (k==='ArrowRight') { e.preventDefault(); readDir==='rtl' ? backward() : forward(); }
+  else if (k==='ArrowDown'||k==='PageDown'||k===' ') { e.preventDefault(); forward(); }
+  else if (k==='ArrowUp'||k==='PageUp') { e.preventDefault(); backward(); }
+  else if (k==='Home') { e.preventDefault(); currentIdx=0; display(); }
+  else if (k==='End') { e.preventDefault(); currentIdx=spreads.length-1; display(); }
 });
 
-// Touch swipe
-let tx0 = 0, ty0 = 0, tt0 = 0;
+let tx0=0,ty0=0,tt0=0;
 document.addEventListener('touchstart', e => {
-  tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY; tt0 = Date.now();
-}, { passive: true });
+  tx0=e.touches[0].clientX; ty0=e.touches[0].clientY; tt0=Date.now();
+}, {passive:true});
 document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - tx0;
-  const dy = e.changedTouches[0].clientY - ty0;
-  if (Date.now() - tt0 > 400 || Math.abs(dx) < 45 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
-  // Swipe left = next for both directions; swipe right = prev
-  // In RTL, "next" page is still swiping left on the screen
-  dx < 0 ? forward() : backward();
-}, { passive: true });
+  const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
+  if (Date.now()-tt0>400||Math.abs(dx)<45||Math.abs(dy)>Math.abs(dx)*0.6) return;
+  dx<0 ? forward() : backward();
+}, {passive:true});
 
-// Prevent double-tap zoom
-let lastTE = 0;
+let lastTE=0;
 document.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - lastTE <= 300) e.preventDefault();
-  lastTE = now;
+  const now=Date.now(); if (now-lastTE<=300) e.preventDefault(); lastTE=now;
 }, false);
 
-// ── Resize / Orientation ──
-let resizeT = null;
+// ── Resize ──
+let resizeT=null;
 function onResize() {
   clearTimeout(resizeT);
   resizeT = setTimeout(() => {
     const was = isSpread;
     isSpread = detectSpread();
     pageCache.clear();
-
     if (was !== isSpread) {
-      const firstPage = spreads[currentIdx] ? spreads[currentIdx][0] : 1;
+      const fv = spreads[currentIdx] ? spreads[currentIdx][0] : 0;
       buildSpreads();
-      currentIdx = spreads.findIndex(s => s.includes(firstPage));
+      currentIdx = spreads.findIndex(s => s.includes(fv));
       if (currentIdx < 0) currentIdx = 0;
     }
     display();
@@ -486,14 +568,14 @@ $setBtn.addEventListener('click', e => {
   $setPanel.classList.toggle('show', settingsOpen);
 });
 
-let setBtnT = null;
+let setBtnT=null;
 function flashSettings() {
   $setBtn.classList.add('visible');
   clearTimeout(setBtnT);
   setBtnT = setTimeout(() => { if (!settingsOpen) $setBtn.classList.remove('visible'); }, 2500);
 }
 document.addEventListener('mousemove', flashSettings);
-document.addEventListener('touchstart', flashSettings, { passive: true });
+document.addEventListener('touchstart', flashSettings, {passive:true});
 
 document.querySelectorAll('#bg-toggle button').forEach(b => {
   b.addEventListener('click', () => {
@@ -508,14 +590,15 @@ document.querySelectorAll('#dir-toggle button').forEach(b => {
     readDir = b.dataset.value;
     document.querySelectorAll('#dir-toggle button').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
+    pageCache.clear();
+    updateHintPosition();
     display();
   });
 });
 
 document.addEventListener('click', e => {
   if (settingsOpen && !$setPanel.contains(e.target) && e.target !== $setBtn) {
-    settingsOpen = false;
-    $setPanel.classList.remove('show');
+    settingsOpen = false; $setPanel.classList.remove('show');
   }
 });
 
@@ -528,12 +611,21 @@ function initSettingsUI() {
 }
 
 async function init() {
-  applyTheme();
-  initSettingsUI();
+  applyTheme(); initSettingsUI(); updateHintPosition();
 
   try {
-    pdfDoc = await pdfjsLib.getDocument(CONFIG.pdfPath).promise;
-    totalPages = pdfDoc.numPages;
+    let frontImg = null, backImg = null;
+    const covers = [];
+    if (CONFIG.frontCover) covers.push(loadImage(CONFIG.frontCover).then(i=>{frontImg=i}).catch(()=>{}));
+    if (CONFIG.backCover) covers.push(loadImage(CONFIG.backCover).then(i=>{backImg=i}).catch(()=>{}));
+
+    const [pdf] = await Promise.all([
+      pdfjsLib.getDocument(CONFIG.pdfPath).promise,
+      ...covers
+    ]);
+    pdfDoc = pdf;
+
+    buildVirtualPages(frontImg, backImg);
     isSpread = detectSpread();
     buildSpreads();
     currentIdx = 0;
@@ -546,7 +638,7 @@ async function init() {
     $loading.classList.add('hidden');
     $errMsg.textContent =
       'PDFの読み込みに失敗しました。\n' +
-      'HTMLと同じディレクトリにPDFファイルが配置されているか確認してください。\n\n' +
+      'HTMLと同じディレクトリにファイルが配置されているか確認してください。\n\n' +
       '詳細: ' + err.message;
     $error.classList.add('show');
   }
