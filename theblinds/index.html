@@ -462,7 +462,8 @@ function cloneCanvas(s) {
 }
 
 // ── Slide Animation (single-page portrait only) ──
-// Two full-viewport panels slide in unison. No gap because each covers 100%.
+// Single wrapper holds [old, new] side by side. Only the wrapper translates,
+// so there is physically zero gap between pages.
 async function displayWithSlide(dir) {
   if (!spreads.length) return;
   const sp = spreads[currentIdx];
@@ -474,42 +475,52 @@ async function displayWithSlide(dir) {
   const oldNode = oldCanvas ? cloneCanvas(oldCanvas) : null;
 
   const bg = bgColor==='black'?'#080808':'#f4f3ee';
-  const panelCSS = 'position:absolute;top:0;width:'+vw+'px;height:100%;' +
-    'display:flex;align-items:center;justify-content:center;background:'+bg+';' +
-    'will-change:transform;transition:transform 0.3s cubic-bezier(0.25,0.1,0.25,1);';
 
-  // Old panel (current page)
-  const oldPanel = document.createElement('div');
-  oldPanel.style.cssText = panelCSS + 'left:0;z-index:6;';
-  if (oldNode) oldPanel.appendChild(oldNode);
+  // Wrapper: holds exactly 2 page cells, flex row, no gap
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText =
+    'position:absolute;top:0;left:0;width:'+(vw*2)+'px;height:100%;' +
+    'display:flex;z-index:6;will-change:transform;';
 
-  // New panel (incoming page)
-  const newPanel = document.createElement('div');
-  // Start off-screen: forward → right side, backward → left side
-  newPanel.style.cssText = panelCSS + 'left:0;z-index:7;transform:translateX('+(dir*vw)+'px);';
-  newPanel.appendChild(newNode);
+  // Each cell is exactly 100vw, with background to fill any canvas margin
+  const makeCell = (child) => {
+    const cell = document.createElement('div');
+    cell.style.cssText =
+      'width:'+vw+'px;height:100%;flex:none;' +
+      'display:flex;align-items:center;justify-content:center;background:'+bg+';';
+    if (child) cell.appendChild(child);
+    return cell;
+  };
+
+  if (dir > 0) {
+    // Forward: [old][new], start showing old (translateX=0), slide to show new (translateX=-vw)
+    wrapper.appendChild(makeCell(oldNode));
+    wrapper.appendChild(makeCell(newNode));
+    wrapper.style.transform = 'translateX(0)';
+  } else {
+    // Backward: [new][old], start showing old (translateX=-vw), slide to show new (translateX=0)
+    wrapper.appendChild(makeCell(newNode));
+    wrapper.appendChild(makeCell(oldNode));
+    wrapper.style.transform = 'translateX(-'+vw+'px)';
+  }
 
   $spread.style.visibility = 'hidden';
-  $viewer.appendChild(oldPanel);
-  $viewer.appendChild(newPanel);
+  $viewer.appendChild(wrapper);
 
-  // Force reflow
-  void newPanel.offsetWidth;
-
-  // Animate: new slides in, old slides out
-  oldPanel.style.transform = 'translateX('+(-dir*vw)+'px)';
-  newPanel.style.transform = 'translateX(0)';
+  // Force reflow then animate
+  void wrapper.offsetWidth;
+  wrapper.style.transition = 'transform 0.3s cubic-bezier(0.25,0.1,0.25,1)';
+  wrapper.style.transform = dir > 0 ? 'translateX(-'+vw+'px)' : 'translateX(0)';
 
   const finalize = () => {
     $spread.innerHTML = '';
     $spread.appendChild(cloneCanvas(newSrc));
     $spread.style.visibility = '';
-    if (oldPanel.parentNode) oldPanel.remove();
-    if (newPanel.parentNode) newPanel.remove();
+    if (wrapper.parentNode) wrapper.remove();
   };
 
-  newPanel.addEventListener('transitionend', finalize, { once: true });
-  setTimeout(() => { if (newPanel.parentNode) finalize(); }, 400);
+  wrapper.addEventListener('transitionend', finalize, { once: true });
+  setTimeout(() => { if (wrapper.parentNode) finalize(); }, 400);
 
   updateIndicator(sp);
   $progress.style.width = ((currentIdx+1)/spreads.length*100)+'%';
