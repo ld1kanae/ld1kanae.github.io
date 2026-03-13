@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Book Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{
+    width:100%;height:100%;overflow:hidden;
+    touch-action:pan-y;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;-webkit-user-select:none;
+  }
+  body{
+    display:flex;align-items:center;justify-content:center;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+    transition:background-color 0.5s ease;
+  }
+
+  /* --- Loading --- */
+  #loading-overlay{
+    position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;z-index:1000;
+    transition:opacity 0.8s ease;
+  }
+  #loading-overlay.hidden{opacity:0;pointer-events:none}
+  .loader{
+    width:28px;height:28px;
+    border:1.5px solid rgba(128,128,128,0.15);
+    border-top-color:rgba(128,128,128,0.6);
+    border-radius:50%;animation:spin 0.7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{margin-top:14px;font-size:11px;letter-spacing:0.08em;opacity:0.4}
+
+  /* --- Error --- */
+  #error-screen{
+    position:fixed;inset:0;display:none;flex-direction:column;
+    align-items:center;justify-content:center;z-index:999;padding:32px;text-align:center;
+  }
+  #error-screen.show{display:flex}
+  #error-screen h2{font-size:16px;margin-bottom:10px;opacity:0.7;font-weight:500}
+  #error-screen p{font-size:12px;opacity:0.4;max-width:420px;line-height:1.8;white-space:pre-line}
+
+  /* --- Viewer --- */
+  #viewer{
+    display:flex;align-items:center;justify-content:center;
+    width:100%;height:100%;position:relative;
+    opacity:0;transition:opacity 0.8s ease 0.1s;
+  }
+  #viewer.visible{opacity:1}
+
+  /* --- Spread Container --- */
+  #spread-container{
+    display:flex;align-items:center;justify-content:center;
+    gap:0;max-width:100%;max-height:100%;position:relative;
+  }
+
+  /* --- Page Canvas --- */
+  .page-canvas{display:block;max-height:100vh;object-fit:contain}
+  .page-entering{animation:pageEnter 0.2s ease-out}
+  @keyframes pageEnter{0%{opacity:0.3}100%{opacity:1}}
+
+  /* --- Center Spine Shadow (for spread mode) --- */
+  .spine-shadow{
+    position:absolute;top:0;bottom:0;
+    width:24px;left:50%;transform:translateX(-50%);
+    pointer-events:none;z-index:5;
+    background:linear-gradient(to right,
+      transparent 0%,
+      rgba(0,0,0,0.06) 30%,
+      rgba(0,0,0,0.12) 48%,
+      rgba(0,0,0,0.12) 52%,
+      rgba(0,0,0,0.06) 70%,
+      transparent 100%
+    );
+  }
+
+  /* --- Navigation Zones --- */
+  .nav-zone{position:absolute;top:0;height:100%;cursor:pointer;z-index:10}
+  .nav-zone-left{left:0;width:35%}
+  .nav-zone-right{right:0;width:35%}
+  .nav-zone-center{left:35%;width:30%;height:100%;position:absolute;top:0;cursor:default;z-index:10}
+
+  /* --- Page Indicator --- */
+  #page-indicator{
+    position:fixed;bottom:max(16px, env(safe-area-inset-bottom, 16px));
+    left:50%;transform:translateX(-50%);
+    font-size:10px;letter-spacing:0.12em;
+    opacity:0;transition:opacity 0.4s ease;
+    pointer-events:none;z-index:50;
+    padding:5px 14px;border-radius:20px;
+    font-variant-numeric:tabular-nums;
+  }
+  #page-indicator.show{opacity:0.55}
+
+  /* --- Progress Bar --- */
+  #progress-bar{
+    position:fixed;bottom:0;left:0;height:1.5px;
+    transition:width 0.35s ease;z-index:50;opacity:0.25;
+  }
+
+  /* --- Settings --- */
+  #settings-btn{
+    position:fixed;top:max(10px, env(safe-area-inset-top, 10px));right:10px;
+    width:32px;height:32px;border:none;border-radius:50%;
+    background:rgba(128,128,128,0.1);color:inherit;
+    font-size:14px;cursor:pointer;z-index:100;opacity:0;
+    transition:opacity 0.3s ease;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #settings-btn:hover,#settings-btn.visible{opacity:0.6}
+
+  #settings-panel{
+    position:fixed;top:52px;right:10px;
+    padding:16px 18px;border-radius:10px;
+    z-index:100;display:none;min-width:200px;font-size:12px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.15);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  }
+  #settings-panel.show{display:block}
+
+  .setting-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .setting-row:last-child{margin-bottom:0}
+  .setting-label{opacity:0.6;font-size:11px}
+  .setting-toggle{display:flex;gap:0;border-radius:5px;overflow:hidden;border:1px solid rgba(128,128,128,0.25)}
+  .setting-toggle button{
+    padding:3px 9px;border:none;background:transparent;
+    color:inherit;font-size:10px;cursor:pointer;opacity:0.35;transition:all 0.2s;
+  }
+  .setting-toggle button.active{opacity:0.9;background:rgba(128,128,128,0.18)}
+
+  /* --- Fullscreen hint --- */
+  #fs-hint{
+    position:fixed;bottom:50px;left:50%;transform:translateX(-50%);
+    font-size:10px;opacity:0;pointer-events:none;z-index:50;
+    letter-spacing:0.05em;transition:opacity 0.3s;
+  }
+</style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="loader"></div>
+  <div class="loading-text">読み込み中…</div>
+</div>
+
+<div id="error-screen">
+  <h2>読み込みに失敗しました</h2>
+  <p id="error-message"></p>
+</div>
+
+<div id="viewer">
+  <div id="spread-container"></div>
+  <div class="nav-zone nav-zone-left" id="nav-left"></div>
+  <div class="nav-zone nav-zone-center" id="nav-center"></div>
+  <div class="nav-zone nav-zone-right" id="nav-right"></div>
+</div>
+
+<div id="page-indicator"></div>
+<div id="progress-bar"></div>
+<button id="settings-btn">⚙</button>
+<div id="settings-panel">
+  <div class="setting-row">
+    <span class="setting-label">背景</span>
+    <div class="setting-toggle" id="bg-toggle">
+      <button data-value="black" class="active">黒</button>
+      <button data-value="white">白</button>
+    </div>
+  </div>
+  <div class="setting-row">
+    <span class="setting-label">開き</span>
+    <div class="setting-toggle" id="dir-toggle">
+      <button data-value="rtl" class="active">右開き</button>
+      <button data-value="ltr">左開き</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   ★ 設定 — 作品ごとに以下を編集してください
+   ================================================================ */
+const CONFIG = {
+  // PDFファイルのパス（HTMLと同じディレクトリに置く場合はファイル名のみ）
+  // 例: 'book.pdf' または './assets/mynovel.pdf'
+  pdfPath: 'book.pdf',
+
+  // 背景色: 'black'（黒）または 'white'（白）
+  backgroundColor: 'black',
+
+  // 開き方向: 'rtl'（右開き＝縦書き日本語） / 'ltr'（左開き＝横書き・欧文）
+  readingDirection: 'rtl',
+
+  // 描画品質倍率（1.0〜2.0 / 高いほど鮮明だがメモリ消費増）
+  quality: 1.5,
+};
+/* ================================================================ */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── State ──
+let pdfDoc = null, totalPages = 0;
+let spreads = [], currentIdx = 0;
+let isSpread = false;
+let pageCache = new Map();
+let bgColor = CONFIG.backgroundColor;
+let readDir = CONFIG.readingDirection;
+let indicatorTimer = null, settingsOpen = false, navigating = false;
+
+// ── DOM ──
+const $ = id => document.getElementById(id);
+const $loading = $('loading-overlay'), $error = $('error-screen'), $errMsg = $('error-message');
+const $viewer = $('viewer'), $spread = $('spread-container');
+const $indicator = $('page-indicator'), $progress = $('progress-bar');
+const $navL = $('nav-left'), $navR = $('nav-right'), $navC = $('nav-center');
+const $setBtn = $('settings-btn'), $setPanel = $('settings-panel');
+
+// ── Theme ──
+function applyTheme() {
+  const dk = bgColor === 'black';
+  document.body.style.backgroundColor = dk ? '#080808' : '#f4f3ee';
+  document.body.style.color = dk ? '#aaa' : '#444';
+  $loading.style.backgroundColor = dk ? '#080808' : '#f4f3ee';
+  $progress.style.backgroundColor = dk ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
+  $indicator.style.backgroundColor = dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+  $indicator.style.color = dk ? '#666' : '#888';
+  $setPanel.style.backgroundColor = dk ? 'rgba(20,20,20,0.95)' : 'rgba(255,255,255,0.95)';
+  $setPanel.style.color = dk ? '#bbb' : '#444';
+  $setPanel.style.border = `1px solid ${dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`;
+}
+
+// ── Layout Detection ──
+function detectSpread() {
+  const w = window.innerWidth, h = window.innerHeight;
+  return w > h && w >= 600;
+}
+
+// ── Build Spreads ──
+function buildSpreads() {
+  spreads = [];
+  if (!totalPages) return;
+
+  if (!isSpread) {
+    for (let i = 1; i <= totalPages; i++) spreads.push([i]);
+    return;
+  }
+
+  // Page 1 = single cover
+  spreads.push([1]);
+  if (totalPages <= 1) return;
+  if (totalPages === 2) { spreads.push([2]); return; }
+
+  // Middle pages paired, last page single
+  let i = 2;
+  const lastInternal = totalPages - 1;
+
+  while (i <= lastInternal) {
+    if (i + 1 <= lastInternal) {
+      spreads.push([i, i + 1]);
+      i += 2;
+    } else {
+      // Orphan middle page — pair with final page instead of leaving two singles
+      spreads.push([i, totalPages]);
+      return;
+    }
+  }
+  spreads.push([totalPages]);
+}
+
+// ── Render Page ──
+async function renderPage(num, maxW, maxH) {
+  const key = `${num}:${Math.round(maxW)}:${Math.round(maxH)}`;
+  if (pageCache.has(key)) return pageCache.get(key);
+
+  const page = await pdfDoc.getPage(num);
+  const vp = page.getViewport({ scale: 1 });
+  const fit = Math.min(maxW / vp.width, maxH / vp.height);
+  const render = fit * CONFIG.quality * (window.devicePixelRatio || 1);
+  const svp = page.getViewport({ scale: render });
+  const dvp = page.getViewport({ scale: fit });
+
+  const c = document.createElement('canvas');
+  c.width = svp.width; c.height = svp.height;
+  c.style.width = dvp.width + 'px';
+  c.style.height = dvp.height + 'px';
+  c.className = 'page-canvas';
+
+  await page.render({ canvasContext: c.getContext('2d'), viewport: svp }).promise;
+  pageCache.set(key, c);
+  return c;
+}
+
+function cloneCanvas(src) {
+  const c = document.createElement('canvas');
+  c.width = src.width; c.height = src.height;
+  c.style.width = src.style.width; c.style.height = src.style.height;
+  c.className = 'page-canvas page-entering';
+  c.getContext('2d').drawImage(src, 0, 0);
+  return c;
+}
+
+// ── Display ──
+async function display() {
+  if (!spreads.length) return;
+  const sp = spreads[currentIdx];
+  const vw = window.innerWidth, vh = window.innerHeight;
+
+  let mw, mh = vh;
+  if (sp.length === 2) {
+    mw = (vw / 2) - 1;
+  } else {
+    mw = isSpread ? Math.min(vw * 0.48, vh * 0.75) : vw;
+  }
+
+  const nodes = [];
+  for (const p of sp) {
+    const src = await renderPage(p, mw, mh);
+    nodes.push(cloneCanvas(src));
+  }
+
+  $spread.innerHTML = '';
+
+  if (sp.length === 2) {
+    if (readDir === 'rtl') {
+      $spread.appendChild(nodes[1]); // higher page on left
+      $spread.appendChild(nodes[0]); // lower page on right
+    } else {
+      $spread.appendChild(nodes[0]);
+      $spread.appendChild(nodes[1]);
+    }
+    // Spine shadow
+    const spine = document.createElement('div');
+    spine.className = 'spine-shadow';
+    $spread.appendChild(spine);
+  } else {
+    $spread.appendChild(nodes[0]);
+  }
+
+  // Indicator
+  let txt;
+  if (sp.length === 2) {
+    txt = readDir === 'rtl'
+      ? `${sp[1]}–${sp[0]} / ${totalPages}`
+      : `${sp[0]}–${sp[1]} / ${totalPages}`;
+  } else {
+    txt = `${sp[0]} / ${totalPages}`;
+  }
+  $indicator.textContent = txt;
+  $indicator.classList.add('show');
+  clearTimeout(indicatorTimer);
+  indicatorTimer = setTimeout(() => $indicator.classList.remove('show'), 2200);
+
+  // Progress
+  $progress.style.width = ((currentIdx + 1) / spreads.length * 100) + '%';
+
+  // Preload adjacent
+  preload();
+}
+
+async function preload() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  for (const di of [-1, 1]) {
+    const idx = currentIdx + di;
+    if (idx < 0 || idx >= spreads.length) continue;
+    const sp = spreads[idx];
+    const mw = sp.length === 2 ? (vw / 2) - 1 : (isSpread ? Math.min(vw * 0.48, vh * 0.75) : vw);
+    for (const p of sp) {
+      renderPage(p, mw, vh).catch(() => {});
+    }
+  }
+}
+
+// ── Navigation ──
+function next() {
+  if (navigating || currentIdx >= spreads.length - 1) return;
+  navigating = true; currentIdx++;
+  display().then(() => navigating = false);
+}
+function prev() {
+  if (navigating || currentIdx <= 0) return;
+  navigating = true; currentIdx--;
+  display().then(() => navigating = false);
+}
+function forward() { next(); }
+function backward() { prev(); }
+
+// Click zones
+$navL.addEventListener('click', e => {
+  e.preventDefault();
+  readDir === 'rtl' ? forward() : backward();
+});
+$navR.addEventListener('click', e => {
+  e.preventDefault();
+  readDir === 'rtl' ? backward() : forward();
+});
+$navC.addEventListener('click', e => {
+  e.preventDefault();
+  $indicator.classList.add('show');
+  clearTimeout(indicatorTimer);
+  indicatorTimer = setTimeout(() => $indicator.classList.remove('show'), 2200);
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  const k = e.key;
+  if (k === 'ArrowLeft') { e.preventDefault(); readDir === 'rtl' ? forward() : backward(); }
+  else if (k === 'ArrowRight') { e.preventDefault(); readDir === 'rtl' ? backward() : forward(); }
+  else if (k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); forward(); }
+  else if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); backward(); }
+  else if (k === 'Home') { e.preventDefault(); currentIdx = 0; display(); }
+  else if (k === 'End') { e.preventDefault(); currentIdx = spreads.length - 1; display(); }
+});
+
+// Touch swipe
+let tx0 = 0, ty0 = 0, tt0 = 0;
+document.addEventListener('touchstart', e => {
+  tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY; tt0 = Date.now();
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx0;
+  const dy = e.changedTouches[0].clientY - ty0;
+  if (Date.now() - tt0 > 400 || Math.abs(dx) < 45 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+  // Swipe left = next for both directions; swipe right = prev
+  // In RTL, "next" page is still swiping left on the screen
+  dx < 0 ? forward() : backward();
+}, { passive: true });
+
+// Prevent double-tap zoom
+let lastTE = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTE <= 300) e.preventDefault();
+  lastTE = now;
+}, false);
+
+// ── Resize / Orientation ──
+let resizeT = null;
+function onResize() {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => {
+    const was = isSpread;
+    isSpread = detectSpread();
+    pageCache.clear();
+
+    if (was !== isSpread) {
+      const firstPage = spreads[currentIdx] ? spreads[currentIdx][0] : 1;
+      buildSpreads();
+      currentIdx = spreads.findIndex(s => s.includes(firstPage));
+      if (currentIdx < 0) currentIdx = 0;
+    }
+    display();
+  }, 180);
+}
+window.addEventListener('resize', onResize);
+window.addEventListener('orientationchange', () => setTimeout(onResize, 250));
+
+// ── Settings ──
+$setBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  settingsOpen = !settingsOpen;
+  $setPanel.classList.toggle('show', settingsOpen);
+});
+
+let setBtnT = null;
+function flashSettings() {
+  $setBtn.classList.add('visible');
+  clearTimeout(setBtnT);
+  setBtnT = setTimeout(() => { if (!settingsOpen) $setBtn.classList.remove('visible'); }, 2500);
+}
+document.addEventListener('mousemove', flashSettings);
+document.addEventListener('touchstart', flashSettings, { passive: true });
+
+document.querySelectorAll('#bg-toggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    bgColor = b.dataset.value;
+    document.querySelectorAll('#bg-toggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    applyTheme();
+  });
+});
+document.querySelectorAll('#dir-toggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    readDir = b.dataset.value;
+    document.querySelectorAll('#dir-toggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    display();
+  });
+});
+
+document.addEventListener('click', e => {
+  if (settingsOpen && !$setPanel.contains(e.target) && e.target !== $setBtn) {
+    settingsOpen = false;
+    $setPanel.classList.remove('show');
+  }
+});
+
+// ── Init ──
+function initSettingsUI() {
+  document.querySelectorAll('#bg-toggle button').forEach(b =>
+    b.classList.toggle('active', b.dataset.value === bgColor));
+  document.querySelectorAll('#dir-toggle button').forEach(b =>
+    b.classList.toggle('active', b.dataset.value === readDir));
+}
+
+async function init() {
+  applyTheme();
+  initSettingsUI();
+
+  try {
+    pdfDoc = await pdfjsLib.getDocument(CONFIG.pdfPath).promise;
+    totalPages = pdfDoc.numPages;
+    isSpread = detectSpread();
+    buildSpreads();
+    currentIdx = 0;
+
+    $loading.classList.add('hidden');
+    $viewer.classList.add('visible');
+    await display();
+  } catch (err) {
+    console.error(err);
+    $loading.classList.add('hidden');
+    $errMsg.textContent =
+      'PDFの読み込みに失敗しました。\n' +
+      'HTMLと同じディレクトリにPDFファイルが配置されているか確認してください。\n\n' +
+      '詳細: ' + err.message;
+    $error.classList.add('show');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
