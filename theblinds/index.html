@@ -120,7 +120,8 @@
   /* --- Navigation Hint Arrow --- */
   #nav-hint{
     position:fixed;
-    bottom:max(44px, calc(env(safe-area-inset-bottom, 12px) + 32px));
+    bottom:max(54px, calc(env(safe-area-inset-bottom, 12px) + 42px));
+    left:50%;transform:translateX(-50%);
     pointer-events:none;z-index:40;
     opacity:0;
     transition:opacity 1.2s ease;
@@ -302,16 +303,14 @@ function applyTheme() {
   $setPanel.style.backgroundColor = dk ? 'rgba(20,20,20,0.95)' : 'rgba(255,255,255,0.95)';
   $setPanel.style.color = dk ? '#bbb' : '#444';
   $setPanel.style.border = `1px solid ${dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`;
-  $hintArrow.style.stroke = 'rgba(128,128,128,0.5)';
+  $hintArrow.style.stroke = 'rgb(128,128,128)';
 }
 
 // ── Navigation Hint ──
 function updateHintPosition() {
   if (readDir === 'ltr') {
-    $hint.style.right = '16px'; $hint.style.left = '';
     $hintArrow.setAttribute('points', '10,6 18,14 10,22'); // →
   } else {
-    $hint.style.left = '16px'; $hint.style.right = '';
     $hintArrow.setAttribute('points', '18,6 10,14 18,22'); // ←
   }
 }
