@@ -330,17 +330,34 @@ function buildSpreads() {
     return;
   }
 
-  spreads.push([0]);
-  if (totalVirtual <= 1) return;
-  if (totalVirtual === 2) { spreads.push([1]); return; }
+  // Identify pages that must remain single:
+  // all covers + first PDF page + last PDF page
+  const mustSingle = new Set();
+  let pdfFirst = -1, pdfLast = -1;
+  virtualPages.forEach((v, i) => {
+    if (v.type === 'cover') mustSingle.add(i);
+    if (v.type === 'pdf') {
+      if (pdfFirst < 0) pdfFirst = i;
+      pdfLast = i;
+    }
+  });
+  if (pdfFirst >= 0) mustSingle.add(pdfFirst);
+  if (pdfLast >= 0) mustSingle.add(pdfLast);
 
-  let i = 1;
-  const last = totalVirtual - 2;
-  while (i <= last) {
-    if (i + 1 <= last) { spreads.push([i, i + 1]); i += 2; }
-    else { spreads.push([i, totalVirtual - 1]); return; }
+  let i = 0;
+  while (i < totalVirtual) {
+    if (mustSingle.has(i)) {
+      spreads.push([i]);
+      i++;
+    } else if (i + 1 < totalVirtual && !mustSingle.has(i + 1)) {
+      spreads.push([i, i + 1]);
+      i += 2;
+    } else {
+      // next page is single — this one goes solo too
+      spreads.push([i]);
+      i++;
+    }
   }
-  spreads.push([totalVirtual - 1]);
 }
 
 // ── Gutter Side ──
@@ -364,7 +381,7 @@ function renderCover(img, maxW, maxH) {
 }
 
 // ── Render PDF Page ──
-async function renderPdfPage(num, maxW, maxH, trimGutter) {
+async function renderPdfPage(num, maxW, maxH) {
   const page = await pdfDoc.getPage(num);
   const vp = page.getViewport({ scale: 1 });
   const fit = Math.min(maxW / vp.width, maxH / vp.height);
@@ -391,8 +408,8 @@ async function renderPdfPage(num, maxW, maxH, trimGutter) {
     ctx.putImageData(imgData, 0, 0);
   }
 
-  // Gutter trim
-  if (trimGutter && CONFIG.gutterCorrection) {
+  // Gutter trim (always applied when enabled)
+  if (CONFIG.gutterCorrection) {
     const cropMm = CONFIG.gutterMargin - CONFIG.foreEdgeMargin;
     if (cropMm > 0) {
       const cropPx = Math.round(cropMm * MM_TO_PT * rScale);
@@ -413,13 +430,13 @@ async function renderPdfPage(num, maxW, maxH, trimGutter) {
 }
 
 // ── Unified Render ──
-async function renderVPage(vIdx, maxW, maxH, trimGutter) {
-  const key = `${vIdx}:${Math.round(maxW)}:${Math.round(maxH)}:${trimGutter?1:0}:${readDir}`;
+async function renderVPage(vIdx, maxW, maxH) {
+  const key = `${vIdx}:${Math.round(maxW)}:${Math.round(maxH)}:${readDir}`;
   if (pageCache.has(key)) return pageCache.get(key);
   const vp = virtualPages[vIdx];
   const canvas = vp.type === 'cover'
     ? renderCover(vp.img, maxW, maxH)
-    : await renderPdfPage(vp.num, maxW, maxH, trimGutter);
+    : await renderPdfPage(vp.num, maxW, maxH);
   pageCache.set(key, canvas);
   return canvas;
 }
@@ -438,7 +455,6 @@ async function display() {
   if (!spreads.length) return;
   const sp = spreads[currentIdx];
   const vw = window.innerWidth, vh = window.innerHeight;
-  const single = !isSpread;
 
   let mw, mh = vh;
   if (sp.length === 2) mw = (vw / 2) - 1;
@@ -446,7 +462,7 @@ async function display() {
 
   const nodes = [];
   for (const vi of sp) {
-    const src = await renderVPage(vi, mw, mh, single);
+    const src = await renderVPage(vi, mw, mh);
     nodes.push(cloneCanvas(src));
   }
 
@@ -488,13 +504,12 @@ function updateIndicator(sp) {
 
 async function preload() {
   const vw = window.innerWidth, vh = window.innerHeight;
-  const single = !isSpread;
   for (const di of [-1, 1]) {
     const idx = currentIdx + di;
     if (idx < 0 || idx >= spreads.length) continue;
     const sp = spreads[idx];
     const mw = sp.length === 2 ? (vw/2)-1 : (isSpread ? Math.min(vw*0.48, vh*0.75) : vw);
-    for (const vi of sp) renderVPage(vi, mw, vh, single).catch(() => {});
+    for (const vi of sp) renderVPage(vi, mw, vh).catch(() => {});
   }
 }
 
