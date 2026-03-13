@@ -72,10 +72,6 @@
   #spread-container{
     display:flex;align-items:center;justify-content:center;
     gap:0;max-width:100%;max-height:100%;position:relative;
-    transition:none;
-  }
-  #spread-container.sliding{
-    transition:transform 0.28s cubic-bezier(0.25,0.1,0.25,1);
   }
 
   /* --- Page Canvas --- */
@@ -471,16 +467,37 @@ async function displayWithSlide(dir) {
   const src = await renderVP(sp[0], mw, vh);
   const node = cloneCanvas(src);
 
-  // Set up slide: start offscreen in 'dir' direction, slide to center
-  $spread.classList.remove('sliding');
-  $spread.style.transform = `translateX(${dir * vw}px)`;
-  $spread.innerHTML = '';
-  $spread.appendChild(node);
+  // Create overlay that slides over the old page
+  const overlay = document.createElement('div');
+  const bg = bgColor==='black' ? '#080808' : '#f4f3ee';
+  overlay.style.cssText =
+    'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;' +
+    'z-index:6;background:' + bg + ';transform:translateX(' + (dir * vw) + 'px);will-change:transform;';
+  overlay.appendChild(node);
+  $viewer.appendChild(overlay);
 
   // Force reflow, then animate
-  void $spread.offsetWidth;
-  $spread.classList.add('sliding');
-  $spread.style.transform = 'translateX(0)';
+  void overlay.offsetWidth;
+  overlay.style.transition = 'transform 0.28s cubic-bezier(0.25,0.1,0.25,1)';
+  overlay.style.transform = 'translateX(0)';
+
+  overlay.addEventListener('transitionend', () => {
+    // Replace spread content with the new page, remove overlay
+    $spread.innerHTML = '';
+    $spread.style.transform = '';
+    $spread.appendChild(cloneCanvas(src));
+    overlay.remove();
+  }, { once: true });
+
+  // Fallback in case transitionend doesn't fire
+  setTimeout(() => {
+    if (overlay.parentNode) {
+      $spread.innerHTML = '';
+      $spread.style.transform = '';
+      $spread.appendChild(cloneCanvas(src));
+      overlay.remove();
+    }
+  }, 350);
 
   updateIndicator(sp);
   $progress.style.width = ((currentIdx+1)/spreads.length*100)+'%';
@@ -503,7 +520,6 @@ async function display() {
   const nodes=[];
   for (const vi of sp) { const s=await renderVP(vi,mw,mh); nodes.push(cloneCanvas(s)); }
 
-  $spread.classList.remove('sliding');
   $spread.style.transform = '';
   $spread.innerHTML='';
   if (sp.length===2) {
