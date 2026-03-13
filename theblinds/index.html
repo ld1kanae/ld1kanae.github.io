@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="cover-front.png">
 <link rel="apple-touch-icon" href="cover-front.png">
 
-<!-- OGP — SNS共有時のサムネイル -->
+<!-- OGP -->
 <meta property="og:title" content="The Blinds">
 <meta property="og:image" content="https://ld1kanae.github.io/theblinds/cover-front.png">
 <meta property="og:type" content="website">
@@ -64,6 +64,7 @@
     display:flex;align-items:center;justify-content:center;
     width:100%;height:100%;position:relative;
     opacity:0;transition:opacity 0.8s ease 0.1s;
+    overflow:hidden;
   }
   #viewer.visible{opacity:1}
 
@@ -71,26 +72,23 @@
   #spread-container{
     display:flex;align-items:center;justify-content:center;
     gap:0;max-width:100%;max-height:100%;position:relative;
+    transition:none;
+  }
+  #spread-container.sliding{
+    transition:transform 0.28s cubic-bezier(0.25,0.1,0.25,1);
   }
 
   /* --- Page Canvas --- */
   .page-canvas{display:block;max-height:100vh;object-fit:contain}
-  .page-entering{animation:pageEnter 0.2s ease-out}
-  @keyframes pageEnter{0%{opacity:0.3}100%{opacity:1}}
 
-  /* --- Center Spine Shadow (for spread mode) --- */
+  /* --- Spine Shadow --- */
   .spine-shadow{
     position:absolute;top:0;bottom:0;
     width:24px;left:50%;transform:translateX(-50%);
     pointer-events:none;z-index:5;
     background:linear-gradient(to right,
-      transparent 0%,
-      rgba(0,0,0,0.06) 30%,
-      rgba(0,0,0,0.12) 48%,
-      rgba(0,0,0,0.12) 52%,
-      rgba(0,0,0,0.06) 70%,
-      transparent 100%
-    );
+      transparent 0%, rgba(0,0,0,0.06) 30%, rgba(0,0,0,0.12) 48%,
+      rgba(0,0,0,0.12) 52%, rgba(0,0,0,0.06) 70%, transparent 100%);
   }
 
   /* --- Navigation Zones --- */
@@ -117,7 +115,7 @@
     transition:width 0.35s ease;z-index:50;opacity:0.25;
   }
 
-  /* --- Navigation Hint Arrow --- */
+  /* --- Navigation Hint Arrow (cover only) --- */
   #nav-hint{
     position:fixed;
     bottom:max(54px, calc(env(safe-area-inset-bottom, 12px) + 42px));
@@ -129,10 +127,48 @@
   #nav-hint.show{opacity:1}
   #nav-hint svg{
     width:36px;height:36px;
-    stroke-width:2;
-    stroke-linecap:round;
-    stroke-linejoin:round;
-    fill:none;
+    stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;
+  }
+
+  /* --- Seek Bar --- */
+  #seek-btn{
+    position:fixed;
+    bottom:max(12px, env(safe-area-inset-bottom, 12px));
+    right:12px;
+    width:36px;height:36px;border:none;border-radius:50%;
+    background:rgba(128,128,128,0.15);
+    color:inherit;cursor:pointer;z-index:80;
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity 0.3s ease;
+  }
+  #seek-btn:hover,#seek-btn.visible{opacity:0.7}
+  #seek-btn svg{width:18px;height:18px;stroke-width:2;stroke-linecap:round;fill:none}
+
+  #seek-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    z-index:70;display:none;
+    padding:10px 16px max(12px, env(safe-area-inset-bottom, 12px)) 16px;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  }
+  #seek-bar.show{display:flex;align-items:center;gap:10px}
+  #seek-bar .seek-label{
+    font-size:10px;min-width:32px;text-align:center;
+    font-variant-numeric:tabular-nums;opacity:0.6;
+  }
+  #seek-bar input[type=range]{
+    flex:1;height:3px;-webkit-appearance:none;appearance:none;
+    background:rgba(128,128,128,0.3);border-radius:2px;outline:none;
+    cursor:pointer;
+  }
+  #seek-bar input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;
+    border-radius:50%;background:rgb(160,160,160);
+    cursor:pointer;
+  }
+  #seek-bar input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border:none;
+    border-radius:50%;background:rgb(160,160,160);
+    cursor:pointer;
   }
 
   /* --- Settings --- */
@@ -188,11 +224,27 @@
 <div id="page-indicator"></div>
 <div id="progress-bar"></div>
 
-<!-- Navigation Hint Arrow -->
+<!-- Navigation Hint Arrow (cover only) -->
 <div id="nav-hint">
   <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
     <polyline id="nav-hint-arrow" points="10,6 18,14 10,22"/>
   </svg>
+</div>
+
+<!-- Seek Bar Toggle -->
+<button id="seek-btn">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+    <line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2.5" fill="currentColor" stroke="none"/>
+    <line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+    <line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2.5" fill="currentColor" stroke="none"/>
+  </svg>
+</button>
+
+<!-- Seek Bar -->
+<div id="seek-bar">
+  <span class="seek-label" id="seek-cur">1</span>
+  <input type="range" id="seek-range" min="0" max="1" value="0" step="1">
+  <span class="seek-label" id="seek-total">1</span>
 </div>
 
 <button id="settings-btn">⚙</button>
@@ -215,360 +267,317 @@
 
 <script>
 /* ================================================================
-   ★ 設定 — 作品ごとに以下を編集してください
+   ★ 設定
    ================================================================ */
 const CONFIG = {
-  // 本文PDFファイルのパス
   pdfPath: 'book.pdf',
-
-  // 表紙・裏表紙の画像パス（PNG/JPG）不要なら '' に
   frontCover: 'cover-front.png',
   backCover:  'cover-back.png',
-
-  // 背景色: 'black' / 'white'
   backgroundColor: 'black',
-
-  // 開き方向: 'rtl'（右開き＝縦書き） / 'ltr'（左開き＝横書き）
   readingDirection: 'ltr',
-
-  // 描画品質倍率（1.0〜2.0）
   quality: 1.5,
-
-  // 黒補正: この値以下のRGBを純黒に（0 = 無効）
   blackCorrection: 40,
-
-  // ── ノド補正（単ページ表示時のみ適用） ──
-  // true で有効化。ノド余白を小口に揃えてトリミングする
   gutterCorrection: true,
-  gutterMargin: 16.75,   // PDF上のノド（綴じ側）余白 mm
-  foreEdgeMargin: 12,     // PDF上の小口（外側）余白 mm
+  gutterMargin: 16.75,
+  foreEdgeMargin: 12,
 };
 /* ================================================================ */
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ── Constants ──
-const MM_TO_PT = 72 / 25.4; // 1mm ≈ 2.8346 PDF points
+const MM_TO_PT = 72 / 25.4;
 const BOOKMARK_KEY = 'bookviewer_pos_' + CONFIG.pdfPath;
 
-// ── Bookmark (reading position persistence) ──
 function saveBookmark() {
-  try {
-    const vIdx = spreads[currentIdx] ? spreads[currentIdx][0] : 0;
-    localStorage.setItem(BOOKMARK_KEY, '' + vIdx);
-  } catch(e) {}
+  try { localStorage.setItem(BOOKMARK_KEY, '' + (spreads[currentIdx]?spreads[currentIdx][0]:0)); } catch(e){}
 }
 function restoreBookmark() {
   try {
-    const saved = localStorage.getItem(BOOKMARK_KEY);
-    if (saved === null) return;
-    const vIdx = parseInt(saved, 10);
-    if (isNaN(vIdx) || vIdx <= 0) return;
-    const idx = spreads.findIndex(s => s.includes(vIdx));
+    const v = parseInt(localStorage.getItem(BOOKMARK_KEY),10);
+    if (!v || v <= 0) return;
+    const idx = spreads.findIndex(s => s.includes(v));
     if (idx > 0) currentIdx = idx;
-  } catch(e) {}
+  } catch(e){}
 }
 
 // ── State ──
 let pdfDoc = null;
-let virtualPages = []; // [{type:'cover',img},{type:'pdf',num}]
-let totalVirtual = 0;
+let virtualPages = [], totalVirtual = 0;
 let spreads = [], currentIdx = 0;
-let isSpread = false;
-let pageCache = new Map();
-let bgColor = CONFIG.backgroundColor;
-let readDir = CONFIG.readingDirection;
+let isSpread = false, pageCache = new Map();
+let bgColor = CONFIG.backgroundColor, readDir = CONFIG.readingDirection;
 let indicatorTimer = null, settingsOpen = false, navigating = false;
 let hintTimer = null, hintVisible = false;
+let seekOpen = false, slideDir = 0; // -1=left, 1=right, 0=none
 
 // ── DOM ──
 const $ = id => document.getElementById(id);
-const $loading = $('loading-overlay'), $error = $('error-screen'), $errMsg = $('error-message');
-const $viewer = $('viewer'), $spread = $('spread-container');
-const $indicator = $('page-indicator'), $progress = $('progress-bar');
-const $navL = $('nav-left'), $navR = $('nav-right'), $navC = $('nav-center');
-const $setBtn = $('settings-btn'), $setPanel = $('settings-panel');
-const $hint = $('nav-hint'), $hintArrow = $('nav-hint-arrow');
+const $loading=$('loading-overlay'),$error=$('error-screen'),$errMsg=$('error-message');
+const $viewer=$('viewer'),$spread=$('spread-container');
+const $indicator=$('page-indicator'),$progress=$('progress-bar');
+const $navL=$('nav-left'),$navR=$('nav-right'),$navC=$('nav-center');
+const $setBtn=$('settings-btn'),$setPanel=$('settings-panel');
+const $hint=$('nav-hint'),$hintArrow=$('nav-hint-arrow');
+const $seekBtn=$('seek-btn'),$seekBar=$('seek-bar'),$seekRange=$('seek-range');
+const $seekCur=$('seek-cur'),$seekTotal=$('seek-total');
 
 // ── Theme ──
 function applyTheme() {
-  const dk = bgColor === 'black';
-  document.body.style.backgroundColor = dk ? '#080808' : '#f4f3ee';
-  document.body.style.color = dk ? '#aaa' : '#444';
-  $loading.style.backgroundColor = dk ? '#080808' : '#f4f3ee';
-  $progress.style.backgroundColor = dk ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
-  $indicator.style.backgroundColor = dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
-  $indicator.style.color = dk ? '#666' : '#888';
-  $setPanel.style.backgroundColor = dk ? 'rgba(20,20,20,0.95)' : 'rgba(255,255,255,0.95)';
-  $setPanel.style.color = dk ? '#bbb' : '#444';
-  $setPanel.style.border = `1px solid ${dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`;
+  const dk = bgColor==='black';
+  document.body.style.backgroundColor = dk?'#080808':'#f4f3ee';
+  document.body.style.color = dk?'#aaa':'#444';
+  $loading.style.backgroundColor = dk?'#080808':'#f4f3ee';
+  $progress.style.backgroundColor = dk?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.1)';
+  $indicator.style.backgroundColor = dk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)';
+  $indicator.style.color = dk?'#666':'#888';
+  $setPanel.style.backgroundColor = dk?'rgba(20,20,20,0.95)':'rgba(255,255,255,0.95)';
+  $setPanel.style.color = dk?'#bbb':'#444';
+  $setPanel.style.border = `1px solid ${dk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'}`;
+  $seekBar.style.backgroundColor = dk?'rgba(20,20,20,0.9)':'rgba(240,240,235,0.9)';
+  $seekBar.style.color = dk?'#aaa':'#555';
   $hintArrow.style.stroke = 'rgb(128,128,128)';
 }
 
-// ── Navigation Hint ──
-function updateHintPosition() {
-  if (readDir === 'ltr') {
-    $hintArrow.setAttribute('points', '10,6 18,14 10,22'); // →
-  } else {
-    $hintArrow.setAttribute('points', '18,6 10,14 18,22'); // ←
-  }
+// ── Hint (cover only) ──
+function updateHintDirection() {
+  $hintArrow.setAttribute('points',
+    readDir==='ltr' ? '10,6 18,14 10,22' : '18,6 10,14 18,22');
 }
-
-function resetHintTimer() {
-  if (hintVisible) { $hint.classList.remove('show'); hintVisible = false; }
+function triggerCoverHint() {
+  if (currentIdx !== 0) return;
   clearTimeout(hintTimer);
-  // Show quickly on cover, slower on other pages
-  const delay = (currentIdx === 0) ? 1000 : 4000;
   hintTimer = setTimeout(() => {
-    if (currentIdx < spreads.length - 1) {
+    if (currentIdx === 0) {
       $hint.classList.add('show'); hintVisible = true;
       setTimeout(() => { $hint.classList.remove('show'); hintVisible = false; }, 3500);
     }
-  }, delay);
+  }, 1000);
 }
 
-// ── Layout Detection ──
+// ── Layout ──
 function detectSpread() {
   return window.innerWidth > window.innerHeight && window.innerWidth >= 600;
 }
 
-// ── Load Cover Image ──
 function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    if (!src) { reject('no src'); return; }
+  return new Promise((res,rej) => {
+    if (!src) { rej(''); return; }
     const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject('Failed: ' + src);
+    img.onload = () => res(img);
+    img.onerror = () => rej('');
     img.src = src;
   });
 }
 
-// ── Build Virtual Page List ──
-function buildVirtualPages(frontImg, backImg) {
+function buildVirtualPages(fi, bi) {
   virtualPages = [];
-  if (frontImg) virtualPages.push({ type: 'cover', img: frontImg, label: '表紙' });
-  for (let i = 1; i <= pdfDoc.numPages; i++) virtualPages.push({ type: 'pdf', num: i });
-  if (backImg) virtualPages.push({ type: 'cover', img: backImg, label: '裏表紙' });
+  if (fi) virtualPages.push({type:'cover',img:fi,label:'表紙'});
+  for (let i=1;i<=pdfDoc.numPages;i++) virtualPages.push({type:'pdf',num:i});
+  if (bi) virtualPages.push({type:'cover',img:bi,label:'裏表紙'});
   totalVirtual = virtualPages.length;
 }
 
-// ── Build Spreads (0-based virtual indices) ──
 function buildSpreads() {
   spreads = [];
   if (!totalVirtual) return;
-
-  if (!isSpread) {
-    for (let i = 0; i < totalVirtual; i++) spreads.push([i]);
-    return;
-  }
-
-  // Identify pages that must remain single:
-  // all covers + first PDF page + last PDF page
+  if (!isSpread) { for (let i=0;i<totalVirtual;i++) spreads.push([i]); return; }
   const mustSingle = new Set();
-  let pdfFirst = -1, pdfLast = -1;
-  virtualPages.forEach((v, i) => {
-    if (v.type === 'cover') mustSingle.add(i);
-    if (v.type === 'pdf') {
-      if (pdfFirst < 0) pdfFirst = i;
-      pdfLast = i;
-    }
+  let pf=-1,pl=-1;
+  virtualPages.forEach((v,i) => {
+    if (v.type==='cover') mustSingle.add(i);
+    if (v.type==='pdf') { if(pf<0)pf=i; pl=i; }
   });
-  if (pdfFirst >= 0) mustSingle.add(pdfFirst);
-  if (pdfLast >= 0) mustSingle.add(pdfLast);
-
-  let i = 0;
-  while (i < totalVirtual) {
-    if (mustSingle.has(i)) {
-      spreads.push([i]);
-      i++;
-    } else if (i + 1 < totalVirtual && !mustSingle.has(i + 1)) {
-      spreads.push([i, i + 1]);
-      i += 2;
-    } else {
-      // next page is single — this one goes solo too
-      spreads.push([i]);
-      i++;
-    }
+  if (pf>=0) mustSingle.add(pf);
+  if (pl>=0) mustSingle.add(pl);
+  let i=0;
+  while (i<totalVirtual) {
+    if (mustSingle.has(i)) { spreads.push([i]); i++; }
+    else if (i+1<totalVirtual&&!mustSingle.has(i+1)) { spreads.push([i,i+1]); i+=2; }
+    else { spreads.push([i]); i++; }
   }
 }
 
-// ── Gutter Side ──
-// LTR: odd PDF pages (recto, right-hand) → gutter on LEFT; even (verso) → gutter on RIGHT
-function gutterSide(pdfPageNum) {
-  if (readDir === 'ltr') return (pdfPageNum % 2 === 1) ? 'left' : 'right';
-  else return (pdfPageNum % 2 === 1) ? 'right' : 'left';
+function gutterSide(n) {
+  return readDir==='ltr' ? (n%2===1?'left':'right') : (n%2===1?'right':'left');
 }
 
-// ── Render Cover ──
-function renderCover(img, maxW, maxH) {
-  const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-  const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
-  const pxr = window.devicePixelRatio || 1;
-  const c = document.createElement('canvas');
-  c.width = dw * pxr; c.height = dh * pxr;
-  c.style.width = dw + 'px'; c.style.height = dh + 'px';
-  c.className = 'page-canvas';
-  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+function renderCover(img,mw,mh) {
+  const s=Math.min(mw/img.naturalWidth,mh/img.naturalHeight);
+  const dw=img.naturalWidth*s, dh=img.naturalHeight*s, pr=devicePixelRatio||1;
+  const c=document.createElement('canvas');
+  c.width=dw*pr; c.height=dh*pr;
+  c.style.width=dw+'px'; c.style.height=dh+'px';
+  c.className='page-canvas';
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);
   return c;
 }
 
-// ── Render PDF Page ──
-async function renderPdfPage(num, maxW, maxH) {
-  const page = await pdfDoc.getPage(num);
-  const vp = page.getViewport({ scale: 1 });
-  const fit = Math.min(maxW / vp.width, maxH / vp.height);
-  const pxr = window.devicePixelRatio || 1;
-  const rScale = fit * CONFIG.quality * pxr;
-  const svp = page.getViewport({ scale: rScale });
-  const dvp = page.getViewport({ scale: fit });
-
-  const c = document.createElement('canvas');
-  c.width = svp.width; c.height = svp.height;
-  c.style.width = dvp.width + 'px'; c.style.height = dvp.height + 'px';
-  c.className = 'page-canvas';
-
-  const ctx = c.getContext('2d');
-  await page.render({ canvasContext: ctx, viewport: svp }).promise;
-
-  // Black correction
-  if (CONFIG.blackCorrection > 0) {
-    const imgData = ctx.getImageData(0, 0, c.width, c.height);
-    const d = imgData.data, t = CONFIG.blackCorrection;
-    for (let i = 0, len = d.length; i < len; i += 4) {
-      if (d[i] <= t && d[i+1] <= t && d[i+2] <= t) d[i] = d[i+1] = d[i+2] = 0;
-    }
-    ctx.putImageData(imgData, 0, 0);
+async function renderPdf(num,mw,mh) {
+  const pg=await pdfDoc.getPage(num);
+  const vp=pg.getViewport({scale:1});
+  const fit=Math.min(mw/vp.width,mh/vp.height);
+  const pr=devicePixelRatio||1, rs=fit*CONFIG.quality*pr;
+  const sv=pg.getViewport({scale:rs}), dv=pg.getViewport({scale:fit});
+  const c=document.createElement('canvas');
+  c.width=sv.width; c.height=sv.height;
+  c.style.width=dv.width+'px'; c.style.height=dv.height+'px';
+  c.className='page-canvas';
+  const ctx=c.getContext('2d');
+  await pg.render({canvasContext:ctx,viewport:sv}).promise;
+  if (CONFIG.blackCorrection>0) {
+    const id=ctx.getImageData(0,0,c.width,c.height), d=id.data, t=CONFIG.blackCorrection;
+    for (let i=0,l=d.length;i<l;i+=4) { if(d[i]<=t&&d[i+1]<=t&&d[i+2]<=t) d[i]=d[i+1]=d[i+2]=0; }
+    ctx.putImageData(id,0,0);
   }
-
-  // Gutter trim (always applied when enabled)
   if (CONFIG.gutterCorrection) {
-    const cropMm = CONFIG.gutterMargin - CONFIG.foreEdgeMargin;
-    if (cropMm > 0) {
-      const cropPx = Math.round(cropMm * MM_TO_PT * rScale);
-      const side = gutterSide(num);
-      const trimmed = document.createElement('canvas');
-      const nw = c.width - cropPx;
-      trimmed.width = nw; trimmed.height = c.height;
-      const sx = (side === 'left') ? cropPx : 0;
-      trimmed.getContext('2d').drawImage(c, sx, 0, nw, c.height, 0, 0, nw, c.height);
-      const displayCrop = Math.round(cropMm * MM_TO_PT * fit);
-      trimmed.style.width = (dvp.width - displayCrop) + 'px';
-      trimmed.style.height = dvp.height + 'px';
-      trimmed.className = 'page-canvas';
-      return trimmed;
+    const cm=CONFIG.gutterMargin-CONFIG.foreEdgeMargin;
+    if (cm>0) {
+      const cp=Math.round(cm*MM_TO_PT*rs), side=gutterSide(num);
+      const tr=document.createElement('canvas'), nw=c.width-cp;
+      tr.width=nw; tr.height=c.height;
+      tr.getContext('2d').drawImage(c,side==='left'?cp:0,0,nw,c.height,0,0,nw,c.height);
+      const dc=Math.round(cm*MM_TO_PT*fit);
+      tr.style.width=(dv.width-dc)+'px'; tr.style.height=dv.height+'px';
+      tr.className='page-canvas'; return tr;
     }
   }
   return c;
 }
 
-// ── Unified Render ──
-async function renderVPage(vIdx, maxW, maxH) {
-  const key = `${vIdx}:${Math.round(maxW)}:${Math.round(maxH)}:${readDir}`;
-  if (pageCache.has(key)) return pageCache.get(key);
-  const vp = virtualPages[vIdx];
-  const canvas = vp.type === 'cover'
-    ? renderCover(vp.img, maxW, maxH)
-    : await renderPdfPage(vp.num, maxW, maxH);
-  pageCache.set(key, canvas);
-  return canvas;
+async function renderVP(vi,mw,mh) {
+  const k=`${vi}:${Math.round(mw)}:${Math.round(mh)}:${readDir}`;
+  if (pageCache.has(k)) return pageCache.get(k);
+  const v=virtualPages[vi];
+  const cv = v.type==='cover' ? renderCover(v.img,mw,mh) : await renderPdf(v.num,mw,mh);
+  pageCache.set(k,cv); return cv;
 }
 
-function cloneCanvas(src) {
-  const c = document.createElement('canvas');
-  c.width = src.width; c.height = src.height;
-  c.style.width = src.style.width; c.style.height = src.style.height;
-  c.className = 'page-canvas page-entering';
-  c.getContext('2d').drawImage(src, 0, 0);
+function cloneCanvas(s) {
+  const c=document.createElement('canvas');
+  c.width=s.width; c.height=s.height;
+  c.style.width=s.style.width; c.style.height=s.style.height;
+  c.className='page-canvas';
+  c.getContext('2d').drawImage(s,0,0);
   return c;
 }
 
-// ── Display ──
+// ── Slide Animation (single-page portrait only) ──
+async function displayWithSlide(dir) {
+  if (!spreads.length) return;
+  const sp = spreads[currentIdx];
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const mw = isSpread ? Math.min(vw*0.48,vh*0.75) : vw;
+  const src = await renderVP(sp[0], mw, vh);
+  const node = cloneCanvas(src);
+
+  // Set up slide: start offscreen in 'dir' direction, slide to center
+  $spread.classList.remove('sliding');
+  $spread.style.transform = `translateX(${dir * vw}px)`;
+  $spread.innerHTML = '';
+  $spread.appendChild(node);
+
+  // Force reflow, then animate
+  void $spread.offsetWidth;
+  $spread.classList.add('sliding');
+  $spread.style.transform = 'translateX(0)';
+
+  updateIndicator(sp);
+  $progress.style.width = ((currentIdx+1)/spreads.length*100)+'%';
+  saveBookmark();
+  updateSeekBar();
+  if (currentIdx === 0) triggerCoverHint();
+  preload();
+}
+
+// ── Display (no slide) ──
 async function display() {
   if (!spreads.length) return;
   const sp = spreads[currentIdx];
   const vw = window.innerWidth, vh = window.innerHeight;
 
-  let mw, mh = vh;
-  if (sp.length === 2) mw = (vw / 2) - 1;
-  else mw = isSpread ? Math.min(vw * 0.48, vh * 0.75) : vw;
+  let mw, mh=vh;
+  if (sp.length===2) mw=(vw/2)-1;
+  else mw = isSpread ? Math.min(vw*0.48,vh*0.75) : vw;
 
-  const nodes = [];
-  for (const vi of sp) {
-    const src = await renderVPage(vi, mw, mh);
-    nodes.push(cloneCanvas(src));
-  }
+  const nodes=[];
+  for (const vi of sp) { const s=await renderVP(vi,mw,mh); nodes.push(cloneCanvas(s)); }
 
-  $spread.innerHTML = '';
-  if (sp.length === 2) {
-    if (readDir === 'rtl') { $spread.appendChild(nodes[1]); $spread.appendChild(nodes[0]); }
+  $spread.classList.remove('sliding');
+  $spread.style.transform = '';
+  $spread.innerHTML='';
+  if (sp.length===2) {
+    if (readDir==='rtl') { $spread.appendChild(nodes[1]); $spread.appendChild(nodes[0]); }
     else { $spread.appendChild(nodes[0]); $spread.appendChild(nodes[1]); }
-    const spine = document.createElement('div');
-    spine.className = 'spine-shadow';
+    const spine=document.createElement('div'); spine.className='spine-shadow';
     $spread.appendChild(spine);
   } else {
     $spread.appendChild(nodes[0]);
   }
 
   updateIndicator(sp);
-  $progress.style.width = ((currentIdx + 1) / spreads.length * 100) + '%';
+  $progress.style.width = ((currentIdx+1)/spreads.length*100)+'%';
   saveBookmark();
-  resetHintTimer();
+  updateSeekBar();
+  if (currentIdx === 0) triggerCoverHint();
   preload();
 }
 
 function updateIndicator(sp) {
   const labels = sp.map(i => {
-    const v = virtualPages[i];
-    return v.type === 'cover' ? v.label : '' + v.num;
+    const v=virtualPages[i]; return v.type==='cover' ? v.label : ''+v.num;
   });
   let txt;
-  if (sp.length === 2) {
-    txt = readDir === 'rtl'
-      ? `${labels[1]}–${labels[0]} / ${totalVirtual}`
-      : `${labels[0]}–${labels[1]} / ${totalVirtual}`;
-  } else {
-    txt = `${labels[0]} / ${totalVirtual}`;
-  }
-  $indicator.textContent = txt;
+  if (sp.length===2) {
+    txt = readDir==='rtl' ? `${labels[1]}–${labels[0]} / ${totalVirtual}`
+                          : `${labels[0]}–${labels[1]} / ${totalVirtual}`;
+  } else { txt = `${labels[0]} / ${totalVirtual}`; }
+  $indicator.textContent=txt;
   $indicator.classList.add('show');
   clearTimeout(indicatorTimer);
-  indicatorTimer = setTimeout(() => $indicator.classList.remove('show'), 2200);
+  indicatorTimer=setTimeout(()=>$indicator.classList.remove('show'),2200);
 }
 
 async function preload() {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  for (const di of [-1, 1]) {
-    const idx = currentIdx + di;
-    if (idx < 0 || idx >= spreads.length) continue;
-    const sp = spreads[idx];
-    const mw = sp.length === 2 ? (vw/2)-1 : (isSpread ? Math.min(vw*0.48, vh*0.75) : vw);
-    for (const vi of sp) renderVPage(vi, mw, vh).catch(() => {});
+  const vw=window.innerWidth, vh=window.innerHeight;
+  for (const di of [-1,1]) {
+    const idx=currentIdx+di;
+    if (idx<0||idx>=spreads.length) continue;
+    const sp=spreads[idx];
+    const mw = sp.length===2?(vw/2)-1:(isSpread?Math.min(vw*0.48,vh*0.75):vw);
+    for (const vi of sp) renderVP(vi,mw,vh).catch(()=>{});
   }
 }
 
 // ── Navigation ──
-function next() {
-  if (navigating || currentIdx >= spreads.length - 1) return;
-  navigating = true; currentIdx++;
-  display().then(() => navigating = false);
-}
-function prev() {
-  if (navigating || currentIdx <= 0) return;
-  navigating = true; currentIdx--;
-  display().then(() => navigating = false);
-}
-function forward() { next(); }
-function backward() { prev(); }
+function doNav(dir) {
+  // dir: 1=forward, -1=backward
+  const target = currentIdx + dir;
+  if (navigating || target < 0 || target >= spreads.length) return;
+  navigating = true;
+  currentIdx = target;
 
-$navL.addEventListener('click', e => { e.preventDefault(); readDir === 'rtl' ? forward() : backward(); });
-$navR.addEventListener('click', e => { e.preventDefault(); readDir === 'rtl' ? backward() : forward(); });
+  // Slide in single-page mode; instant in spread mode
+  const useSingle = !isSpread;
+  if (useSingle) {
+    // Slide direction: forward in LTR = slide from right (+1), backward = from left (-1)
+    const slideFrom = (readDir==='ltr') ? dir : -dir;
+    displayWithSlide(slideFrom).then(() => { navigating=false; });
+  } else {
+    display().then(() => { navigating=false; });
+  }
+}
+function forward() { doNav(1); }
+function backward() { doNav(-1); }
+
+$navL.addEventListener('click', e => { e.preventDefault(); readDir==='rtl'?forward():backward(); });
+$navR.addEventListener('click', e => { e.preventDefault(); readDir==='rtl'?backward():forward(); });
 $navC.addEventListener('click', e => { e.preventDefault(); updateIndicator(spreads[currentIdx]); });
 
 document.addEventListener('keydown', e => {
-  const k = e.key;
-  if (k==='ArrowLeft') { e.preventDefault(); readDir==='rtl' ? forward() : backward(); }
-  else if (k==='ArrowRight') { e.preventDefault(); readDir==='rtl' ? backward() : forward(); }
+  const k=e.key;
+  if (k==='ArrowLeft') { e.preventDefault(); readDir==='rtl'?forward():backward(); }
+  else if (k==='ArrowRight') { e.preventDefault(); readDir==='rtl'?backward():forward(); }
   else if (k==='ArrowDown'||k==='PageDown'||k===' ') { e.preventDefault(); forward(); }
   else if (k==='ArrowUp'||k==='PageUp') { e.preventDefault(); backward(); }
   else if (k==='Home') { e.preventDefault(); currentIdx=0; display(); }
@@ -578,158 +587,156 @@ document.addEventListener('keydown', e => {
 let tx0=0,ty0=0,tt0=0;
 document.addEventListener('touchstart', e => {
   tx0=e.touches[0].clientX; ty0=e.touches[0].clientY; tt0=Date.now();
-}, {passive:true});
+},{passive:true});
 document.addEventListener('touchend', e => {
+  if (seekOpen) return; // don't nav while seek bar open
   const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
   if (Date.now()-tt0>400||Math.abs(dx)<45||Math.abs(dy)>Math.abs(dx)*0.6) return;
   dx<0 ? forward() : backward();
-}, {passive:true});
+},{passive:true});
 
 let lastTE=0;
 document.addEventListener('touchend', e => {
-  const now=Date.now(); if (now-lastTE<=300) e.preventDefault(); lastTE=now;
-}, false);
+  const now=Date.now(); if(now-lastTE<=300) e.preventDefault(); lastTE=now;
+},false);
+
+// ── Seek Bar ──
+function updateSeekBar() {
+  $seekRange.max = spreads.length - 1;
+  $seekRange.value = currentIdx;
+  $seekCur.textContent = currentIdx + 1;
+  $seekTotal.textContent = spreads.length;
+}
+
+$seekBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  seekOpen = !seekOpen;
+  $seekBar.classList.toggle('show', seekOpen);
+  if (seekOpen) updateSeekBar();
+});
+
+$seekRange.addEventListener('input', () => {
+  const idx = parseInt($seekRange.value, 10);
+  $seekCur.textContent = idx + 1;
+  currentIdx = idx;
+  display();
+});
+
+// Close seek bar on tap outside
+document.addEventListener('click', e => {
+  if (seekOpen && !$seekBar.contains(e.target) && e.target !== $seekBtn && !$seekBtn.contains(e.target)) {
+    seekOpen = false;
+    $seekBar.classList.remove('show');
+  }
+});
 
 // ── Resize ──
-let resizeT=null;
-let pendingFullscreen = false;
-
+let resizeT=null, pendingFs=false;
 function requestFs() {
-  const el = document.documentElement;
-  const rq = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-  if (rq) rq.call(el).catch(() => {});
+  const el=document.documentElement;
+  const rq=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+  if(rq) rq.call(el).catch(()=>{});
 }
 function exitFs() {
-  const ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
-  if (ex && (document.fullscreenElement || document.webkitFullscreenElement)) {
-    ex.call(document).catch(() => {});
-  }
+  const ex=document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen;
+  if(ex&&(document.fullscreenElement||document.webkitFullscreenElement)) ex.call(document).catch(()=>{});
 }
-function isFullscreen() {
-  return !!(document.fullscreenElement || document.webkitFullscreenElement);
-}
+function isFsNow() { return !!(document.fullscreenElement||document.webkitFullscreenElement); }
 
 function onResize() {
   clearTimeout(resizeT);
-  resizeT = setTimeout(() => {
-    const was = isSpread;
-    isSpread = detectSpread();
+  resizeT=setTimeout(() => {
+    const was=isSpread;
+    isSpread=detectSpread();
     pageCache.clear();
-
-    // Request fullscreen when entering landscape (needs user gesture)
-    if (isSpread && !was && !isFullscreen()) {
-      pendingFullscreen = true;
-    }
-    // Exit fullscreen when returning to portrait
-    if (!isSpread && was && isFullscreen()) {
-      exitFs();
-    }
-
-    if (was !== isSpread) {
-      const fv = spreads[currentIdx] ? spreads[currentIdx][0] : 0;
+    if(isSpread&&!was&&!isFsNow()) pendingFs=true;
+    if(!isSpread&&was&&isFsNow()) exitFs();
+    if(was!==isSpread) {
+      const fv=spreads[currentIdx]?spreads[currentIdx][0]:0;
       buildSpreads();
-      currentIdx = spreads.findIndex(s => s.includes(fv));
-      if (currentIdx < 0) currentIdx = 0;
+      currentIdx=spreads.findIndex(s=>s.includes(fv));
+      if(currentIdx<0) currentIdx=0;
     }
     display();
-  }, 180);
+  },180);
 }
-
-// Fulfill pending fullscreen on next user gesture
-document.addEventListener('click', () => {
-  if (pendingFullscreen) { pendingFullscreen = false; requestFs(); }
-}, { capture: true });
-document.addEventListener('touchend', () => {
-  if (pendingFullscreen) { pendingFullscreen = false; requestFs(); }
-}, { capture: true, passive: true });
-
+document.addEventListener('click',()=>{ if(pendingFs){pendingFs=false;requestFs();} },{capture:true});
+document.addEventListener('touchend',()=>{ if(pendingFs){pendingFs=false;requestFs();} },{capture:true,passive:true});
 window.addEventListener('resize', onResize);
-window.addEventListener('orientationchange', () => setTimeout(onResize, 250));
+window.addEventListener('orientationchange',()=>setTimeout(onResize,250));
 
 // ── Settings ──
 $setBtn.addEventListener('click', e => {
   e.stopPropagation();
-  settingsOpen = !settingsOpen;
-  $setPanel.classList.toggle('show', settingsOpen);
+  settingsOpen=!settingsOpen;
+  $setPanel.classList.toggle('show',settingsOpen);
 });
 
 let setBtnT=null;
-function flashSettings() {
+function flashUI() {
   $setBtn.classList.add('visible');
+  $seekBtn.classList.add('visible');
   clearTimeout(setBtnT);
-  setBtnT = setTimeout(() => { if (!settingsOpen) $setBtn.classList.remove('visible'); }, 2500);
+  setBtnT=setTimeout(()=>{
+    if(!settingsOpen) $setBtn.classList.remove('visible');
+    if(!seekOpen) $seekBtn.classList.remove('visible');
+  },2500);
 }
-// Hide hint on user interaction, but don't reset the timer
 function onUserInteraction() {
-  if (hintVisible) { $hint.classList.remove('show'); hintVisible = false; }
+  if(hintVisible){$hint.classList.remove('show');hintVisible=false;}
 }
-document.addEventListener('mousemove', () => { flashSettings(); onUserInteraction(); });
-document.addEventListener('touchstart', () => { flashSettings(); onUserInteraction(); }, {passive:true});
+document.addEventListener('mousemove',()=>{flashUI();onUserInteraction();});
+document.addEventListener('touchstart',()=>{flashUI();onUserInteraction();},{passive:true});
 
-document.querySelectorAll('#bg-toggle button').forEach(b => {
-  b.addEventListener('click', () => {
-    bgColor = b.dataset.value;
-    document.querySelectorAll('#bg-toggle button').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    applyTheme();
+document.querySelectorAll('#bg-toggle button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    bgColor=b.dataset.value;
+    document.querySelectorAll('#bg-toggle button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); applyTheme();
   });
 });
-document.querySelectorAll('#dir-toggle button').forEach(b => {
-  b.addEventListener('click', () => {
-    readDir = b.dataset.value;
-    document.querySelectorAll('#dir-toggle button').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    pageCache.clear();
-    updateHintPosition();
-    display();
+document.querySelectorAll('#dir-toggle button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    readDir=b.dataset.value;
+    document.querySelectorAll('#dir-toggle button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); pageCache.clear(); updateHintDirection(); display();
   });
 });
-
-document.addEventListener('click', e => {
-  if (settingsOpen && !$setPanel.contains(e.target) && e.target !== $setBtn) {
-    settingsOpen = false; $setPanel.classList.remove('show');
+document.addEventListener('click',e=>{
+  if(settingsOpen&&!$setPanel.contains(e.target)&&e.target!==$setBtn){
+    settingsOpen=false;$setPanel.classList.remove('show');
   }
 });
 
 // ── Init ──
 function initSettingsUI() {
-  document.querySelectorAll('#bg-toggle button').forEach(b =>
-    b.classList.toggle('active', b.dataset.value === bgColor));
-  document.querySelectorAll('#dir-toggle button').forEach(b =>
-    b.classList.toggle('active', b.dataset.value === readDir));
+  document.querySelectorAll('#bg-toggle button').forEach(b=>
+    b.classList.toggle('active',b.dataset.value===bgColor));
+  document.querySelectorAll('#dir-toggle button').forEach(b=>
+    b.classList.toggle('active',b.dataset.value===readDir));
 }
 
 async function init() {
-  applyTheme(); initSettingsUI(); updateHintPosition();
-
+  applyTheme(); initSettingsUI(); updateHintDirection();
   try {
-    let frontImg = null, backImg = null;
-    const covers = [];
-    if (CONFIG.frontCover) covers.push(loadImage(CONFIG.frontCover).then(i=>{frontImg=i}).catch(()=>{}));
-    if (CONFIG.backCover) covers.push(loadImage(CONFIG.backCover).then(i=>{backImg=i}).catch(()=>{}));
-
-    const [pdf] = await Promise.all([
-      pdfjsLib.getDocument(CONFIG.pdfPath).promise,
-      ...covers
-    ]);
-    pdfDoc = pdf;
-
-    buildVirtualPages(frontImg, backImg);
-    isSpread = detectSpread();
+    let fi=null,bi=null;
+    const cv=[];
+    if(CONFIG.frontCover) cv.push(loadImage(CONFIG.frontCover).then(i=>{fi=i}).catch(()=>{}));
+    if(CONFIG.backCover) cv.push(loadImage(CONFIG.backCover).then(i=>{bi=i}).catch(()=>{}));
+    const [pdf]=await Promise.all([pdfjsLib.getDocument(CONFIG.pdfPath).promise,...cv]);
+    pdfDoc=pdf;
+    buildVirtualPages(fi,bi);
+    isSpread=detectSpread();
     buildSpreads();
-    currentIdx = 0;
+    currentIdx=0;
     restoreBookmark();
-
     $loading.classList.add('hidden');
     $viewer.classList.add('visible');
     await display();
-  } catch (err) {
+  } catch(err) {
     console.error(err);
     $loading.classList.add('hidden');
-    $errMsg.textContent =
-      'PDFの読み込みに失敗しました。\n' +
-      'HTMLと同じディレクトリにファイルが配置されているか確認してください。\n\n' +
-      '詳細: ' + err.message;
+    $errMsg.textContent='PDFの読み込みに失敗しました。\nHTMLと同じディレクトリにファイルが配置されているか確認してください。\n\n詳細: '+err.message;
     $error.classList.add('show');
   }
 }
