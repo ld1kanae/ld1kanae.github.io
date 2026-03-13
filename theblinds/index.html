@@ -6,25 +6,19 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>The Blinds</title>
-
-<!-- Favicon -->
 <link rel="icon" type="image/png" href="cover-front.png">
 <link rel="apple-touch-icon" href="cover-front.png">
-
-<!-- OGP -->
 <meta property="og:title" content="The Blinds">
 <meta property="og:image" content="https://ld1kanae.github.io/theblinds/cover-front.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ld1kanae.github.io/theblinds/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://ld1kanae.github.io/theblinds/cover-front.png">
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{
     width:100%;height:100%;overflow:hidden;
-    touch-action:pan-y;
     -webkit-tap-highlight-color:transparent;
     user-select:none;-webkit-user-select:none;
   }
@@ -34,200 +28,161 @@
     transition:background-color 0.5s ease;
   }
 
-  /* --- Loading --- */
   #loading-overlay{
     position:fixed;inset:0;display:flex;flex-direction:column;
     align-items:center;justify-content:center;z-index:1000;
     transition:opacity 0.8s ease;
   }
   #loading-overlay.hidden{opacity:0;pointer-events:none}
-  .loader{
-    width:28px;height:28px;
-    border:1.5px solid rgba(128,128,128,0.15);
-    border-top-color:rgba(128,128,128,0.6);
-    border-radius:50%;animation:spin 0.7s linear infinite;
-  }
+  .loader{width:28px;height:28px;border:1.5px solid rgba(128,128,128,0.15);
+    border-top-color:rgba(128,128,128,0.6);border-radius:50%;animation:spin 0.7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text{margin-top:14px;font-size:11px;letter-spacing:0.08em;opacity:0.4}
 
-  /* --- Error --- */
-  #error-screen{
-    position:fixed;inset:0;display:none;flex-direction:column;
-    align-items:center;justify-content:center;z-index:999;padding:32px;text-align:center;
-  }
+  #error-screen{position:fixed;inset:0;display:none;flex-direction:column;
+    align-items:center;justify-content:center;z-index:999;padding:32px;text-align:center}
   #error-screen.show{display:flex}
   #error-screen h2{font-size:16px;margin-bottom:10px;opacity:0.7;font-weight:500}
   #error-screen p{font-size:12px;opacity:0.4;max-width:420px;line-height:1.8;white-space:pre-line}
 
-  /* --- Viewer --- */
-  #viewer{
-    display:flex;align-items:center;justify-content:center;
+  /* ── Spread mode viewer (landscape) ── */
+  #viewer-spread{
+    display:none;align-items:center;justify-content:center;
     width:100%;height:100%;position:relative;
     opacity:0;transition:opacity 0.8s ease 0.1s;
-    overflow:hidden;
   }
-  #viewer.visible{opacity:1}
-
-  /* --- Spread Container --- */
-  #spread-container{
-    display:flex;align-items:center;justify-content:center;
-    gap:0;max-width:100%;max-height:100%;position:relative;
-  }
-
-  /* --- Page Canvas --- */
-  .page-canvas{display:block;max-height:100vh;object-fit:contain}
-
-  /* --- Spine Shadow --- */
-  .spine-shadow{
-    position:absolute;top:0;bottom:0;
-    width:24px;left:50%;transform:translateX(-50%);
+  #viewer-spread.visible{opacity:1}
+  #viewer-spread.active{display:flex}
+  #spread-container{display:flex;align-items:center;justify-content:center;
+    gap:0;max-width:100%;max-height:100%;position:relative}
+  .spine-shadow{position:absolute;top:0;bottom:0;width:24px;left:50%;transform:translateX(-50%);
     pointer-events:none;z-index:5;
-    background:linear-gradient(to right,
-      transparent 0%, rgba(0,0,0,0.06) 30%, rgba(0,0,0,0.12) 48%,
-      rgba(0,0,0,0.12) 52%, rgba(0,0,0,0.06) 70%, transparent 100%);
-  }
-
-  /* --- Navigation Zones --- */
+    background:linear-gradient(to right,transparent 0%,rgba(0,0,0,0.06) 30%,
+    rgba(0,0,0,0.12) 48%,rgba(0,0,0,0.12) 52%,rgba(0,0,0,0.06) 70%,transparent 100%)}
   .nav-zone{position:absolute;top:0;height:100%;cursor:pointer;z-index:10}
   .nav-zone-left{left:0;width:35%}
   .nav-zone-right{right:0;width:35%}
   .nav-zone-center{left:35%;width:30%;height:100%;position:absolute;top:0;cursor:default;z-index:10}
 
-  /* --- Page Indicator --- */
+  /* ── Scroll mode viewer (portrait) ── */
+  #viewer-scroll{
+    display:none;width:100%;height:100%;
+    overflow-x:auto;overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    opacity:0;transition:opacity 0.8s ease 0.1s;
+  }
+  #viewer-scroll.visible{opacity:1}
+  #viewer-scroll.active{display:flex}
+  /* Hide scrollbar */
+  #viewer-scroll{scrollbar-width:none;-ms-overflow-style:none}
+  #viewer-scroll::-webkit-scrollbar{display:none}
+
+  #scroll-track{
+    display:flex;align-items:center;
+    height:100%;flex-shrink:0;
+  }
+  .scroll-page{
+    flex:0 0 100vw;
+    width:100vw;height:100%;
+    scroll-snap-align:center;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .page-canvas{display:block;max-height:100vh;object-fit:contain}
+
+  /* ── Page Indicator ── */
   #page-indicator{
-    position:fixed;bottom:max(16px, env(safe-area-inset-bottom, 16px));
+    position:fixed;bottom:max(16px,env(safe-area-inset-bottom,16px));
     left:50%;transform:translateX(-50%);
-    font-size:10px;letter-spacing:0.12em;
-    opacity:0;transition:opacity 0.4s ease;
-    pointer-events:none;z-index:50;
-    padding:5px 14px;border-radius:20px;
+    font-size:10px;letter-spacing:0.12em;opacity:0;transition:opacity 0.4s ease;
+    pointer-events:none;z-index:50;padding:5px 14px;border-radius:20px;
     font-variant-numeric:tabular-nums;
   }
   #page-indicator.show{opacity:0.55}
 
-  /* --- Progress Bar --- */
-  #progress-bar{
-    position:fixed;bottom:0;left:0;height:1.5px;
-    transition:width 0.35s ease;z-index:50;opacity:0.25;
-  }
+  #progress-bar{position:fixed;bottom:0;left:0;height:1.5px;
+    transition:width 0.35s ease;z-index:50;opacity:0.25}
 
-  /* --- Navigation Hint Arrow (cover only) --- */
-  #nav-hint{
-    position:fixed;
-    bottom:max(54px, calc(env(safe-area-inset-bottom, 12px) + 42px));
+  /* ── Hint (cover only) ── */
+  #nav-hint{position:fixed;
+    bottom:max(54px,calc(env(safe-area-inset-bottom,12px)+42px));
     left:50%;transform:translateX(-50%);
-    pointer-events:none;z-index:40;
-    opacity:0;
-    transition:opacity 1.2s ease;
-  }
+    pointer-events:none;z-index:40;opacity:0;transition:opacity 1.2s ease}
   #nav-hint.show{opacity:1}
-  #nav-hint svg{
-    width:36px;height:36px;
-    stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;
-  }
+  #nav-hint svg{width:36px;height:36px;stroke-width:2;stroke-linecap:round;
+    stroke-linejoin:round;fill:none}
 
-  /* --- Seek Bar --- */
-  #seek-btn{
-    position:fixed;
-    bottom:max(12px, env(safe-area-inset-bottom, 12px));
-    right:12px;
+  /* ── Seek Bar ── */
+  #seek-btn{position:fixed;bottom:max(12px,env(safe-area-inset-bottom,12px));right:12px;
     width:36px;height:36px;border:none;border-radius:50%;
-    background:rgba(128,128,128,0.15);
-    color:inherit;cursor:pointer;z-index:80;
+    background:rgba(128,128,128,0.15);color:inherit;cursor:pointer;z-index:80;
     display:flex;align-items:center;justify-content:center;
-    opacity:0;transition:opacity 0.3s ease;
-  }
+    opacity:0;transition:opacity 0.3s ease}
   #seek-btn:hover,#seek-btn.visible{opacity:0.7}
   #seek-btn svg{width:18px;height:18px;stroke-width:2;stroke-linecap:round;fill:none}
 
-  #seek-bar{
-    position:fixed;bottom:0;left:0;right:0;
-    z-index:70;display:none;
-    padding:10px 16px max(12px, env(safe-area-inset-bottom, 12px)) 16px;
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  }
+  #seek-bar{position:fixed;bottom:0;left:0;right:0;z-index:70;display:none;
+    padding:10px 16px max(12px,env(safe-area-inset-bottom,12px)) 16px;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   #seek-bar.show{display:flex;align-items:center;gap:10px}
-  #seek-bar .seek-label{
-    font-size:10px;min-width:32px;text-align:center;
-    font-variant-numeric:tabular-nums;opacity:0.6;
-  }
-  #seek-bar input[type=range]{
-    flex:1;height:3px;-webkit-appearance:none;appearance:none;
-    background:rgba(128,128,128,0.3);border-radius:2px;outline:none;
-    cursor:pointer;
-  }
-  #seek-bar input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:16px;height:16px;
-    border-radius:50%;background:rgb(160,160,160);
-    cursor:pointer;
-  }
-  #seek-bar input[type=range]::-moz-range-thumb{
-    width:16px;height:16px;border:none;
-    border-radius:50%;background:rgb(160,160,160);
-    cursor:pointer;
-  }
+  .seek-label{font-size:10px;min-width:32px;text-align:center;
+    font-variant-numeric:tabular-nums;opacity:0.6}
+  #seek-bar input[type=range]{flex:1;height:3px;-webkit-appearance:none;appearance:none;
+    background:rgba(128,128,128,0.3);border-radius:2px;outline:none;cursor:pointer}
+  #seek-bar input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+    border-radius:50%;background:rgb(160,160,160);cursor:pointer}
+  #seek-bar input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;
+    border-radius:50%;background:rgb(160,160,160);cursor:pointer}
 
-  /* --- Settings --- */
-  #settings-btn{
-    position:fixed;top:max(10px, env(safe-area-inset-top, 10px));right:10px;
+  /* ── Settings ── */
+  #settings-btn{position:fixed;top:max(10px,env(safe-area-inset-top,10px));right:10px;
     width:32px;height:32px;border:none;border-radius:50%;
-    background:rgba(128,128,128,0.1);color:inherit;
-    font-size:14px;cursor:pointer;z-index:100;opacity:0;
-    transition:opacity 0.3s ease;
-    display:flex;align-items:center;justify-content:center;
-  }
+    background:rgba(128,128,128,0.1);color:inherit;font-size:14px;
+    cursor:pointer;z-index:100;opacity:0;transition:opacity 0.3s ease;
+    display:flex;align-items:center;justify-content:center}
   #settings-btn:hover,#settings-btn.visible{opacity:0.6}
-
-  #settings-panel{
-    position:fixed;top:52px;right:10px;
-    padding:16px 18px;border-radius:10px;
+  #settings-panel{position:fixed;top:52px;right:10px;padding:16px 18px;border-radius:10px;
     z-index:100;display:none;min-width:200px;font-size:12px;
     box-shadow:0 6px 24px rgba(0,0,0,0.15);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  }
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   #settings-panel.show{display:block}
-
   .setting-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
   .setting-row:last-child{margin-bottom:0}
   .setting-label{opacity:0.6;font-size:11px}
   .setting-toggle{display:flex;gap:0;border-radius:5px;overflow:hidden;border:1px solid rgba(128,128,128,0.25)}
-  .setting-toggle button{
-    padding:3px 9px;border:none;background:transparent;
-    color:inherit;font-size:10px;cursor:pointer;opacity:0.35;transition:all 0.2s;
-  }
+  .setting-toggle button{padding:3px 9px;border:none;background:transparent;
+    color:inherit;font-size:10px;cursor:pointer;opacity:0.35;transition:all 0.2s}
   .setting-toggle button.active{opacity:0.9;background:rgba(128,128,128,0.18)}
 </style>
 </head>
 <body>
 
-<div id="loading-overlay">
-  <div class="loader"></div>
-  <div class="loading-text">読み込み中…</div>
-</div>
+<div id="loading-overlay"><div class="loader"></div><div class="loading-text">読み込み中…</div></div>
+<div id="error-screen"><h2>読み込みに失敗しました</h2><p id="error-message"></p></div>
 
-<div id="error-screen">
-  <h2>読み込みに失敗しました</h2>
-  <p id="error-message"></p>
-</div>
-
-<div id="viewer">
+<!-- Spread mode (landscape) -->
+<div id="viewer-spread">
   <div id="spread-container"></div>
   <div class="nav-zone nav-zone-left" id="nav-left"></div>
   <div class="nav-zone nav-zone-center" id="nav-center"></div>
   <div class="nav-zone nav-zone-right" id="nav-right"></div>
 </div>
 
+<!-- Scroll mode (portrait) -->
+<div id="viewer-scroll">
+  <div id="scroll-track"></div>
+</div>
+
 <div id="page-indicator"></div>
 <div id="progress-bar"></div>
 
-<!-- Navigation Hint Arrow (cover only) -->
 <div id="nav-hint">
   <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
     <polyline id="nav-hint-arrow" points="10,6 18,14 10,22"/>
   </svg>
 </div>
 
-<!-- Seek Bar Toggle -->
 <button id="seek-btn">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
     <line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2.5" fill="currentColor" stroke="none"/>
@@ -235,8 +190,6 @@
     <line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2.5" fill="currentColor" stroke="none"/>
   </svg>
 </button>
-
-<!-- Seek Bar -->
 <div id="seek-bar">
   <span class="seek-label" id="seek-cur">1</span>
   <input type="range" id="seek-range" min="0" max="1" value="0" step="1">
@@ -245,534 +198,432 @@
 
 <button id="settings-btn">⚙</button>
 <div id="settings-panel">
-  <div class="setting-row">
-    <span class="setting-label">背景</span>
+  <div class="setting-row"><span class="setting-label">背景</span>
     <div class="setting-toggle" id="bg-toggle">
       <button data-value="black" class="active">黒</button>
-      <button data-value="white">白</button>
-    </div>
-  </div>
-  <div class="setting-row">
-    <span class="setting-label">開き</span>
+      <button data-value="white">白</button></div></div>
+  <div class="setting-row"><span class="setting-label">開き</span>
     <div class="setting-toggle" id="dir-toggle">
       <button data-value="rtl">右開き</button>
-      <button data-value="ltr" class="active">左開き</button>
-    </div>
-  </div>
+      <button data-value="ltr" class="active">左開き</button></div></div>
 </div>
 
 <script>
-/* ================================================================
-   ★ 設定
-   ================================================================ */
 const CONFIG = {
-  pdfPath: 'book.pdf',
-  frontCover: 'cover-front.png',
-  backCover:  'cover-back.png',
-  backgroundColor: 'black',
-  readingDirection: 'ltr',
-  quality: 1.5,
-  blackCorrection: 40,
-  gutterCorrection: true,
-  gutterMargin: 16.75,
-  foreEdgeMargin: 12,
+  pdfPath:'book.pdf',
+  frontCover:'cover-front.png', backCover:'cover-back.png',
+  backgroundColor:'black', readingDirection:'ltr',
+  quality:1.5, blackCorrection:40,
+  gutterCorrection:true, gutterMargin:16.75, foreEdgeMargin:12,
 };
-/* ================================================================ */
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
+pdfjsLib.GlobalWorkerOptions.workerSrc=
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const MM_TO_PT = 72 / 25.4;
-const BOOKMARK_KEY = 'bookviewer_pos_' + CONFIG.pdfPath;
+const MM_TO_PT=72/25.4;
+const BK='bookviewer_pos_'+CONFIG.pdfPath;
+function saveBM(){try{localStorage.setItem(BK,''+currentIdx)}catch(e){}}
+function restoreBM(){try{const v=parseInt(localStorage.getItem(BK),10);if(v>0&&v<spreads.length)currentIdx=v;}catch(e){}}
 
-function saveBookmark() {
-  try { localStorage.setItem(BOOKMARK_KEY, '' + (spreads[currentIdx]?spreads[currentIdx][0]:0)); } catch(e){}
-}
-function restoreBookmark() {
-  try {
-    const v = parseInt(localStorage.getItem(BOOKMARK_KEY),10);
-    if (!v || v <= 0) return;
-    const idx = spreads.findIndex(s => s.includes(v));
-    if (idx > 0) currentIdx = idx;
-  } catch(e){}
-}
+let pdfDoc=null, virtualPages=[], totalV=0;
+let spreads=[], currentIdx=0;
+let isSpread=false, pageCache=new Map();
+let bgColor=CONFIG.backgroundColor, readDir=CONFIG.readingDirection;
+let indicatorTimer=null, settingsOpen=false, navigating=false;
+let hintTimer=null, hintVisible=false, seekOpen=false;
+let scrollTrackBuilt=false, scrollSyncing=false;
 
-// ── State ──
-let pdfDoc = null;
-let virtualPages = [], totalVirtual = 0;
-let spreads = [], currentIdx = 0;
-let isSpread = false, pageCache = new Map();
-let bgColor = CONFIG.backgroundColor, readDir = CONFIG.readingDirection;
-let indicatorTimer = null, settingsOpen = false, navigating = false;
-let hintTimer = null, hintVisible = false;
-let seekOpen = false, slideDir = 0; // -1=left, 1=right, 0=none
-
-// ── DOM ──
-const $ = id => document.getElementById(id);
-const $loading=$('loading-overlay'),$error=$('error-screen'),$errMsg=$('error-message');
-const $viewer=$('viewer'),$spread=$('spread-container');
-const $indicator=$('page-indicator'),$progress=$('progress-bar');
+const $=id=>document.getElementById(id);
+const $load=$('loading-overlay'),$err=$('error-screen'),$errM=$('error-message');
+const $vSpread=$('viewer-spread'),$spreadC=$('spread-container');
+const $vScroll=$('viewer-scroll'),$scrollT=$('scroll-track');
+const $ind=$('page-indicator'),$prog=$('progress-bar');
 const $navL=$('nav-left'),$navR=$('nav-right'),$navC=$('nav-center');
 const $setBtn=$('settings-btn'),$setPanel=$('settings-panel');
-const $hint=$('nav-hint'),$hintArrow=$('nav-hint-arrow');
-const $seekBtn=$('seek-btn'),$seekBar=$('seek-bar'),$seekRange=$('seek-range');
-const $seekCur=$('seek-cur'),$seekTotal=$('seek-total');
+const $hint=$('nav-hint'),$hintArr=$('nav-hint-arrow');
+const $seekBtn=$('seek-btn'),$seekBar=$('seek-bar'),$seekR=$('seek-range');
+const $seekCur=$('seek-cur'),$seekTot=$('seek-total');
 
 // ── Theme ──
-function applyTheme() {
-  const dk = bgColor==='black';
-  document.body.style.backgroundColor = dk?'#080808':'#f4f3ee';
-  document.body.style.color = dk?'#aaa':'#444';
-  $loading.style.backgroundColor = dk?'#080808':'#f4f3ee';
-  $progress.style.backgroundColor = dk?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.1)';
-  $indicator.style.backgroundColor = dk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)';
-  $indicator.style.color = dk?'#666':'#888';
-  $setPanel.style.backgroundColor = dk?'rgba(20,20,20,0.95)':'rgba(255,255,255,0.95)';
-  $setPanel.style.color = dk?'#bbb':'#444';
-  $setPanel.style.border = `1px solid ${dk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'}`;
-  $seekBar.style.backgroundColor = dk?'rgba(20,20,20,0.9)':'rgba(240,240,235,0.9)';
-  $seekBar.style.color = dk?'#aaa':'#555';
-  $hintArrow.style.stroke = 'rgb(128,128,128)';
+function applyTheme(){
+  const dk=bgColor==='black';
+  document.body.style.backgroundColor=dk?'#080808':'#f4f3ee';
+  document.body.style.color=dk?'#aaa':'#444';
+  $load.style.backgroundColor=dk?'#080808':'#f4f3ee';
+  $prog.style.backgroundColor=dk?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.1)';
+  $ind.style.backgroundColor=dk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)';
+  $ind.style.color=dk?'#666':'#888';
+  $setPanel.style.backgroundColor=dk?'rgba(20,20,20,0.95)':'rgba(255,255,255,0.95)';
+  $setPanel.style.color=dk?'#bbb':'#444';
+  $setPanel.style.border=`1px solid ${dk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'}`;
+  $seekBar.style.backgroundColor=dk?'rgba(20,20,20,0.9)':'rgba(240,240,235,0.9)';
+  $seekBar.style.color=dk?'#aaa':'#555';
+  $hintArr.style.stroke='rgb(128,128,128)';
 }
 
-// ── Hint (cover only) ──
-function updateHintDirection() {
-  $hintArrow.setAttribute('points',
-    readDir==='ltr' ? '10,6 18,14 10,22' : '18,6 10,14 18,22');
+// ── Hint ──
+function updateHintDir(){
+  $hintArr.setAttribute('points',readDir==='ltr'?'10,6 18,14 10,22':'18,6 10,14 18,22');
 }
-function triggerCoverHint() {
-  if (currentIdx !== 0) return;
+function triggerCoverHint(){
+  if(currentIdx!==0)return;
   clearTimeout(hintTimer);
-  hintTimer = setTimeout(() => {
-    if (currentIdx === 0) {
-      $hint.classList.add('show'); hintVisible = true;
-      setTimeout(() => { $hint.classList.remove('show'); hintVisible = false; }, 3500);
-    }
-  }, 1000);
+  hintTimer=setTimeout(()=>{
+    if(currentIdx===0){$hint.classList.add('show');hintVisible=true;
+      setTimeout(()=>{$hint.classList.remove('show');hintVisible=false;},3500);}
+  },1000);
 }
 
 // ── Layout ──
-function detectSpread() {
-  return window.innerWidth > window.innerHeight && window.innerWidth >= 600;
+function detectSpread(){return innerWidth>innerHeight&&innerWidth>=600;}
+function loadImg(s){return new Promise((r,j)=>{if(!s){j('');return;}
+  const i=new Image();i.onload=()=>r(i);i.onerror=()=>j('');i.src=s;})}
+
+function buildVP(fi,bi){
+  virtualPages=[];
+  if(fi)virtualPages.push({type:'cover',img:fi,label:'表紙'});
+  for(let i=1;i<=pdfDoc.numPages;i++)virtualPages.push({type:'pdf',num:i});
+  if(bi)virtualPages.push({type:'cover',img:bi,label:'裏表紙'});
+  totalV=virtualPages.length;
 }
 
-function loadImage(src) {
-  return new Promise((res,rej) => {
-    if (!src) { rej(''); return; }
-    const img = new Image();
-    img.onload = () => res(img);
-    img.onerror = () => rej('');
-    img.src = src;
-  });
-}
-
-function buildVirtualPages(fi, bi) {
-  virtualPages = [];
-  if (fi) virtualPages.push({type:'cover',img:fi,label:'表紙'});
-  for (let i=1;i<=pdfDoc.numPages;i++) virtualPages.push({type:'pdf',num:i});
-  if (bi) virtualPages.push({type:'cover',img:bi,label:'裏表紙'});
-  totalVirtual = virtualPages.length;
-}
-
-function buildSpreads() {
-  spreads = [];
-  if (!totalVirtual) return;
-  if (!isSpread) { for (let i=0;i<totalVirtual;i++) spreads.push([i]); return; }
-  const mustSingle = new Set();
-  let pf=-1,pl=-1;
-  virtualPages.forEach((v,i) => {
-    if (v.type==='cover') mustSingle.add(i);
-    if (v.type==='pdf') { if(pf<0)pf=i; pl=i; }
-  });
-  if (pf>=0) mustSingle.add(pf);
-  if (pl>=0) mustSingle.add(pl);
+function buildSpreads(){
+  spreads=[];if(!totalV)return;
+  if(!isSpread){for(let i=0;i<totalV;i++)spreads.push([i]);return;}
+  const ms=new Set();let pf=-1,pl=-1;
+  virtualPages.forEach((v,i)=>{if(v.type==='cover')ms.add(i);
+    if(v.type==='pdf'){if(pf<0)pf=i;pl=i;}});
+  if(pf>=0)ms.add(pf);if(pl>=0)ms.add(pl);
   let i=0;
-  while (i<totalVirtual) {
-    if (mustSingle.has(i)) { spreads.push([i]); i++; }
-    else if (i+1<totalVirtual&&!mustSingle.has(i+1)) { spreads.push([i,i+1]); i+=2; }
-    else { spreads.push([i]); i++; }
+  while(i<totalV){
+    if(ms.has(i)){spreads.push([i]);i++;}
+    else if(i+1<totalV&&!ms.has(i+1)){spreads.push([i,i+1]);i+=2;}
+    else{spreads.push([i]);i++;}
   }
 }
 
-function gutterSide(n) {
-  return readDir==='ltr' ? (n%2===1?'left':'right') : (n%2===1?'right':'left');
-}
+function gutterSide(n){return readDir==='ltr'?(n%2===1?'left':'right'):(n%2===1?'right':'left');}
 
-function renderCover(img,mw,mh) {
+function renderCover(img,mw,mh){
   const s=Math.min(mw/img.naturalWidth,mh/img.naturalHeight);
-  const dw=img.naturalWidth*s, dh=img.naturalHeight*s, pr=devicePixelRatio||1;
+  const dw=img.naturalWidth*s,dh=img.naturalHeight*s,pr=devicePixelRatio||1;
   const c=document.createElement('canvas');
-  c.width=dw*pr; c.height=dh*pr;
-  c.style.width=dw+'px'; c.style.height=dh+'px';
-  c.className='page-canvas';
-  c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-  return c;
+  c.width=dw*pr;c.height=dh*pr;c.style.width=dw+'px';c.style.height=dh+'px';
+  c.className='page-canvas';c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c;
 }
 
-async function renderPdf(num,mw,mh) {
-  const pg=await pdfDoc.getPage(num);
-  const vp=pg.getViewport({scale:1});
-  const fit=Math.min(mw/vp.width,mh/vp.height);
-  const pr=devicePixelRatio||1, rs=fit*CONFIG.quality*pr;
-  const sv=pg.getViewport({scale:rs}), dv=pg.getViewport({scale:fit});
+async function renderPdf(num,mw,mh){
+  const pg=await pdfDoc.getPage(num),vp=pg.getViewport({scale:1});
+  const fit=Math.min(mw/vp.width,mh/vp.height),pr=devicePixelRatio||1,rs=fit*CONFIG.quality*pr;
+  const sv=pg.getViewport({scale:rs}),dv=pg.getViewport({scale:fit});
   const c=document.createElement('canvas');
-  c.width=sv.width; c.height=sv.height;
-  c.style.width=dv.width+'px'; c.style.height=dv.height+'px';
+  c.width=sv.width;c.height=sv.height;c.style.width=dv.width+'px';c.style.height=dv.height+'px';
   c.className='page-canvas';
   const ctx=c.getContext('2d');
   await pg.render({canvasContext:ctx,viewport:sv}).promise;
-  if (CONFIG.blackCorrection>0) {
-    const id=ctx.getImageData(0,0,c.width,c.height), d=id.data, t=CONFIG.blackCorrection;
-    for (let i=0,l=d.length;i<l;i+=4) { if(d[i]<=t&&d[i+1]<=t&&d[i+2]<=t) d[i]=d[i+1]=d[i+2]=0; }
+  if(CONFIG.blackCorrection>0){
+    const id=ctx.getImageData(0,0,c.width,c.height),d=id.data,t=CONFIG.blackCorrection;
+    for(let i=0,l=d.length;i<l;i+=4){if(d[i]<=t&&d[i+1]<=t&&d[i+2]<=t)d[i]=d[i+1]=d[i+2]=0;}
     ctx.putImageData(id,0,0);
   }
-  if (CONFIG.gutterCorrection) {
+  if(CONFIG.gutterCorrection){
     const cm=CONFIG.gutterMargin-CONFIG.foreEdgeMargin;
-    if (cm>0) {
-      const cp=Math.round(cm*MM_TO_PT*rs), side=gutterSide(num);
-      const tr=document.createElement('canvas'), nw=c.width-cp;
-      tr.width=nw; tr.height=c.height;
+    if(cm>0){
+      const cp=Math.round(cm*MM_TO_PT*rs),side=gutterSide(num);
+      const tr=document.createElement('canvas'),nw=c.width-cp;
+      tr.width=nw;tr.height=c.height;
       tr.getContext('2d').drawImage(c,side==='left'?cp:0,0,nw,c.height,0,0,nw,c.height);
       const dc=Math.round(cm*MM_TO_PT*fit);
-      tr.style.width=(dv.width-dc)+'px'; tr.style.height=dv.height+'px';
-      tr.className='page-canvas'; return tr;
+      tr.style.width=(dv.width-dc)+'px';tr.style.height=dv.height+'px';
+      tr.className='page-canvas';return tr;
     }
   }
   return c;
 }
 
-async function renderVP(vi,mw,mh) {
+async function renderVP(vi,mw,mh){
   const k=`${vi}:${Math.round(mw)}:${Math.round(mh)}:${readDir}`;
-  if (pageCache.has(k)) return pageCache.get(k);
+  if(pageCache.has(k))return pageCache.get(k);
   const v=virtualPages[vi];
-  const cv = v.type==='cover' ? renderCover(v.img,mw,mh) : await renderPdf(v.num,mw,mh);
-  pageCache.set(k,cv); return cv;
+  const cv=v.type==='cover'?renderCover(v.img,mw,mh):await renderPdf(v.num,mw,mh);
+  pageCache.set(k,cv);return cv;
 }
 
-function cloneCanvas(s) {
+function cloneCanvas(s){
   const c=document.createElement('canvas');
-  c.width=s.width; c.height=s.height;
-  c.style.width=s.style.width; c.style.height=s.style.height;
-  c.className='page-canvas';
-  c.getContext('2d').drawImage(s,0,0);
-  return c;
+  c.width=s.width;c.height=s.height;c.style.width=s.style.width;c.style.height=s.style.height;
+  c.className='page-canvas';c.getContext('2d').drawImage(s,0,0);return c;
 }
 
-// ── Slide Animation (single-page portrait only) ──
-// Filmstrip: old page and new page sit side by side, the strip translates.
-async function displayWithSlide(dir) {
-  if (!spreads.length) return;
-  const sp = spreads[currentIdx];
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const mw = vw;
-  const newSrc = await renderVP(sp[0], mw, vh);
-  const newNode = cloneCanvas(newSrc);
-
-  // Grab current page content (if any) — cloneNode won't copy canvas pixels
-  const oldCanvas = $spread.querySelector('.page-canvas');
-  const oldNode = oldCanvas ? cloneCanvas(oldCanvas) : null;
-
-  // Build a filmstrip container
-  const strip = document.createElement('div');
-  strip.style.cssText =
-    'position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;' +
-    'z-index:6;will-change:transform;';
-
-  // Wrap each page in a cell of exactly viewport width
-  const makeCell = (child) => {
-    const cell = document.createElement('div');
-    cell.style.cssText = 'width:'+vw+'px;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-    if (child) cell.appendChild(child);
-    return cell;
-  };
-
-  if (dir > 0) {
-    // Forward: [old][new], start at 0, slide to -vw
-    strip.appendChild(makeCell(oldNode));
-    strip.appendChild(makeCell(newNode));
-    strip.style.transform = 'translateX(0)';
-  } else {
-    // Backward: [new][old], start at -vw, slide to 0
-    strip.appendChild(makeCell(newNode));
-    strip.appendChild(makeCell(oldNode));
-    strip.style.transform = 'translateX(-'+vw+'px)';
+// ══════════════════════════════════════════════
+// ── SCROLL MODE (portrait) ──
+// ══════════════════════════════════════════════
+async function buildScrollTrack(){
+  $scrollT.innerHTML='';
+  const vh=innerHeight, vw=innerWidth;
+  for(let i=0;i<totalV;i++){
+    const slot=document.createElement('div');
+    slot.className='scroll-page';
+    slot.dataset.idx=''+i;
+    const cv=await renderVP(i,vw,vh);
+    slot.appendChild(cloneCanvas(cv));
+    $scrollT.appendChild(slot);
   }
-
-  strip.style.width = (vw * 2) + 'px';
-  $viewer.appendChild(strip);
-
-  // Force reflow
-  void strip.offsetWidth;
-  strip.style.transition = 'transform 0.3s cubic-bezier(0.25,0.1,0.25,1)';
-  strip.style.transform = dir > 0 ? 'translateX(-'+vw+'px)' : 'translateX(0)';
-
-  const finalize = () => {
-    $spread.innerHTML = '';
-    $spread.appendChild(cloneCanvas(newSrc));
-    if (strip.parentNode) strip.remove();
-  };
-
-  strip.addEventListener('transitionend', finalize, { once: true });
-  setTimeout(() => { if (strip.parentNode) finalize(); }, 400);
-
-  updateIndicator(sp);
-  $progress.style.width = ((currentIdx+1)/spreads.length*100)+'%';
-  saveBookmark();
-  updateSeekBar();
-  if (currentIdx === 0) triggerCoverHint();
-  preload();
+  scrollTrackBuilt=true;
 }
 
-// ── Display (no slide) ──
-async function display() {
-  if (!spreads.length) return;
-  const sp = spreads[currentIdx];
-  const vw = window.innerWidth, vh = window.innerHeight;
+function scrollToPage(idx,smooth){
+  const slot=$scrollT.children[idx];
+  if(!slot)return;
+  scrollSyncing=true;
+  slot.scrollIntoView({behavior:smooth?'smooth':'instant',inline:'center',block:'center'});
+  setTimeout(()=>{scrollSyncing=false;},smooth?400:50);
+}
 
-  let mw, mh=vh;
-  if (sp.length===2) mw=(vw/2)-1;
-  else mw = isSpread ? Math.min(vw*0.48,vh*0.75) : vw;
+function onScrollUpdate(){
+  if(scrollSyncing)return;
+  // Determine which page is most visible
+  const cx=$vScroll.scrollLeft+innerWidth/2;
+  let best=0,bestDist=Infinity;
+  for(let i=0;i<$scrollT.children.length;i++){
+    const el=$scrollT.children[i];
+    const mid=el.offsetLeft+el.offsetWidth/2;
+    const d=Math.abs(mid-cx);
+    if(d<bestDist){bestDist=d;best=i;}
+  }
+  if(best!==currentIdx){
+    currentIdx=best;
+    updateUI();
+  }
+}
+
+let scrollDebounce=null;
+function onScroll(){
+  clearTimeout(scrollDebounce);
+  scrollDebounce=setTimeout(onScrollUpdate,60);
+}
+
+// ══════════════════════════════════════════════
+// ── SPREAD MODE (landscape) ──
+// ══════════════════════════════════════════════
+async function displaySpread(){
+  if(!spreads.length)return;
+  const sp=spreads[currentIdx];
+  const vw=innerWidth,vh=innerHeight;
+  let mw;
+  if(sp.length===2)mw=(vw/2)-1;
+  else mw=Math.min(vw*0.48,vh*0.75);
 
   const nodes=[];
-  for (const vi of sp) { const s=await renderVP(vi,mw,mh); nodes.push(cloneCanvas(s)); }
-
-  $spread.style.transform = '';
-  $spread.innerHTML='';
-  if (sp.length===2) {
-    if (readDir==='rtl') { $spread.appendChild(nodes[1]); $spread.appendChild(nodes[0]); }
-    else { $spread.appendChild(nodes[0]); $spread.appendChild(nodes[1]); }
-    const spine=document.createElement('div'); spine.className='spine-shadow';
-    $spread.appendChild(spine);
-  } else {
-    $spread.appendChild(nodes[0]);
-  }
-
-  updateIndicator(sp);
-  $progress.style.width = ((currentIdx+1)/spreads.length*100)+'%';
-  saveBookmark();
-  updateSeekBar();
-  if (currentIdx === 0) triggerCoverHint();
-  preload();
-}
-
-function updateIndicator(sp) {
-  const labels = sp.map(i => {
-    const v=virtualPages[i]; return v.type==='cover' ? v.label : ''+v.num;
-  });
-  let txt;
-  if (sp.length===2) {
-    txt = readDir==='rtl' ? `${labels[1]}–${labels[0]} / ${totalVirtual}`
-                          : `${labels[0]}–${labels[1]} / ${totalVirtual}`;
-  } else { txt = `${labels[0]} / ${totalVirtual}`; }
-  $indicator.textContent=txt;
-  $indicator.classList.add('show');
-  clearTimeout(indicatorTimer);
-  indicatorTimer=setTimeout(()=>$indicator.classList.remove('show'),2200);
-}
-
-async function preload() {
-  const vw=window.innerWidth, vh=window.innerHeight;
-  for (const di of [-1,1]) {
-    const idx=currentIdx+di;
-    if (idx<0||idx>=spreads.length) continue;
-    const sp=spreads[idx];
-    const mw = sp.length===2?(vw/2)-1:(isSpread?Math.min(vw*0.48,vh*0.75):vw);
-    for (const vi of sp) renderVP(vi,mw,vh).catch(()=>{});
+  for(const vi of sp){const s=await renderVP(vi,mw,vh);nodes.push(cloneCanvas(s));}
+  $spreadC.innerHTML='';
+  if(sp.length===2){
+    if(readDir==='rtl'){$spreadC.appendChild(nodes[1]);$spreadC.appendChild(nodes[0]);}
+    else{$spreadC.appendChild(nodes[0]);$spreadC.appendChild(nodes[1]);}
+    const spine=document.createElement('div');spine.className='spine-shadow';
+    $spreadC.appendChild(spine);
+  } else {$spreadC.appendChild(nodes[0]);}
+  updateUI();
+  // Preload adjacent
+  for(const di of[-1,1]){
+    const idx=currentIdx+di;if(idx<0||idx>=spreads.length)continue;
+    const s2=spreads[idx];
+    const m2=s2.length===2?(vw/2)-1:Math.min(vw*0.48,vh*0.75);
+    for(const vi of s2)renderVP(vi,m2,vh).catch(()=>{});
   }
 }
 
-// ── Navigation ──
-function doNav(dir) {
-  // dir: 1=forward, -1=backward
-  const target = currentIdx + dir;
-  if (navigating || target < 0 || target >= spreads.length) return;
-  navigating = true;
-  currentIdx = target;
-
-  // Slide in single-page mode; instant in spread mode
-  const useSingle = !isSpread;
-  if (useSingle) {
-    // Slide direction: forward in LTR = slide from right (+1), backward = from left (-1)
-    const slideFrom = (readDir==='ltr') ? dir : -dir;
-    displayWithSlide(slideFrom).then(() => { navigating=false; });
-  } else {
-    display().then(() => { navigating=false; });
-  }
+function spreadNav(dir){
+  if(navigating)return;
+  const t=currentIdx+dir;
+  if(t<0||t>=spreads.length)return;
+  navigating=true;currentIdx=t;
+  displaySpread().then(()=>{navigating=false;});
 }
-function forward() { doNav(1); }
-function backward() { doNav(-1); }
 
-$navL.addEventListener('click', e => { e.preventDefault(); readDir==='rtl'?forward():backward(); });
-$navR.addEventListener('click', e => { e.preventDefault(); readDir==='rtl'?backward():forward(); });
-$navC.addEventListener('click', e => { e.preventDefault(); updateIndicator(spreads[currentIdx]); });
+$navL.addEventListener('click',e=>{e.preventDefault();readDir==='rtl'?spreadNav(1):spreadNav(-1);});
+$navR.addEventListener('click',e=>{e.preventDefault();readDir==='rtl'?spreadNav(-1):spreadNav(1);});
+$navC.addEventListener('click',e=>{e.preventDefault();showIndicator();});
 
-document.addEventListener('keydown', e => {
+document.addEventListener('keydown',e=>{
   const k=e.key;
-  if (k==='ArrowLeft') { e.preventDefault(); readDir==='rtl'?forward():backward(); }
-  else if (k==='ArrowRight') { e.preventDefault(); readDir==='rtl'?backward():forward(); }
-  else if (k==='ArrowDown'||k==='PageDown'||k===' ') { e.preventDefault(); forward(); }
-  else if (k==='ArrowUp'||k==='PageUp') { e.preventDefault(); backward(); }
-  else if (k==='Home') { e.preventDefault(); currentIdx=0; display(); }
-  else if (k==='End') { e.preventDefault(); currentIdx=spreads.length-1; display(); }
+  if(k==='ArrowLeft'){e.preventDefault();readDir==='rtl'?spreadNav(1):spreadNav(-1);}
+  else if(k==='ArrowRight'){e.preventDefault();readDir==='rtl'?spreadNav(-1):spreadNav(1);}
+  else if(k==='ArrowDown'||k==='PageDown'||k===' '){e.preventDefault();
+    isSpread?spreadNav(1):scrollToPage(Math.min(currentIdx+1,totalV-1),true);}
+  else if(k==='ArrowUp'||k==='PageUp'){e.preventDefault();
+    isSpread?spreadNav(-1):scrollToPage(Math.max(currentIdx-1,0),true);}
+  else if(k==='Home'){e.preventDefault();currentIdx=0;isSpread?displaySpread():scrollToPage(0,false);}
+  else if(k==='End'){e.preventDefault();currentIdx=spreads.length-1;isSpread?displaySpread():scrollToPage(totalV-1,false);}
 });
 
-let tx0=0,ty0=0,tt0=0;
-document.addEventListener('touchstart', e => {
-  tx0=e.touches[0].clientX; ty0=e.touches[0].clientY; tt0=Date.now();
-},{passive:true});
-document.addEventListener('touchend', e => {
-  if (seekOpen) return; // don't nav while seek bar open
-  const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
-  if (Date.now()-tt0>400||Math.abs(dx)<45||Math.abs(dy)>Math.abs(dx)*0.6) return;
-  dx<0 ? forward() : backward();
-},{passive:true});
+// ── Shared UI ──
+function updateUI(){
+  // Indicator
+  showIndicator();
+  // Progress
+  $prog.style.width=((currentIdx+1)/spreads.length*100)+'%';
+  saveBM();
+  updateSeekUI();
+  if(currentIdx===0)triggerCoverHint();
+}
 
-let lastTE=0;
-document.addEventListener('touchend', e => {
-  const now=Date.now(); if(now-lastTE<=300) e.preventDefault(); lastTE=now;
-},false);
+function showIndicator(){
+  const sp=spreads[currentIdx];if(!sp)return;
+  const labels=sp.map(i=>{const v=virtualPages[i];return v.type==='cover'?v.label:''+v.num;});
+  let txt;
+  if(sp.length===2){
+    txt=readDir==='rtl'?`${labels[1]}–${labels[0]} / ${totalV}`:`${labels[0]}–${labels[1]} / ${totalV}`;
+  } else txt=`${labels[0]} / ${totalV}`;
+  $ind.textContent=txt;$ind.classList.add('show');
+  clearTimeout(indicatorTimer);
+  indicatorTimer=setTimeout(()=>$ind.classList.remove('show'),2200);
+}
 
 // ── Seek Bar ──
-function updateSeekBar() {
-  $seekRange.max = spreads.length - 1;
-  $seekRange.value = currentIdx;
-  $seekCur.textContent = currentIdx + 1;
-  $seekTotal.textContent = spreads.length;
+function updateSeekUI(){
+  $seekR.max=spreads.length-1;$seekR.value=currentIdx;
+  $seekCur.textContent=currentIdx+1;$seekTot.textContent=spreads.length;
 }
-
-$seekBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  seekOpen = !seekOpen;
-  $seekBar.classList.toggle('show', seekOpen);
-  if (seekOpen) updateSeekBar();
+$seekBtn.addEventListener('click',e=>{e.stopPropagation();
+  seekOpen=!seekOpen;$seekBar.classList.toggle('show',seekOpen);if(seekOpen)updateSeekUI();});
+$seekR.addEventListener('input',()=>{
+  const idx=parseInt($seekR.value,10);$seekCur.textContent=idx+1;
+  currentIdx=idx;
+  if(isSpread)displaySpread();
+  else scrollToPage(spreads[idx][0],false);
 });
-
-$seekRange.addEventListener('input', () => {
-  const idx = parseInt($seekRange.value, 10);
-  $seekCur.textContent = idx + 1;
-  currentIdx = idx;
-  display();
-});
-
-// Close seek bar on tap outside
-document.addEventListener('click', e => {
-  if (seekOpen && !$seekBar.contains(e.target) && e.target !== $seekBtn && !$seekBtn.contains(e.target)) {
-    seekOpen = false;
-    $seekBar.classList.remove('show');
-  }
+document.addEventListener('click',e=>{
+  if(seekOpen&&!$seekBar.contains(e.target)&&e.target!==$seekBtn&&!$seekBtn.contains(e.target)){
+    seekOpen=false;$seekBar.classList.remove('show');}
 });
 
 // ── Resize ──
-let resizeT=null, pendingFs=false;
-function requestFs() {
-  const el=document.documentElement;
-  const rq=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
-  if(rq) rq.call(el).catch(()=>{});
-}
-function exitFs() {
-  const ex=document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen;
-  if(ex&&(document.fullscreenElement||document.webkitFullscreenElement)) ex.call(document).catch(()=>{});
-}
-function isFsNow() { return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+let resizeT=null,pendingFs=false;
+function requestFs(){const el=document.documentElement;
+  const rq=el.requestFullscreen||el.webkitRequestFullscreen;if(rq)rq.call(el).catch(()=>{});}
+function exitFs(){const ex=document.exitFullscreen||document.webkitExitFullscreen;
+  if(ex&&(document.fullscreenElement||document.webkitFullscreenElement))ex.call(document).catch(()=>{});}
+function isFsNow(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
 
-function onResize() {
+async function switchMode(){
+  const was=isSpread;
+  isSpread=detectSpread();
+  pageCache.clear();scrollTrackBuilt=false;
+
+  if(isSpread&&!was&&!isFsNow())pendingFs=true;
+  if(!isSpread&&was&&isFsNow())exitFs();
+
+  // Map currentIdx across modes
+  const firstV=spreads[currentIdx]?spreads[currentIdx][0]:0;
+  buildSpreads();
+  currentIdx=spreads.findIndex(s=>s.includes(firstV));
+  if(currentIdx<0)currentIdx=0;
+
+  if(isSpread){
+    $vScroll.classList.remove('active','visible');
+    $vSpread.classList.add('active');
+    await displaySpread();
+    $vSpread.classList.add('visible');
+  } else {
+    $vSpread.classList.remove('active','visible');
+    $vScroll.classList.add('active');
+    await buildScrollTrack();
+    scrollToPage(currentIdx,false);
+    $vScroll.classList.add('visible');
+  }
+}
+
+function onResize(){
   clearTimeout(resizeT);
-  resizeT=setTimeout(() => {
-    const was=isSpread;
-    isSpread=detectSpread();
-    pageCache.clear();
-    if(isSpread&&!was&&!isFsNow()) pendingFs=true;
-    if(!isSpread&&was&&isFsNow()) exitFs();
-    if(was!==isSpread) {
-      const fv=spreads[currentIdx]?spreads[currentIdx][0]:0;
-      buildSpreads();
-      currentIdx=spreads.findIndex(s=>s.includes(fv));
-      if(currentIdx<0) currentIdx=0;
+  resizeT=setTimeout(()=>{
+    const wasSpread=isSpread;
+    const nowSpread=detectSpread();
+    if(wasSpread!==nowSpread){
+      switchMode();
+    } else if(isSpread){
+      pageCache.clear();displaySpread();
+    } else {
+      pageCache.clear();scrollTrackBuilt=false;
+      buildScrollTrack().then(()=>scrollToPage(currentIdx,false));
     }
-    display();
-  },180);
+  },200);
 }
-document.addEventListener('click',()=>{ if(pendingFs){pendingFs=false;requestFs();} },{capture:true});
-document.addEventListener('touchend',()=>{ if(pendingFs){pendingFs=false;requestFs();} },{capture:true,passive:true});
-window.addEventListener('resize', onResize);
-window.addEventListener('orientationchange',()=>setTimeout(onResize,250));
+document.addEventListener('click',()=>{if(pendingFs){pendingFs=false;requestFs();}},{capture:true});
+document.addEventListener('touchend',()=>{if(pendingFs){pendingFs=false;requestFs();}},{capture:true,passive:true});
+window.addEventListener('resize',onResize);
+window.addEventListener('orientationchange',()=>setTimeout(onResize,300));
 
-// ── Settings ──
-$setBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  settingsOpen=!settingsOpen;
-  $setPanel.classList.toggle('show',settingsOpen);
-});
+$vScroll.addEventListener('scroll',onScroll,{passive:true});
+
+// ── Settings & UI ──
+$setBtn.addEventListener('click',e=>{e.stopPropagation();settingsOpen=!settingsOpen;
+  $setPanel.classList.toggle('show',settingsOpen);});
 
 let setBtnT=null;
-function flashUI() {
-  $setBtn.classList.add('visible');
-  $seekBtn.classList.add('visible');
-  clearTimeout(setBtnT);
-  setBtnT=setTimeout(()=>{
-    if(!settingsOpen) $setBtn.classList.remove('visible');
-    if(!seekOpen) $seekBtn.classList.remove('visible');
-  },2500);
-}
-function onUserInteraction() {
-  if(hintVisible){$hint.classList.remove('show');hintVisible=false;}
-}
-document.addEventListener('mousemove',()=>{flashUI();onUserInteraction();});
-document.addEventListener('touchstart',()=>{flashUI();onUserInteraction();},{passive:true});
+function flashUI(){$setBtn.classList.add('visible');$seekBtn.classList.add('visible');
+  clearTimeout(setBtnT);setBtnT=setTimeout(()=>{
+    if(!settingsOpen)$setBtn.classList.remove('visible');
+    if(!seekOpen)$seekBtn.classList.remove('visible');},2500);}
+function onUserInt(){if(hintVisible){$hint.classList.remove('show');hintVisible=false;}}
+document.addEventListener('mousemove',()=>{flashUI();onUserInt();});
+document.addEventListener('touchstart',()=>{flashUI();onUserInt();},{passive:true});
 
 document.querySelectorAll('#bg-toggle button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    bgColor=b.dataset.value;
+  b.addEventListener('click',()=>{bgColor=b.dataset.value;
     document.querySelectorAll('#bg-toggle button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); applyTheme();
-  });
-});
+    b.classList.add('active');applyTheme();});});
 document.querySelectorAll('#dir-toggle button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    readDir=b.dataset.value;
+  b.addEventListener('click',()=>{readDir=b.dataset.value;
     document.querySelectorAll('#dir-toggle button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); pageCache.clear(); updateHintDirection(); display();
-  });
-});
+    b.classList.add('active');pageCache.clear();scrollTrackBuilt=false;updateHintDir();
+    if(isSpread)displaySpread();
+    else buildScrollTrack().then(()=>scrollToPage(currentIdx,false));});});
 document.addEventListener('click',e=>{
   if(settingsOpen&&!$setPanel.contains(e.target)&&e.target!==$setBtn){
-    settingsOpen=false;$setPanel.classList.remove('show');
-  }
-});
+    settingsOpen=false;$setPanel.classList.remove('show');}});
 
-// ── Init ──
-function initSettingsUI() {
-  document.querySelectorAll('#bg-toggle button').forEach(b=>
-    b.classList.toggle('active',b.dataset.value===bgColor));
-  document.querySelectorAll('#dir-toggle button').forEach(b=>
-    b.classList.toggle('active',b.dataset.value===readDir));
+function initSettingsUI(){
+  document.querySelectorAll('#bg-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.value===bgColor));
+  document.querySelectorAll('#dir-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.value===readDir));
 }
 
-async function init() {
-  applyTheme(); initSettingsUI(); updateHintDirection();
-  try {
-    let fi=null,bi=null;
-    const cv=[];
-    if(CONFIG.frontCover) cv.push(loadImage(CONFIG.frontCover).then(i=>{fi=i}).catch(()=>{}));
-    if(CONFIG.backCover) cv.push(loadImage(CONFIG.backCover).then(i=>{bi=i}).catch(()=>{}));
-    const [pdf]=await Promise.all([pdfjsLib.getDocument(CONFIG.pdfPath).promise,...cv]);
+// Prevent double-tap zoom
+let lastTE=0;
+document.addEventListener('touchend',e=>{const n=Date.now();if(n-lastTE<=300)e.preventDefault();lastTE=n;},false);
+
+// ── Init ──
+async function init(){
+  applyTheme();initSettingsUI();updateHintDir();
+  try{
+    let fi=null,bi=null;const cv=[];
+    if(CONFIG.frontCover)cv.push(loadImg(CONFIG.frontCover).then(i=>{fi=i}).catch(()=>{}));
+    if(CONFIG.backCover)cv.push(loadImg(CONFIG.backCover).then(i=>{bi=i}).catch(()=>{}));
+    const[pdf]=await Promise.all([pdfjsLib.getDocument(CONFIG.pdfPath).promise,...cv]);
     pdfDoc=pdf;
-    buildVirtualPages(fi,bi);
+    buildVP(fi,bi);
     isSpread=detectSpread();
     buildSpreads();
     currentIdx=0;
-    restoreBookmark();
-    $loading.classList.add('hidden');
-    $viewer.classList.add('visible');
-    await display();
-  } catch(err) {
-    console.error(err);
-    $loading.classList.add('hidden');
-    $errMsg.textContent='PDFの読み込みに失敗しました。\nHTMLと同じディレクトリにファイルが配置されているか確認してください。\n\n詳細: '+err.message;
-    $error.classList.add('show');
+    restoreBM();
+    $load.classList.add('hidden');
+
+    if(isSpread){
+      $vSpread.classList.add('active');
+      await displaySpread();
+      $vSpread.classList.add('visible');
+    } else {
+      $vScroll.classList.add('active');
+      await buildScrollTrack();
+      scrollToPage(currentIdx,false);
+      $vScroll.classList.add('visible');
+    }
+  }catch(err){
+    console.error(err);$load.classList.add('hidden');
+    $errM.textContent='PDFの読み込みに失敗しました。\n詳細: '+err.message;
+    $err.classList.add('show');
   }
 }
-
 init();
 </script>
 </body>
