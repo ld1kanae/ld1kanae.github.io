@@ -468,8 +468,9 @@ async function displayWithSlide(dir) {
   const newSrc = await renderVP(sp[0], mw, vh);
   const newNode = cloneCanvas(newSrc);
 
-  // Grab current page content (if any)
-  const oldNode = $spread.querySelector('.page-canvas');
+  // Grab current page content (if any) — cloneNode won't copy canvas pixels
+  const oldCanvas = $spread.querySelector('.page-canvas');
+  const oldNode = oldCanvas ? cloneCanvas(oldCanvas) : null;
 
   // Build a filmstrip container
   const strip = document.createElement('div');
@@ -487,13 +488,13 @@ async function displayWithSlide(dir) {
 
   if (dir > 0) {
     // Forward: [old][new], start at 0, slide to -vw
-    strip.appendChild(makeCell(oldNode ? oldNode.cloneNode(true) : null));
+    strip.appendChild(makeCell(oldNode));
     strip.appendChild(makeCell(newNode));
     strip.style.transform = 'translateX(0)';
   } else {
     // Backward: [new][old], start at -vw, slide to 0
     strip.appendChild(makeCell(newNode));
-    strip.appendChild(makeCell(oldNode ? oldNode.cloneNode(true) : null));
+    strip.appendChild(makeCell(oldNode));
     strip.style.transform = 'translateX(-'+vw+'px)';
   }
 
