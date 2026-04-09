@@ -100,6 +100,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
   <label class="opt-item"><input type="checkbox" data-opt="excSpace">！？後スペース挿入</label>
   <label class="opt-item"><input type="checkbox" data-opt="dropPeriod">。」→」</label>
   <label class="opt-item"><input type="checkbox" data-opt="kogaki">小書き引き伸ばし→通常（ぁ→あ）</label>
+  <label class="opt-item"><input type="checkbox" data-opt="noIndent">行頭下げなし</label>
 </div>
 
 <div class="main" id="mainArea">
@@ -128,7 +129,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
 
 <script>
 // ═══ Options (localStorage persisted) ═══
-const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false, kogaki:true };
+const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false, kogaki:true, noIndent:false };
 let opts;
 try { opts = Object.assign({}, OPT_DEFAULTS, JSON.parse(localStorage.getItem('bunko_opts'))); } catch(e) { opts = Object.assign({}, OPT_DEFAULTS); }
 function saveOpts() { localStorage.setItem('bunko_opts', JSON.stringify(opts)); }
@@ -225,7 +226,8 @@ function isBreak(l) { const t=l.trim(); return /^[◇◆＊\*─―－\-＝=※�
 function convert(text) {
   text = applyTransforms(text);
   const lines=text.replace(/\r\n/g,'\n').split('\n'), res=[]; let buf=[];
-  const flush=()=>{ if(buf.length){res.push('　'+buf.join(''));buf=[];} };
+  const indent = opts.noIndent ? '' : '　';
+  const flush=()=>{ if(buf.length){res.push(indent+buf.join(''));buf=[];} };
   for(const raw of lines){
     const l=raw.trim();
     if(l===''){ flush(); continue; }
