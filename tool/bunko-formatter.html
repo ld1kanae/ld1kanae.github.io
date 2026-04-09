@@ -99,6 +99,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
   <label class="opt-item"><input type="checkbox" data-opt="dash">ダッシュ統一（──）</label>
   <label class="opt-item"><input type="checkbox" data-opt="excSpace">！？後スペース挿入</label>
   <label class="opt-item"><input type="checkbox" data-opt="dropPeriod">。」→」</label>
+  <label class="opt-item"><input type="checkbox" data-opt="kogaki">小書き引き伸ばし→通常（ぁ→あ）</label>
 </div>
 
 <div class="main" id="mainArea">
@@ -127,7 +128,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
 
 <script>
 // ═══ Options (localStorage persisted) ═══
-const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false };
+const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false, kogaki:true };
 let opts;
 try { opts = Object.assign({}, OPT_DEFAULTS, JSON.parse(localStorage.getItem('bunko_opts'))); } catch(e) { opts = Object.assign({}, OPT_DEFAULTS); }
 function saveOpts() { localStorage.setItem('bunko_opts', JSON.stringify(opts)); }
@@ -199,6 +200,14 @@ function unifyDash(s) {
 function excSpace(s) { return s.replace(/([！？]+)(?=[^\s！？」』）\]\)】〉》〕])/g,'$1　'); }
 function dropPeriod(s) { return s.replace(/。([」』）】〉》〕\]])/g,'$1'); }
 
+// 小書き仮名の引き伸ばし → 通常仮名（あぁ→ああ, おぉ→おお, etc.）
+const KOGAKI_MAP = {'ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','ァ':'ア','ィ':'イ','ゥ':'ウ','ェ':'エ','ォ':'オ'};
+function expandKogaki(s) {
+  // Only convert when preceded by the same vowel's normal form (あぁ→ああ) or used as elongation
+  return s.replace(/([あぁ])ぁ/g,'ああ').replace(/([いぃ])ぃ/g,'いい').replace(/([うぅ])ぅ/g,'うう').replace(/([えぇ])ぇ/g,'ええ').replace(/([おぉ])ぉ/g,'おお')
+          .replace(/([アァ])ァ/g,'アア').replace(/([イィ])ィ/g,'イイ').replace(/([ウゥ])ゥ/g,'ウウ').replace(/([エェ])ェ/g,'エエ').replace(/([オォ])ォ/g,'オオ');
+}
+
 function applyTransforms(t) {
   if(opts.halfToFull) t=toFullAlpha(t);
   if(opts.halfSymbol) t=toFullSym(t);
@@ -206,6 +215,7 @@ function applyTransforms(t) {
   if(opts.dash)       t=unifyDash(t);
   if(opts.excSpace)   t=excSpace(t);
   if(opts.dropPeriod) t=dropPeriod(t);
+  if(opts.kogaki)     t=expandKogaki(t);
   return t;
 }
 
