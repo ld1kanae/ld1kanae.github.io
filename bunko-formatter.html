@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文庫本フォーマッター</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #ffffff;
+  --surface: #f7f7f8;
+  --surface2: #eeeff1;
+  --border: #e0e0e4;
+  --text: #1a1a1e;
+  --text-dim: #888892;
+  --accent: #7c3aed;
+  --ruby-color: #a855f7;
+  --success: #16a34a;
+  --font-body: 'Noto Serif JP', serif;
+  --font-ui: 'IBM Plex Sans JP', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font-ui); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+header { padding:12px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+header h1 { font-size:15px; font-weight:500; letter-spacing:0.08em; color:var(--text-dim); }
+header h1 em { color:var(--accent); font-weight:500; font-style:normal; }
+.header-actions { display:flex; gap:8px; align-items:center; }
+.btn { font-family:var(--font-ui); font-size:12px; padding:6px 14px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-dim); cursor:pointer; transition:all .15s; white-space:nowrap; }
+.btn:hover { border-color:var(--accent); color:var(--text); }
+.btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:500; }
+.btn.primary:hover { opacity:.85; }
+
+.options-bar { padding:8px 24px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; flex-shrink:0; }
+.opt-label { font-size:11px; color:var(--text-dim); font-weight:500; letter-spacing:.06em; margin-right:4px; user-select:none; }
+.opt-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text); cursor:pointer; user-select:none; }
+.opt-item input[type="checkbox"] { accent-color:var(--accent); width:14px; height:14px; cursor:pointer; }
+
+.main { flex:1; display:flex; overflow:hidden; }
+.panel { flex:1; display:flex; flex-direction:column; min-width:0; }
+.panel:first-child { border-right:1px solid var(--border); }
+.panel-header { padding:8px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
+.panel-label { font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-dim); font-weight:500; }
+.copy-btn { font-family:var(--font-ui); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; transition:all .2s; }
+.copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+.copy-btn.copied { border-color:var(--success); color:var(--success); }
+.panel-body { flex:1; overflow-y:auto; }
+
+textarea { width:100%; height:100%; background:transparent; border:none; color:var(--text); font-family:var(--font-body); font-size:14px; line-height:1.9; padding:20px; resize:none; outline:none; }
+textarea::placeholder { color:var(--text-dim); opacity:.5; }
+
+.output-area { padding:20px; font-family:var(--font-body); font-size:14px; line-height:1.9; white-space:pre-wrap; word-break:break-all; min-height:100%; color:var(--text); }
+.output-area .difficult { font-weight:700; color:var(--accent); }
+.output-area ruby rt { font-size:.55em; color:var(--ruby-color); font-weight:400; }
+.placeholder-text { color:var(--text-dim); opacity:.4; font-family:var(--font-ui); font-size:13px; }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index:100; backdrop-filter:blur(4px); }
+.modal { background:var(--bg); border:1px solid var(--border); border-radius:12px; width:460px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 24px 48px rgba(0,0,0,.12); }
+.modal-head { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.modal-head h2 { font-size:14px; font-weight:500; }
+.modal-close { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:18px; padding:4px; }
+.modal-body { padding:16px 20px; overflow-y:auto; flex:1; }
+.dict-input-row { display:flex; gap:8px; margin-bottom:16px; }
+.dict-input-row input { flex:1; font-family:var(--font-ui); font-size:13px; padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); outline:none; }
+.dict-input-row input:focus { border-color:var(--accent); }
+.dict-list { list-style:none; }
+.dict-list li { display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.dict-list li:last-child { border-bottom:none; }
+.dict-list .kanji { font-family:var(--font-body); font-weight:700; color:var(--accent); }
+.dict-list .reading { color:var(--text-dim); margin-left:8px; }
+.dict-list .del-btn { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:14px; padding:2px 6px; }
+.dict-list .del-btn:hover { color:#f87171; }
+
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(60px); background:var(--surface2); border:1px solid var(--border); color:var(--success); font-family:var(--font-ui); font-size:12px; padding:8px 20px; border-radius:8px; opacity:0; transition:all .3s; pointer-events:none; z-index:200; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+.divider { width:4px; background:var(--border); cursor:col-resize; flex-shrink:0; transition:background .15s; }
+.divider:hover { background:var(--accent); }
+
+@media(max-width:700px) { .main{flex-direction:column;} .panel:first-child{border-right:none;border-bottom:1px solid var(--border);} .divider{display:none;} }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><em>文庫本</em>フォーマッター</h1>
+  <div class="header-actions">
+    <button class="btn" id="dictBtn">辞書設定</button>
+    <button class="btn primary" id="convertBtn">変換 ▸</button>
+  </div>
+</header>
+
+<div class="options-bar">
+  <span class="opt-label">変換オプション：</span>
+  <label class="opt-item"><input type="checkbox" data-opt="halfToFull">半角英数→全角</label>
+  <label class="opt-item"><input type="checkbox" data-opt="halfSymbol">半角記号→全角</label>
+  <label class="opt-item"><input type="checkbox" data-opt="ellipsis">三点リーダー統一（……）</label>
+  <label class="opt-item"><input type="checkbox" data-opt="dash">ダッシュ統一（──）</label>
+  <label class="opt-item"><input type="checkbox" data-opt="excSpace">！？後スペース挿入</label>
+  <label class="opt-item"><input type="checkbox" data-opt="dropPeriod">。」→」</label>
+</div>
+
+<div class="main" id="mainArea">
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-label">原文</span>
+      <button class="copy-btn" data-target="input">コピー</button>
+    </div>
+    <div class="panel-body">
+      <textarea id="inputArea" placeholder="ここに原文を貼り付けてください…"></textarea>
+    </div>
+  </div>
+  <div class="divider" id="divider"></div>
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-label">変換後</span>
+      <button class="copy-btn" data-target="output">コピー</button>
+    </div>
+    <div class="panel-body">
+      <div class="output-area" id="outputArea"><span class="placeholder-text">変換結果がここに表示されます</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ Options (localStorage persisted) ═══
+const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false };
+let opts;
+try { opts = Object.assign({}, OPT_DEFAULTS, JSON.parse(localStorage.getItem('bunko_opts'))); } catch(e) { opts = Object.assign({}, OPT_DEFAULTS); }
+function saveOpts() { localStorage.setItem('bunko_opts', JSON.stringify(opts)); }
+
+document.querySelectorAll('[data-opt]').forEach(cb => {
+  cb.checked = !!opts[cb.dataset.opt];
+  cb.addEventListener('change', () => { opts[cb.dataset.opt] = cb.checked; saveOpts(); triggerConvert(); });
+});
+
+// ═══ Difficult kanji dictionary ═══
+const BUILTIN_DICT = {
+  '諂':'へつら','嘯':'うそぶ','嗾':'けしか','蠢':'うごめ','呻':'うめ','靡':'なび',
+  '嘲':'あざけ','慄':'おのの','翳':'かざ','贖':'あがな','蔑':'さげす',
+  '竦':'すく','怯':'ひる','宥':'なだ','縋':'すが','嘶':'いなな','誑':'たぶら',
+  '跪':'ひざまず','噤':'つぐ','窘':'たしな','恃':'たの','揶揄':'やゆ',
+  '眩':'くら','怺':'こら','拗':'こじ','歪':'ゆが','捩':'ねじ','刮目':'かつもく',
+  '睨':'にら','罵':'ののし','貪':'むさぼ','喘':'あえ','呟':'つぶや','喚':'わめ',
+  '軋':'きし','嗅':'か','啜':'すす','舐':'な','漲':'みなぎ',
+  '犇':'ひしめ','躊躇':'ちゅうちょ','逡巡':'しゅんじゅん',
+  '舷側':'げんそく','素っ頓狂':'すっとんきょう','穏便':'おんびん',
+  '面持ち':'おももち','目配せ':'めくばせ','会釈':'えしゃく',
+  '鰭':'ひれ','贄':'にえ','鋤':'すき','鍍金':'めっき',
+  '慟哭':'どうこく','咆哮':'ほうこう','膠着':'こうちゃく','凄絶':'せいぜつ',
+  '朦朧':'もうろう','邂逅':'かいこう','憐憫':'れんびん','忸怩':'じくじ',
+  '傲岸':'ごうがん','僥倖':'ぎょうこう','畏怖':'いふ','嗚咽':'おえつ',
+  '齟齬':'そご','瀟洒':'しょうしゃ','獰猛':'どうもう','矜持':'きょうじ',
+  '蹂躙':'じゅうりん','呶鳴':'どめい','諧謔':'かいぎゃく','吝嗇':'りんしょく',
+  '狡猾':'こうかつ','傀儡':'かいらい','怨嗟':'えんさ','慚愧':'ざんき',
+  '蟠り':'わだかまり','咎':'とが','柵':'しがらみ',
+  '呵責':'かしゃく','鶴嘴':'つるはし','轍':'わだち','楔':'くさび',
+  '痼疾':'こしつ','桎梏':'しっこく','蒙昧':'もうまい',
+  '瓦解':'がかい','瑕疵':'かし',
+  '顰蹙':'ひんしゅく','恫喝':'どうかつ','糾弾':'きゅうだん',
+  '辟易':'へきえき','懊悩':'おうのう','逼迫':'ひっぱく','瞠目':'どうもく',
+  '杞憂':'きゆう','韜晦':'とうかい','拘泥':'こうでい',
+  '涵養':'かんよう','蕭条':'しょうじょう','閑寂':'かんじゃく',
+  '燦然':'さんぜん','悄然':'しょうぜん','茫然':'ぼうぜん','愕然':'がくぜん',
+  '戦慄':'せんりつ','殺戮':'さつりく','暗澹':'あんたん','慄然':'りつぜん',
+  '彷徨':'ほうこう','煩悶':'はんもん','懈怠':'けたい','蛮勇':'ばんゆう',
+  '狼狽':'ろうばい','恍惚':'こうこつ','忿怒':'ふんぬ','怨恨':'えんこん',
+  '憤懣':'ふんまん','嫉妬':'しっと','猜疑':'さいぎ',
+  '苛烈':'かれつ','峻厳':'しゅんげん','峻烈':'しゅんれつ',
+  '気怠':'けだる','禍々しい':'まがまがしい','忌々しい':'いまいましい',
+  '疎ましい':'うとましい','煩わしい':'わずらわしい','喧しい':'やかましい',
+  '項':'うなじ','踝':'くるぶし','脹脛':'ふくらはぎ','腓':'こむら',
+  '蟀谷':'こめかみ','臍':'へそ','鳩尾':'みぞおち',
+  '靄':'もや','霞':'かすみ','霙':'みぞれ','雹':'ひょう',
+  '驟雨':'しゅうう','時化':'しけ',
+};
+let userDict = JSON.parse(localStorage.getItem('bunko_user_dict') || '{}');
+function getAllDict() { return Object.assign({}, BUILTIN_DICT, userDict); }
+
+// ═══ Text transforms ═══
+function toFullAlpha(s) { return s.replace(/[A-Za-z0-9]/g, c => String.fromCharCode(c.charCodeAt(0)+0xFEE0)); }
+
+const H2F = {'!':'！','?':'？',':':'：',';':'；','(':'（',')':'）','[':'［',']':'］','{':'｛','}':'｝',',':'，','.':'．','~':'～','@':'＠','#':'＃','$':'＄','%':'％','&':'＆','*':'＊','+':'＋','-':'－','=':'＝','/':'／','\\':'＼','|':'｜','<':'＜','>':'＞','^':'＾','_':'＿','`':'｀','"':'＂',"'":'＇'};
+function toFullSym(s) { return s.replace(/[!?:;()\[\]{},.~@#$%&*+\-=\/\\|<>^_`"']/g, c => H2F[c]||c); }
+
+function unifyEllipsis(s) {
+  s = s.replace(/・{3,}/g,'……').replace(/\.{3,}/g,'……');
+  s = s.replace(/…+/g, m => '……'.repeat(Math.max(1,Math.round(m.length/2))));
+  return s;
+}
+function unifyDash(s) {
+  s = s.replace(/-{2,}/g,'──').replace(/—+/g,'──');
+  s = s.replace(/─+/g, m => '──'.repeat(Math.max(1,Math.round(m.length/2))));
+  return s;
+}
+function excSpace(s) { return s.replace(/([！？]+)(?=[^\s！？」』）\]\)】〉》〕])/g,'$1　'); }
+function dropPeriod(s) { return s.replace(/。([」』）】〉》〕\]])/g,'$1'); }
+
+function applyTransforms(t) {
+  if(opts.halfToFull) t=toFullAlpha(t);
+  if(opts.halfSymbol) t=toFullSym(t);
+  if(opts.ellipsis)   t=unifyEllipsis(t);
+  if(opts.dash)       t=unifyDash(t);
+  if(opts.excSpace)   t=excSpace(t);
+  if(opts.dropPeriod) t=dropPeriod(t);
+  return t;
+}
+
+// ═══ Structural conversion ═══
+function isBreak(l) { const t=l.trim(); return /^[◇◆＊\*─―－\-＝=※☆★●○■□▼▽△▲♦♢\s　]+$/.test(t)&&t.length>=2; }
+
+function convert(text) {
+  text = applyTransforms(text);
+  const lines=text.replace(/\r\n/g,'\n').split('\n'), res=[]; let buf=[];
+  const flush=()=>{ if(buf.length){res.push('　'+buf.join(''));buf=[];} };
+  for(const raw of lines){
+    const l=raw.trim();
+    if(l===''){ flush(); continue; }
+    if(isBreak(l)){ flush(); res.push(''); res.push(l); res.push(''); continue; }
+    if(/^[「『（]/.test(l)){ flush(); res.push(l); }
+    else buf.push(l);
+  }
+  flush();
+  return res.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'');
+}
+
+// ═══ Ruby (visual only) ═══
+function renderRuby(text) {
+  const d=getAllDict(), keys=Object.keys(d).sort((a,b)=>b.length-a.length);
+  if(!keys.length) return esc(text);
+  const re=new RegExp('('+keys.map(eRe).join('|')+')');
+  return text.split(re).map(p=>d[p]?`<ruby class="difficult">${esc(p)}<rt>${esc(d[p])}</rt></ruby>`:esc(p)).join('');
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function eRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+// ═══ UI ═══
+let plain='';
+const inp=document.getElementById('inputArea'), out=document.getElementById('outputArea');
+
+function triggerConvert(){
+  if(!inp.value.trim()){out.innerHTML='<span class="placeholder-text">変換結果がここに表示されます</span>';plain='';return;}
+  plain=convert(inp.value); out.innerHTML=renderRuby(plain);
+}
+document.getElementById('convertBtn').addEventListener('click',triggerConvert);
+inp.addEventListener('input',()=>{clearTimeout(inp._t);inp._t=setTimeout(triggerConvert,300);});
+
+document.querySelectorAll('.copy-btn').forEach(b=>b.addEventListener('click',()=>{
+  const t=b.dataset.target==='input'?inp.value:plain; if(!t)return;
+  navigator.clipboard.writeText(t).then(()=>{b.classList.add('copied');b.textContent='コピー済';showToast('クリップボードにコピーしました');setTimeout(()=>{b.classList.remove('copied');b.textContent='コピー';},1500);});
+}));
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+
+// ── Dict modal ──
+let mel=null;
+document.getElementById('dictBtn').addEventListener('click',()=>{
+  if(mel)return;
+  mel=document.createElement('div');mel.className='modal-overlay';
+  mel.innerHTML=`<div class="modal"><div class="modal-head"><h2>ユーザー辞書</h2><button class="modal-close" id="mc">✕</button></div><div class="modal-body"><div class="dict-input-row"><input id="dk" placeholder="漢字（例：諂う）"><input id="dr" placeholder="読み（例：へつら）"><button class="btn primary" id="da">追加</button></div><ul class="dict-list" id="dl"></ul></div></div>`;
+  document.body.appendChild(mel);
+  function rl(){const l=document.getElementById('dl'),e=Object.entries(userDict);if(!e.length){l.innerHTML='<li style="color:var(--text-dim);justify-content:center;">登録なし</li>';return;}l.innerHTML=e.map(([k,v])=>`<li><span><span class="kanji">${esc(k)}</span><span class="reading">（${esc(v)}）</span></span><button class="del-btn" data-k="${esc(k)}">✕</button></li>`).join('');l.querySelectorAll('.del-btn').forEach(b=>b.addEventListener('click',()=>{delete userDict[b.dataset.k];localStorage.setItem('bunko_user_dict',JSON.stringify(userDict));rl();reR();}));}
+  rl();
+  document.getElementById('da').addEventListener('click',()=>{const k=document.getElementById('dk').value.trim(),v=document.getElementById('dr').value.trim();if(!k||!v)return;userDict[k]=v;localStorage.setItem('bunko_user_dict',JSON.stringify(userDict));document.getElementById('dk').value='';document.getElementById('dr').value='';rl();reR();});
+  const cl=()=>{mel.remove();mel=null;};
+  document.getElementById('mc').addEventListener('click',cl);mel.addEventListener('click',e=>{if(e.target===mel)cl();});
+});
+function reR(){if(plain)out.innerHTML=renderRuby(plain);}
+
+// ── Resizable ──
+const dv=document.getElementById('divider'),ma=document.getElementById('mainArea');let dg=false;
+dv.addEventListener('mousedown',()=>{dg=true;document.body.style.cursor='col-resize';document.body.style.userSelect='none';});
+window.addEventListener('mousemove',e=>{if(!dg)return;const r=ma.getBoundingClientRect(),p=ma.querySelectorAll('.panel');p[0].style.flex='none';p[0].style.width=Math.max(20,Math.min(80,((e.clientX-r.left)/r.width)*100))+'%';p[1].style.flex='1';});
+window.addEventListener('mouseup',()=>{dg=false;document.body.style.cursor='';document.body.style.userSelect='';});
+</script>
+</body>
+</html>
