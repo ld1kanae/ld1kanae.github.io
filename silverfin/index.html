@@ -268,8 +268,8 @@
   <div class="setting-row">
     <span class="setting-label">開き</span>
     <div class="setting-toggle" id="dir-toggle">
-      <button data-value="rtl">右開き</button>
-      <button data-value="ltr" class="active">左開き</button>
+      <button data-value="rtl" class="active">右開き</button>
+      <button data-value="ltr">左開き</button>
     </div>
   </div>
 </div>
@@ -281,7 +281,7 @@
 const CONFIG = {
   pdfPath: 'book.pdf',
   frontCover: 'cover-front.png',
-  backCover:  'cover-back.png',
+  backCover:  '',
   backgroundColor: 'black',
   readingDirection: 'rtl',
   quality: 1.5,
@@ -434,32 +434,28 @@ async function renderPdf(num,mw,mh) {
     if (cm>0) { cropPt=cm*MM_TO_PT; cropSide=gutterSide(num); }
   }
 
-  // Fit based on trimmed page dimensions — canvas will fill target exactly
+  // Fit based on trimmed page dimensions — canvas fills target exactly
   const effW=vp.width-cropPt;
   const fit=Math.min(mw/effW, mh/vp.height);
   const rs=fit*CONFIG.quality*pr;
 
-  // Render full page first
   const sv=pg.getViewport({scale:rs}), dv=pg.getViewport({scale:fit});
   const c=document.createElement('canvas');
   c.width=sv.width; c.height=sv.height;
   const ctx=c.getContext('2d');
   await pg.render({canvasContext:ctx,viewport:sv}).promise;
 
-  // Black correction
   if (CONFIG.blackCorrection>0) {
     const id=ctx.getImageData(0,0,c.width,c.height), d=id.data, t=CONFIG.blackCorrection;
     for (let i=0,l=d.length;i<l;i+=4) { if(d[i]<=t&&d[i+1]<=t&&d[i+2]<=t) d[i]=d[i+1]=d[i+2]=0; }
     ctx.putImageData(id,0,0);
   }
 
-  // Gutter crop
   if (cropPt>0) {
     const cp=Math.round(cropPt*rs);
     const tr=document.createElement('canvas'), nw=c.width-cp;
     tr.width=nw; tr.height=c.height;
     tr.getContext('2d').drawImage(c, cropSide==='left'?cp:0, 0, nw, c.height, 0, 0, nw, c.height);
-    // Display size = trimmed dimensions × fit (naturally fills mw)
     tr.style.width=Math.round(effW*fit)+'px'; tr.style.height=Math.round(vp.height*fit)+'px';
     tr.className='page-canvas'; return tr;
   }
@@ -487,65 +483,61 @@ function cloneCanvas(s) {
 }
 
 // ── Slide Animation (single-page portrait only) ──
-// Single wrapper holds [old, new] side by side. Only the wrapper translates,
-// so there is physically zero gap between pages.
+// Filmstrip: old page and new page sit side by side, the strip translates.
 async function displayWithSlide(dir) {
   if (!spreads.length) return;
   const sp = spreads[currentIdx];
   const vw = window.innerWidth, vh = window.innerHeight;
-  const newSrc = await renderVP(sp[0], vw, vh);
+  const mw = vw;
+  const newSrc = await renderVP(sp[0], mw, vh);
   const newNode = cloneCanvas(newSrc);
 
+  // Grab current page content (if any) — cloneNode won't copy canvas pixels
   const oldCanvas = $spread.querySelector('.page-canvas');
   const oldNode = oldCanvas ? cloneCanvas(oldCanvas) : null;
 
-  const bg = bgColor==='black'?'#080808':'#f4f3ee';
+  // Build a filmstrip container
+  const strip = document.createElement('div');
+  strip.style.cssText =
+    'position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;' +
+    'z-index:6;will-change:transform;';
 
-  // Wrapper: holds exactly 2 page cells, flex row, no gap
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText =
-    'position:absolute;top:0;left:0;width:'+(vw*2)+'px;height:100%;' +
-    'display:flex;z-index:6;will-change:transform;';
-
-  // Each cell is exactly 100vw, with background to fill any canvas margin
+  // Wrap each page in a cell of exactly viewport width
   const makeCell = (child) => {
     const cell = document.createElement('div');
-    cell.style.cssText =
-      'width:'+vw+'px;height:100%;flex:none;' +
-      'display:flex;align-items:center;justify-content:center;background:'+bg+';';
+    cell.style.cssText = 'width:'+vw+'px;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
     if (child) cell.appendChild(child);
     return cell;
   };
 
   if (dir > 0) {
-    // Forward: [old][new], start showing old (translateX=0), slide to show new (translateX=-vw)
-    wrapper.appendChild(makeCell(oldNode));
-    wrapper.appendChild(makeCell(newNode));
-    wrapper.style.transform = 'translateX(0)';
+    // Forward: [old][new], start at 0, slide to -vw
+    strip.appendChild(makeCell(oldNode));
+    strip.appendChild(makeCell(newNode));
+    strip.style.transform = 'translateX(0)';
   } else {
-    // Backward: [new][old], start showing old (translateX=-vw), slide to show new (translateX=0)
-    wrapper.appendChild(makeCell(newNode));
-    wrapper.appendChild(makeCell(oldNode));
-    wrapper.style.transform = 'translateX(-'+vw+'px)';
+    // Backward: [new][old], start at -vw, slide to 0
+    strip.appendChild(makeCell(newNode));
+    strip.appendChild(makeCell(oldNode));
+    strip.style.transform = 'translateX(-'+vw+'px)';
   }
 
-  $spread.style.visibility = 'hidden';
-  $viewer.appendChild(wrapper);
+  strip.style.width = (vw * 2) + 'px';
+  $viewer.appendChild(strip);
 
-  // Force reflow then animate
-  void wrapper.offsetWidth;
-  wrapper.style.transition = 'transform 0.3s cubic-bezier(0.25,0.1,0.25,1)';
-  wrapper.style.transform = dir > 0 ? 'translateX(-'+vw+'px)' : 'translateX(0)';
+  // Force reflow
+  void strip.offsetWidth;
+  strip.style.transition = 'transform 0.3s cubic-bezier(0.25,0.1,0.25,1)';
+  strip.style.transform = dir > 0 ? 'translateX(-'+vw+'px)' : 'translateX(0)';
 
   const finalize = () => {
     $spread.innerHTML = '';
     $spread.appendChild(cloneCanvas(newSrc));
-    $spread.style.visibility = '';
-    if (wrapper.parentNode) wrapper.remove();
+    if (strip.parentNode) strip.remove();
   };
 
-  wrapper.addEventListener('transitionend', finalize, { once: true });
-  setTimeout(() => { if (wrapper.parentNode) finalize(); }, 400);
+  strip.addEventListener('transitionend', finalize, { once: true });
+  setTimeout(() => { if (strip.parentNode) finalize(); }, 400);
 
   updateIndicator(sp);
   $progress.style.width = ((currentIdx+1)/spreads.length*100)+'%';
