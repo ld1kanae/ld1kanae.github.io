@@ -8,8 +8,8 @@
 <title>銀の鰭</title>
 
 <!-- Favicon -->
-<link rel="icon" type="image/png" href="cover-front.png">
-<link rel="apple-touch-icon" href="cover-front.png">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 
 <!-- OGP -->
 <meta property="og:title" content="銀の鰭">
@@ -646,7 +646,7 @@ document.addEventListener('touchend', e => {
   if (seekOpen) return; // don't nav while seek bar open
   const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
   if (Date.now()-tt0>400||Math.abs(dx)<45||Math.abs(dy)>Math.abs(dx)*0.6) return;
-  dx<0 ? forward() : backward();
+  dx<0 ? (readDir==='rtl'?backward():forward()) : (readDir==='rtl'?forward():backward());
 },{passive:true});
 
 let lastTE=0;
