@@ -661,6 +661,12 @@ function updateSeekBar() {
   $seekCur.textContent = currentIdx + 1;
   $seekTotal.textContent = spreads.length;
 }
+function updateSeekDirection() {
+  const rtl = readDir === 'rtl';
+  $seekBar.style.flexDirection = rtl ? 'row-reverse' : 'row';
+  $seekRange.style.direction = rtl ? 'rtl' : 'ltr';
+  $('seek-reset').textContent = rtl ? '⏭' : '⏮';
+}
 
 let seekAutoHideT=null;
 function openSeek(){
@@ -668,6 +674,7 @@ function openSeek(){
   $seekBar.classList.add('show');
   $seekBtn.style.display='none';
   updateSeekBar();
+  updateSeekDirection();
   resetSeekAutoHide();
 }
 function closeSeek(){
@@ -778,7 +785,7 @@ document.querySelectorAll('#dir-toggle button').forEach(b=>{
   b.addEventListener('click',()=>{
     readDir=b.dataset.value;
     document.querySelectorAll('#dir-toggle button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); pageCache.clear(); updateHintDirection(); display();
+    b.classList.add('active'); pageCache.clear(); updateHintDirection(); updateSeekDirection(); display();
   });
 });
 document.addEventListener('click',e=>{
@@ -796,7 +803,7 @@ function initSettingsUI() {
 }
 
 async function init() {
-  applyTheme(); initSettingsUI(); updateHintDirection();
+  applyTheme(); initSettingsUI(); updateHintDirection(); updateSeekDirection();
   try {
     let fi=null,bi=null;
     const cv=[];
