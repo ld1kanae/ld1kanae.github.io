@@ -658,8 +658,13 @@ document.addEventListener('touchend', e => {
 function updateSeekBar() {
   $seekRange.max = spreads.length - 1;
   $seekRange.value = currentIdx;
-  $seekCur.textContent = currentIdx + 1;
-  $seekTotal.textContent = spreads.length;
+  // Show actual page number/label
+  const sp = spreads[currentIdx];
+  if (sp) {
+    const v = virtualPages[sp[0]];
+    $seekCur.textContent = v.type === 'cover' ? v.label : v.num;
+  }
+  $seekTotal.textContent = totalVirtual;
 }
 function updateSeekDirection() {
   const rtl = readDir === 'rtl';
@@ -695,8 +700,8 @@ $seekBtn.addEventListener('click', e => {
 
 $seekRange.addEventListener('input', () => {
   const idx = parseInt($seekRange.value, 10);
-  $seekCur.textContent = idx + 1;
   currentIdx = idx;
+  updateSeekBar();
   display();
   resetSeekAutoHide();
 });
