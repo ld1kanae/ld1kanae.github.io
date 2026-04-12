@@ -664,7 +664,7 @@ function updateSeekBar() {
     const v = virtualPages[sp[0]];
     $seekCur.textContent = v.type === 'cover' ? v.label : v.num;
   }
-  $seekTotal.textContent = totalVirtual;
+  $seekTotal.textContent = pdfDoc.numPages;
 }
 function updateSeekDirection() {
   const rtl = readDir === 'rtl';
