@@ -53,6 +53,17 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
 .output-area { padding:20px; font-family:var(--font-body); font-size:14px; line-height:1.9; white-space:pre-wrap; word-break:break-all; min-height:100%; color:var(--text); }
 .output-area .difficult { font-weight:700; color:var(--accent); }
 .output-area ruby rt { font-size:.55em; color:var(--ruby-color); font-weight:400; }
+.output-area.tategaki {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 100%;
+  padding: 24px 20px;
+  line-height: 2.1;
+}
 .placeholder-text { color:var(--text-dim); opacity:.4; font-family:var(--font-ui); font-size:13px; }
 
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index:100; backdrop-filter:blur(4px); }
@@ -117,7 +128,10 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
   <div class="panel">
     <div class="panel-header">
       <span class="panel-label">変換後</span>
-      <button class="copy-btn" data-target="output">コピー</button>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="copy-btn" id="tateBtn" title="縦書き／横書き切替">縦書き</button>
+        <button class="copy-btn" data-target="output">コピー</button>
+      </div>
     </div>
     <div class="panel-body">
       <div class="output-area" id="outputArea"><span class="placeholder-text">変換結果がここに表示されます</span></div>
@@ -280,6 +294,25 @@ document.getElementById('dictBtn').addEventListener('click',()=>{
   document.getElementById('mc').addEventListener('click',cl);mel.addEventListener('click',e=>{if(e.target===mel)cl();});
 });
 function reR(){if(plain)out.innerHTML=renderRuby(plain);}
+
+// ── Vertical toggle ──
+let isTate = false;
+document.getElementById('tateBtn').addEventListener('click', () => {
+  isTate = !isTate;
+  out.classList.toggle('tategaki', isTate);
+  document.getElementById('tateBtn').textContent = isTate ? '横書き' : '縦書き';
+  // Swap scroll axis on parent
+  const body = out.parentElement;
+  if (isTate) { body.style.overflowX = 'auto'; body.style.overflowY = 'hidden'; }
+  else { body.style.overflowX = ''; body.style.overflowY = ''; }
+});
+
+// Wheel → horizontal scroll in vertical mode
+out.parentElement.addEventListener('wheel', function(e) {
+  if (!isTate) return;
+  e.preventDefault();
+  this.scrollLeft -= e.deltaY * 1.5;
+}, { passive: false });
 
 // ── Resizable ──
 const dv=document.getElementById('divider'),ma=document.getElementById('mainArea');let dg=false;
