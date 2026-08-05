@@ -129,7 +129,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
     <div class="panel-header">
       <span class="panel-label">変換後</span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="copy-btn" id="tateBtn" title="縦書き／横書き切替">縦書き</button>
+        <button class="copy-btn tate-toggle" id="tateBtn" title="縦書き／横書き切替">縦書き</button>
         <button class="copy-btn" data-target="output">コピー</button>
       </div>
     </div>
@@ -274,7 +274,7 @@ function triggerConvert(){
 document.getElementById('convertBtn').addEventListener('click',triggerConvert);
 inp.addEventListener('input',()=>{clearTimeout(inp._t);inp._t=setTimeout(triggerConvert,300);});
 
-document.querySelectorAll('.copy-btn').forEach(b=>b.addEventListener('click',()=>{
+document.querySelectorAll('.copy-btn:not(.tate-toggle)').forEach(b=>b.addEventListener('click',()=>{
   const t=b.dataset.target==='input'?inp.value:plain; if(!t)return;
   navigator.clipboard.writeText(t).then(()=>{b.classList.add('copied');b.textContent='コピー済';showToast('クリップボードにコピーしました');setTimeout(()=>{b.classList.remove('copied');b.textContent='コピー';},1500);});
 }));
