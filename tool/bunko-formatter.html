@@ -144,7 +144,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
 
 <script>
 // ═══ Options (localStorage persisted) ═══
-const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false, kogaki:true, noIndent:false, blankMarker:false };
+const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false, kogaki:true, noIndent:false, blankMarker:true };
 let opts;
 try { opts = Object.assign({}, OPT_DEFAULTS, JSON.parse(localStorage.getItem('bunko_opts'))); } catch(e) { opts = Object.assign({}, OPT_DEFAULTS); }
 function saveOpts() { localStorage.setItem('bunko_opts', JSON.stringify(opts)); }
