@@ -118,7 +118,7 @@ header{
 #viewer p{text-indent:1em;}
 #viewer p.q{text-indent:0;}          /* 「『（ で始まる行は字下げしない */
 #viewer p.blank{text-indent:0;}      /* 空行 */
-#viewer p.sep{text-indent:0;text-align:center;margin-block:1.2em;}
+#viewer p.sep{text-indent:0;text-align:center;}
 #viewer h1.work-title{
   font-size:2em;font-weight:400;letter-spacing:.12em;
   margin-block:0 3.2em;
@@ -402,40 +402,34 @@ function buildBody(man, texts){
     h2.dataset.ch = ci;
     frag.appendChild(h2);
 
-    /* 空行の整理：連続空行はひとつに。台詞に接する空行は落として詰める */
-    const items = [];
-    let pendingBlank = false;
+    /* 文庫本フォーマッターの convert() と同じ段落整形
+       ・空行は段落の切れ目としてのみ扱い、空行そのものは出力しない
+       ・続く地の文の行はひとつの段落に連結し、行頭を1字下げ
+       ・「『（ で始まる行は独立した行にして字下げなし
+       ・◇ ── などの区切り記号だけの行は前後を1行あけて中央に置く */
+    const out = [];
+    let buf = [];
+    const flush = () => { if(buf.length){ out.push({k:'p', s:buf.join('')}); buf = []; } };
     for(const raw of normalize(texts[ci]).split('\n')){
-      const line = raw.replace(/[\s　]+$/, '');
-      if(!line.trim()){ pendingBlank = true; continue; }
-      if(pendingBlank && items.length){
-        const prev = items[items.length - 1];
-        if(!(isQuote(prev) || isQuote(line))) items.push(null);
-      }
-      pendingBlank = false;
-      items.push(line);
+      const l = raw.trim();
+      if(l === ''){ flush(); continue; }
+      if(isSep(l)){ flush(); out.push({k:'blank'}); out.push({k:'sep', s:l}); out.push({k:'blank'}); continue; }
+      if(isQuote(l)){ flush(); out.push({k:'q', s:l}); continue; }
+      buf.push(l);
     }
+    flush();
+    while(out.length && out[0].k === 'blank') out.shift();
+    while(out.length && out[out.length-1].k === 'blank') out.pop();
 
-    for(const line of items){
-      if(line === null){
-        const b = document.createElement('p');
-        b.className = 'blank';
-        b.textContent = '　';
-        frag.appendChild(b);
-        continue;
-      }
+    for(let n = 0; n < out.length; n++){
+      const it = out[n];
+      if(it.k === 'blank' && out[n-1] && out[n-1].k === 'blank') continue;
       const p = document.createElement('p');
-      const body = line.replace(/^　+/, '');
-      const lead = line.length - body.length;
-      if(isSep(body.trim())){
-        p.className = 'sep';
-      }else if(isQuote(body)){
-        p.className = 'q';
-        if(lead) p.style.textIndent = lead + 'em';
-      }else if(lead){
-        p.style.textIndent = (lead + 1) + 'em';
+      if(it.k === 'blank'){ p.className = 'blank'; p.textContent = '　'; }
+      else{
+        if(it.k !== 'p') p.className = it.k;
+        p.innerHTML = withRuby(it.s);
       }
-      p.innerHTML = withRuby(body);
       frag.appendChild(p);
     }
   });
