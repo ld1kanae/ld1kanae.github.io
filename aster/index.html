@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>読み込み中…</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap');
+
+:root{
+  --bg:#ffffff;
+  --surface:#f7f7f8;
+  --surface2:#eeeff1;
+  --border:#e0e0e4;
+  --text:#1a1a1e;
+  --text-dim:#888892;
+  --accent:#7c3aed;
+  --ruby-color:#8a8a95;
+  --font-body:'Noto Serif JP', serif;
+  --font-ui:'IBM Plex Sans JP', sans-serif;
+
+  /* 青空文庫(PC)準拠のベース: 本文 16px / 章見出し 1.17em / 作品名 2em */
+  --fs-base:16;
+  --scale:1;
+  --fsz:16px;
+  --pad-b:48px;   /* 段の上下（＝縦書きの行方向）余白 */
+  --pad-i:56px;   /* 読み進む方向の余白 */
+  --cols:42;      /* 一行の最大字数（文庫本の目安） */
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--font-ui);
+  display:flex;flex-direction:column;overflow:hidden;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ═══ ヘッダー ═══ */
+header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.work{display:flex;align-items:baseline;gap:10px;min-width:0;}
+.work h1{
+  font-size:14px;font-weight:500;letter-spacing:.08em;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.work .now{font-size:11px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tools{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+
+.btn{
+  font-family:var(--font-ui);font-size:12px;line-height:1;
+  padding:7px 13px;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-dim);cursor:pointer;
+  transition:border-color .15s,color .15s;white-space:nowrap;
+}
+.btn:hover{border-color:var(--accent);color:var(--text);}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.btn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);}
+
+.zoom{display:flex;align-items:center;border:1px solid var(--border);border-radius:6px;background:var(--surface);overflow:hidden;}
+.zoom button{
+  font-family:var(--font-ui);font-size:14px;line-height:1;width:30px;height:29px;
+  border:none;background:transparent;color:var(--text-dim);cursor:pointer;
+}
+.zoom button:hover{color:var(--accent);}
+.zoom button:disabled{opacity:.3;cursor:default;}
+.zoom button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+.zoom .val{font-size:11px;color:var(--text-dim);min-width:38px;text-align:center;user-select:none;font-variant-numeric:tabular-nums;}
+
+/* ═══ 目次 ═══ */
+.toc{
+  position:fixed;top:54px;right:16px;z-index:40;width:min(280px,calc(100vw - 32px));
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 12px 32px rgba(0,0,0,.10);padding:6px;display:none;
+  max-height:min(60vh,420px);overflow-y:auto;
+}
+.toc.open{display:block;}
+.toc button{
+  display:block;width:100%;text-align:right;
+  font-family:var(--font-ui);font-size:13px;padding:9px 12px;border:none;border-radius:6px;
+  background:transparent;color:var(--text);cursor:pointer;
+}
+.toc button:hover{background:var(--surface2);}
+.toc button.current{color:var(--accent);}
+.toc button.head{font-size:12px;color:var(--text-dim);letter-spacing:.08em;}
+.toc hr{border:none;border-top:1px solid var(--border);margin:4px 8px;}
+
+/* ═══ 本文 ═══ */
+#stage{flex:1;min-height:0;display:grid;place-items:center;overflow:hidden;position:relative;}
+#viewer{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  font-family:var(--font-body);
+  font-size:var(--fsz);
+  line-height:1.8;
+  line-break:strict;
+  word-break:normal;
+  color:var(--text);
+  width:100%;
+  height:100%;
+  max-height:calc(var(--fsz) * var(--cols) + var(--pad-b) * 2);
+  padding:var(--pad-b) var(--pad-i);
+  overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;
+  touch-action:pan-x pinch-zoom;
+  overscroll-behavior-x:contain;
+  outline:none;
+}
+#viewer::-webkit-scrollbar{display:none;}
+
+#viewer p{text-indent:1em;}
+#viewer p.q{text-indent:0;}          /* 「『（ で始まる行は字下げしない */
+#viewer p.blank{text-indent:0;}      /* 空行 */
+#viewer p.sep{text-indent:0;text-align:center;margin-block:1.2em;}
+#viewer h1.work-title{
+  font-size:2em;font-weight:700;letter-spacing:.12em;
+  text-align:center;margin-block:1em 3.2em;
+}
+#viewer h2.chapter{
+  font-size:1.17em;font-weight:700;letter-spacing:.08em;
+  margin-block:3.2em 2em;
+}
+#viewer h2.chapter:first-of-type{margin-block-start:0;}
+#viewer .tail{block-size:20vw;}      /* 末尾の余白 */
+
+#viewer ruby rt{font-size:.5em;color:var(--ruby-color);font-weight:400;letter-spacing:0;}
+/* 文庫本フォーマッターと同じ強調にする場合は下記を有効化
+#viewer ruby{font-weight:700;color:var(--accent);} */
+
+.state{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;text-align:center;padding:24px;
+  font-size:13px;color:var(--text-dim);background:var(--bg);
+}
+.state.hide{display:none;}
+.state .err{color:var(--text);font-size:13px;line-height:1.8;max-width:32em;}
+
+/* ═══ 下部バー ═══ */
+footer{
+  display:flex;align-items:center;gap:14px;
+  padding:10px 20px calc(10px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;
+}
+#seek{
+  flex:1;direction:rtl;                 /* 左へ動かすほど読み進む（縦書きの流れに合わせる） */
+  appearance:none;-webkit-appearance:none;height:20px;background:transparent;cursor:pointer;
+}
+#seek:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px;}
+#seek::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--surface2);border:1px solid var(--border);}
+#seek::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;margin-top:-6px;}
+#seek::-moz-range-track{height:4px;border-radius:2px;background:var(--surface2);border:1px solid var(--border);}
+#seek::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;}
+.pct{font-size:11px;color:var(--text-dim);min-width:34px;text-align:right;font-variant-numeric:tabular-nums;user-select:none;}
+
+.toast{
+  position:fixed;left:50%;bottom:72px;transform:translateX(-50%) translateY(20px);
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  font-size:12px;padding:9px 18px;border-radius:8px;
+  opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:60;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media (max-width:640px){
+  :root{--pad-b:26px;--pad-i:30px;}
+  header{padding:8px 12px;}
+  .toc{top:46px;right:10px;}
+  footer{padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:10px;}
+  .work .now{display:none;}
+  .btn{padding:7px 10px;}
+}
+@media (prefers-reduced-motion:reduce){
+  .toast{transition:none;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="work">
+    <h1 id="workTitle">　</h1>
+    <span class="now" id="nowChapter"></span>
+  </div>
+  <div class="tools">
+    <div class="zoom">
+      <button id="zoomOut" aria-label="文字を小さく">－</button>
+      <span class="val" id="zoomVal">100%</span>
+      <button id="zoomIn" aria-label="文字を大きく">＋</button>
+    </div>
+    <button class="btn" id="tocBtn" aria-expanded="false" aria-controls="toc">目次</button>
+  </div>
+</header>
+
+<nav class="toc" id="toc" hidden></nav>
+
+<div id="stage">
+  <div id="viewer" tabindex="0"></div>
+  <div class="state" id="state"><span>本文を読み込んでいます…</span></div>
+</div>
+
+<footer>
+  <button class="btn" id="topBtn">最初に戻る</button>
+  <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="読む位置">
+  <span class="pct" id="pct">0%</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   設定：GitHub 上のどのフォルダを読むか
+   ・?dir=xxxx で切り替え可能
+   ・省略時はこの HTML が置かれているフォルダ名を使う
+   ══════════════════════════════════════════════════════════ */
+const OWNER  = 'ld1kanae';
+const REPO   = 'ld1kanae.github.io';
+const BRANCH = 'main';
+const PARAMS = new URLSearchParams(location.search);
+const DIR = PARAMS.get('dir') ||
+            location.pathname.replace(/\/[^/]*$/, '').replace(/^\/|\/$/g, '') ||
+            'aster';
+/* API が使えないときの保険（aster フォルダの既知の構成） */
+const FALLBACK = { title: '詩人', chapters: ['前篇', '後篇', '追篇'] };
+
+const KEY_POS   = 'novel_reader_pos:'   + DIR;
+const KEY_SCALE = 'novel_reader_scale';
+const KEY_MAN   = 'novel_reader_manifest:' + DIR;
+
+/* ══════════════════════════════════════════════════════════
+   難読漢字辞書（文庫本フォーマッターと同一）
+   ══════════════════════════════════════════════════════════ */
+const DICT = {
+  '諂':'へつら','嘯':'うそぶ','嗾':'けしか','蠢':'うごめ','呻':'うめ','靡':'なび',
+  '嘲':'あざけ','慄':'おのの','翳':'かざ','贖':'あがな','蔑':'さげす',
+  '竦':'すく','怯':'ひる','宥':'なだ','縋':'すが','嘶':'いなな','誑':'たぶら',
+  '跪':'ひざまず','噤':'つぐ','窘':'たしな','恃':'たの','揶揄':'やゆ',
+  '眩':'くら','怺':'こら','拗':'こじ','歪':'ゆが','捩':'ねじ','刮目':'かつもく',
+  '睨':'にら','罵':'ののし','貪':'むさぼ','喘':'あえ','呟':'つぶや','喚':'わめ',
+  '軋':'きし','嗅':'か','啜':'すす','舐':'な','漲':'みなぎ',
+  '犇':'ひしめ','躊躇':'ちゅうちょ','逡巡':'しゅんじゅん',
+  '舷側':'げんそく','素っ頓狂':'すっとんきょう','穏便':'おんびん',
+  '面持ち':'おももち','目配せ':'めくばせ','会釈':'えしゃく',
+  '鰭':'ひれ','贄':'にえ','鋤':'すき','鍍金':'めっき',
+  '慟哭':'どうこく','咆哮':'ほうこう','膠着':'こうちゃく','凄絶':'せいぜつ',
+  '朦朧':'もうろう','邂逅':'かいこう','憐憫':'れんびん','忸怩':'じくじ',
+  '傲岸':'ごうがん','僥倖':'ぎょうこう','畏怖':'いふ','嗚咽':'おえつ',
+  '齟齬':'そご','瀟洒':'しょうしゃ','獰猛':'どうもう','矜持':'きょうじ',
+  '蹂躙':'じゅうりん','呶鳴':'どめい','諧謔':'かいぎゃく','吝嗇':'りんしょく',
+  '狡猾':'こうかつ','傀儡':'かいらい','怨嗟':'えんさ','慚愧':'ざんき',
+  '蟠り':'わだかまり','咎':'とが','柵':'しがらみ',
+  '呵責':'かしゃく','鶴嘴':'つるはし','轍':'わだち','楔':'くさび',
+  '痼疾':'こしつ','桎梏':'しっこく','蒙昧':'もうまい',
+  '瓦解':'がかい','瑕疵':'かし',
+  '顰蹙':'ひんしゅく','恫喝':'どうかつ','糾弾':'きゅうだん',
+  '辟易':'へきえき','懊悩':'おうのう','逼迫':'ひっぱく','瞠目':'どうもく',
+  '杞憂':'きゆう','韜晦':'とうかい','拘泥':'こうでい',
+  '涵養':'かんよう','蕭条':'しょうじょう','閑寂':'かんじゃく',
+  '燦然':'さんぜん','悄然':'しょうぜん','茫然':'ぼうぜん','愕然':'がくぜん',
+  '戦慄':'せんりつ','殺戮':'さつりく','暗澹':'あんたん','慄然':'りつぜん',
+  '彷徨':'ほうこう','煩悶':'はんもん','懈怠':'けたい','蛮勇':'ばんゆう',
+  '狼狽':'ろうばい','恍惚':'こうこつ','忿怒':'ふんぬ','怨恨':'えんこん',
+  '憤懣':'ふんまん','嫉妬':'しっと','猜疑':'さいぎ',
+  '苛烈':'かれつ','峻厳':'しゅんげん','峻烈':'しゅんれつ',
+  '気怠':'けだる','禍々しい':'まがまがしい','忌々しい':'いまいましい',
+  '疎ましい':'うとましい','煩わしい':'わずらわしい','喧しい':'やかましい',
+  '項':'うなじ','踝':'くるぶし','脹脛':'ふくらはぎ','腓':'こむら',
+  '蟀谷':'こめかみ','臍':'へそ','鳩尾':'みぞおち',
+  '靄':'もや','霞':'かすみ','霙':'みぞれ','雹':'ひょう',
+  '驟雨':'しゅうう','時化':'しけ',
+};
+
+/* ══════════════════════════════════════════════════════════
+   整形（文庫本フォーマッターと同じ処理）
+   ══════════════════════════════════════════════════════════ */
+const H2F = {'!':'！','?':'？',':':'：',';':'；','(':'（',')':'）','[':'［',']':'］','{':'｛','}':'｝',',':'，','.':'．','~':'～','@':'＠','#':'＃','$':'＄','%':'％','&':'＆','*':'＊','+':'＋','-':'－','=':'＝','/':'／','\\':'＼','|':'｜','<':'＜','>':'＞','^':'＾','_':'＿','`':'｀','"':'＂',"'":'＇'};
+
+const toFullAlpha  = s => s.replace(/[A-Za-z0-9]/g, c => String.fromCharCode(c.charCodeAt(0) + 0xFEE0));
+const toFullSym    = s => s.replace(/[!?:;()\[\]{},.~@#$%&*+\-=\/\\|<>^_`"']/g, c => H2F[c] || c);
+const excSpace     = s => s.replace(/([！？]+)(?=[^\s！？」』）\]\)】〉》〕])/g, '$1　');
+const dropPeriod   = s => s.replace(/。([」』）】〉》〕\]])/g, '$1');
+
+function unifyEllipsis(s){
+  s = s.replace(/・{3,}/g, '……').replace(/\.{3,}/g, '……');
+  return s.replace(/…+/g, m => '……'.repeat(Math.max(1, Math.round(m.length / 2))));
+}
+function unifyDash(s){
+  s = s.replace(/-{2,}/g, '──').replace(/[—―]+/g, '──');
+  return s.replace(/─+/g, m => '──'.repeat(Math.max(1, Math.round(m.length / 2))));
+}
+function expandKogaki(s){
+  return s.replace(/([あぁ])ぁ/g,'ああ').replace(/([いぃ])ぃ/g,'いい').replace(/([うぅ])ぅ/g,'うう')
+          .replace(/([えぇ])ぇ/g,'ええ').replace(/([おぉ])ぉ/g,'おお')
+          .replace(/([アァ])ァ/g,'アア').replace(/([イィ])ィ/g,'イイ').replace(/([ウゥ])ゥ/g,'ウウ')
+          .replace(/([エェ])ェ/g,'エエ').replace(/([オォ])ォ/g,'オオ');
+}
+function normalize(t){
+  t = t.replace(/\r\n?/g, '\n');
+  t = unifyEllipsis(t);   /* 半角 ... の段階で潰しておく */
+  t = unifyDash(t);       /* 半角 -- の段階で潰しておく */
+  t = toFullAlpha(t);
+  t = toFullSym(t);
+  t = unifyEllipsis(t);
+  t = unifyDash(t);
+  t = excSpace(t);
+  t = dropPeriod(t);      /* 。」→」 */
+  t = expandKogaki(t);
+  return t;
+}
+
+const esc  = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const eRe  = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const RUBY_RE = new RegExp('(' + Object.keys(DICT).sort((a,b)=>b.length-a.length).map(eRe).join('|') + ')');
+function withRuby(text){
+  return text.split(RUBY_RE)
+             .map(p => DICT[p] ? `<ruby>${esc(p)}<rt>${esc(DICT[p])}</rt></ruby>` : esc(p))
+             .join('');
+}
+const isSep = s => /^[◇◆＊─―－＝※☆★●○■□▼▽△▲♦♢]+$/.test(s) && s.length >= 2;
+
+/* ══════════════════════════════════════════════════════════
+   読み込み
+   ══════════════════════════════════════════════════════════ */
+const RAW = n => `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${DIR.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(n)}`;
+
+async function fetchText(name){
+  const urls = [];
+  if(location.protocol === 'http:' || location.protocol === 'https:') urls.push('./' + encodeURIComponent(name));
+  urls.push(RAW(name));
+  let last;
+  for(const u of urls){
+    try{
+      const r = await fetch(u, {cache:'no-cache'});
+      if(!r.ok){ last = new Error(r.status + ' ' + u); continue; }
+      const buf = await r.arrayBuffer();
+      return new TextDecoder('utf-8').decode(buf);
+    }catch(e){ last = e; }
+  }
+  throw last || new Error('読み込みに失敗しました：' + name);
+}
+
+async function loadManifest(){
+  try{
+    const api = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${DIR.split('/').map(encodeURIComponent).join('/')}?ref=${BRANCH}`;
+    const r = await fetch(api, {headers:{Accept:'application/vnd.github+json'}});
+    if(!r.ok) throw new Error('API ' + r.status);
+    const list = await r.json();
+    if(!Array.isArray(list)) throw new Error('API shape');
+
+    const titleFile = list.find(f => f.type === 'file' && /\.title$/i.test(f.name));
+    const txts = list.filter(f => f.type === 'file' && /\.txt$/i.test(f.name))
+                     .map(f => f.name.replace(/\.txt$/i, ''))
+                     .sort((a,b) => a.localeCompare(b,'ja'));
+    if(!txts.length) throw new Error('no txt');
+
+    let title = titleFile ? titleFile.name.replace(/\.title$/i, '') : DIR;
+    let chapters = txts;
+    if(titleFile){
+      const order = (await fetchText(titleFile.name)).replace(/\r/g,'').split('\n').map(s => s.trim()).filter(Boolean);
+      const known = new Set(txts);
+      chapters = order.filter(n => known.has(n));
+      txts.forEach(n => { if(!chapters.includes(n)) chapters.push(n); }); /* .title に無い .txt は末尾に */
+    }
+    const man = {title, chapters};
+    try{ localStorage.setItem(KEY_MAN, JSON.stringify(man)); }catch(e){}
+    return man;
+  }catch(e){
+    try{
+      const c = JSON.parse(localStorage.getItem(KEY_MAN) || 'null');
+      if(c && c.chapters && c.chapters.length) return c;
+    }catch(_){}
+    if(DIR === 'aster') return FALLBACK;
+    throw e;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   組版（DOM 構築）
+   ══════════════════════════════════════════════════════════ */
+const viewer = document.getElementById('viewer');
+let blocks = [];        /* data-i を振った全ブロック要素 */
+let chapterMarks = [];  /* {name, el, index} */
+
+function buildBody(man, texts){
+  const frag = document.createDocumentFragment();
+
+  const h1 = document.createElement('h1');
+  h1.className = 'work-title';
+  h1.innerHTML = withRuby(normalize(man.title));
+  frag.appendChild(h1);
+
+  man.chapters.forEach((name, ci) => {
+    const h2 = document.createElement('h2');
+    h2.className = 'chapter';
+    h2.innerHTML = withRuby(normalize(name));
+    h2.dataset.ch = ci;
+    frag.appendChild(h2);
+
+    const lines = normalize(texts[ci]).split('\n');
+    let prevBlank = true;
+    for(const raw of lines){
+      const line = raw.replace(/[\s　]+$/, '');
+      if(!line.trim()){
+        if(prevBlank) continue;             /* 連続空行はひとつにまとめる */
+        const b = document.createElement('p');
+        b.className = 'blank';
+        b.textContent = '　';
+        frag.appendChild(b);
+        prevBlank = true;
+        continue;
+      }
+      prevBlank = false;
+      const p = document.createElement('p');
+      const body = line.replace(/^　+/, '');
+      const lead = line.length - body.length;
+      if(isSep(body.trim())){
+        p.className = 'sep';
+      }else if(/^[「『（(〈《【]/.test(body)){
+        p.className = 'q';
+        if(lead) p.style.textIndent = lead + 'em';
+      }else if(lead){
+        p.style.textIndent = (lead + 1) + 'em';
+      }
+      p.innerHTML = withRuby(body);
+      frag.appendChild(p);
+    }
+  });
+
+  const tail = document.createElement('p');
+  tail.className = 'tail';
+  tail.textContent = '　';
+  frag.appendChild(tail);
+
+  viewer.replaceChildren(frag);
+  blocks = Array.from(viewer.children);
+  blocks.forEach((el, i) => el.dataset.i = i);
+  chapterMarks = blocks.map((el, i) => el.dataset.ch !== undefined ? {el, index:i, ch:+el.dataset.ch} : null)
+                       .filter(Boolean)
+                       .map(m => ({...m, name: man.chapters[m.ch]}));
+}
+
+/* ══════════════════════════════════════════════════════════
+   スクロール（縦書き＝横スクロール。scrollLeft の符号は実測で判定）
+   ══════════════════════════════════════════════════════════ */
+let scrollSign = 'neg';   /* 'neg': 0 → -max（標準） / 'pos': max → 0（旧実装） */
+
+function maxScroll(){ return Math.max(0, viewer.scrollWidth - viewer.clientWidth); }
+function detectScrollSign(){
+  const max = maxScroll();
+  if(max < 2) return;
+  const keep = viewer.scrollLeft;
+  viewer.scrollLeft = -1;
+  scrollSign = viewer.scrollLeft < 0 ? 'neg' : 'pos';
+  viewer.scrollLeft = keep;
+}
+/* pos = 読み進んだ距離（0 = 冒頭、max = 末尾） */
+function getPos(){ return scrollSign === 'neg' ? -viewer.scrollLeft : maxScroll() - viewer.scrollLeft; }
+function setPos(p){
+  const max = maxScroll();
+  p = Math.max(0, Math.min(max, p));
+  viewer.scrollLeft = scrollSign === 'neg' ? -p : max - p;
+}
+function padStart(){ return parseFloat(getComputedStyle(viewer).paddingRight) || 0; }
+function readingEdge(){ return viewer.getBoundingClientRect().right - padStart(); }
+
+/* 慣性つきスクロール */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let target = null, rafId = 0;
+function glideBy(delta){ glideTo((target === null ? getPos() : target) + delta); }
+function glideTo(p){
+  if(reduceMotion){ stopGlide(); setPos(p); return; }
+  target = Math.max(0, Math.min(maxScroll(), p));
+  if(!rafId) rafId = requestAnimationFrame(glideStep);
+}
+function glideStep(){
+  const cur = getPos(), diff = target - cur;
+  if(Math.abs(diff) < 0.6){ setPos(target); stopGlide(); return; }
+  setPos(cur + diff * 0.2);
+  rafId = requestAnimationFrame(glideStep);
+}
+function stopGlide(){ if(rafId) cancelAnimationFrame(rafId); rafId = 0; target = null; }
+
+/* 現在の読み位置にあるブロック */
+function anchorIndex(){
+  if(!blocks.length) return 0;
+  const edge = readingEdge() + 1;
+  let lo = 0, hi = blocks.length - 1, ans = 0;
+  while(lo <= hi){
+    const mid = (lo + hi) >> 1;
+    if(blocks[mid].getBoundingClientRect().right <= edge){ ans = mid; hi = mid - 1; }
+    else lo = mid + 1;
+  }
+  return ans;
+}
+function alignTo(el, smooth){
+  const p = getPos() + (readingEdge() - el.getBoundingClientRect().right);
+  if(smooth) glideTo(p); else { stopGlide(); setPos(p); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   UI
+   ══════════════════════════════════════════════════════════ */
+const SCALES = [0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.4, 1.6, 1.8, 2.0];
+let scaleIdx = 3;
+const seek = document.getElementById('seek');
+const pctEl = document.getElementById('pct');
+const nowEl = document.getElementById('nowChapter');
+const tocEl = document.getElementById('toc');
+const toastEl = document.getElementById('toast');
+let seeking = false, ready = false;
+
+function applyScale(keepAnchor){
+  const el = keepAnchor && blocks.length ? blocks[anchorIndex()] : null;
+  const s = SCALES[scaleIdx];
+  document.documentElement.style.setProperty('--scale', s);
+  document.documentElement.style.setProperty('--fsz', (16 * s) + 'px');
+  document.getElementById('zoomVal').textContent = Math.round(s * 100) + '%';
+  document.getElementById('zoomOut').disabled = scaleIdx === 0;
+  document.getElementById('zoomIn').disabled  = scaleIdx === SCALES.length - 1;
+  try{ localStorage.setItem(KEY_SCALE, String(scaleIdx)); }catch(e){}
+  if(el) requestAnimationFrame(() => { alignTo(el, false); updateUI(); });
+}
+document.getElementById('zoomIn').addEventListener('click', () => { if(scaleIdx < SCALES.length-1){ scaleIdx++; applyScale(true); } });
+document.getElementById('zoomOut').addEventListener('click', () => { if(scaleIdx > 0){ scaleIdx--; applyScale(true); } });
+
+function updateUI(){
+  const max = maxScroll();
+  const p = max ? getPos() / max : 0;
+  if(!seeking) seek.value = Math.round(p * 1000);
+  pctEl.textContent = Math.round(p * 100) + '%';
+  const i = anchorIndex();
+  let cur = chapterMarks[0];
+  for(const m of chapterMarks){ if(m.index <= i) cur = m; }
+  if(cur){
+    nowEl.textContent = cur.name;
+    tocEl.querySelectorAll('button[data-jump]').forEach(b => b.classList.toggle('current', +b.dataset.jump === cur.index));
+  }
+}
+
+let saveTimer = 0;
+function savePos(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    if(!ready) return;
+    try{ localStorage.setItem(KEY_POS, JSON.stringify({i: anchorIndex(), at: Date.now()})); }catch(e){}
+  }, 400);
+}
+
+viewer.addEventListener('scroll', () => { updateUI(); savePos(); }, {passive:true});
+
+/* ホイール → 横スクロール */
+viewer.addEventListener('wheel', e => {
+  if(e.ctrlKey) return;
+  e.preventDefault();
+  const unit = e.deltaMode === 1 ? 20 : (e.deltaMode === 2 ? viewer.clientWidth : 1);
+  const d = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * unit;
+  glideBy(d * 1.1);
+}, {passive:false});
+
+/* 縦スワイプでも読み進められるように（横スワイプはブラウザ標準の慣性に任せる） */
+let tX = 0, tY = 0, tVert = null;
+viewer.addEventListener('touchstart', e => {
+  if(e.touches.length !== 1) return;
+  stopGlide();
+  tX = e.touches[0].clientX; tY = e.touches[0].clientY; tVert = null;
+}, {passive:true});
+viewer.addEventListener('touchmove', e => {
+  if(e.touches.length !== 1) return;
+  const x = e.touches[0].clientX, y = e.touches[0].clientY;
+  const dx = x - tX, dy = y - tY;
+  if(tVert === null){
+    if(Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    tVert = Math.abs(dy) > Math.abs(dx);
+  }
+  if(tVert){
+    e.preventDefault();
+    setPos(getPos() - dy);   /* 上へスワイプ＝読み進む */
+    tX = x; tY = y;
+  }
+}, {passive:false});
+
+/* キーボード */
+document.addEventListener('keydown', e => {
+  if(e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return;
+  const step = viewer.clientWidth * 0.85;
+  const k = e.key;
+  if(k === 'ArrowDown' || k === 'ArrowLeft' || k === 'PageDown' || k === ' '){ e.preventDefault(); glideBy(k === ' ' || k === 'PageDown' ? step : 120); }
+  else if(k === 'ArrowUp' || k === 'ArrowRight' || k === 'PageUp'){ e.preventDefault(); glideBy(k === 'PageUp' ? -step : -120); }
+  else if(k === 'Home'){ e.preventDefault(); glideTo(0); }
+  else if(k === 'End'){ e.preventDefault(); glideTo(maxScroll()); }
+});
+
+/* 下部スクロールバー */
+seek.addEventListener('pointerdown', () => { seeking = true; stopGlide(); });
+addEventListener('pointerup', () => { seeking = false; });
+seek.addEventListener('input', () => { seeking = true; stopGlide(); setPos(maxScroll() * (+seek.value / 1000)); });
+seek.addEventListener('change', () => { seeking = false; });
+
+document.getElementById('topBtn').addEventListener('click', () => { closeToc(); glideTo(0); viewer.focus({preventScroll:true}); });
+
+/* 目次 */
+function buildToc(man){
+  tocEl.hidden = false;
+  tocEl.replaceChildren();
+  const head = document.createElement('button');
+  head.className = 'head';
+  head.textContent = man.title + '（最初へ）';
+  head.addEventListener('click', () => { closeToc(); glideTo(0); });
+  tocEl.appendChild(head);
+  tocEl.appendChild(document.createElement('hr'));
+  chapterMarks.forEach(m => {
+    const b = document.createElement('button');
+    b.textContent = m.name;
+    b.dataset.jump = m.index;
+    b.addEventListener('click', () => { closeToc(); alignTo(m.el, true); });
+    tocEl.appendChild(b);
+  });
+}
+function closeToc(){ tocEl.classList.remove('open'); document.getElementById('tocBtn').setAttribute('aria-expanded','false'); }
+document.getElementById('tocBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const open = tocEl.classList.toggle('open');
+  e.currentTarget.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+document.addEventListener('click', e => { if(!tocEl.contains(e.target)) closeToc(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeToc(); });
+
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
+
+/* 画面サイズ変更時はアンカーを保って再配置 */
+let rsTimer = 0;
+addEventListener('resize', () => {
+  if(!ready) return;
+  const el = blocks[anchorIndex()];
+  clearTimeout(rsTimer);
+  rsTimer = setTimeout(() => { alignTo(el, false); updateUI(); }, 150);
+});
+
+/* ══════════════════════════════════════════════════════════
+   起動
+   ══════════════════════════════════════════════════════════ */
+(async function boot(){
+  try{ const s = parseInt(localStorage.getItem(KEY_SCALE), 10); if(!isNaN(s) && SCALES[s]) scaleIdx = s; }catch(e){}
+  applyScale(false);
+
+  const state = document.getElementById('state');
+  let man, texts;
+  try{
+    man = await loadManifest();
+    texts = await Promise.all(man.chapters.map(fetchChapterSafe));
+  }catch(e){
+    state.innerHTML = '<p class="err">本文を読み込めませんでした。<br>' + esc(String(e && e.message || e)) +
+      '<br><br>GitHub Pages 上（' + esc(OWNER + '.github.io/' + DIR + '/') + '）に置いて開くか、通信環境を確認してください。</p>';
+    return;
+  }
+
+  document.title = man.title;
+  document.getElementById('workTitle').textContent = man.title;
+
+  buildBody(man, texts);
+  buildToc(man);
+  state.classList.add('hide');
+
+  await (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
+  await new Promise(r => requestAnimationFrame(r));
+
+  detectScrollSign();
+
+  let restored = false;
+  try{
+    const saved = JSON.parse(localStorage.getItem(KEY_POS) || 'null');
+    if(saved && Number.isInteger(saved.i) && saved.i > 0 && blocks[saved.i]){
+      alignTo(blocks[saved.i], false);
+      restored = true;
+    }
+  }catch(e){}
+
+  ready = true;
+  updateUI();
+  viewer.focus({preventScroll:true});
+  if(restored) toast('前回の続きから表示しています');
+})();
+
+async function fetchChapterSafe(name){
+  try{ return await fetchText(name + '.txt'); }
+  catch(e){ return '（' + name + '.txt を読み込めませんでした）'; }
+}
+</script>
+</body>
+</html>
