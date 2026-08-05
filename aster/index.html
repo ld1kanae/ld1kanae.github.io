@@ -323,6 +323,8 @@ function withRuby(text){
 }
 const isSep = s => /^[◇◆＊─―－＝※☆★●○■□▼▽△▲♦♢]+$/.test(s) && s.length >= 2;
 const isQuote = s => /^[「『（(〈《【]/.test(s.replace(/^　+/, ''));
+/* 行末に全角スペース2つ以上 → その直後に空行を1行入れる（原稿側で明示する改段マーカー） */
+const BLANK_MARKER = /　{2,}$/;
 
 /* ══════════════════════════════════════════════════════════
    読み込み
@@ -406,16 +408,19 @@ function buildBody(man, texts){
        ・空行は段落の切れ目としてのみ扱い、空行そのものは出力しない
        ・続く地の文の行はひとつの段落に連結し、行頭を1字下げ
        ・「『（ で始まる行は独立した行にして字下げなし
-       ・◇ ── などの区切り記号だけの行は前後を1行あけて中央に置く */
+       ・◇ ── などの区切り記号だけの行は前後を1行あける
+       ・行末が全角スペース2つ以上の行は、そこで段落を切って空行を1行入れる */
     const out = [];
     let buf = [];
     const flush = () => { if(buf.length){ out.push({k:'p', s:buf.join('')}); buf = []; } };
     for(const raw of normalize(texts[ci]).split('\n')){
+      const forceBlank = BLANK_MARKER.test(raw);
       const l = raw.trim();
       if(l === ''){ flush(); continue; }
       if(isSep(l)){ flush(); out.push({k:'blank'}); out.push({k:'sep', s:l}); out.push({k:'blank'}); continue; }
-      if(isQuote(l)){ flush(); out.push({k:'q', s:l}); continue; }
-      buf.push(l);
+      if(isQuote(l)){ flush(); out.push({k:'q', s:l}); }
+      else buf.push(l);
+      if(forceBlank){ flush(); out.push({k:'blank'}); }
     }
     flush();
     while(out.length && out[0].k === 'blank') out.shift();
