@@ -112,6 +112,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
   <label class="opt-item"><input type="checkbox" data-opt="dropPeriod">。」→」</label>
   <label class="opt-item"><input type="checkbox" data-opt="kogaki">小書き引き伸ばし→通常（ぁ→あ）</label>
   <label class="opt-item"><input type="checkbox" data-opt="noIndent">行頭下げなし</label>
+  <label class="opt-item"><input type="checkbox" data-opt="blankMarker">行末全角スペース×2で空行挿入</label>
 </div>
 
 <div class="main" id="mainArea">
@@ -127,7 +128,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
   <div class="divider" id="divider"></div>
   <div class="panel">
     <div class="panel-header">
-      <span class="panel-label">変換後</span>
+      <span class="panel-label">変換後 <span id="pageCount" style="font-size:11px;color:var(--text-dim);letter-spacing:0;text-transform:none;margin-left:8px;"></span></span>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="copy-btn tate-toggle" id="tateBtn" title="縦書き／横書き切替">縦書き</button>
         <button class="copy-btn" data-target="output">コピー</button>
@@ -143,7 +144,7 @@ textarea::placeholder { color:var(--text-dim); opacity:.5; }
 
 <script>
 // ═══ Options (localStorage persisted) ═══
-const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false, kogaki:true, noIndent:false };
+const OPT_DEFAULTS = { halfToFull:true, halfSymbol:true, ellipsis:true, dash:true, excSpace:true, dropPeriod:false, kogaki:true, noIndent:false, blankMarker:false };
 let opts;
 try { opts = Object.assign({}, OPT_DEFAULTS, JSON.parse(localStorage.getItem('bunko_opts'))); } catch(e) { opts = Object.assign({}, OPT_DEFAULTS); }
 function saveOpts() { localStorage.setItem('bunko_opts', JSON.stringify(opts)); }
@@ -241,13 +242,16 @@ function convert(text) {
   text = applyTransforms(text);
   const lines=text.replace(/\r\n/g,'\n').split('\n'), res=[]; let buf=[];
   const indent = opts.noIndent ? '' : '　';
-  const flush=()=>{ if(buf.length){res.push(indent+buf.join(''));buf=[];} };
+  const flush=(addBlank)=>{ if(buf.length){res.push(indent+buf.join(''));buf=[];} if(addBlank)res.push(''); };
   for(const raw of lines){
     const l=raw.trim();
     if(l===''){ flush(); continue; }
     if(isBreak(l)){ flush(); res.push(''); res.push(l); res.push(''); continue; }
-    if(/^[「『（]/.test(l)){ flush(); res.push(l); }
-    else buf.push(l);
+    // Check for blank marker: line ends with 　　 (two full-width spaces)
+    const hasMarker = opts.blankMarker && raw.endsWith('　　');
+    const cleaned = hasMarker ? l.replace(/　+$/,'') : l;
+    if(/^[「『（]/.test(cleaned)){ flush(); res.push(cleaned); if(hasMarker) res.push(''); }
+    else { buf.push(cleaned); if(hasMarker) flush(true); }
   }
   flush();
   return res.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'');
@@ -268,8 +272,12 @@ let plain='';
 const inp=document.getElementById('inputArea'), out=document.getElementById('outputArea');
 
 function triggerConvert(){
-  if(!inp.value.trim()){out.innerHTML='<span class="placeholder-text">変換結果がここに表示されます</span>';plain='';return;}
+  if(!inp.value.trim()){out.innerHTML='<span class="placeholder-text">変換結果がここに表示されます</span>';plain='';document.getElementById('pageCount').textContent='';return;}
   plain=convert(inp.value); out.innerHTML=renderRuby(plain);
+  // 400字詰め原稿用紙換算
+  const chars = plain.replace(/\n/g,'').length;
+  const pages = Math.ceil(chars / 400);
+  document.getElementById('pageCount').textContent = `${chars.toLocaleString()}字／原稿用紙 ${pages}枚`;
 }
 document.getElementById('convertBtn').addEventListener('click',triggerConvert);
 inp.addEventListener('input',()=>{clearTimeout(inp._t);inp._t=setTimeout(triggerConvert,300);});
