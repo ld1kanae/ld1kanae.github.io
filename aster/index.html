@@ -62,6 +62,35 @@ header{
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .btn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);}
 
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.primary:hover{opacity:.88;color:#fff;}
+.btn.wide{width:100%;padding:11px 0;font-size:13px;}
+
+.gen{
+  position:fixed;top:0;right:0;bottom:0;z-index:50;
+  width:372px;max-width:94vw;background:var(--bg);
+  border-left:1px solid var(--border);box-shadow:-10px 0 34px rgba(0,0,0,.10);
+  display:flex;flex-direction:column;
+}
+.gen[hidden]{display:none;}
+.gen-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.gen-head strong{font-size:13px;font-weight:500;letter-spacing:.06em;}
+.gen-head .x{border:none;background:transparent;font-size:18px;line-height:1;color:var(--text-dim);cursor:pointer;padding:2px 4px;}
+.gen-head .x:hover{color:var(--text);}
+.gen-body{flex:1;overflow-y:auto;padding:14px 18px 18px;}
+.gen-body label{display:block;font-size:11px;color:var(--text-dim);margin-bottom:12px;}
+.gen-body label span{float:right;font-size:10px;opacity:.75;}
+.gen-body input,.gen-body textarea{
+  display:block;width:100%;margin-top:5px;
+  font-family:var(--font-ui);font-size:13px;color:var(--text);
+  padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);
+  resize:vertical;
+}
+.gen-body input:focus,.gen-body textarea:focus{outline:none;border-color:var(--accent);}
+.gen-note{font-size:11px;line-height:1.7;color:var(--text-dim);margin-bottom:14px;}
+.gen-foot{padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--surface);}
+.gen-foot .gen-note{margin:10px 0 0;}
+
 .zoom{display:flex;align-items:center;border:1px solid var(--border);border-radius:6px;background:var(--surface);overflow:hidden;}
 .zoom button{
   font-family:var(--font-ui);font-size:14px;line-height:1;width:30px;height:29px;
@@ -194,10 +223,35 @@ footer{
       <button id="zoomIn" aria-label="文字を大きく">＋</button>
     </div>
     <button class="btn" id="tocBtn" aria-expanded="false" aria-controls="toc">目次</button>
+    <button class="btn primary" id="genBtn">生成</button>
   </div>
 </header>
 
 <nav class="toc" id="toc" hidden></nav>
+
+<aside class="gen" id="genPanel" hidden aria-label="応募原稿の書き出し">
+  <div class="gen-head">
+    <strong>応募原稿の書き出し</strong>
+    <button class="x" id="genClose" aria-label="閉じる">×</button>
+  </div>
+  <div class="gen-body">
+    <p class="gen-note">表紙ページに記載する情報を入力してください。</p>
+    <label>題名<span>20字</span><input id="f_title" maxlength="20" autocomplete="off"></label>
+    <label>枚数（400字詰換算・表紙1枚を含む）<span>自動計算</span><input id="f_sheets" maxlength="4" inputmode="numeric" autocomplete="off"></label>
+    <label>筆名<span>12字</span><input id="f_pen" maxlength="12" autocomplete="off"></label>
+    <label>本名<span>12字</span><input id="f_real" maxlength="12" autocomplete="off"></label>
+    <label>住所<span>30字・全角</span><input id="f_addr" maxlength="30" autocomplete="off"></label>
+    <label>電話番号<span>14字・全角</span><input id="f_tel" maxlength="14" autocomplete="off"></label>
+    <label>メールアドレス<span>30字・半角</span><input id="f_mail" maxlength="30" autocomplete="off"></label>
+    <label>年齢<span>3字</span><input id="f_age" maxlength="3" inputmode="numeric" autocomplete="off"></label>
+    <label>現職<span>20字</span><input id="f_job" maxlength="20" autocomplete="off"></label>
+    <label>略歴<span>120字</span><textarea id="f_bio" maxlength="120" rows="4" autocomplete="off"></textarea></label>
+  </div>
+  <div class="gen-foot">
+    <button class="btn primary wide" id="makeDocx">Wordファイル生成</button>
+    <p class="gen-note">A4横・縦書き・游明朝10.5pt／章ごとに改ページ／ページ番号あり</p>
+  </div>
+</aside>
 
 <div id="stage">
   <div id="viewer" tabindex="0"></div>
@@ -329,6 +383,33 @@ const BLANK_MARKER = /　{2,}$/;
 /* ══════════════════════════════════════════════════════════
    読み込み
    ══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   段落整形（文庫本フォーマッターの convert() と同じ）
+   ・空行は段落の切れ目としてのみ扱い、空行そのものは出力しない
+   ・続く地の文の行はひとつの段落に連結し、行頭を1字下げ
+   ・「『（ で始まる行は独立した行にして字下げなし
+   ・◇ ── などの区切り記号だけの行は前後を1行あける
+   ・行末が全角スペース2つ以上の行は、そこで段落を切って空行を1行入れる
+   ══════════════════════════════════════════════════════════ */
+function paragraphize(text){
+  const out = [];
+  let buf = [];
+  const flush = () => { if(buf.length){ out.push({k:'p', s:buf.join('')}); buf = []; } };
+  for(const raw of normalize(text).split('\n')){
+    const forceBlank = BLANK_MARKER.test(raw);
+    const l = raw.trim();
+    if(l === ''){ flush(); continue; }
+    if(isSep(l)){ flush(); out.push({k:'blank'}); out.push({k:'sep', s:l}); out.push({k:'blank'}); continue; }
+    if(isQuote(l)){ flush(); out.push({k:'q', s:l}); }
+    else buf.push(l);
+    if(forceBlank){ flush(); out.push({k:'blank'}); }
+  }
+  flush();
+  while(out.length && out[0].k === 'blank') out.shift();
+  while(out.length && out[out.length-1].k === 'blank') out.pop();
+  return out.filter((it, i) => !(it.k === 'blank' && out[i-1] && out[i-1].k === 'blank'));
+}
+
 const RAW = n => `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${DIR.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(n)}`;
 
 async function fetchText(name){
@@ -404,31 +485,7 @@ function buildBody(man, texts){
     h2.dataset.ch = ci;
     frag.appendChild(h2);
 
-    /* 文庫本フォーマッターの convert() と同じ段落整形
-       ・空行は段落の切れ目としてのみ扱い、空行そのものは出力しない
-       ・続く地の文の行はひとつの段落に連結し、行頭を1字下げ
-       ・「『（ で始まる行は独立した行にして字下げなし
-       ・◇ ── などの区切り記号だけの行は前後を1行あける
-       ・行末が全角スペース2つ以上の行は、そこで段落を切って空行を1行入れる */
-    const out = [];
-    let buf = [];
-    const flush = () => { if(buf.length){ out.push({k:'p', s:buf.join('')}); buf = []; } };
-    for(const raw of normalize(texts[ci]).split('\n')){
-      const forceBlank = BLANK_MARKER.test(raw);
-      const l = raw.trim();
-      if(l === ''){ flush(); continue; }
-      if(isSep(l)){ flush(); out.push({k:'blank'}); out.push({k:'sep', s:l}); out.push({k:'blank'}); continue; }
-      if(isQuote(l)){ flush(); out.push({k:'q', s:l}); }
-      else buf.push(l);
-      if(forceBlank){ flush(); out.push({k:'blank'}); }
-    }
-    flush();
-    while(out.length && out[0].k === 'blank') out.shift();
-    while(out.length && out[out.length-1].k === 'blank') out.pop();
-
-    for(let n = 0; n < out.length; n++){
-      const it = out[n];
-      if(it.k === 'blank' && out[n-1] && out[n-1].k === 'blank') continue;
+    for(const it of paragraphize(texts[ci])){
       const p = document.createElement('p');
       if(it.k === 'blank'){ p.className = 'blank'; p.textContent = '　'; }
       else{
@@ -664,6 +721,178 @@ addEventListener('resize', () => {
 });
 
 /* ══════════════════════════════════════════════════════════
+   Word（.docx）書き出し
+   ・依存ライブラリなし。ZIP（無圧縮）と OOXML を直接組み立てる
+   ・A4横・縦書き（tbRl）・游明朝・本文10.5pt・章ごとに改ページ
+   ══════════════════════════════════════════════════════════ */
+let MANIFEST = null, TEXTS = null;
+
+const CRC_T = (() => {
+  const t = new Uint32Array(256);
+  for(let i = 0; i < 256; i++){
+    let c = i;
+    for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for(let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipStore(files){
+  const enc = new TextEncoder();
+  const d = new Date();
+  const dTime = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF;
+  const dDate = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+  const parts = [], central = [];
+  let offset = 0, n = 0;
+  for(const f of files){
+    const name = enc.encode(f.name), data = enc.encode(f.data), crc = crc32(data);
+    const lh = new Uint8Array(30 + name.length), lv = new DataView(lh.buffer);
+    lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0, true);
+    lv.setUint16(8, 0, true); lv.setUint16(10, dTime, true); lv.setUint16(12, dDate, true);
+    lv.setUint32(14, crc, true); lv.setUint32(18, data.length, true); lv.setUint32(22, data.length, true);
+    lv.setUint16(26, name.length, true); lv.setUint16(28, 0, true);
+    lh.set(name, 30);
+    parts.push(lh, data);
+
+    const cd = new Uint8Array(46 + name.length), cv = new DataView(cd.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
+    cv.setUint16(12, dTime, true); cv.setUint16(14, dDate, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, name.length, true); cv.setUint32(42, offset, true);
+    cd.set(name, 46);
+    central.push(cd);
+    offset += lh.length + data.length; n++;
+  }
+  const cdSize = central.reduce((a, b) => a + b.length, 0);
+  const eo = new Uint8Array(22), ev = new DataView(eo.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(8, n, true); ev.setUint16(10, n, true);
+  ev.setUint32(12, cdSize, true); ev.setUint32(16, offset, true);
+  const all = parts.concat(central, [eo]);
+  const total = all.reduce((a, b) => a + b.length, 0);
+  const buf = new Uint8Array(total);
+  let o = 0;
+  for(const b of all){ buf.set(b, o); o += b.length; }
+  return buf;
+}
+
+const xesc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const zenkaku = s => toFullSym(toFullAlpha(String(s)));
+
+/* 段落ひとつ分の XML */
+function P(text, o){
+  o = o || {};
+  const pp = [];
+  if(o.pageBreak) pp.push('<w:pageBreakBefore/>');
+  if(o.indent) pp.push('<w:ind w:firstLineChars="100" w:firstLine="' + (o.sz || 21) * 10 + '"/>');
+  if(o.sz) pp.push('<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>');
+  const rPr = o.sz ? '<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>' : '';
+  const run = text ? '<w:r>' + rPr + '<w:t xml:space="preserve">' + xesc(text) + '</w:t></w:r>' : '';
+  return '<w:p>' + (pp.length ? '<w:pPr>' + pp.join('') + '</w:pPr>' : '') + run + '</w:p>';
+}
+
+/* 400字詰（20字×20行）換算枚数。章ごとに改ページ、表紙1枚を加算 */
+function countSheets(){
+  if(!MANIFEST || !TEXTS) return 1;
+  let pages = 1;
+  MANIFEST.chapters.forEach((name, ci) => {
+    let lines = Math.max(1, Math.ceil(normalize(name).trim().length / 20)) + 1;
+    for(const it of paragraphize(TEXTS[ci])){
+      lines += it.k === 'blank' ? 1 : Math.max(1, Math.ceil((it.s.length + (it.k === 'p' ? 1 : 0)) / 20));
+    }
+    pages += Math.ceil(lines / 20);
+  });
+  return pages;
+}
+
+function buildDocxBody(v){
+  const FS = 21, FS_CH = 24, FS_TL = 28;   /* 10.5pt / 12pt / 14pt */
+  const B = [];
+  B.push(P(v.title, {sz: FS_TL}));
+  B.push(P(''));
+  B.push(P('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
+  B.push(P(''));
+  [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''],
+   ['現職', v.job], ['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
+    .forEach(([k, val]) => { if(val) B.push(P(k + '　' + val)); });
+  if(v.bio){ B.push(P('')); B.push(P('略歴　' + v.bio)); }
+
+  MANIFEST.chapters.forEach((name, ci) => {
+    B.push(P(normalize(name).trim(), {sz: FS_CH, pageBreak: true}));
+    B.push(P(''));
+    for(const it of paragraphize(TEXTS[ci])){
+      if(it.k === 'blank') B.push(P(''));
+      else B.push(P(it.s, {indent: it.k === 'p'}));
+    }
+  });
+
+  const sect = '<w:sectPr>' +
+    '<w:footerReference w:type="default" r:id="rId3"/>' +
+    '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>' +
+    '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="851" w:footer="992" w:gutter="0"/>' +
+    '<w:textDirection w:val="tbRl"/>' +
+    '<w:docGrid w:type="lines" w:linePitch="360"/>' +
+    '</w:sectPr>';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"' +
+    ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+    '<w:body>' + B.join('') + sect + '</w:body></w:document>';
+}
+
+function docxFiles(v){
+  const X = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  return [
+    {name:'[Content_Types].xml', data: X +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+      '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>' +
+      '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>' +
+      '</Types>'},
+    {name:'_rels/.rels', data: X +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '</Relationships>'},
+    {name:'word/_rels/document.xml.rels', data: X +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' +
+      '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' +
+      '</Relationships>'},
+    {name:'word/styles.xml', data: X +
+      '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:docDefaults><w:rPrDefault><w:rPr>' +
+      '<w:rFonts w:ascii="Yu Mincho" w:eastAsia="\u6e38\u660e\u671d" w:hAnsi="Yu Mincho" w:cs="Yu Mincho"/>' +
+      '<w:sz w:val="21"/><w:szCs w:val="21"/>' +
+      '</w:rPr></w:rPrDefault><w:pPrDefault><w:pPr>' +
+      '<w:spacing w:line="240" w:lineRule="auto"/><w:jc w:val="both"/>' +
+      '</w:pPr></w:pPrDefault></w:docDefaults>' +
+      '<w:style w:type="paragraph" w:default="1" w:styleId="a"><w:name w:val="Normal"/><w:qFormat/></w:style>' +
+      '</w:styles>'},
+    {name:'word/settings.xml', data: X +
+      '<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:zoom w:percent="100"/><w:compat/></w:settings>'},
+    {name:'word/footer1.xml', data: X +
+      '<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:p><w:pPr><w:jc w:val="center"/><w:textDirection w:val="lrTb"/></w:pPr>' +
+      '<w:r><w:fldChar w:fldCharType="begin"/></w:r>' +
+      '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>' +
+      '<w:r><w:fldChar w:fldCharType="separate"/></w:r>' +
+      '<w:r><w:t>1</w:t></w:r>' +
+      '<w:r><w:fldChar w:fldCharType="end"/></w:r>' +
+      '</w:p></w:ftr>'},
+    {name:'word/document.xml', data: buildDocxBody(v)},
+  ];
+}
+
+/* ══════════════════════════════════════════════════════════
    起動
    ══════════════════════════════════════════════════════════ */
 (async function boot(){
@@ -681,6 +910,7 @@ addEventListener('resize', () => {
     return;
   }
 
+  MANIFEST = man; TEXTS = texts;
   document.title = man.title;
   document.getElementById('workTitle').textContent = man.title;
 
@@ -707,6 +937,71 @@ addEventListener('resize', () => {
   viewer.focus({preventScroll:true});
   if(restored) toast('前回の続きから表示しています');
 })();
+
+/* ── 応募情報パネル ───────────────────────────────── */
+const genPanel = document.getElementById('genPanel');
+const F = {
+  title: document.getElementById('f_title'), sheets: document.getElementById('f_sheets'),
+  pen: document.getElementById('f_pen'), real: document.getElementById('f_real'),
+  addr: document.getElementById('f_addr'), tel: document.getElementById('f_tel'),
+  mail: document.getElementById('f_mail'), age: document.getElementById('f_age'),
+  job: document.getElementById('f_job'), bio: document.getElementById('f_bio'),
+};
+const KEY_FORM = 'novel_reader_form:' + DIR;
+
+/* 住所・電話番号は入力しながら全角に */
+['addr', 'tel'].forEach(k => {
+  F[k].addEventListener('input', e => {
+    const at = e.target.selectionStart;
+    const v = zenkaku(e.target.value);
+    if(v !== e.target.value){ e.target.value = v; e.target.setSelectionRange(at, at); }
+  });
+});
+Object.values(F).forEach(el => el.addEventListener('input', saveForm));
+
+function saveForm(){
+  const o = {};
+  for(const k in F) o[k] = F[k].value;
+  try{ localStorage.setItem(KEY_FORM, JSON.stringify(o)); }catch(e){}
+}
+function openGen(){
+  let saved = {};
+  try{ saved = JSON.parse(localStorage.getItem(KEY_FORM) || '{}') || {}; }catch(e){}
+  for(const k in F) if(saved[k] != null && F[k].value === '') F[k].value = saved[k];
+  if(!F.title.value) F.title.value = (MANIFEST ? MANIFEST.title : '').slice(0, 20);
+  F.sheets.value = String(countSheets());
+  genPanel.hidden = false;
+  F.title.focus();
+}
+function closeGen(){ genPanel.hidden = true; }
+document.getElementById('genBtn').addEventListener('click', e => { e.stopPropagation(); closeToc(); genPanel.hidden ? openGen() : closeGen(); });
+document.getElementById('genClose').addEventListener('click', closeGen);
+
+document.getElementById('makeDocx').addEventListener('click', () => {
+  if(!MANIFEST || !TEXTS){ toast('本文がまだ読み込まれていません'); return; }
+  try{
+    const v = {
+      title: zenkaku(F.title.value.trim()) || MANIFEST.title,
+      sheets: F.sheets.value.trim() || String(countSheets()),
+      pen: zenkaku(F.pen.value.trim()), real: zenkaku(F.real.value.trim()),
+      addr: zenkaku(F.addr.value.trim()), tel: zenkaku(F.tel.value.trim()),
+      mail: F.mail.value.trim(),                    /* 半角のまま */
+      age: F.age.value.trim(), job: zenkaku(F.job.value.trim()),
+      bio: zenkaku(F.bio.value.trim()),
+    };
+    const bytes = zipStore(docxFiles(v));
+    const blob = new Blob([bytes], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (F.title.value.trim() || MANIFEST.title).replace(/[\\/:*?"<>|]/g, '_') + '.docx';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Wordファイルを書き出しました');
+  }catch(e){
+    toast('書き出しに失敗しました：' + (e && e.message || e));
+  }
+});
 
 async function fetchChapterSafe(name){
   try{ return await fetchText(name + '.txt'); }
