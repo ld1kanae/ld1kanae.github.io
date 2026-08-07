@@ -1112,7 +1112,8 @@ document.getElementById('makeDocx').addEventListener('click', () => {
 
 /* ── プレビュー（A4横・縦書きを画面上で再現）─────────── */
 const PXMM = 96 / 25.4;
-const COL_W = 247 * PXMM;             /* 版面の幅（＝1ページ分の送り量） */
+const COL_W = 247 * PXMM;             /* 版面の幅（247mm） */
+let pvLineW = 24, pvAdv = COL_W;      /* 1行の幅 / 1ページ分の送り量（行数×行幅） */
 const pvModal = document.getElementById('pvModal');
 const pvFlow  = document.getElementById('pvFlow');
 const pvCover = document.getElementById('pvCover');
@@ -1160,30 +1161,40 @@ function buildPreviewFlow(){
       pvFlow.appendChild(p);
     }
   });
+  /* 1ページに入る行数を確定させる。
+     版面の幅は行幅の整数倍とは限らないので、端数は左側の余りとして残し、
+     窓の幅を「行数×行幅」ちょうどに詰める（＝行が途中で切れないようにする） */
+  pvLineW = parseFloat(getComputedStyle(pvFlow).lineHeight) || 24;
+  const lpp = Math.max(1, Math.floor(COL_W / pvLineW + 0.001));
+  pvAdv = lpp * pvLineW;
+  pvClip.style.left = 'auto';
+  pvClip.style.right = '25mm';
+  pvClip.style.width = pvAdv + 'px';
+
   /* 章の頭をページ先頭にそろえる（Word の改ページに相当） */
   heads.forEach((h, i) => {
     if(i === 0) return;
     const base = pvFlow.getBoundingClientRect().right;
     const d = base - h.getBoundingClientRect().right;
-    const rem = d % COL_W;
+    const rem = d % pvAdv;
     if(rem > 1){
       const sp = document.createElement('div');
-      sp.style.width = (COL_W - rem) + 'px';
+      sp.style.width = (pvAdv - rem) + 'px';
       pvFlow.insertBefore(sp, h);
     }
   });
-  pvPages = Math.max(1, Math.ceil(pvFlow.getBoundingClientRect().width / COL_W - 0.001));
+  pvPages = Math.max(1, Math.ceil(pvFlow.getBoundingClientRect().width / pvAdv - 0.001));
 }
 function pvShow(n){
   pvIndex = Math.max(0, Math.min(pvPages, n | 0));
   const cover = pvIndex === 0;
   pvCover.style.display = cover ? '' : 'none';
   pvClip.style.display  = cover ? 'none' : '';
-  pvFlow.style.right = (-(pvIndex - 1) * COL_W) + 'px';
+  pvFlow.style.right = (-(pvIndex - 1) * pvAdv) + 'px';
   pvFolio.textContent = cover ? '' : String(pvIndex);
   pvNum.value = pvIndex;
   pvMaxEl.textContent = pvPages;
-  pvLabel.textContent = cover ? '表紙（ページ0）' : '本文';
+  pvLabel.textContent = cover ? '表紙（ページ0）' : (Math.round(pvAdv / pvLineW) + '行組');
 }
 function pvFit(){
   const st = document.querySelector('.pv-stage');
