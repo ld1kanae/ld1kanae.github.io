@@ -356,6 +356,8 @@ const PARAMS = new URLSearchParams(location.search);
 const DIR = PARAMS.get('dir') ||
             location.pathname.replace(/\/[^/]*$/, '').replace(/^\/|\/$/g, '') ||
             'aster';
+/* 応募原稿の書き出し機能は ?edit=1 を付けたときだけ表示する（公開用リンクでは出ない） */
+const EDIT_MODE = PARAMS.has('edit') || location.hash === '#edit';
 /* API が使えないときの保険（aster フォルダの既知の構成） */
 const FALLBACK = { title: '詩人', chapters: ['前篇', '後篇', '追篇'] };
 
@@ -1075,6 +1077,7 @@ function openGen(){
   F.title.focus();
 }
 function closeGen(){ genPanel.hidden = true; }
+document.getElementById('genBtn').hidden = !EDIT_MODE;
 document.getElementById('genBtn').addEventListener('click', e => { e.stopPropagation(); closeToc(); genPanel.hidden ? openGen() : closeGen(); });
 document.getElementById('genClose').addEventListener('click', closeGen);
 
