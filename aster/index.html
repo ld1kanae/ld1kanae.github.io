@@ -43,7 +43,8 @@ body{
 /* ═══ ヘッダー ═══ */
 header{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;
+  padding:10px 20px;flex-shrink:0;
+  transition:opacity .45s ease;
 }
 /* 無操作が続いたらヘッダーとフッターを隠す（本文は組み直さない） */
 header,footer{transition:opacity .18s ease, transform .18s ease;}   /* 戻るときは素早く */
@@ -186,7 +187,8 @@ body.idle footer{opacity:0;transform:translateY(105%);pointer-events:none;}
 footer{
   display:flex;align-items:center;gap:14px;
   padding:10px 20px calc(10px + env(safe-area-inset-bottom));
-  border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;
+  background:var(--bg);flex-shrink:0;
+  transition:opacity .45s ease;
 }
 #seek{
   flex:1;direction:rtl;                 /* 左へ動かすほど読み進む（縦書きの流れに合わせる） */
@@ -247,6 +249,11 @@ footer{
   .pv-scaler{transform:none !important;}
   .pv-page{box-shadow:none;}
   @page{size:A4 landscape;margin:0;}
+}
+
+body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
+@media (prefers-reduced-motion:reduce){
+  header,footer{transition:none;}
 }
 
 .toast{
@@ -797,6 +804,28 @@ function toast(msg){
   clearTimeout(toast._t);
   toast._t = setTimeout(() => toastEl.classList.remove('show'), 2400);
 }
+
+/* ── ヘッダー／下部バーのフェード ────────────────────
+   操作している間だけ現れ、しばらく触らなければ静かに消える */
+const UI_IDLE = 2600;
+let uiTimer = 0;
+function uiBusy(){
+  const gen = document.getElementById('genPanel'), pv = document.getElementById('pvModal');
+  if(tocEl.classList.contains('open')) return true;
+  if(gen && !gen.hidden) return true;
+  if(pv && !pv.hidden) return true;
+  const a = document.activeElement;
+  return !!(a && a !== document.body && (a.closest('header') || a.closest('footer')));
+}
+function uiSleep(){ if(!uiBusy()) document.body.classList.add('ui-dim'); }
+function uiWake(){
+  document.body.classList.remove('ui-dim');
+  clearTimeout(uiTimer);
+  uiTimer = setTimeout(uiSleep, UI_IDLE);
+}
+['pointermove', 'pointerdown', 'touchstart', 'keydown', 'focusin'].forEach(ev =>
+  document.addEventListener(ev, uiWake, {passive:true}));
+uiWake();
 
 /* 画面サイズ変更時はアンカーを保って再配置 */
 let rsTimer = 0;
