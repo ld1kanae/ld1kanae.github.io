@@ -782,13 +782,14 @@ function zipStore(files){
 }
 
 const xesc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const zenkaku = s => toFullSym(toFullAlpha(String(s)));
+const zenkaku = s => toFullSym(toFullAlpha(String(s))).replace(/ /g, '　');  /* 半角スペースも全角に（フォーム入力欄のみ） */
 
 /* 段落ひとつ分の XML */
 function P(text, o){
   o = o || {};
   const pp = [];
   if(o.pageBreak) pp.push('<w:pageBreakBefore/>');
+  if(o.line) pp.push('<w:snapToGrid w:val="0"/><w:spacing w:line="' + o.line + '" w:lineRule="auto"/>');
   if(o.indent) pp.push('<w:ind w:firstLineChars="100" w:firstLine="' + (o.sz || 21) * 10 + '"/>');
   if(o.sz) pp.push('<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>');
   const rPr = o.sz ? '<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>' : '';
@@ -811,19 +812,44 @@ function countSheets(){
 }
 
 function buildDocxBody(v){
-  const FS = 21, FS_CH = 24, FS_TL = 28;   /* 10.5pt / 12pt / 14pt */
-  const B = [];
-  B.push(P(v.title, {sz: FS_TL}));
-  B.push(P(''));
-  B.push(P('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
-  B.push(P(''));
-  [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''],
-   ['現職', v.job], ['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
-    .forEach(([k, val]) => { if(val) B.push(P(k + '　' + val)); });
-  if(v.bio){ B.push(P('')); B.push(P('略歴　' + v.bio)); }
+  /* 半角ポイント値（実サイズの2倍） */
+  const FS    = 21;   /* 本文     10.5pt */
+  const FS_CH = 24;   /* 章見出し   12pt */
+  const FS_TL = 48;   /* 表紙の題名 24pt */
+  const FS_CV = 28;   /* 表紙の項目 14pt */
+  const FS_BI = 24;   /* 表紙の略歴 12pt */
 
+  const PAGE =
+    '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>' +
+    '<w:pgMar w:top="1418" w:right="1418" w:bottom="1418" w:left="1418" w:header="851" w:footer="992" w:gutter="0"/>';
+  const TAIL = '<w:textDirection w:val="tbRl"/><w:docGrid w:type="lines" w:linePitch="360"/>';
+  /* 第1節＝表紙。フッター参照を持たせないのでページ番号は付かない */
+  const SECT_COVER = '<w:sectPr>' + PAGE + TAIL + '</w:sectPr>';
+  /* 第2節＝本文。1ページ目から通し番号を振る */
+  const SECT_BODY  = '<w:sectPr>' +
+    '<w:footerReference w:type="default" r:id="rId3"/>' +
+    PAGE + '<w:pgNumType w:start="1"/>' + TAIL + '</w:sectPr>';
+
+  const B = [];
+  const CV = (t, sz) => P(t, {sz: sz || FS_CV, line: 360});
+
+  /* ── 表紙 ── */
+  B.push(CV(v.title, FS_TL));
+  B.push(CV('', FS_TL));
+  B.push(CV(''));
+  B.push(CV('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
+  B.push(CV(''));
+  [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''], ['現職', v.job]]
+    .forEach(([k, val]) => { if(val) B.push(CV(k + '　' + val)); });
+  B.push(CV(''));
+  [['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
+    .forEach(([k, val]) => { if(val) B.push(CV(k + '　' + val)); });
+  if(v.bio){ B.push(CV('')); B.push(CV('略歴　' + v.bio, FS_BI)); }
+  B.push('<w:p><w:pPr>' + SECT_COVER + '</w:pPr></w:p>');
+
+  /* ── 本文（章ごとに改ページ。1章目は節区切りで改ページ済み）── */
   MANIFEST.chapters.forEach((name, ci) => {
-    B.push(P(normalize(name).trim(), {sz: FS_CH, pageBreak: true}));
+    B.push(P(normalize(name).trim(), {sz: FS_CH, pageBreak: ci > 0}));
     B.push(P(''));
     for(const it of paragraphize(TEXTS[ci])){
       if(it.k === 'blank') B.push(P(''));
@@ -831,17 +857,10 @@ function buildDocxBody(v){
     }
   });
 
-  const sect = '<w:sectPr>' +
-    '<w:footerReference w:type="default" r:id="rId3"/>' +
-    '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>' +
-    '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="851" w:footer="992" w:gutter="0"/>' +
-    '<w:textDirection w:val="tbRl"/>' +
-    '<w:docGrid w:type="lines" w:linePitch="360"/>' +
-    '</w:sectPr>';
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"' +
     ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-    '<w:body>' + B.join('') + sect + '</w:body></w:document>';
+    '<w:body>' + B.join('') + SECT_BODY + '</w:body></w:document>';
 }
 
 function docxFiles(v){
@@ -881,12 +900,13 @@ function docxFiles(v){
       '<w:zoom w:percent="100"/><w:compat/></w:settings>'},
     {name:'word/footer1.xml', data: X +
       '<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
-      '<w:p><w:pPr><w:jc w:val="center"/><w:textDirection w:val="lrTb"/></w:pPr>' +
-      '<w:r><w:fldChar w:fldCharType="begin"/></w:r>' +
-      '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>' +
-      '<w:r><w:fldChar w:fldCharType="separate"/></w:r>' +
-      '<w:r><w:t>1</w:t></w:r>' +
-      '<w:r><w:fldChar w:fldCharType="end"/></w:r>' +
+      '<w:p><w:pPr><w:jc w:val="left"/><w:textDirection w:val="lrTb"/>' +
+      '<w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr></w:pPr>' +
+      '<w:r><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r>' +
+      '<w:r><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>' +
+      '<w:r><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r>' +
+      '<w:r><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr><w:t>1</w:t></w:r>' +
+      '<w:r><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r>' +
       '</w:p></w:ftr>'},
     {name:'word/document.xml', data: buildDocxBody(v)},
   ];
@@ -949,25 +969,30 @@ const F = {
 };
 const KEY_FORM = 'novel_reader_form:' + DIR;
 
-/* 住所・電話番号は入力しながら全角に */
+/* 住所・電話番号は入力中ではなく、欄を離れたときに全角化する。
+   ほかの欄は表示はそのまま、Word へ書き出すときにだけ内部で全角化する */
 ['addr', 'tel'].forEach(k => {
-  F[k].addEventListener('input', e => {
-    const at = e.target.selectionStart;
-    const v = zenkaku(e.target.value);
-    if(v !== e.target.value){ e.target.value = v; e.target.setSelectionRange(at, at); }
-  });
+  F[k].addEventListener('change', e => { e.target.value = zenkaku(e.target.value); saveForm(); });
 });
-Object.values(F).forEach(el => el.addEventListener('input', saveForm));
+Object.values(F).forEach(el => {
+  el.addEventListener('input', saveForm);
+  el.addEventListener('change', saveForm);
+});
 
 function saveForm(){
   const o = {};
   for(const k in F) o[k] = F[k].value;
   try{ localStorage.setItem(KEY_FORM, JSON.stringify(o)); }catch(e){}
 }
-function openGen(){
+function restoreForm(){
   let saved = {};
   try{ saved = JSON.parse(localStorage.getItem(KEY_FORM) || '{}') || {}; }catch(e){}
-  for(const k in F) if(saved[k] != null && F[k].value === '') F[k].value = saved[k];
+  for(const k in F) if(saved[k] != null && saved[k] !== '' && F[k].value === '') F[k].value = saved[k];
+}
+restoreForm();   /* 起動時に前回の入力を戻しておく */
+
+function openGen(){
+  restoreForm();
   if(!F.title.value) F.title.value = (MANIFEST ? MANIFEST.title : '').slice(0, 20);
   F.sheets.value = String(countSheets());
   genPanel.hidden = false;
