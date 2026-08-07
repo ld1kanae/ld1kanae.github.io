@@ -17,6 +17,7 @@
   --text:#1a1a1e;
   --text-dim:#888892;
   --accent:#7c3aed;
+  --sky:#2f9bd4;
   --ruby-color:#8a8a95;
   --font-body:'Noto Serif JP', serif;
   --font-ui:'IBM Plex Sans JP', sans-serif;
@@ -72,7 +73,7 @@ body.idle footer{opacity:0;transform:translateY(105%);pointer-events:none;}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .btn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);}
 
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.primary{background:var(--sky);border-color:var(--sky);color:#fff;}
 .btn.primary:hover{opacity:.88;color:#fff;}
 .btn.wide{width:100%;padding:11px 0;font-size:13px;}
 
@@ -185,7 +186,7 @@ body.idle footer{opacity:0;transform:translateY(105%);pointer-events:none;}
 footer{
   display:flex;align-items:center;gap:14px;
   padding:10px 20px calc(10px + env(safe-area-inset-bottom));
-  border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;
+  border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;
 }
 #seek{
   flex:1;direction:rtl;                 /* 左へ動かすほど読み進む（縦書きの流れに合わせる） */
@@ -193,9 +194,9 @@ footer{
 }
 #seek:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px;}
 #seek::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--surface2);border:1px solid var(--border);}
-#seek::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;margin-top:-6px;}
+#seek::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:#9b9ba5;border:none;margin-top:-2px;}
 #seek::-moz-range-track{height:4px;border-radius:2px;background:var(--surface2);border:1px solid var(--border);}
-#seek::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;}
+#seek::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:#9b9ba5;border:none;}
 .pct{font-size:11px;color:var(--text-dim);min-width:34px;text-align:left;font-variant-numeric:tabular-nums;user-select:none;}
 
 /* ═══ プレビュー ═══ */
