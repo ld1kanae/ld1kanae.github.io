@@ -44,7 +44,6 @@ body{
 header{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:10px 20px;flex-shrink:0;
-  transition:opacity .45s ease;
 }
 /* 無操作が続いたらヘッダーとフッターを隠す（本文は組み直さない） */
 header,footer{transition:opacity .18s ease, transform .18s ease;}   /* 戻るときは素早く */
@@ -58,11 +57,16 @@ body.idle footer{opacity:0;transform:translateY(105%);pointer-events:none;}
 }
 .work{display:flex;align-items:baseline;gap:10px;min-width:0;}
 .work h1{
-  font-size:14px;font-weight:500;letter-spacing:.08em;color:var(--text);
+  font-family:var(--font-body);
+  font-size:14px;font-weight:400;letter-spacing:.12em;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.work .now{font-size:11px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tools{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.work .now{
+  font-family:var(--font-body);
+  font-size:11px;letter-spacing:.1em;color:var(--text-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tools{display:flex;align-items:center;gap:8px;flex-shrink:0;transition:opacity 1.1s ease;}
 
 .btn{
   font-family:var(--font-ui);font-size:12px;line-height:1;
@@ -188,7 +192,7 @@ footer{
   display:flex;align-items:center;gap:14px;
   padding:10px 20px calc(10px + env(safe-area-inset-bottom));
   background:var(--bg);flex-shrink:0;
-  transition:opacity .45s ease;
+  transition:opacity 1.1s ease;
 }
 #seek{
   flex:1;direction:rtl;                 /* 左へ動かすほど読み進む（縦書きの流れに合わせる） */
@@ -251,9 +255,9 @@ footer{
   @page{size:A4 landscape;margin:0;}
 }
 
-body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
+body.ui-dim .tools,body.ui-dim footer{opacity:0;pointer-events:none;}
 @media (prefers-reduced-motion:reduce){
-  header,footer{transition:none;}
+  .tools,footer{transition:none;}
 }
 
 .toast{
@@ -269,7 +273,9 @@ body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
   header{padding:8px 12px;}
   .toc{top:46px;right:10px;}
   footer{padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:10px;}
-  .work .now{display:none;}
+  .work{flex-direction:column;align-items:flex-start;gap:1px;}
+  .work h1{font-size:12.5px;}
+  .work .now{font-size:10px;}
   .btn{padding:7px 10px;}
 }
 @media (prefers-reduced-motion:reduce){
@@ -807,7 +813,7 @@ function toast(msg){
 
 /* ── ヘッダー／下部バーのフェード ────────────────────
    操作している間だけ現れ、しばらく触らなければ静かに消える */
-const UI_IDLE = 2600;
+const UI_IDLE = 4000;
 let uiTimer = 0;
 function uiBusy(){
   const gen = document.getElementById('genPanel'), pv = document.getElementById('pvModal');
@@ -823,8 +829,26 @@ function uiWake(){
   clearTimeout(uiTimer);
   uiTimer = setTimeout(uiSleep, UI_IDLE);
 }
-['pointermove', 'pointerdown', 'touchstart', 'keydown', 'focusin'].forEach(ev =>
-  document.addEventListener(ev, uiWake, {passive:true}));
+/* 出現の条件：PC はクリック、スマホは画面の端のタップだけ。
+   スワイプやホイールでは出さない（読んでいる間は邪魔をしない） */
+const EDGE_X = 0.18, EDGE_Y = 0.14;
+let uiDown = null;
+document.addEventListener('pointerdown', e => {
+  uiDown = {x: e.clientX, y: e.clientY, type: e.pointerType};
+}, {passive:true});
+document.addEventListener('pointerup', e => {
+  const d = uiDown; uiDown = null;
+  if(!d) return;
+  if(Math.abs(e.clientX - d.x) > 10 || Math.abs(e.clientY - d.y) > 10) return;  /* スワイプは無視 */
+  if(d.type === 'touch'){
+    const w = innerWidth, h = innerHeight;
+    const nearEdge = e.clientX < w * EDGE_X || e.clientX > w * (1 - EDGE_X) ||
+                     e.clientY < h * EDGE_Y || e.clientY > h * (1 - EDGE_Y);
+    if(!nearEdge) return;
+  }
+  uiWake();
+}, {passive:true});
+document.addEventListener('focusin', uiWake, {passive:true});
 uiWake();
 
 /* 画面サイズ変更時はアンカーを保って再配置 */
