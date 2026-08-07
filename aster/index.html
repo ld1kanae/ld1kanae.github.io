@@ -188,6 +188,56 @@ footer{
 #seek::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;}
 .pct{font-size:11px;color:var(--text-dim);min-width:34px;text-align:left;font-variant-numeric:tabular-nums;user-select:none;}
 
+/* ═══ プレビュー ═══ */
+.pv{position:fixed;inset:0;z-index:70;background:rgba(24,24,28,.55);display:flex;flex-direction:column;}
+.pv[hidden]{display:none;}
+.pv-bar{
+  display:flex;align-items:center;gap:14px;flex-shrink:0;
+  padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border);
+}
+.pv-bar strong{font-size:13px;font-weight:500;letter-spacing:.06em;}
+.pv-meta{font-size:11px;color:var(--text-dim);}
+.pv-bar .x{margin-left:auto;border:none;background:transparent;font-size:18px;line-height:1;color:var(--text-dim);cursor:pointer;}
+.pv-nav{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);}
+.pv-nav button{
+  width:26px;height:26px;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface);color:var(--text-dim);cursor:pointer;font-size:14px;line-height:1;
+}
+.pv-nav button:hover{border-color:var(--accent);color:var(--accent);}
+.pv-nav input{
+  width:52px;padding:5px 6px;font-family:var(--font-ui);font-size:12px;text-align:center;
+  border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);
+}
+.pv-stage{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:20px;}
+.pv-scaler{transform-origin:center center;flex-shrink:0;}
+.pv-page{position:relative;width:297mm;height:210mm;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.35);}
+.pv-cover,.pv-clip{position:absolute;left:25mm;top:25mm;width:247mm;height:160mm;}
+.pv-clip{overflow:hidden;}
+.pv-cover,.pv-flow{
+  writing-mode:vertical-rl;text-orientation:mixed;line-break:strict;color:#000;
+  font-family:'Yu Mincho','游明朝',YuMincho,'Yu Mincho Demibold','Hiragino Mincho ProN','MS Mincho',serif;
+  text-align:justify;
+}
+.pv-flow{position:absolute;top:0;right:0;height:160mm;font-size:10.5pt;line-height:18pt;}
+.pv-flow p{margin:0;text-indent:1em;}
+.pv-flow p.q,.pv-flow p.sep{text-indent:0;}
+.pv-flow h2{font-size:14pt;font-weight:400;letter-spacing:.05em;margin:0;}
+.pv-cover{font-size:14pt;line-height:1.5;}
+.pv-cover p{margin:0;}
+.pv-cover .t{font-size:24pt;}
+.pv-cover .b{font-size:12pt;}
+.pv-folio{position:absolute;left:18mm;bottom:12mm;font-size:9pt;color:#000;font-family:'Yu Mincho','游明朝',serif;}
+
+@media print{
+  body > *:not(.pv){display:none !important;}
+  .pv{position:static;background:#fff;display:block;}
+  .pv-bar{display:none;}
+  .pv-stage{padding:0;overflow:visible;display:block;}
+  .pv-scaler{transform:none !important;}
+  .pv-page{box-shadow:none;}
+  @page{size:A4 landscape;margin:0;}
+}
+
 .toast{
   position:fixed;left:50%;bottom:72px;transform:translateX(-50%) translateY(20px);
   background:var(--surface2);border:1px solid var(--border);color:var(--text);
@@ -248,6 +298,8 @@ footer{
     <label>略歴<span>120字</span><textarea id="f_bio" maxlength="120" rows="4" autocomplete="off"></textarea></label>
   </div>
   <div class="gen-foot">
+    <button class="btn wide" id="pvOpen">プレビュー</button>
+    <div style="height:8px"></div>
     <button class="btn primary wide" id="makeDocx">Wordファイル生成</button>
     <p class="gen-note">A4横・縦書き・游明朝10.5pt／章ごとに改ページ／ページ番号あり</p>
   </div>
@@ -263,6 +315,31 @@ footer{
   <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="読む位置">
   <button class="btn" id="topBtn">最初に戻る</button>
 </footer>
+
+<div class="pv" id="pvModal" hidden>
+  <div class="pv-bar">
+    <strong>プレビュー</strong>
+    <span class="pv-meta">A4横／游明朝／本文10.5pt</span>
+    <span class="pv-nav">
+      <button id="pvPrev" aria-label="前のページ">‹</button>
+      <input id="pvNum" type="number" min="0" step="1" value="0" aria-label="ページ番号">
+      <span>/ <span id="pvMax">0</span></span>
+      <button id="pvNext" aria-label="次のページ">›</button>
+    </span>
+    <span class="pv-meta" id="pvLabel">表紙</span>
+    <button class="btn" id="pvPrint">このページを印刷</button>
+    <button class="x" id="pvClose" aria-label="閉じる">×</button>
+  </div>
+  <div class="pv-stage">
+    <div class="pv-scaler" id="pvScaler">
+      <div class="pv-page">
+        <div class="pv-cover" id="pvCover"></div>
+        <div class="pv-clip" id="pvClip"><div class="pv-flow" id="pvFlow"></div></div>
+        <div class="pv-folio" id="pvFolio"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -814,7 +891,7 @@ function countSheets(){
 function buildDocxBody(v){
   /* 半角ポイント値（実サイズの2倍） */
   const FS    = 21;   /* 本文     10.5pt */
-  const FS_CH = 24;   /* 章見出し   12pt */
+  const FS_CH = 28;   /* 章見出し   14pt */
   const FS_TL = 48;   /* 表紙の題名 24pt */
   const FS_CV = 28;   /* 表紙の項目 14pt */
   const FS_BI = 24;   /* 表紙の略歴 12pt */
@@ -994,7 +1071,7 @@ restoreForm();   /* 起動時に前回の入力を戻しておく */
 function openGen(){
   restoreForm();
   if(!F.title.value) F.title.value = (MANIFEST ? MANIFEST.title : '').slice(0, 20);
-  F.sheets.value = String(countSheets());
+  F.sheets.value = zenkaku(String(countSheets()));
   genPanel.hidden = false;
   F.title.focus();
 }
@@ -1002,18 +1079,23 @@ function closeGen(){ genPanel.hidden = true; }
 document.getElementById('genBtn').addEventListener('click', e => { e.stopPropagation(); closeToc(); genPanel.hidden ? openGen() : closeGen(); });
 document.getElementById('genClose').addEventListener('click', closeGen);
 
+/* 入力欄の値を全角化して取り出す（メールアドレスだけは半角のまま） */
+function formValues(){
+  return {
+    title: zenkaku(F.title.value.trim()) || (MANIFEST ? MANIFEST.title : ''),
+    sheets: F.sheets.value.trim() || String(countSheets()),
+    pen: zenkaku(F.pen.value.trim()), real: zenkaku(F.real.value.trim()),
+    addr: zenkaku(F.addr.value.trim()), tel: zenkaku(F.tel.value.trim()),
+    mail: F.mail.value.trim(),
+    age: F.age.value.trim(), job: zenkaku(F.job.value.trim()),
+    bio: zenkaku(F.bio.value.trim()),
+  };
+}
+
 document.getElementById('makeDocx').addEventListener('click', () => {
   if(!MANIFEST || !TEXTS){ toast('本文がまだ読み込まれていません'); return; }
   try{
-    const v = {
-      title: zenkaku(F.title.value.trim()) || MANIFEST.title,
-      sheets: F.sheets.value.trim() || String(countSheets()),
-      pen: zenkaku(F.pen.value.trim()), real: zenkaku(F.real.value.trim()),
-      addr: zenkaku(F.addr.value.trim()), tel: zenkaku(F.tel.value.trim()),
-      mail: F.mail.value.trim(),                    /* 半角のまま */
-      age: F.age.value.trim(), job: zenkaku(F.job.value.trim()),
-      bio: zenkaku(F.bio.value.trim()),
-    };
+    const v = formValues();
     const bytes = zipStore(docxFiles(v));
     const blob = new Blob([bytes], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
     const url = URL.createObjectURL(blob);
@@ -1027,6 +1109,112 @@ document.getElementById('makeDocx').addEventListener('click', () => {
     toast('書き出しに失敗しました：' + (e && e.message || e));
   }
 });
+
+/* ── プレビュー（A4横・縦書きを画面上で再現）─────────── */
+const PXMM = 96 / 25.4;
+const COL_W = 247 * PXMM;             /* 版面の幅（＝1ページ分の送り量） */
+const pvModal = document.getElementById('pvModal');
+const pvFlow  = document.getElementById('pvFlow');
+const pvCover = document.getElementById('pvCover');
+const pvClip  = document.getElementById('pvClip');
+const pvNum   = document.getElementById('pvNum');
+const pvMaxEl = document.getElementById('pvMax');
+const pvLabel = document.getElementById('pvLabel');
+const pvFolio = document.getElementById('pvFolio');
+let pvPages = 0, pvIndex = 0, pvBuilt = false;
+
+function cvLine(text, cls){
+  const p = document.createElement('p');
+  if(cls) p.className = cls;
+  p.textContent = text || '\u3000';
+  return p;
+}
+function buildPreviewCover(v){
+  pvCover.replaceChildren();
+  pvCover.appendChild(cvLine(v.title, 't'));
+  pvCover.appendChild(cvLine('', 't'));
+  pvCover.appendChild(cvLine(''));
+  pvCover.appendChild(cvLine('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
+  pvCover.appendChild(cvLine(''));
+  [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''], ['現職', v.job]]
+    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine(k + '　' + val)); });
+  pvCover.appendChild(cvLine(''));
+  [['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
+    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine(k + '　' + val)); });
+  if(v.bio){ pvCover.appendChild(cvLine('')); pvCover.appendChild(cvLine('略歴　' + v.bio, 'b')); }
+}
+function buildPreviewFlow(){
+  pvFlow.replaceChildren();
+  const heads = [];
+  MANIFEST.chapters.forEach((name, ci) => {
+    const h = document.createElement('h2');
+    h.textContent = normalize(name).trim();
+    pvFlow.appendChild(h);
+    heads.push(h);
+    pvFlow.appendChild(cvLine(''));
+    for(const it of paragraphize(TEXTS[ci])){
+      if(it.k === 'blank'){ pvFlow.appendChild(cvLine('')); continue; }
+      const p = document.createElement('p');
+      if(it.k !== 'p') p.className = it.k;
+      p.textContent = it.s;
+      pvFlow.appendChild(p);
+    }
+  });
+  /* 章の頭をページ先頭にそろえる（Word の改ページに相当） */
+  heads.forEach((h, i) => {
+    if(i === 0) return;
+    const base = pvFlow.getBoundingClientRect().right;
+    const d = base - h.getBoundingClientRect().right;
+    const rem = d % COL_W;
+    if(rem > 1){
+      const sp = document.createElement('div');
+      sp.style.width = (COL_W - rem) + 'px';
+      pvFlow.insertBefore(sp, h);
+    }
+  });
+  pvPages = Math.max(1, Math.ceil(pvFlow.getBoundingClientRect().width / COL_W - 0.001));
+}
+function pvShow(n){
+  pvIndex = Math.max(0, Math.min(pvPages, n | 0));
+  const cover = pvIndex === 0;
+  pvCover.style.display = cover ? '' : 'none';
+  pvClip.style.display  = cover ? 'none' : '';
+  pvFlow.style.right = (-(pvIndex - 1) * COL_W) + 'px';
+  pvFolio.textContent = cover ? '' : String(pvIndex);
+  pvNum.value = pvIndex;
+  pvMaxEl.textContent = pvPages;
+  pvLabel.textContent = cover ? '表紙（ページ0）' : '本文';
+}
+function pvFit(){
+  const st = document.querySelector('.pv-stage');
+  const k = Math.min((st.clientWidth - 40) / (297 * PXMM), (st.clientHeight - 40) / (210 * PXMM), 1);
+  document.getElementById('pvScaler').style.transform = 'scale(' + k.toFixed(4) + ')';
+}
+async function openPreview(){
+  if(!MANIFEST || !TEXTS){ toast('本文がまだ読み込まれていません'); return; }
+  buildPreviewCover(formValues());
+  pvModal.hidden = false;
+  pvFit();
+  if(!pvBuilt){
+    await new Promise(r => requestAnimationFrame(r));
+    buildPreviewFlow();
+    pvBuilt = true;
+  }
+  pvShow(pvIndex);
+}
+document.getElementById('pvOpen').addEventListener('click', openPreview);
+document.getElementById('pvClose').addEventListener('click', () => { pvModal.hidden = true; });
+document.getElementById('pvPrev').addEventListener('click', () => pvShow(pvIndex - 1));
+document.getElementById('pvNext').addEventListener('click', () => pvShow(pvIndex + 1));
+pvNum.addEventListener('change', () => pvShow(+pvNum.value));
+document.getElementById('pvPrint').addEventListener('click', () => window.print());
+addEventListener('resize', () => { if(!pvModal.hidden) pvFit(); });
+document.addEventListener('keydown', e => {
+  if(pvModal.hidden) return;
+  if(e.key === 'Escape'){ pvModal.hidden = true; }
+  else if(e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ e.preventDefault(); pvShow(pvIndex + 1); }
+  else if(e.key === 'ArrowRight' || e.key === 'ArrowUp'){ e.preventDefault(); pvShow(pvIndex - 1); }
+}, true);
 
 async function fetchChapterSafe(name){
   try{ return await fetchText(name + '.txt'); }
