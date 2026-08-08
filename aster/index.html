@@ -106,7 +106,8 @@ header{
 .gen-foot{padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--surface);}
 .gen-foot .gen-note{margin:10px 0 0;}
 
-.zoom{display:flex;align-items:center;border:1px solid var(--border);border-radius:6px;background:var(--surface);overflow:hidden;}
+.zoom{display:flex;align-items:center;border:1px solid var(--border);border-radius:6px;background:var(--bg);overflow:hidden;}
+#topBtn{background:var(--bg);}
 .zoom button{
   font-family:var(--font-ui);font-size:12px;line-height:1;width:25px;height:24px;
   border:none;background:transparent;color:var(--text-dim);cursor:pointer;
@@ -272,7 +273,11 @@ body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
   .btn{padding:7px 10px;}
   .lbl-w{display:none;}
   .lbl-s{display:block;}
-  #topBtn{padding:6px 9px;}
+  #topBtn{
+    width:26px;height:24px;padding:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #topBtn svg{width:11px;height:11px;}
 }
 @media (prefers-reduced-motion:reduce){
   .toast{transition:none;}
