@@ -183,7 +183,13 @@ footer{
 #seek::-webkit-slider-thumb{-webkit-appearance:none;width:8px;height:8px;border-radius:50%;background:#bcbcc4;border:none;margin-top:-2.5px;}
 #seek::-moz-range-track{height:3px;border-radius:2px;background:#e8e8ec;border:none;}
 #seek::-moz-range-thumb{width:8px;height:8px;border-radius:50%;background:#bcbcc4;border:none;}
-.lbl-s{display:none;}
+.lbl-w{display:none;}
+.lbl-s{display:block;}
+#topBtn{
+  width:26px;height:24px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+}
+#topBtn svg{width:11px;height:11px;}
 .skip{
   flex-shrink:0;width:26px;height:24px;line-height:1;
   font-family:var(--font-ui);font-size:13px;
@@ -229,10 +235,10 @@ footer{
 .pv-flow p{margin:0;text-indent:1em;}
 .pv-flow p.q,.pv-flow p.sep{text-indent:0;}
 .pv-flow h2{font-size:14pt;font-weight:400;letter-spacing:.05em;margin:0;}
-.pv-cover{font-size:14pt;line-height:1.5;}
+.pv-cover{font-size:10.5pt;line-height:1.5;}
 .pv-cover p{margin:0;}
 .pv-cover .t{font-size:24pt;}
-.pv-cover .b{font-size:12pt;}
+.pv-cover .b{font-size:10.5pt;}
 .pv-folio{position:absolute;left:18mm;bottom:12mm;font-size:9pt;color:#000;font-family:'Yu Mincho','游明朝',serif;}
 
 @media print{
@@ -272,13 +278,6 @@ body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
     max-width:32vw;font-size:14px;
   }
   .btn{padding:7px 10px;}
-  .lbl-w{display:none;}
-  .lbl-s{display:block;}
-  #topBtn{
-    width:26px;height:24px;padding:0;
-    display:flex;align-items:center;justify-content:center;
-  }
-  #topBtn svg{width:11px;height:11px;}
 }
 @media (prefers-reduced-motion:reduce){
   .toast{transition:none;}
@@ -1009,8 +1008,8 @@ function buildDocxBody(v){
   const FS    = 21;   /* 本文     10.5pt */
   const FS_CH = 28;   /* 章見出し   14pt */
   const FS_TL = 48;   /* 表紙の題名 24pt */
-  const FS_CV = 28;   /* 表紙の項目 14pt */
-  const FS_BI = 24;   /* 表紙の略歴 12pt */
+  const FS_CV = 21;   /* 表紙の項目 10.5pt */
+  const FS_BI = 21;   /* 表紙の略歴 10.5pt */
 
   const PAGE =
     '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>' +
@@ -1028,16 +1027,15 @@ function buildDocxBody(v){
 
   /* ── 表紙 ── */
   B.push(CV(v.title, FS_TL));
-  B.push(CV('', FS_TL));
   B.push(CV(''));
   B.push(CV('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
   B.push(CV(''));
   [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''], ['現職', v.job]]
-    .forEach(([k, val]) => { if(val) B.push(CV(k + '　' + val)); });
+    .forEach(([k, val]) => { if(val) B.push(CV('〈' + k + '〉' + val)); });
   B.push(CV(''));
   [['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
-    .forEach(([k, val]) => { if(val) B.push(CV(k + '　' + val)); });
-  if(v.bio){ B.push(CV('')); B.push(CV('略歴　' + v.bio, FS_BI)); }
+    .forEach(([k, val]) => { if(val) B.push(CV('〈' + k + '〉' + val)); });
+  if(v.bio){ B.push(CV('')); B.push(CV('〈略歴〉' + v.bio, FS_BI)); }
   B.push('<w:p><w:pPr>' + SECT_COVER + '</w:pPr></w:p>');
 
   /* ── 本文（章ごとに改ページ。1章目は節区切りで改ページ済み）── */
@@ -1249,16 +1247,15 @@ function cvLine(text, cls){
 function buildPreviewCover(v){
   pvCover.replaceChildren();
   pvCover.appendChild(cvLine(v.title, 't'));
-  pvCover.appendChild(cvLine('', 't'));
   pvCover.appendChild(cvLine(''));
   pvCover.appendChild(cvLine('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
   pvCover.appendChild(cvLine(''));
   [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''], ['現職', v.job]]
-    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine(k + '　' + val)); });
+    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine('〈' + k + '〉' + val)); });
   pvCover.appendChild(cvLine(''));
   [['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
-    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine(k + '　' + val)); });
-  if(v.bio){ pvCover.appendChild(cvLine('')); pvCover.appendChild(cvLine('略歴　' + v.bio, 'b')); }
+    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine('〈' + k + '〉' + val)); });
+  if(v.bio){ pvCover.appendChild(cvLine('')); pvCover.appendChild(cvLine('〈略歴〉' + v.bio, 'b')); }
 }
 function buildPreviewFlow(){
   pvFlow.replaceChildren();
