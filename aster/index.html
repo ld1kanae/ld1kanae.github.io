@@ -239,6 +239,7 @@ footer{
 .pv-cover p{margin:0;}
 .pv-cover .t{font-size:24pt;}
 .pv-cover .b{font-size:10.5pt;white-space:pre-wrap;}
+.pv-cover .b .sp4{font-size:11.5pt;}
 .pv-folio{position:absolute;left:18mm;bottom:12mm;font-size:9pt;color:#000;font-family:'Yu Mincho','游明朝',serif;}
 
 @media print{
@@ -1033,12 +1034,19 @@ function buildDocxBody(v){
   /* ── 表紙 ── */
   B.push(CV(v.title, FS_TL));
   B.push(CV(''));
-  B.push(CV(zenkaku(v.sheets) + '枚（４００字詰原稿用紙換算）'));
+  B.push(CV('〈枚数〉' + zenkaku(v.sheets) + '枚（４００字詰原稿用紙換算）'));
   B.push(CV(''));
   coverRows(v).forEach(([k, val]) => B.push(CV('〈' + k + '〉' + val)));
   if(v.bio){
-    B.push(CV(''));
-    B.push(P(bioText(v.bio), {sz: FS_BI, line: 360}));
+    const rpr = z => '<w:rPr><w:sz w:val="' + z + '"/><w:szCs w:val="' + z + '"/></w:rPr>';
+    const ls = bioLines(v.bio);
+    let runs = '<w:r>' + rpr(FS_BI) + '<w:t xml:space="preserve">〈略歴〉' + xesc(ls[0]) + '</w:t></w:r>';
+    for(let i = 1; i < ls.length; i++){
+      runs += '<w:r>' + rpr(BIO_SP_SZ) + '<w:br/><w:t xml:space="preserve">' + BIO_INDENT + '</w:t></w:r>';
+      runs += '<w:r>' + rpr(FS_BI) + '<w:t xml:space="preserve">' + xesc(ls[i]) + '</w:t></w:r>';
+    }
+    B.push('<w:p><w:pPr><w:snapToGrid w:val="0"/><w:spacing w:line="360" w:lineRule="auto"/>' +
+           rpr(FS_BI) + '</w:pPr>' + runs + '</w:p>');
   }
   B.push('<w:p><w:pPr>' + SECT_COVER + '</w:pPr></w:p>');
 
@@ -1205,10 +1213,11 @@ function formValues(){
   return v;
 }
 
-/* 略歴：改行した2行目以降を〈略歴〉の直後にそろえる（全角スペース4つ）*/
-function bioText(bio){
-  return '〈略歴〉' + String(bio).split('\n').join('\n　　　　');
-}
+/* 略歴：改行した2行目以降を〈略歴〉の直後にそろえる。
+   字下げの全角スペース4つだけ 11.5pt にして、位置のずれを補正する */
+const BIO_INDENT = '　　　　';
+const BIO_SP_SZ = 23;                       /* 11.5pt（半角ポイント値） */
+const bioLines = bio => String(bio).split('\n');
 
 /* 表紙に並べる項目（Word・プレビュー共通）*/
 function coverRows(v){
@@ -1269,10 +1278,24 @@ function buildPreviewCover(v){
   pvCover.replaceChildren();
   pvCover.appendChild(cvLine(v.title, 't'));
   pvCover.appendChild(cvLine(''));
-  pvCover.appendChild(cvLine(zenkaku(v.sheets) + '枚（４００字詰原稿用紙換算）'));
+  pvCover.appendChild(cvLine('〈枚数〉' + zenkaku(v.sheets) + '枚（４００字詰原稿用紙換算）'));
   pvCover.appendChild(cvLine(''));
   coverRows(v).forEach(([k, val]) => pvCover.appendChild(cvLine('〈' + k + '〉' + val)));
-  if(v.bio){ pvCover.appendChild(cvLine('')); pvCover.appendChild(cvLine(bioText(v.bio), 'b')); }
+  if(v.bio){
+    const p = document.createElement('p');
+    p.className = 'b';
+    const ls = bioLines(v.bio);
+    p.appendChild(document.createTextNode('〈略歴〉' + ls[0]));
+    for(let i = 1; i < ls.length; i++){
+      p.appendChild(document.createElement('br'));
+      const sp = document.createElement('span');
+      sp.className = 'sp4';
+      sp.textContent = BIO_INDENT;
+      p.appendChild(sp);
+      p.appendChild(document.createTextNode(ls[i]));
+    }
+    pvCover.appendChild(p);
+  }
 }
 function buildPreviewFlow(){
   pvFlow.replaceChildren();
