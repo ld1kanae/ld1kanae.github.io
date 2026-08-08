@@ -238,7 +238,7 @@ footer{
 .pv-cover{font-size:10.5pt;line-height:1.5;}
 .pv-cover p{margin:0;}
 .pv-cover .t{font-size:24pt;}
-.pv-cover .b{font-size:10.5pt;white-space:pre-line;padding-top:4em;text-indent:-4em;}
+.pv-cover .b{font-size:10.5pt;white-space:pre-wrap;}
 .pv-folio{position:absolute;left:18mm;bottom:12mm;font-size:9pt;color:#000;font-family:'Yu Mincho','游明朝',serif;}
 
 @media print{
@@ -321,7 +321,7 @@ body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
     <label>年齢<span>3字</span><input id="f_age" maxlength="3" autocomplete="off"></label>
     <label>生年月日<span>20字</span><input id="f_birth" maxlength="20" autocomplete="off"></label>
     <label>現職<span>20字</span><input id="f_job" maxlength="20" autocomplete="off"></label>
-    <label>略歴<span>120字・改行可</span><textarea id="f_bio" maxlength="120" rows="4" autocomplete="off"></textarea></label>
+    <label>略歴<span>120字・改行した行は4字下げ</span><textarea id="f_bio" maxlength="120" rows="4" autocomplete="off"></textarea></label>
   </div>
   <div class="gen-foot">
     <button class="btn wide" id="pvOpen">プレビュー</button>
@@ -987,10 +987,6 @@ function P(text, o){
   if(o.pageBreak) pp.push('<w:pageBreakBefore/>');
   if(o.line) pp.push('<w:snapToGrid w:val="0"/><w:spacing w:line="' + o.line + '" w:lineRule="auto"/>');
   if(o.indent) pp.push('<w:ind w:firstLineChars="100" w:firstLine="' + (o.sz || 21) * 10 + '"/>');
-  if(o.hang){   /* 2行目以降を o.hang 文字ぶん下げる（＝1行目の書き出しにそろえる） */
-    const ch = o.hang * 100, tw = o.hang * (o.sz || 21) * 10;
-    pp.push('<w:ind w:leftChars="' + ch + '" w:left="' + tw + '" w:hangingChars="' + ch + '" w:hanging="' + tw + '"/>');
-  }
   if(o.sz) pp.push('<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>');
   const rPr = o.sz ? '<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>' : '';
   const run = text ? String(text).split('\n').map((t, i) =>
@@ -1042,7 +1038,7 @@ function buildDocxBody(v){
   coverRows(v).forEach(([k, val]) => B.push(CV('〈' + k + '〉' + val)));
   if(v.bio){
     B.push(CV(''));
-    B.push(P('〈略歴〉' + v.bio, {sz: FS_BI, line: 360, hang: 4}));
+    B.push(P(bioText(v.bio), {sz: FS_BI, line: 360}));
   }
   B.push('<w:p><w:pPr>' + SECT_COVER + '</w:pPr></w:p>');
 
@@ -1209,6 +1205,11 @@ function formValues(){
   return v;
 }
 
+/* 略歴：改行した2行目以降を〈略歴〉の直後にそろえる（全角スペース4つ）*/
+function bioText(bio){
+  return '〈略歴〉' + String(bio).split('\n').join('\n　　　　');
+}
+
 /* 表紙に並べる項目（Word・プレビュー共通）*/
 function coverRows(v){
   const nm = (n, k) => n ? n + (k ? '（' + k + '）' : '') : '';
@@ -1271,7 +1272,7 @@ function buildPreviewCover(v){
   pvCover.appendChild(cvLine(zenkaku(v.sheets) + '枚（４００字詰原稿用紙換算）'));
   pvCover.appendChild(cvLine(''));
   coverRows(v).forEach(([k, val]) => pvCover.appendChild(cvLine('〈' + k + '〉' + val)));
-  if(v.bio){ pvCover.appendChild(cvLine('')); pvCover.appendChild(cvLine('〈略歴〉' + v.bio, 'b')); }
+  if(v.bio){ pvCover.appendChild(cvLine('')); pvCover.appendChild(cvLine(bioText(v.bio), 'b')); }
 }
 function buildPreviewFlow(){
   pvFlow.replaceChildren();
