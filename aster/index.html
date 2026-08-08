@@ -238,7 +238,7 @@ footer{
 .pv-cover{font-size:10.5pt;line-height:1.5;}
 .pv-cover p{margin:0;}
 .pv-cover .t{font-size:24pt;}
-.pv-cover .b{font-size:10.5pt;}
+.pv-cover .b{font-size:10.5pt;white-space:pre-line;padding-top:4em;text-indent:-4em;}
 .pv-folio{position:absolute;left:18mm;bottom:12mm;font-size:9pt;color:#000;font-family:'Yu Mincho','游明朝',serif;}
 
 @media print{
@@ -309,15 +309,19 @@ body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
   <div class="gen-body">
     <p class="gen-note">表紙ページに記載する情報を入力してください。</p>
     <label>題名<span>20字</span><input id="f_title" maxlength="20" autocomplete="off"></label>
-    <label>枚数（400字詰換算・表紙1枚を含む）<span>自動計算</span><input id="f_sheets" maxlength="4" inputmode="numeric" autocomplete="off"></label>
+    <label>枚数（400字詰換算・表紙1枚を含む）<span>自動計算</span><input id="f_sheets" maxlength="4" autocomplete="off"></label>
     <label>筆名<span>12字</span><input id="f_pen" maxlength="12" autocomplete="off"></label>
+    <label>筆名のふりがな<span>20字</span><input id="f_penk" maxlength="20" autocomplete="off"></label>
     <label>本名<span>12字</span><input id="f_real" maxlength="12" autocomplete="off"></label>
-    <label>住所<span>30字・全角</span><input id="f_addr" maxlength="30" autocomplete="off"></label>
-    <label>電話番号<span>14字・全角</span><input id="f_tel" maxlength="14" autocomplete="off"></label>
+    <label>本名のふりがな<span>20字</span><input id="f_realk" maxlength="20" autocomplete="off"></label>
+    <label>郵便番号<span>8字</span><input id="f_zip" maxlength="8" autocomplete="off"></label>
+    <label>住所<span>30字</span><input id="f_addr" maxlength="30" autocomplete="off"></label>
+    <label>電話番号<span>14字</span><input id="f_tel" maxlength="14" autocomplete="off"></label>
     <label>メールアドレス<span>30字・半角</span><input id="f_mail" maxlength="30" autocomplete="off"></label>
-    <label>年齢<span>3字</span><input id="f_age" maxlength="3" inputmode="numeric" autocomplete="off"></label>
+    <label>年齢<span>3字</span><input id="f_age" maxlength="3" autocomplete="off"></label>
+    <label>生年月日<span>20字</span><input id="f_birth" maxlength="20" autocomplete="off"></label>
     <label>現職<span>20字</span><input id="f_job" maxlength="20" autocomplete="off"></label>
-    <label>略歴<span>120字</span><textarea id="f_bio" maxlength="120" rows="4" autocomplete="off"></textarea></label>
+    <label>略歴<span>120字・改行可</span><textarea id="f_bio" maxlength="120" rows="4" autocomplete="off"></textarea></label>
   </div>
   <div class="gen-foot">
     <button class="btn wide" id="pvOpen">プレビュー</button>
@@ -983,9 +987,14 @@ function P(text, o){
   if(o.pageBreak) pp.push('<w:pageBreakBefore/>');
   if(o.line) pp.push('<w:snapToGrid w:val="0"/><w:spacing w:line="' + o.line + '" w:lineRule="auto"/>');
   if(o.indent) pp.push('<w:ind w:firstLineChars="100" w:firstLine="' + (o.sz || 21) * 10 + '"/>');
+  if(o.hang){   /* 2行目以降を o.hang 文字ぶん下げる（＝1行目の書き出しにそろえる） */
+    const ch = o.hang * 100, tw = o.hang * (o.sz || 21) * 10;
+    pp.push('<w:ind w:leftChars="' + ch + '" w:left="' + tw + '" w:hangingChars="' + ch + '" w:hanging="' + tw + '"/>');
+  }
   if(o.sz) pp.push('<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>');
   const rPr = o.sz ? '<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>' : '';
-  const run = text ? '<w:r>' + rPr + '<w:t xml:space="preserve">' + xesc(text) + '</w:t></w:r>' : '';
+  const run = text ? String(text).split('\n').map((t, i) =>
+      '<w:r>' + rPr + (i ? '<w:br/>' : '') + '<w:t xml:space="preserve">' + xesc(t) + '</w:t></w:r>').join('') : '';
   return '<w:p>' + (pp.length ? '<w:pPr>' + pp.join('') + '</w:pPr>' : '') + run + '</w:p>';
 }
 
@@ -1028,14 +1037,13 @@ function buildDocxBody(v){
   /* ── 表紙 ── */
   B.push(CV(v.title, FS_TL));
   B.push(CV(''));
-  B.push(CV('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
+  B.push(CV(zenkaku(v.sheets) + '枚（４００字詰原稿用紙換算）'));
   B.push(CV(''));
-  [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''], ['現職', v.job]]
-    .forEach(([k, val]) => { if(val) B.push(CV('〈' + k + '〉' + val)); });
-  B.push(CV(''));
-  [['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
-    .forEach(([k, val]) => { if(val) B.push(CV('〈' + k + '〉' + val)); });
-  if(v.bio){ B.push(CV('')); B.push(CV('〈略歴〉' + v.bio, FS_BI)); }
+  coverRows(v).forEach(([k, val]) => B.push(CV('〈' + k + '〉' + val)));
+  if(v.bio){
+    B.push(CV(''));
+    B.push(P('〈略歴〉' + v.bio, {sz: FS_BI, line: 360, hang: 4}));
+  }
   B.push('<w:p><w:pPr>' + SECT_COVER + '</w:pPr></w:p>');
 
   /* ── 本文（章ごとに改ページ。1章目は節区切りで改ページ済み）── */
@@ -1150,18 +1158,14 @@ function docxFiles(v){
 
 /* ── 応募情報パネル ───────────────────────────────── */
 const genPanel = document.getElementById('genPanel');
-const F = {
-  title: document.getElementById('f_title'), sheets: document.getElementById('f_sheets'),
-  pen: document.getElementById('f_pen'), real: document.getElementById('f_real'),
-  addr: document.getElementById('f_addr'), tel: document.getElementById('f_tel'),
-  mail: document.getElementById('f_mail'), age: document.getElementById('f_age'),
-  job: document.getElementById('f_job'), bio: document.getElementById('f_bio'),
-};
+const F = {};
+['title','sheets','pen','penk','real','realk','zip','addr','tel','mail','age','birth','job','bio']
+  .forEach(k => { F[k] = document.getElementById('f_' + k); });
 const KEY_FORM = 'novel_reader_form:' + DIR;
 
-/* 住所・電話番号は入力中ではなく、欄を離れたときに全角化する。
-   ほかの欄は表示はそのまま、Word へ書き出すときにだけ内部で全角化する */
-['addr', 'tel'].forEach(k => {
+/* 入力中ではなく、欄を離れたときに全角化する（メールアドレスだけは半角のまま） */
+Object.keys(F).forEach(k => {
+  if(k === 'mail') return;
   F[k].addEventListener('change', e => { e.target.value = zenkaku(e.target.value); saveForm(); });
 });
 Object.values(F).forEach(el => {
@@ -1195,15 +1199,31 @@ document.getElementById('genClose').addEventListener('click', closeGen);
 
 /* 入力欄の値を全角化して取り出す（メールアドレスだけは半角のまま） */
 function formValues(){
-  return {
-    title: zenkaku(F.title.value.trim()) || (MANIFEST ? MANIFEST.title : ''),
-    sheets: F.sheets.value.trim() || String(countSheets()),
-    pen: zenkaku(F.pen.value.trim()), real: zenkaku(F.real.value.trim()),
-    addr: zenkaku(F.addr.value.trim()), tel: zenkaku(F.tel.value.trim()),
-    mail: F.mail.value.trim(),
-    age: F.age.value.trim(), job: zenkaku(F.job.value.trim()),
-    bio: zenkaku(F.bio.value.trim()),
-  };
+  const v = {};
+  Object.keys(F).forEach(k => {
+    v[k] = k === 'mail' ? F[k].value.trim() : zenkaku(F[k].value.trim());
+  });
+  if(!v.title) v.title = MANIFEST ? MANIFEST.title : '';
+  if(!v.sheets) v.sheets = zenkaku(String(countSheets()));
+  v.bio = v.bio.replace(/\r\n?/g, '\n');
+  return v;
+}
+
+/* 表紙に並べる項目（Word・プレビュー共通）*/
+function coverRows(v){
+  const nm = (n, k) => n ? n + (k ? '（' + k + '）' : '') : '';
+  const zip = v.zip ? (/^〒/.test(v.zip) ? v.zip : '〒' + v.zip) : '';
+  const addr = zip && v.addr ? zip + '　' + v.addr : (zip || v.addr);
+  return [
+    ['筆名', nm(v.pen, v.penk)],
+    ['本名', nm(v.real, v.realk)],
+    ['住所', addr],
+    ['電話', v.tel],
+    ['メール', v.mail],
+    ['年齢', v.age ? v.age + '歳' : ''],
+    ['生年月日', v.birth],
+    ['現職', v.job],
+  ].filter(r => r[1]);
 }
 
 document.getElementById('makeDocx').addEventListener('click', () => {
@@ -1248,13 +1268,9 @@ function buildPreviewCover(v){
   pvCover.replaceChildren();
   pvCover.appendChild(cvLine(v.title, 't'));
   pvCover.appendChild(cvLine(''));
-  pvCover.appendChild(cvLine('４００字詰原稿用紙換算　' + zenkaku(v.sheets) + '枚'));
+  pvCover.appendChild(cvLine(zenkaku(v.sheets) + '枚（４００字詰原稿用紙換算）'));
   pvCover.appendChild(cvLine(''));
-  [['筆名', v.pen], ['本名', v.real], ['年齢', v.age ? zenkaku(v.age) + '歳' : ''], ['現職', v.job]]
-    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine('〈' + k + '〉' + val)); });
-  pvCover.appendChild(cvLine(''));
-  [['住所', v.addr], ['電話', v.tel], ['メール', v.mail]]
-    .forEach(([k, val]) => { if(val) pvCover.appendChild(cvLine('〈' + k + '〉' + val)); });
+  coverRows(v).forEach(([k, val]) => pvCover.appendChild(cvLine('〈' + k + '〉' + val)));
   if(v.bio){ pvCover.appendChild(cvLine('')); pvCover.appendChild(cvLine('〈略歴〉' + v.bio, 'b')); }
 }
 function buildPreviewFlow(){
