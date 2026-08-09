@@ -240,6 +240,7 @@ footer{
 .pv-cover .t{font-size:24pt;}
 .pv-cover .b{font-size:10.5pt;white-space:pre-wrap;}
 .pv-cover .b .sp4{font-size:11.5pt;}
+.pv-cover .qf,.pv-flow .qf{font-family:'刻明朝','Koku Mincho',serif;}
 .pv-folio{position:absolute;left:18mm;bottom:12mm;font-size:9pt;color:#000;font-family:'Yu Mincho','游明朝',serif;}
 
 @media print{
@@ -981,6 +982,31 @@ function zipStore(files){
 const xesc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const zenkaku = s => toFullSym(toFullAlpha(String(s))).replace(/ /g, '　');  /* 半角スペースも全角に（フォーム入力欄のみ） */
 
+/* “ ” だけ別フォント（刻明朝 Regular）で出す。
+   Word がラテン扱い／和文扱いのどちらで判定しても同じ書体になるよう
+   ascii・eastAsia・hAnsi をそろえ、hint="eastAsia" を添える */
+const QUOTE_FONT = '刻明朝';
+const QUOTE_RE = /([“”])/;
+const QUOTE_RFONTS = '<w:rFonts w:ascii="' + QUOTE_FONT + '" w:eastAsia="' + QUOTE_FONT +
+                     '" w:hAnsi="' + QUOTE_FONT + '" w:cs="' + QUOTE_FONT + '" w:hint="eastAsia"/>';
+
+/* 1行ぶんのラン列。“ ” が現れたらそこだけ別のランに切り出す */
+function runsOf(text, sz, leadBreak){
+  const parts = String(text).split(QUOTE_RE).filter(x => x !== '');
+  if(!parts.length) parts.push('');
+  const szXml = sz ? '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>' : '';
+  let out = '', first = true;
+  for(const part of parts){
+    const isQ = part === '“' || part === '”';
+    const inner = (isQ ? QUOTE_RFONTS : '') + szXml;
+    out += '<w:r>' + (inner ? '<w:rPr>' + inner + '</w:rPr>' : '') +
+           (first && leadBreak ? '<w:br/>' : '') +
+           '<w:t xml:space="preserve">' + xesc(part) + '</w:t></w:r>';
+    first = false;
+  }
+  return out;
+}
+
 /* 段落ひとつ分の XML */
 function P(text, o){
   o = o || {};
@@ -989,9 +1015,7 @@ function P(text, o){
   if(o.line) pp.push('<w:snapToGrid w:val="0"/><w:spacing w:line="' + o.line + '" w:lineRule="auto"/>');
   if(o.indent) pp.push('<w:ind w:firstLineChars="100" w:firstLine="' + (o.sz || 21) * 10 + '"/>');
   if(o.sz) pp.push('<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>');
-  const rPr = o.sz ? '<w:rPr><w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/></w:rPr>' : '';
-  const run = text ? String(text).split('\n').map((t, i) =>
-      '<w:r>' + rPr + (i ? '<w:br/>' : '') + '<w:t xml:space="preserve">' + xesc(t) + '</w:t></w:r>').join('') : '';
+  const run = text ? String(text).split('\n').map((t, i) => runsOf(t, o.sz, i > 0)).join('') : '';
   return '<w:p>' + (pp.length ? '<w:pPr>' + pp.join('') + '</w:pPr>' : '') + run + '</w:p>';
 }
 
@@ -1040,10 +1064,10 @@ function buildDocxBody(v){
   if(v.bio){
     const rpr = z => '<w:rPr><w:sz w:val="' + z + '"/><w:szCs w:val="' + z + '"/></w:rPr>';
     const ls = bioLines(v.bio);
-    let runs = '<w:r>' + rpr(FS_BI) + '<w:t xml:space="preserve">〈略歴〉' + xesc(ls[0]) + '</w:t></w:r>';
+    let runs = runsOf('〈略歴〉' + ls[0], FS_BI, false);
     for(let i = 1; i < ls.length; i++){
       runs += '<w:r>' + rpr(BIO_SP_SZ) + '<w:br/><w:t xml:space="preserve">' + BIO_INDENT + '</w:t></w:r>';
-      runs += '<w:r>' + rpr(FS_BI) + '<w:t xml:space="preserve">' + xesc(ls[i]) + '</w:t></w:r>';
+      runs += runsOf(ls[i], FS_BI, false);
     }
     B.push('<w:p><w:pPr><w:snapToGrid w:val="0"/><w:spacing w:line="360" w:lineRule="auto"/>' +
            rpr(FS_BI) + '</w:pPr>' + runs + '</w:p>');
@@ -1268,10 +1292,25 @@ const pvLabel = document.getElementById('pvLabel');
 const pvFolio = document.getElementById('pvFolio');
 let pvPages = 0, pvIndex = 0, pvBuilt = false;
 
+/* “ ” を <span class="qf"> で包んだノード列を返す */
+function quoteNodes(text, target){
+  for(const part of String(text).split(QUOTE_RE)){
+    if(part === '') continue;
+    if(part === '“' || part === '”'){
+      const sp = document.createElement('span');
+      sp.className = 'qf';
+      sp.textContent = part;
+      target.appendChild(sp);
+    }else{
+      target.appendChild(document.createTextNode(part));
+    }
+  }
+  return target;
+}
 function cvLine(text, cls){
   const p = document.createElement('p');
   if(cls) p.className = cls;
-  p.textContent = text || '\u3000';
+  if(text) quoteNodes(text, p); else p.textContent = '\u3000';
   return p;
 }
 function buildPreviewCover(v){
@@ -1285,14 +1324,14 @@ function buildPreviewCover(v){
     const p = document.createElement('p');
     p.className = 'b';
     const ls = bioLines(v.bio);
-    p.appendChild(document.createTextNode('〈略歴〉' + ls[0]));
+    quoteNodes('〈略歴〉' + ls[0], p);
     for(let i = 1; i < ls.length; i++){
       p.appendChild(document.createElement('br'));
       const sp = document.createElement('span');
       sp.className = 'sp4';
       sp.textContent = BIO_INDENT;
       p.appendChild(sp);
-      p.appendChild(document.createTextNode(ls[i]));
+      quoteNodes(ls[i], p);
     }
     pvCover.appendChild(p);
   }
@@ -1310,7 +1349,7 @@ function buildPreviewFlow(){
       if(it.k === 'blank'){ pvFlow.appendChild(cvLine('')); continue; }
       const p = document.createElement('p');
       if(it.k !== 'p') p.className = it.k;
-      p.textContent = it.s;
+      quoteNodes(it.s, p);
       pvFlow.appendChild(p);
     }
   });
