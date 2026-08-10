@@ -805,6 +805,16 @@ function savePos(){
 
 viewer.addEventListener('scroll', () => { updateUI(); savePos(); }, {passive:true});
 
+/* 離脱・バックグラウンド化の直前は、待たずにその場で保存する。
+   iOS はタブを裏に回すとページを破棄して、戻ったときに読み込み直すことがある */
+function savePosNow(){
+  if(!ready) return;
+  clearTimeout(saveTimer);
+  try{ localStorage.setItem(KEY_POS, JSON.stringify({i: anchorIndex(), at: Date.now()})); }catch(e){}
+}
+addEventListener('pagehide', savePosNow);
+addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') savePosNow(); });
+
 /* ホイール → 横スクロール */
 viewer.addEventListener('wheel', e => {
   if(e.ctrlKey) return;
@@ -1166,12 +1176,18 @@ function docxFiles(v){
 /* ── 診断ログ（?debug=1 のときだけ画面に出す）───────── */
 const DEBUG = PARAMS.has('debug');
 let dbgBox = null, dbgLog = [], dbgLast = 0;
+/* ページが再読み込みされても履歴が消えないよう sessionStorage に持たせる。
+   「気づいたら冒頭に戻っていたのに、ログには何も出ていない」＝再読み込み、を見分けるため */
+try{ if(DEBUG) dbgLog = JSON.parse(sessionStorage.getItem('novel_dbg') || '[]'); }catch(e){}
 function mark(label){
   if(!DEBUG) return;
   const max = maxScroll();
   const pct = max ? Math.round(getPos() / max * 100) : 0;
-  dbgLog.unshift(label + ' ' + pct + '%');
-  dbgLog = dbgLog.slice(0, 10);
+  const t = new Date();
+  dbgLog.unshift(('0' + t.getMinutes()).slice(-2) + ':' + ('0' + t.getSeconds()).slice(-2) +
+                 ' ' + label + ' ' + pct + '%');
+  dbgLog = dbgLog.slice(0, 12);
+  try{ sessionStorage.setItem('novel_dbg', JSON.stringify(dbgLog)); }catch(e){}
   if(dbgBox) dbgBox.textContent = dbgLog.join('\n');
 }
 if(DEBUG){
@@ -1180,10 +1196,11 @@ if(DEBUG){
     'font:10px/1.4 monospace;background:rgba(255,255,255,.92);border:1px solid #ccc;border-radius:6px;' +
     'white-space:pre;pointer-events:none;color:#222;';
   document.body.appendChild(dbgBox);
+  dbgBox.textContent = dbgLog.join('\n');
   addEventListener('scroll', () => {
     const max = maxScroll();
     const pct = max ? getPos() / max * 100 : 0;
-    if(Math.abs(pct - dbgLast) > 25) mark('JUMP←' + Math.round(dbgLast));
+    if(Math.abs(pct - dbgLast) > 8) mark('JUMP←' + Math.round(dbgLast));
     dbgLast = pct;
   }, {capture:true, passive:true});
 }
@@ -1219,19 +1236,37 @@ if(DEBUG){
 
   detectScrollSign();
 
-  let restored = false;
+  let restored = false, savedIdx = -1;
   try{
     const saved = JSON.parse(localStorage.getItem(KEY_POS) || 'null');
     if(saved && Number.isInteger(saved.i) && saved.i > 0 && blocks[saved.i]){
-      alignTo(blocks[saved.i], false);
+      savedIdx = saved.i;
+      alignTo(blocks[savedIdx], false);
       restored = true;
     }
   }catch(e){}
 
   ready = true;
   updateUI();
+  mark(restored ? 'boot/restore#' + savedIdx : 'boot');
   viewer.focus({preventScroll:true});
   if(restored) toast('前回の続きから表示しています');
+
+  /* 端末によっては、ここから先も文字送りの計算が動いて版面が変わる。
+     復帰位置がずれていないか、少し待ってから2回だけ確かめ直す */
+  if(restored){
+    const recheck = () => {
+      if(!blocks[savedIdx]) return;
+      if(!signKnown) detectScrollSign();
+      if(Math.abs(lastAnchor - savedIdx) > 1){
+        alignTo(blocks[savedIdx], false);
+        mark('re-align');
+        updateUI();
+      }
+    };
+    setTimeout(recheck, 300);
+    setTimeout(recheck, 1200);
+  }
 })();
 
 /* ── 応募情報パネル ───────────────────────────────── */
