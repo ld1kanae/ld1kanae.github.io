@@ -688,6 +688,7 @@ function buildBody(man, texts){
 let scrollSign = 'neg';   /* 'neg': 0 → -max（標準） / 'pos': max → 0（旧実装） */
 
 function maxScroll(){ return Math.max(0, viewer.scrollWidth - viewer.clientWidth); }
+let signKnown = false;
 function detectScrollSign(){
   const max = maxScroll();
   if(max < 2) return;
@@ -695,6 +696,7 @@ function detectScrollSign(){
   viewer.scrollLeft = -1;
   scrollSign = viewer.scrollLeft < 0 ? 'neg' : 'pos';
   viewer.scrollLeft = keep;
+  signKnown = true;
 }
 /* pos = 読み進んだ距離（0 = 冒頭、max = 末尾） */
 function getPos(){ return scrollSign === 'neg' ? -viewer.scrollLeft : maxScroll() - viewer.scrollLeft; }
@@ -724,15 +726,21 @@ function glideStep(){
 function stopGlide(){ if(rafId) cancelAnimationFrame(rafId); rafId = 0; target = null; }
 
 /* 現在の読み位置にあるブロック */
+let lastAnchor = 0;
 function anchorIndex(){
-  if(!blocks.length) return 0;
+  /* 測れないとき（レイアウト途中・非表示など）に 0 を返すと冒頭へ飛んでしまうので、
+     直前に分かっている位置を返す */
+  if(!blocks.length || viewer.clientWidth <= 0) return lastAnchor;
+  if(blocks[0].getBoundingClientRect().width <= 0) return lastAnchor;
   const edge = readingEdge() + 1;
-  let lo = 0, hi = blocks.length - 1, ans = 0;
+  let lo = 0, hi = blocks.length - 1, ans = 0, found = false;
   while(lo <= hi){
     const mid = (lo + hi) >> 1;
-    if(blocks[mid].getBoundingClientRect().right <= edge){ ans = mid; hi = mid - 1; }
+    if(blocks[mid].getBoundingClientRect().right <= edge){ ans = mid; found = true; hi = mid - 1; }
     else lo = mid + 1;
   }
+  if(!found) return lastAnchor;      /* どの行も条件に合わない＝測定が信用できない */
+  lastAnchor = ans;
   return ans;
 }
 function alignTo(el, smooth){
@@ -772,6 +780,7 @@ document.getElementById('zoomIn').addEventListener('click', () => { if(scaleIdx 
 document.getElementById('zoomOut').addEventListener('click', () => { if(scaleIdx > 0){ scaleIdx--; applyScale(true); } });
 
 function updateUI(){
+  if(!signKnown) detectScrollSign();   /* 起動時に測れなかった場合の保険 */
   const max = maxScroll();
   const p = max ? getPos() / max : 0;
   if(!seeking) seek.value = Math.round(p * 1000);
@@ -910,7 +919,9 @@ uiWake();
 let rsTimer = 0;
 addEventListener('resize', () => {
   if(!ready) return;
-  const el = blocks[anchorIndex()];
+  /* resize が来た時点でレイアウトはすでに変わっている。
+     ここで測り直すと誤った位置になり得るので、直前のスクロールで記録した位置を使う */
+  const el = blocks[lastAnchor] || blocks[0];
   clearTimeout(rsTimer);
   rsTimer = setTimeout(() => {
     if(deviceFactor() !== lastFactor){ applyScale(true); return; }
