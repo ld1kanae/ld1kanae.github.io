@@ -814,27 +814,9 @@ viewer.addEventListener('wheel', e => {
   glideBy(d * 1.1); mark('wheel');
 }, {passive:false});
 
-/* 縦スワイプでも読み進められるように（横スワイプはブラウザ標準の慣性に任せる） */
-let tX = 0, tY = 0, tVert = null;
-viewer.addEventListener('touchstart', e => {
-  if(e.touches.length !== 1) return;
-  stopGlide();
-  tX = e.touches[0].clientX; tY = e.touches[0].clientY; tVert = null;
-}, {passive:true});
-viewer.addEventListener('touchmove', e => {
-  if(e.touches.length !== 1) return;
-  const x = e.touches[0].clientX, y = e.touches[0].clientY;
-  const dx = x - tX, dy = y - tY;
-  if(tVert === null){
-    if(Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-    tVert = Math.abs(dy) > Math.abs(dx);
-  }
-  if(tVert){
-    e.preventDefault();
-    setPos(getPos() - dy); mark('swipe');
-    tX = x; tY = y;
-  }
-}, {passive:false});
+/* タッチ操作はブラウザ標準の横スクロール（慣性つき）にすべて任せる。
+   指を触れた時点で、ホイール操作の慣性だけ止めておく */
+viewer.addEventListener('touchstart', () => stopGlide(), {passive:true});
 
 /* キーボード */
 document.addEventListener('keydown', e => {
