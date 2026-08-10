@@ -186,7 +186,7 @@ footer{
 .lbl-w{display:none;}
 .lbl-s{display:block;}
 #topBtn{
-  width:26px;height:24px;padding:0;
+  flex-shrink:0;width:26px;height:24px;padding:0;
   display:flex;align-items:center;justify-content:center;
 }
 #topBtn svg{width:11px;height:11px;}
@@ -853,7 +853,27 @@ addEventListener('pointerup', () => { seeking = false; });
 seek.addEventListener('input', () => { seeking = true; stopGlide(); setPos(maxScroll() * (+seek.value / 1000)); mark('seek'); });
 seek.addEventListener('change', () => { seeking = false; });
 
-document.getElementById('topBtn').addEventListener('click', () => { mark('topBtn'); glideTo(0); viewer.focus({preventScroll:true}); });
+/* 指が動いた操作（スワイプ）はボタンとして扱わない。
+   iOS では小さく指を滑らせても click が発生するため、誤爆の原因になる */
+function tapOnly(el, fn){
+  let sx = 0, sy = 0, moved = false, watching = false;
+  const onMove = e => {
+    if(Math.abs(e.clientX - sx) > 8 || Math.abs(e.clientY - sy) > 8) moved = true;
+  };
+  el.addEventListener('pointerdown', e => {
+    sx = e.clientX; sy = e.clientY; moved = false;
+    if(!watching){ watching = true; addEventListener('pointermove', onMove, {passive:true}); }
+  }, {passive:true});
+  addEventListener('pointerup', () => {
+    if(watching){ watching = false; removeEventListener('pointermove', onMove); }
+  }, {passive:true});
+  el.addEventListener('click', e => {
+    if(moved){ moved = false; e.preventDefault(); return; }
+    fn(e);
+  });
+}
+
+tapOnly(document.getElementById('topBtn'), () => { mark('topBtn'); glideTo(0); viewer.focus({preventScroll:true}); });
 
 /* 章送り（目次の代わり）。«＝次の章、»＝前の章 */
 function jumpChapter(dir){
@@ -868,8 +888,8 @@ function jumpChapter(dir){
   for(const m of chapterMarks){ if(m.index <= i - 2){ prev = cur; cur = m; } }
   if(cur) alignTo(cur.el, true); else glideTo(0);
 }
-document.getElementById('nextCh').addEventListener('click', () => jumpChapter(1));
-document.getElementById('prevCh').addEventListener('click', () => jumpChapter(-1));
+tapOnly(document.getElementById('nextCh'), () => jumpChapter(1));
+tapOnly(document.getElementById('prevCh'), () => jumpChapter(-1));
 
 function toast(msg){
   toastEl.textContent = msg;
