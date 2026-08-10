@@ -726,8 +726,11 @@ function glideStep(){
 function stopGlide(){ if(rafId) cancelAnimationFrame(rafId); rafId = 0; target = null; }
 
 /* 現在の読み位置にあるブロック */
-let lastAnchor = 0;
+let lastAnchor = 0, anchorFreezeUntil = 0;
 function anchorIndex(){
+  /* 画面サイズが変わった直後は、ブラウザ側の位置補正で測り直すと
+     誤った位置（多くは冒頭）を掴んでしまうので、直前の値を凍結して返す */
+  if(performance.now() < anchorFreezeUntil) return lastAnchor;
   /* 測れないとき（レイアウト途中・非表示など）に 0 を返すと冒頭へ飛んでしまうので、
      直前に分かっている位置を返す */
   if(!blocks.length || viewer.clientWidth <= 0) return lastAnchor;
@@ -808,7 +811,7 @@ viewer.addEventListener('wheel', e => {
   e.preventDefault();
   const unit = e.deltaMode === 1 ? 20 : (e.deltaMode === 2 ? viewer.clientWidth : 1);
   const d = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * unit;
-  glideBy(d * 1.1);
+  glideBy(d * 1.1); mark('wheel');
 }, {passive:false});
 
 /* 縦スワイプでも読み進められるように（横スワイプはブラウザ標準の慣性に任せる） */
@@ -828,7 +831,7 @@ viewer.addEventListener('touchmove', e => {
   }
   if(tVert){
     e.preventDefault();
-    setPos(getPos() - dy);   /* 上へスワイプ＝読み進む */
+    setPos(getPos() - dy); mark('swipe');
     tX = x; tY = y;
   }
 }, {passive:false});
@@ -847,13 +850,14 @@ document.addEventListener('keydown', e => {
 /* 下部スクロールバー */
 seek.addEventListener('pointerdown', () => { seeking = true; stopGlide(); });
 addEventListener('pointerup', () => { seeking = false; });
-seek.addEventListener('input', () => { seeking = true; stopGlide(); setPos(maxScroll() * (+seek.value / 1000)); });
+seek.addEventListener('input', () => { seeking = true; stopGlide(); setPos(maxScroll() * (+seek.value / 1000)); mark('seek'); });
 seek.addEventListener('change', () => { seeking = false; });
 
-document.getElementById('topBtn').addEventListener('click', () => { glideTo(0); viewer.focus({preventScroll:true}); });
+document.getElementById('topBtn').addEventListener('click', () => { mark('topBtn'); glideTo(0); viewer.focus({preventScroll:true}); });
 
 /* 章送り（目次の代わり）。«＝次の章、»＝前の章 */
 function jumpChapter(dir){
+  mark('chapter' + dir);
   const i = anchorIndex();
   if(dir > 0){
     const m = chapterMarks.find(m => m.index > i + 1);
@@ -915,19 +919,27 @@ document.addEventListener('pointerup', e => {
 document.addEventListener('focusin', uiWake, {passive:true});
 uiWake();
 
-/* 画面サイズ変更時はアンカーを保って再配置 */
+/* 画面サイズ変更時はアンカーを保って再配置。
+   iOS はスクロール中にツールバーを出し入れするため、そのたびに本文が組み直され、
+   ブラウザがスクロール位置を切り詰めて冒頭へ飛ばすことがある。
+   変化前の位置を凍結しておき、組み直しが落ち着いてから戻す */
 let rsTimer = 0;
-addEventListener('resize', () => {
+function onViewportChange(){
   if(!ready) return;
-  /* resize が来た時点でレイアウトはすでに変わっている。
-     ここで測り直すと誤った位置になり得るので、直前のスクロールで記録した位置を使う */
   const el = blocks[lastAnchor] || blocks[0];
+  anchorFreezeUntil = performance.now() + 600;   /* この間は位置を測り直さない */
   clearTimeout(rsTimer);
   rsTimer = setTimeout(() => {
-    if(deviceFactor() !== lastFactor){ applyScale(true); return; }
-    alignTo(el, false); updateUI();
-  }, 150);
-});
+    if(deviceFactor() !== lastFactor){ anchorFreezeUntil = 0; applyScale(true); return; }
+    alignTo(el, false);
+    anchorFreezeUntil = 0;
+    mark('resize-fix');
+    updateUI();
+  }, 220);
+}
+addEventListener('resize', onViewportChange);
+addEventListener('orientationchange', onViewportChange);
+if(window.visualViewport) visualViewport.addEventListener('resize', onViewportChange);
 
 /* ══════════════════════════════════════════════════════════
    Word（.docx）書き出し
@@ -1147,6 +1159,31 @@ function docxFiles(v){
       '</w:p></w:ftr>'},
     {name:'word/document.xml', data: buildDocxBody(v)},
   ];
+}
+
+/* ── 診断ログ（?debug=1 のときだけ画面に出す）───────── */
+const DEBUG = PARAMS.has('debug');
+let dbgBox = null, dbgLog = [], dbgLast = 0;
+function mark(label){
+  if(!DEBUG) return;
+  const max = maxScroll();
+  const pct = max ? Math.round(getPos() / max * 100) : 0;
+  dbgLog.unshift(label + ' ' + pct + '%');
+  dbgLog = dbgLog.slice(0, 10);
+  if(dbgBox) dbgBox.textContent = dbgLog.join('\n');
+}
+if(DEBUG){
+  dbgBox = document.createElement('pre');
+  dbgBox.style.cssText = 'position:fixed;left:6px;top:60px;z-index:99;margin:0;padding:6px 8px;' +
+    'font:10px/1.4 monospace;background:rgba(255,255,255,.92);border:1px solid #ccc;border-radius:6px;' +
+    'white-space:pre;pointer-events:none;color:#222;';
+  document.body.appendChild(dbgBox);
+  addEventListener('scroll', () => {
+    const max = maxScroll();
+    const pct = max ? getPos() / max * 100 : 0;
+    if(Math.abs(pct - dbgLast) > 25) mark('JUMP←' + Math.round(dbgLast));
+    dbgLast = pct;
+  }, {capture:true, passive:true});
 }
 
 /* ══════════════════════════════════════════════════════════
