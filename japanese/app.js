@@ -20,6 +20,7 @@
   let vocabularyById = new Map();
   let currentReviewFilter = null;
   let toastTimer = null;
+  let swipeLocked = false;
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -265,6 +266,87 @@
     saved.updatedAt = new Date().toISOString();
     saveState();
     renderQuiz();
+  }
+
+  function classifyCurrentAndMove(status) {
+    const word = currentWord();
+    if (!word || !state.session) return;
+    const saved = itemState(word.id);
+    saved.status = status;
+    saved.updatedAt = new Date().toISOString();
+    moveSession(1);
+  }
+
+  function bindQuizSwipe() {
+    const card = $('.word-card');
+    let gesture = null;
+
+    const resetCard = () => {
+      card.style.removeProperty('transform');
+      card.style.removeProperty('transition');
+      delete card.dataset.swipeDirection;
+    };
+
+    card.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'touch' || swipeLocked) return;
+      if (!$('#quiz-view').classList.contains('is-active')) return;
+      if (!matchMedia('(max-width: 768px)').matches) return;
+      if (event.target.closest('button')) return;
+      gesture = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        dx: 0,
+        dy: 0
+      };
+      card.setPointerCapture?.(event.pointerId);
+    });
+
+    card.addEventListener('pointermove', (event) => {
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      gesture.dx = event.clientX - gesture.startX;
+      gesture.dy = event.clientY - gesture.startY;
+      if (Math.abs(gesture.dx) < 10 || Math.abs(gesture.dx) <= Math.abs(gesture.dy) * 1.15) return;
+      event.preventDefault();
+      const limitedX = Math.max(-120, Math.min(120, gesture.dx));
+      card.style.transition = 'none';
+      card.style.transform = `translateX(${limitedX}px) rotate(${limitedX / 45}deg)`;
+      card.dataset.swipeDirection = gesture.dx < 0 ? 'known' : 'unknown';
+    });
+
+    const finishSwipe = (event) => {
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      const { dx, dy } = gesture;
+      gesture = null;
+      const threshold = Math.max(64, card.clientWidth * 0.18);
+      const isHorizontal = Math.abs(dx) >= threshold && Math.abs(dx) > Math.abs(dy) * 1.25;
+      if (!isHorizontal) {
+        card.style.transition = 'transform .16s ease';
+        card.style.transform = 'translateX(0) rotate(0)';
+        delete card.dataset.swipeDirection;
+        setTimeout(resetCard, 170);
+        return;
+      }
+
+      swipeLocked = true;
+      const status = dx < 0 ? 'known' : 'unknown';
+      card.style.transition = 'transform .12s ease, opacity .12s ease';
+      card.style.transform = `translateX(${dx < 0 ? '-110%' : '110%'}) rotate(${dx < 0 ? -7 : 7}deg)`;
+      card.style.opacity = '.2';
+      setTimeout(() => {
+        resetCard();
+        card.style.removeProperty('opacity');
+        classifyCurrentAndMove(status);
+        swipeLocked = false;
+      }, 120);
+    };
+
+    card.addEventListener('pointerup', finishSwipe);
+    card.addEventListener('pointercancel', (event) => {
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      gesture = null;
+      resetCard();
+    });
   }
 
   function toggleCurrentFavorite() {
@@ -565,6 +647,7 @@
   }
 
   function bindEvents() {
+    bindQuizSwipe();
     $('#home-button').addEventListener('click', renderHome);
     $('#settings-shortcut').addEventListener('click', renderSettings);
     $('#settings-button').addEventListener('click', renderSettings);
