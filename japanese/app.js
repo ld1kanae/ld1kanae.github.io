@@ -71,6 +71,7 @@
 
   function showView(name) {
     $$('.view').forEach((view) => view.classList.toggle('is-active', view.id === `${name}-view`));
+    document.body.dataset.view = name;
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
