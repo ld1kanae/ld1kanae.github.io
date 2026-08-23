@@ -2,6 +2,10 @@
   'use strict';
 
   const STORAGE_KEY = 'japanese-shower-state-v1';
+  const GITHUB_TOKEN_KEY = 'japanese-shower-github-token-v1';
+  const GITHUB_REPOSITORY = 'ld1kanae/ld1kanae.github.io';
+  const GITHUB_SAVE_PATH = 'japanese/save_data.json';
+  const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${GITHUB_SAVE_PATH}`;
   const STATUS_LABELS = { known: '知ってる', unknown: '知らない', uninterested: '興味ない' };
   const FILTER_LABELS = { favorite: 'お気に入り', known: '知ってる', unknown: '知らない', uninterested: '興味ない' };
   const defaults = {
@@ -367,6 +371,140 @@
     showView('settings');
   }
 
+  function renderBackup() {
+    const token = localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+    $('#github-token-input').value = token;
+    setGithubStatus(token ? 'この端末には保存用トークンが設定されています。' : 'GitHubからの読み込みはすぐ使えます。保存するにはトークンを設定してください。');
+    showView('backup');
+  }
+
+  function setGithubStatus(message, kind = '') {
+    const node = $('#github-backup-status');
+    node.textContent = message;
+    node.classList.toggle('is-error', kind === 'error');
+    node.classList.toggle('is-success', kind === 'success');
+  }
+
+  function encodeBase64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    for (let index = 0; index < bytes.length; index += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    }
+    return btoa(binary);
+  }
+
+  function decodeBase64(value) {
+    const binary = atob(value.replace(/\n/g, ''));
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
+  async function githubRequest(options = {}) {
+    const token = options.token || '';
+    const method = options.method || 'GET';
+    const url = method === 'GET' ? `${GITHUB_API_URL}?ref=main&t=${Date.now()}` : GITHUB_API_URL;
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.body ? { 'Content-Type': 'application/json' } : {})
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      cache: 'no-store'
+    });
+    let result = null;
+    try { result = await response.json(); } catch { /* GitHub returned no JSON. */ }
+    if (!response.ok) {
+      const detail = result?.message ? `（${result.message}）` : '';
+      throw new Error(`GitHubとの通信に失敗しました：${response.status}${detail}`);
+    }
+    return result;
+  }
+
+  async function saveToGithub() {
+    const token = $('#github-token-input').value.trim() || localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+    if (!token) {
+      setGithubStatus('先に保存用トークンを入力してください。', 'error');
+      $('#github-token-input').focus();
+      return;
+    }
+    localStorage.setItem(GITHUB_TOKEN_KEY, token);
+    $('#github-save-button').disabled = true;
+    setGithubStatus('GitHubの現在データを確認しています……');
+    try {
+      let currentSha = null;
+      try { currentSha = (await githubRequest({ token })).sha || null; }
+      catch (error) {
+        if (!error.message.includes('404')) throw error;
+      }
+      const payload = {
+        ...state,
+        app: '使える日本語を勝手に浴びる',
+        savedAt: new Date().toISOString()
+      };
+      const body = {
+        message: `Update Japanese learning data (${new Date().toLocaleString('ja-JP')})`,
+        content: encodeBase64(JSON.stringify(payload, null, 2)),
+        branch: 'main',
+        ...(currentSha ? { sha: currentSha } : {})
+      };
+      await githubRequest({ method: 'PUT', token, body });
+      setGithubStatus(`GitHubに保存しました：${new Date().toLocaleString('ja-JP')}`, 'success');
+      showToast('GitHubに保存しました');
+    } catch (error) {
+      setGithubStatus(error.message, 'error');
+    } finally {
+      $('#github-save-button').disabled = false;
+    }
+  }
+
+  async function loadFromGithub() {
+    $('#github-load-button').disabled = true;
+    setGithubStatus('GitHubから読み込んでいます……');
+    try {
+      const remote = await githubRequest();
+      const imported = JSON.parse(decodeBase64(remote.content));
+      if (imported.schemaVersion !== 1 || typeof imported.items !== 'object') throw new Error('GitHub上のセーブデータ形式が正しくありません。');
+      if (!confirm('この端末の学習状況を、GitHub上のセーブデータで置き換えますか？')) {
+        setGithubStatus('読み込みを取り消しました。');
+        return;
+      }
+      state = {
+        ...structuredClone(defaults),
+        ...imported,
+        settings: { ...defaults.settings, ...(imported.settings || {}) },
+        items: imported.items || {}
+      };
+      saveState();
+      applyAppearance();
+      setGithubStatus(`GitHubから読み込みました：${new Date().toLocaleString('ja-JP')}`, 'success');
+      showToast('GitHubから読み込みました');
+    } catch (error) {
+      setGithubStatus(error.message, 'error');
+    } finally {
+      $('#github-load-button').disabled = false;
+    }
+  }
+
+  function saveGithubToken() {
+    const token = $('#github-token-input').value.trim();
+    if (!token) {
+      setGithubStatus('保存するトークンを入力してください。', 'error');
+      return;
+    }
+    localStorage.setItem(GITHUB_TOKEN_KEY, token);
+    setGithubStatus('この端末にトークンを記憶しました。', 'success');
+  }
+
+  function clearGithubToken() {
+    localStorage.removeItem(GITHUB_TOKEN_KEY);
+    $('#github-token-input').value = '';
+    setGithubStatus('この端末からトークンを削除しました。', 'success');
+  }
+
   function updateSetting(setting, value) {
     state.settings[setting] = setting === 'showMeaning' ? value === 'true' : value;
     saveState();
@@ -431,7 +569,7 @@
     $('#settings-shortcut').addEventListener('click', renderSettings);
     $('#settings-button').addEventListener('click', renderSettings);
     $('#genres-button').addEventListener('click', renderGenres);
-    $('#backup-button').addEventListener('click', exportData);
+    $('#backup-button').addEventListener('click', renderBackup);
     $$('.go-home').forEach((button) => button.addEventListener('click', renderHome));
     $('#resume-button').addEventListener('click', () => {
       const resumable = state.session && Array.isArray(state.session.order) && Number.isInteger(state.session.index) && vocabularyById.has(state.session.order[state.session.index]);
@@ -467,6 +605,10 @@
     $('#export-button').addEventListener('click', exportData);
     $('#import-input').addEventListener('change', (event) => importData(event.target.files[0]));
     $('#reset-button').addEventListener('click', resetData);
+    $('#github-save-button').addEventListener('click', saveToGithub);
+    $('#github-load-button').addEventListener('click', loadFromGithub);
+    $('#github-token-save').addEventListener('click', saveGithubToken);
+    $('#github-token-clear').addEventListener('click', clearGithubToken);
 
     document.addEventListener('keydown', (event) => {
       if (!$('#quiz-view').classList.contains('is-active')) return;

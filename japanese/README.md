@@ -32,4 +32,6 @@
 
 ## 保存
 
-分類、★、表示設定、途中位置はブラウザの `localStorage` に保存されます。別端末への移行やブラウザデータ消去に備え、ホームの「データをバックアップ」からJSONを書き出せます。復元は設定画面の「データを読み込む」を使います。
+分類、★、表示設定、途中位置は普段はブラウザの `localStorage` に保存されます。ホームの「データをバックアップ」から、共通セーブデータ `japanese/save_data.json` へ手動で保存・読み込みできます。
+
+GitHubへ保存する端末では、対象リポジトリだけを選択し、Contentsを「Read and write」にしたFine-grained personal access tokenを初回に設定します。トークンはその端末の `localStorage` にだけ保存し、`save_data.json` やローカル書き出しデータには含めません。GitHubからの読み込みにはトークンは不要です。

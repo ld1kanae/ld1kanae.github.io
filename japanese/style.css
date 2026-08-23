@@ -36,10 +36,10 @@ html[data-theme="dark"] {
   --text-muted: #a9bbc9;
   --line: #344c5f;
   --blue: #78a9cf;
-  --blue-strong: #315f84;
+  --blue-strong: #477ea8;
   --blue-soft: #1d3447;
-  --known: #397f74;
-  --unknown: #3c6f98;
+  --known: #438c80;
+  --unknown: #4b82ad;
   --uninterested: #a2acb6;
   --star: #ffd257;
   --danger: #ee898c;
@@ -183,9 +183,10 @@ button:disabled { opacity: .38; cursor: not-allowed; }
 .genre-card:hover { border-color: var(--blue); }
 .genre-card strong { font-size: 1rem; }
 .genre-card small { color: var(--text-muted); }
-html[data-theme="dark"] .mode-card-primary { background: linear-gradient(135deg, #274f71, #315f84); }
-html[data-theme="dark"] .primary-button { border-color: #416f93; background: #315f84; }
-html[data-theme="dark"] .segmented-control button.is-active { background: #315f84; }
+html[data-theme="dark"] .mode-card-primary { background: linear-gradient(135deg, #3b6f98, #4c86b0); }
+html[data-theme="dark"] .primary-button { border-color: #5d91b8; background: #477ea8; }
+html[data-theme="dark"] .primary-button:hover { background: #528bb5; }
+html[data-theme="dark"] .segmented-control button.is-active { background: #477ea8; }
 .settings-group { margin-bottom: 16px; padding: 25px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
 .settings-group h2 { margin: 0 0 13px; font-size: 1.05rem; }
 .settings-group > p { color: var(--text-muted); }
@@ -195,6 +196,13 @@ html[data-theme="dark"] .segmented-control button.is-active { background: #315f8
 .setting-preview { margin: 18px 0 0 !important; font-size: 1.22rem; text-align: center; }
 .data-actions { display: flex; flex-wrap: wrap; gap: 9px; }
 .file-button input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.github-backup-panel code, .settings-group code { color: var(--blue); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.settings-group a { color: var(--blue); text-underline-offset: 3px; }
+.backup-status { margin: 14px 0 0; font-size: .86rem; }
+.backup-status.is-error { color: var(--danger); }
+.backup-status.is-success { color: var(--known); }
+.token-field { display: grid; gap: 6px; margin: 14px 0; color: var(--text-muted); font-size: .82rem; }
+.token-field input { width: 100%; min-height: 46px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 11px; color: var(--text); background: var(--surface-muted); }
 
 .empty-state { max-width: 590px; margin: 13vh auto 0; text-align: center; }
 .empty-state h1 { font-size: clamp(2rem, 6vw, 3.5rem); }

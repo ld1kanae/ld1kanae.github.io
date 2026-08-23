@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#245d9e">
   <meta name="description" content="日常や創作で使える日本語の慣用句を、気軽に眺めて分類できるアプリです。">
   <title>使える日本語を勝手に浴びる</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <header class="app-header">
@@ -69,8 +69,8 @@
           <span class="mode-copy"><strong>ジャンルから探す</strong><small>小説表現を目的別に引く</small></span>
         </button>
         <button id="backup-button" class="mode-card" type="button">
-          <span class="mode-icon">⇩</span>
-          <span class="mode-copy"><strong>データをバックアップ</strong><small>学習状況を端末に保存</small></span>
+          <span class="mode-icon">⇅</span>
+          <span class="mode-copy"><strong>データをバックアップ</strong><small>GitHubに保存・読み込み</small></span>
         </button>
         <button id="settings-button" class="mode-card" type="button">
           <span class="mode-icon">Aa</span>
@@ -142,6 +142,39 @@
       <div id="genre-grid" class="genre-grid"></div>
     </section>
 
+    <section id="backup-view" class="view settings-view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">端末間で引き継ぐ</p>
+          <h1>GitHubバックアップ</h1>
+        </div>
+        <button class="secondary-button go-home" type="button">ホーム</button>
+      </div>
+
+      <div class="settings-group github-backup-panel">
+        <h2>共通のセーブデータ</h2>
+        <p><code>japanese/save_data.json</code> に分類・★・設定・途中位置を保存します。</p>
+        <div class="data-actions github-actions">
+          <button id="github-save-button" class="primary-button" type="button">GitHubに保存</button>
+          <button id="github-load-button" class="secondary-button" type="button">GitHubから読み込む</button>
+        </div>
+        <p id="github-backup-status" class="backup-status">まだ通信していません。</p>
+      </div>
+
+      <div class="settings-group">
+        <h2>保存用トークン</h2>
+        <p>保存時のみ必要です。<a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">Fine-grained tokenを作成</a>し、対象リポジトリを <code>ld1kanae/ld1kanae.github.io</code> に限定、Contentsを「Read and write」にしてください。トークンはこの端末内だけに保存され、セーブデータには含めません。</p>
+        <label class="token-field">
+          <span>GitHub token</span>
+          <input id="github-token-input" type="password" autocomplete="off" placeholder="github_pat_…">
+        </label>
+        <div class="data-actions token-actions">
+          <button id="github-token-save" class="secondary-button" type="button">この端末に記憶</button>
+          <button id="github-token-clear" class="danger-button" type="button">記憶したトークンを削除</button>
+        </div>
+      </div>
+    </section>
+
     <section id="review-view" class="view review-view">
       <div class="section-heading">
         <div>
@@ -199,8 +232,8 @@
       </div>
 
       <div class="settings-group">
-        <h2>学習データ</h2>
-        <p>分類・お気に入り・設定・途中位置をファイルに保存できます。</p>
+        <h2>予備のローカルバックアップ</h2>
+        <p>GitHubを使えない場合に限り、端末へファイルとして退避できます。</p>
         <div class="data-actions">
           <button id="export-button" class="secondary-button" type="button">データを書き出す</button>
           <label class="secondary-button file-button">データを読み込む<input id="import-input" type="file" accept="application/json,.json"></label>
@@ -211,6 +244,6 @@
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=4" defer></script>
+  <script src="app.js?v=5" defer></script>
 </body>
 </html>
