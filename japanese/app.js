@@ -279,7 +279,9 @@
 
   function bindQuizSwipe() {
     const card = $('.word-card');
+    const swipeSurface = $('#quiz-view');
     let gesture = null;
+    let suppressClickUntil = 0;
 
     const resetCard = () => {
       card.style.removeProperty('transform');
@@ -287,11 +289,10 @@
       delete card.dataset.swipeDirection;
     };
 
-    card.addEventListener('pointerdown', (event) => {
+    swipeSurface.addEventListener('pointerdown', (event) => {
       if (event.pointerType !== 'touch' || swipeLocked) return;
       if (!$('#quiz-view').classList.contains('is-active')) return;
       if (!matchMedia('(max-width: 768px)').matches) return;
-      if (event.target.closest('button')) return;
       gesture = {
         pointerId: event.pointerId,
         startX: event.clientX,
@@ -299,10 +300,10 @@
         dx: 0,
         dy: 0
       };
-      card.setPointerCapture?.(event.pointerId);
+      swipeSurface.setPointerCapture?.(event.pointerId);
     });
 
-    card.addEventListener('pointermove', (event) => {
+    swipeSurface.addEventListener('pointermove', (event) => {
       if (!gesture || gesture.pointerId !== event.pointerId) return;
       gesture.dx = event.clientX - gesture.startX;
       gesture.dy = event.clientY - gesture.startY;
@@ -329,6 +330,7 @@
       }
 
       swipeLocked = true;
+      suppressClickUntil = performance.now() + 400;
       const status = dx < 0 ? 'known' : 'unknown';
       card.style.transition = 'transform .12s ease, opacity .12s ease';
       card.style.transform = `translateX(${dx < 0 ? '-110%' : '110%'}) rotate(${dx < 0 ? -7 : 7}deg)`;
@@ -341,12 +343,17 @@
       }, 120);
     };
 
-    card.addEventListener('pointerup', finishSwipe);
-    card.addEventListener('pointercancel', (event) => {
+    swipeSurface.addEventListener('pointerup', finishSwipe);
+    swipeSurface.addEventListener('pointercancel', (event) => {
       if (!gesture || gesture.pointerId !== event.pointerId) return;
       gesture = null;
       resetCard();
     });
+    swipeSurface.addEventListener('click', (event) => {
+      if (performance.now() >= suppressClickUntil) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
   }
 
   function toggleCurrentFavorite() {
