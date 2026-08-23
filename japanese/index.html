@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja" data-theme="light" data-font="gothic">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#245d9e">
+  <meta name="description" content="日常や創作で使える日本語の慣用句を、気軽に眺めて分類できるアプリです。">
+  <title>使える日本語を勝手に浴びる</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <button id="home-button" class="brand" type="button" aria-label="ホームへ戻る">
+      <span class="brand-mark">日</span>
+      <span>使える日本語を勝手に浴びる</span>
+    </button>
+    <button id="settings-shortcut" class="icon-button" type="button" aria-label="設定" title="設定">⚙</button>
+  </header>
+
+  <main id="app" class="app-shell" aria-live="polite">
+    <section id="loading-view" class="view is-active loading-view">
+      <p>ことばを集めています……</p>
+    </section>
+
+    <section id="error-view" class="view empty-state">
+      <h1>読み込めませんでした</h1>
+      <p id="error-message"></p>
+      <button class="primary-button" type="button" onclick="location.reload()">もう一度読み込む</button>
+    </section>
+
+    <section id="home-view" class="view home-view">
+      <div class="intro">
+        <p class="eyebrow">ことばを、ひとつずつ。</p>
+        <h1>使える日本語を<br>勝手に浴びる</h1>
+        <p>覚えようとしなくて大丈夫。眺めて、気分のままに分けていきます。</p>
+      </div>
+
+      <div id="resume-panel" class="resume-panel" hidden>
+        <div>
+          <span class="small-label">前回のつづき</span>
+          <strong id="resume-progress"></strong>
+        </div>
+        <button id="resume-button" class="primary-button" type="button">つづきから</button>
+      </div>
+
+      <div class="mode-grid">
+        <button id="random-button" class="mode-card mode-card-primary" type="button">
+          <span class="mode-icon">↝</span>
+          <span class="mode-copy"><strong>ランダム出題</strong><small id="random-subtitle">全体から重複なしで出題</small></span>
+        </button>
+        <button class="mode-card review-link" type="button" data-filter="favorite">
+          <span class="mode-icon star">★</span>
+          <span class="mode-copy"><strong>お気に入り</strong><small><span data-count="favorite">0</span>件を振り返る</small></span>
+        </button>
+        <button class="mode-card review-link" type="button" data-filter="known">
+          <span class="mode-dot known"></span>
+          <span class="mode-copy"><strong>知ってる</strong><small><span data-count="known">0</span>件を振り返る</small></span>
+        </button>
+        <button class="mode-card review-link" type="button" data-filter="unknown">
+          <span class="mode-dot unknown"></span>
+          <span class="mode-copy"><strong>知らない</strong><small><span data-count="unknown">0</span>件を振り返る</small></span>
+        </button>
+        <button class="mode-card review-link" type="button" data-filter="uninterested">
+          <span class="mode-dot uninterested"></span>
+          <span class="mode-copy"><strong>興味ない</strong><small><span data-count="uninterested">0</span>件を振り返る</small></span>
+        </button>
+        <button id="settings-button" class="mode-card" type="button">
+          <span class="mode-icon">Aa</span>
+          <span class="mode-copy"><strong>設定</strong><small>表示とデータ管理</small></span>
+        </button>
+      </div>
+
+      <p class="library-summary"><span id="total-count">0</span>語収録・未分類 <span data-count="unclassified">0</span>語</p>
+    </section>
+
+    <section id="quiz-view" class="view quiz-view">
+      <div class="quiz-topbar">
+        <button id="quiz-exit" class="text-button" type="button">終了</button>
+        <span id="quiz-mode-label" class="small-label"></span>
+        <span id="quiz-progress" class="progress-label"></span>
+      </div>
+
+      <article class="word-card">
+        <button id="favorite-button" class="favorite-button" type="button" aria-pressed="false" aria-label="お気に入りに追加" title="お気に入り">☆</button>
+        <p id="word-category" class="word-category"></p>
+        <h1 id="word-phrase"></h1>
+        <p id="word-reading" class="word-reading"></p>
+        <div id="word-explanation" class="word-explanation">
+          <p id="word-meaning"></p>
+          <div class="example-box">
+            <span>用例</span>
+            <p id="word-example"></p>
+          </div>
+        </div>
+        <button id="reveal-button" class="reveal-button" type="button" hidden>説明を読む</button>
+      </article>
+
+      <div class="classification" role="group" aria-label="ことばを分類">
+        <button type="button" data-status="known">知ってる</button>
+        <button type="button" data-status="unknown">知らない</button>
+        <button type="button" data-status="uninterested">興味ない</button>
+      </div>
+
+      <div class="quiz-navigation">
+        <button id="previous-button" class="secondary-button" type="button">← 戻る</button>
+        <button id="next-button" class="primary-button" type="button">次へ →</button>
+      </div>
+      <p class="shortcut-hint">← → 移動　Space 説明　F ★　1 / 2 / 3 分類</p>
+    </section>
+
+    <section id="complete-view" class="view empty-state">
+      <div class="complete-mark">✓</div>
+      <h1>ひと巡りしました</h1>
+      <p id="complete-message"></p>
+      <div class="stacked-actions">
+        <button id="reshuffle-button" class="primary-button" type="button">もう一度シャッフル</button>
+        <button class="secondary-button go-home" type="button">ホームへ戻る</button>
+      </div>
+    </section>
+
+    <section id="review-view" class="view review-view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">振り返る</p>
+          <h1 id="review-title"></h1>
+        </div>
+        <button class="secondary-button go-home" type="button">ホーム</button>
+      </div>
+      <div class="review-tools">
+        <label class="search-box">
+          <span>⌕</span>
+          <input id="review-search" type="search" placeholder="語句・よみ・意味から検索">
+        </label>
+        <button id="review-random-button" class="primary-button" type="button">この一覧からランダム出題</button>
+      </div>
+      <p id="review-result-count" class="library-summary"></p>
+      <div id="review-list" class="review-list"></div>
+      <div id="review-empty" class="empty-state compact" hidden>
+        <p>この分類には、まだことばがありません。</p>
+      </div>
+    </section>
+
+    <section id="settings-view" class="view settings-view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">自分に合わせる</p>
+          <h1>設定</h1>
+        </div>
+        <button class="secondary-button go-home" type="button">ホーム</button>
+      </div>
+
+      <div class="settings-group">
+        <h2>説明の表示</h2>
+        <div class="segmented-control" role="radiogroup" aria-label="説明の表示方法">
+          <button type="button" data-setting="showMeaning" data-value="true">最初から表示</button>
+          <button type="button" data-setting="showMeaning" data-value="false">ボタンで表示</button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h2>字体</h2>
+        <div class="segmented-control" role="radiogroup" aria-label="字体">
+          <button type="button" data-setting="font" data-value="gothic">ゴシック体</button>
+          <button type="button" data-setting="font" data-value="mincho">明朝体</button>
+        </div>
+        <p class="setting-preview">言葉の輪郭を、静かに眺める。</p>
+      </div>
+
+      <div class="settings-group">
+        <h2>外観</h2>
+        <div class="segmented-control" role="radiogroup" aria-label="外観">
+          <button type="button" data-setting="theme" data-value="light">ライト</button>
+          <button type="button" data-setting="theme" data-value="dark">ダーク</button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h2>学習データ</h2>
+        <p>分類・お気に入り・設定・途中位置をファイルに保存できます。</p>
+        <div class="data-actions">
+          <button id="export-button" class="secondary-button" type="button">データを書き出す</button>
+          <label class="secondary-button file-button">データを読み込む<input id="import-input" type="file" accept="application/json,.json"></label>
+          <button id="reset-button" class="danger-button" type="button">すべて初期化</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
