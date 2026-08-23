@@ -283,40 +283,45 @@
     let gesture = null;
     let suppressClickUntil = 0;
 
+    const touchPoint = (touches, identifier) =>
+      [...touches].find((touch) => touch.identifier === identifier) || null;
+
     const resetCard = () => {
       card.style.removeProperty('transform');
       card.style.removeProperty('transition');
       delete card.dataset.swipeDirection;
     };
 
-    swipeSurface.addEventListener('pointerdown', (event) => {
-      if (event.pointerType !== 'touch' || swipeLocked) return;
+    swipeSurface.addEventListener('touchstart', (event) => {
+      if (swipeLocked || event.touches.length !== 1) return;
       if (!$('#quiz-view').classList.contains('is-active')) return;
       if (!matchMedia('(max-width: 768px)').matches) return;
+      const touch = event.touches[0];
       gesture = {
-        pointerId: event.pointerId,
-        startX: event.clientX,
-        startY: event.clientY,
+        identifier: touch.identifier,
+        startX: touch.clientX,
+        startY: touch.clientY,
         dx: 0,
         dy: 0
       };
-      swipeSurface.setPointerCapture?.(event.pointerId);
-    });
+    }, { passive: true });
 
-    swipeSurface.addEventListener('pointermove', (event) => {
-      if (!gesture || gesture.pointerId !== event.pointerId) return;
-      gesture.dx = event.clientX - gesture.startX;
-      gesture.dy = event.clientY - gesture.startY;
+    document.addEventListener('touchmove', (event) => {
+      if (!gesture) return;
+      const touch = touchPoint(event.touches, gesture.identifier);
+      if (!touch) return;
+      gesture.dx = touch.clientX - gesture.startX;
+      gesture.dy = touch.clientY - gesture.startY;
       if (Math.abs(gesture.dx) < 10 || Math.abs(gesture.dx) <= Math.abs(gesture.dy) * 1.15) return;
       event.preventDefault();
       const limitedX = Math.max(-120, Math.min(120, gesture.dx));
       card.style.transition = 'none';
       card.style.transform = `translateX(${limitedX}px) rotate(${limitedX / 45}deg)`;
       card.dataset.swipeDirection = gesture.dx < 0 ? 'known' : 'unknown';
-    });
+    }, { passive: false });
 
     const finishSwipe = (event) => {
-      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      if (!gesture || !touchPoint(event.changedTouches, gesture.identifier)) return;
       const { dx, dy } = gesture;
       gesture = null;
       const threshold = Math.max(64, card.clientWidth * 0.18);
@@ -343,12 +348,12 @@
       }, 120);
     };
 
-    swipeSurface.addEventListener('pointerup', finishSwipe);
-    swipeSurface.addEventListener('pointercancel', (event) => {
-      if (!gesture || gesture.pointerId !== event.pointerId) return;
+    document.addEventListener('touchend', finishSwipe, { passive: true });
+    document.addEventListener('touchcancel', (event) => {
+      if (!gesture || !touchPoint(event.changedTouches, gesture.identifier)) return;
       gesture = null;
       resetCard();
-    });
+    }, { passive: true });
     swipeSurface.addEventListener('click', (event) => {
       if (performance.now() >= suppressClickUntil) return;
       event.preventDefault();
