@@ -215,9 +215,11 @@
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', String(active));
     });
+    state.session.revealed ||= {};
     const revealed = state.settings.showMeaning || Boolean(state.session.revealed[word.id]);
     $('#word-explanation').hidden = !revealed;
     $('#reveal-button').hidden = revealed;
+    $('#reveal-button').setAttribute('aria-expanded', String(revealed));
     $('#previous-button').disabled = state.session.index === 0;
     $('#next-button').textContent = state.session.index === state.session.order.length - 1 ? '完了 →' : '次へ →';
     saveState();
@@ -281,7 +283,6 @@
     const card = $('.word-card');
     const swipeSurface = $('#quiz-view');
     let gesture = null;
-    let suppressClickUntil = 0;
 
     const touchPoint = (touches, identifier) =>
       [...touches].find((touch) => touch.identifier === identifier) || null;
@@ -335,7 +336,6 @@
       }
 
       swipeLocked = true;
-      suppressClickUntil = performance.now() + 400;
       const status = dx < 0 ? 'known' : 'unknown';
       card.style.transition = 'transform .12s ease, opacity .12s ease';
       card.style.transform = `translateX(${dx < 0 ? '-110%' : '110%'}) rotate(${dx < 0 ? -7 : 7}deg)`;
@@ -354,11 +354,6 @@
       gesture = null;
       resetCard();
     }, { passive: true });
-    swipeSurface.addEventListener('click', (event) => {
-      if (performance.now() >= suppressClickUntil) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }, true);
   }
 
   function toggleCurrentFavorite() {
@@ -683,10 +678,13 @@
     $('#favorite-button').addEventListener('click', toggleCurrentFavorite);
     $('#reveal-button').addEventListener('click', () => {
       const word = currentWord();
-      if (!word) return;
+      if (!word || !state.session) return;
+      state.session.revealed ||= {};
       state.session.revealed[word.id] = true;
       saveState();
-      renderQuiz();
+      $('#word-explanation').hidden = false;
+      $('#reveal-button').hidden = true;
+      $('#reveal-button').setAttribute('aria-expanded', 'true');
     });
     $$('.classification button').forEach((button) => button.addEventListener('click', () => setCurrentStatus(button.dataset.status)));
     $('#reshuffle-button').addEventListener('click', () => {
