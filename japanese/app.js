@@ -62,7 +62,12 @@
         }
         if (ids.has(entry.id)) throw new Error(`語彙ID ${entry.id} が重複しています。`);
         ids.add(entry.id);
-        all.push({ category: '慣用句', ...entry });
+        all.push({
+          category: '慣用句',
+          ...entry,
+          genres: Array.isArray(entry.genres) ? entry.genres.filter(Boolean) : [entry.category || 'その他'],
+          similar: Array.isArray(entry.similar) ? entry.similar.filter(Boolean) : []
+        });
       });
     }
     if (!all.length) throw new Error('語彙ファイルが見つかりませんでした。');
@@ -132,7 +137,16 @@
   function wordsForPool(pool) {
     if (pool === 'all') return vocabulary.filter((word) => itemState(word.id).status !== 'uninterested');
     if (pool === 'favorite') return vocabulary.filter((word) => itemState(word.id).favorite);
+    if (pool.startsWith('genre:')) {
+      const genre = pool.slice(6);
+      return vocabulary.filter((word) => word.genres.includes(genre));
+    }
     return vocabulary.filter((word) => itemState(word.id).status === pool);
+  }
+
+  function poolLabel(pool) {
+    if (pool.startsWith('genre:')) return `${pool.slice(6)}から出題`;
+    return pool === 'all' ? 'ランダム出題' : `${FILTER_LABELS[pool]}から出題`;
   }
 
   function startSession(pool = 'all', force = false) {
@@ -148,7 +162,7 @@
     }
     state.session = {
       pool,
-      label: pool === 'all' ? 'ランダム出題' : `${FILTER_LABELS[pool]}から出題`,
+      label: poolLabel(pool),
       order: shuffled(words.map((word) => word.id)),
       index: 0,
       revealed: {},
@@ -182,6 +196,14 @@
     $('#word-reading').textContent = word.reading;
     $('#word-meaning').textContent = word.meaning;
     $('#word-example').textContent = word.example;
+    const similarBox = $('#word-similar-box');
+    const similarList = $('#word-similar');
+    similarBox.hidden = word.similar.length === 0;
+    similarList.replaceChildren(...word.similar.map((phrase) => {
+      const span = document.createElement('span');
+      span.textContent = phrase;
+      return span;
+    }));
     updateFavoriteButton($('#favorite-button'), saved.favorite);
     $$('.classification button').forEach((button) => {
       const active = saved.status === button.dataset.status;
@@ -253,12 +275,16 @@
 
   function reviewWords(filter) {
     if (filter === 'favorite') return vocabulary.filter((word) => itemState(word.id).favorite);
+    if (filter.startsWith('genre:')) {
+      const genre = filter.slice(6);
+      return vocabulary.filter((word) => word.genres.includes(genre));
+    }
     return vocabulary.filter((word) => itemState(word.id).status === filter);
   }
 
   function renderReview(filter = currentReviewFilter) {
     currentReviewFilter = filter;
-    $('#review-title').textContent = FILTER_LABELS[filter];
+    $('#review-title').textContent = filter.startsWith('genre:') ? filter.slice(6) : FILTER_LABELS[filter];
     $('#review-search').value = '';
     renderReviewList();
     showView('review');
@@ -267,7 +293,7 @@
   function renderReviewList() {
     const query = $('#review-search').value.trim().toLocaleLowerCase('ja');
     const all = reviewWords(currentReviewFilter);
-    const words = all.filter((word) => [word.phrase, word.reading, word.meaning, word.example].some((value) => value.toLocaleLowerCase('ja').includes(query)));
+    const words = all.filter((word) => [word.phrase, word.reading, word.meaning, word.example, ...word.similar].some((value) => value.toLocaleLowerCase('ja').includes(query)));
     $('#review-result-count').textContent = query ? `${all.length}件中 ${words.length}件` : `${all.length}件`;
     $('#review-empty').hidden = words.length > 0;
     $('#review-random-button').disabled = all.length === 0;
@@ -294,6 +320,8 @@
     const reading = document.createElement('p'); reading.className = 'review-reading'; reading.textContent = word.reading;
     const meaning = document.createElement('p'); meaning.className = 'review-meaning'; meaning.textContent = word.meaning;
     const example = document.createElement('p'); example.className = 'review-example'; example.textContent = `例：${word.example}`;
+    const similar = document.createElement('p'); similar.className = 'review-similar';
+    similar.textContent = word.similar.length ? `近い表現：${word.similar.join('・')}` : '';
     const controls = document.createElement('div'); controls.className = 'review-item-controls';
     Object.entries(STATUS_LABELS).forEach(([status, label]) => {
       const button = document.createElement('button');
@@ -307,8 +335,25 @@
       });
       controls.append(button);
     });
-    article.append(favorite, title, reading, meaning, example, controls);
+    article.append(favorite, title, reading, meaning, example, similar, controls);
     return article;
+  }
+
+  function renderGenres() {
+    const counts = new Map();
+    vocabulary.forEach((word) => word.genres.forEach((genre) => counts.set(genre, (counts.get(genre) || 0) + 1)));
+    const grid = $('#genre-grid');
+    grid.replaceChildren(...[...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ja')).map(([genre, count]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'genre-card';
+      const title = document.createElement('strong'); title.textContent = genre;
+      const small = document.createElement('small'); small.textContent = `${count}表現`;
+      button.append(title, small);
+      button.addEventListener('click', () => renderReview(`genre:${genre}`));
+      return button;
+    }));
+    showView('genres');
   }
 
   function renderSettings() {
@@ -385,6 +430,8 @@
     $('#home-button').addEventListener('click', renderHome);
     $('#settings-shortcut').addEventListener('click', renderSettings);
     $('#settings-button').addEventListener('click', renderSettings);
+    $('#genres-button').addEventListener('click', renderGenres);
+    $('#backup-button').addEventListener('click', exportData);
     $$('.go-home').forEach((button) => button.addEventListener('click', renderHome));
     $('#resume-button').addEventListener('click', () => {
       const resumable = state.session && Array.isArray(state.session.order) && Number.isInteger(state.session.index) && vocabularyById.has(state.session.order[state.session.index]);
