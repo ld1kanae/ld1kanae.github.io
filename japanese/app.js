@@ -92,16 +92,27 @@
   }
 
   function renderHome() {
-    if (state.session && state.session.index >= state.session.order.length) {
+    if (state.session && (!Array.isArray(state.session.order) || state.session.index >= state.session.order.length)) {
       state.session = null;
       saveState();
     }
     const totals = counts();
     Object.entries(totals).forEach(([key, value]) => $$(`[data-count="${key}"]`).forEach((node) => { node.textContent = value; }));
     $('#total-count').textContent = vocabulary.length;
-    const validSession = state.session && state.session.order.some((id) => vocabularyById.has(id));
+    const validSession = Boolean(
+      state.session &&
+      Array.isArray(state.session.order) &&
+      Number.isInteger(state.session.index) &&
+      state.session.index >= 0 &&
+      state.session.index < state.session.order.length &&
+      vocabularyById.has(state.session.order[state.session.index])
+    );
+    if (state.session && !validSession) {
+      state.session = null;
+      saveState();
+    }
     $('#resume-panel').hidden = !validSession;
-    $('#random-subtitle').textContent = validSession ? '新しい順番で始める' : '全体から重複なしで出題';
+    $('#random-subtitle').textContent = validSession ? '途中データを終えて、新しく始める' : '全体から重複なしで出題';
     if (validSession) {
       $('#resume-progress').textContent = `${state.session.index + 1} / ${state.session.order.length}　${state.session.label}`;
     }
@@ -124,7 +135,7 @@
   }
 
   function startSession(pool = 'all', force = false) {
-    const hasActiveSession = state.session && state.session.index < state.session.order.length;
+    const hasActiveSession = state.session && Array.isArray(state.session.order) && state.session.index < state.session.order.length;
     if (!force && hasActiveSession) {
       const proceed = confirm('途中の出題を終了し、新しい順番で始めますか？');
       if (!proceed) return;
@@ -147,7 +158,7 @@
   }
 
   function currentWord() {
-    if (!state.session) return null;
+    if (!state.session || !Array.isArray(state.session.order) || !Number.isInteger(state.session.index)) return null;
     while (state.session.index < state.session.order.length && !vocabularyById.has(state.session.order[state.session.index])) {
       state.session.index += 1;
     }
@@ -157,7 +168,9 @@
   function renderQuiz() {
     const word = currentWord();
     if (!word) {
-      renderComplete();
+      state.session = null;
+      saveState();
+      startSession('all', true);
       return;
     }
     const saved = itemState(word.id);
@@ -372,7 +385,15 @@
     $('#settings-shortcut').addEventListener('click', renderSettings);
     $('#settings-button').addEventListener('click', renderSettings);
     $$('.go-home').forEach((button) => button.addEventListener('click', renderHome));
-    $('#resume-button').addEventListener('click', renderQuiz);
+    $('#resume-button').addEventListener('click', () => {
+      const resumable = state.session && Array.isArray(state.session.order) && Number.isInteger(state.session.index) && vocabularyById.has(state.session.order[state.session.index]);
+      if (resumable) renderQuiz();
+      else {
+        state.session = null;
+        saveState();
+        startSession('all', true);
+      }
+    });
     $('#random-button').addEventListener('click', () => startSession('all'));
     $$('.review-link').forEach((button) => button.addEventListener('click', () => renderReview(button.dataset.filter)));
     $('#quiz-exit').addEventListener('click', renderHome);
