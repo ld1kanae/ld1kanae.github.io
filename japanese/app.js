@@ -123,7 +123,7 @@
       saveState();
     }
     $('#resume-panel').hidden = !validSession;
-    $('#random-subtitle').textContent = validSession ? '途中データを終えて、新しく始める' : '全体から重複なしで出題';
+    $('#random-subtitle').textContent = validSession ? '途中データを終えて、新しく始める' : '未分類のことばだけを出題';
     if (validSession) {
       $('#resume-progress').textContent = `${state.session.index + 1} / ${state.session.order.length}　${state.session.label}`;
     }
@@ -140,7 +140,7 @@
   }
 
   function wordsForPool(pool) {
-    if (pool === 'all') return vocabulary.filter((word) => itemState(word.id).status !== 'uninterested');
+    if (pool === 'all') return vocabulary.filter((word) => !itemState(word.id).status);
     if (pool === 'favorite') return vocabulary.filter((word) => itemState(word.id).favorite);
     if (pool.startsWith('genre:')) {
       const genre = pool.slice(6);
@@ -162,7 +162,7 @@
     }
     const words = wordsForPool(pool);
     if (!words.length) {
-      showToast('出題できることばがありません');
+      showToast(pool === 'all' ? '未分類のことばはありません' : '出題できることばがありません');
       return;
     }
     state.session = {
