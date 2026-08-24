@@ -102,16 +102,26 @@
     return result;
   }
 
+  function isGeneralRandomSession(session = state.session) {
+    if (!session) return false;
+    if (session.pool === 'all' || session.pool === 'random') return true;
+    return !session.pool && (!session.label || session.label === 'ランダム出題');
+  }
+
   function pruneClassifiedFromActiveRandomSession() {
-    if (!vocabulary.length || state.session?.pool !== 'all' || !Array.isArray(state.session.order)) return;
+    if (!vocabulary.length || !isGeneralRandomSession() || !Array.isArray(state.session.order)) return;
     const index = Number.isInteger(state.session.index) ? state.session.index : 0;
-    const viewed = state.session.order.slice(0, index);
     const remaining = state.session.order.slice(index).filter((id) => {
       const word = vocabularyById.get(id);
       return word && !itemState(id).status;
     });
     if (!remaining.length) state.session = null;
-    else state.session.order = [...viewed, ...remaining];
+    else {
+      state.session.pool = 'all';
+      state.session.label = 'ランダム出題';
+      state.session.order = remaining;
+      state.session.index = 0;
+    }
     saveState();
   }
 
@@ -676,6 +686,7 @@
     $('#backup-button').addEventListener('click', renderBackup);
     $$('.go-home').forEach((button) => button.addEventListener('click', renderHome));
     $('#resume-button').addEventListener('click', () => {
+      pruneClassifiedFromActiveRandomSession();
       const resumable = state.session && Array.isArray(state.session.order) && Number.isInteger(state.session.index) && vocabularyById.has(state.session.order[state.session.index]);
       if (resumable) renderQuiz();
       else {
