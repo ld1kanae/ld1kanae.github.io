@@ -8,6 +8,28 @@
   const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${GITHUB_SAVE_PATH}`;
   const STATUS_LABELS = { known: '知ってる', unknown: '知らない', uninterested: '興味ない' };
   const FILTER_LABELS = { favorite: 'お気に入り', known: '知ってる', unknown: '知らない', uninterested: '興味ない' };
+  const VOCABULARY_ID_ALIASES = {
+    'jp-000593': 'jp-000007',
+    'jp-000801': 'jp-000103',
+    'jp-000705': 'jp-000706',
+    'jp-000811': 'jp-000810',
+    'jp-001118': 'jp-001117',
+    'jp-000785': 'jp-000784',
+    'jp-000579': 'jp-000073',
+    'jp-001168': 'jp-001167',
+    'jp-000223': 'jp-000679',
+    'jp-000138': 'jp-000142',
+    'jp-001114': 'jp-000317',
+    'jp-000412': 'jp-000398',
+    'jp-000508': 'jp-000509',
+    'jp-000510': 'jp-000509',
+    'jp-000695': 'jp-000512',
+    'jp-000620': 'jp-000619',
+    'jp-000621': 'jp-000619',
+    'jp-000842': 'jp-000843',
+    'jp-000880': 'jp-001003',
+    'jp-001082': 'jp-001083'
+  };
   const defaults = {
     schemaVersion: 1,
     settings: { showMeaning: true, font: 'gothic', theme: 'light' },
@@ -42,6 +64,28 @@
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function migrateVocabularyAliases() {
+    let changed = false;
+    Object.entries(VOCABULARY_ID_ALIASES).forEach(([oldId, canonicalId]) => {
+      const oldItem = state.items[oldId];
+      if (!oldItem) return;
+      const current = state.items[canonicalId];
+      if (!current) state.items[canonicalId] = { ...oldItem };
+      else {
+        const oldTime = Date.parse(oldItem.updatedAt || 0) || 0;
+        const currentTime = Date.parse(current.updatedAt || 0) || 0;
+        state.items[canonicalId] = {
+          status: oldTime > currentTime ? oldItem.status : current.status,
+          favorite: Boolean(oldItem.favorite || current.favorite),
+          updatedAt: oldTime > currentTime ? oldItem.updatedAt : current.updatedAt
+        };
+      }
+      delete state.items[oldId];
+      changed = true;
+    });
+    if (changed) saveState();
   }
 
   function itemState(id) {
@@ -750,6 +794,7 @@
     try {
       vocabulary = await loadVocabulary();
       vocabularyById = new Map(vocabulary.map((word) => [word.id, word]));
+      migrateVocabularyAliases();
       renderHome();
     } catch (error) {
       $('#error-message').textContent = error.message || '時間を置いて、もう一度お試しください。';
