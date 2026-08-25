@@ -21,16 +21,18 @@
           mainH=h-kickH,
           laneH=mainH/3,
           labelFont=Math.max(9,laneH*.13);
-    return {w,h,judgeX,laneH,labelFont};
+    return {w,h,judgeX,laneH,labelFont,mainH,kickH};
   }
 
   function laneForPart(part){
+    if(part==="kick")return 3;
     if(part==="crash")return 0;
     if(part==="hh"||part==="ride"||part==="special")return 1;
     if(part==="snare"||part==="highTom"||part==="midTom"||part==="floorTom")return 2;
     return -1;
   }
   function laneForType(type){
+    if(type==="kick")return 3;
     const group=typeof GROUP!=="undefined"?GROUP[type]:null;
     return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:-1;
   }
@@ -56,7 +58,7 @@
       barWidth:isOpen?3:4,
       gap:isOpen?1:0,
       totalWidth:isOpen?7:4,
-      color:note.type==="snare"?"#38a9ff":String(note.type||"").includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc"
+      color:note.type==="snare"?"#ff3d73":note.type==="highTom"?"#d76bff":note.type==="midTom"?"#8875ff":note.type==="floorTom"?"#329cff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#aeb9c7"
     };
   }
 
@@ -78,11 +80,11 @@
   }
 
   function placeGlow(lane,node,note){
-    const {judgeX,laneH}=chartGeometry(),visual=noteVisual(note);
+    const {judgeX,laneH,mainH,kickH}=chartGeometry(),visual=noteVisual(note),isKick=lane===3||note.type==="kick";
     node.style.left=`${judgeX-visual.totalWidth/2}px`;
-    node.style.top=`${lane*laneH}px`;
+    node.style.top=`${isKick?mainH+2:lane*laneH}px`;
     node.style.width=`${visual.totalWidth}px`;
-    node.style.height=`${laneH}px`;
+    node.style.height=`${isKick?Math.max(4,kickH-4):laneH}px`;
     node.style.setProperty("--note-total-w",`${visual.totalWidth}px`);
     node.style.setProperty("--note-bar-w",`${visual.barWidth}px`);
     node.style.setProperty("--note-gap",`${visual.gap}px`);
@@ -130,7 +132,7 @@
   }
 
   function flashNote(note){
-    if(!note||note.type==="kick"||isHiddenMode())return;
+    if(!note||isHiddenMode())return;
     const lane=laneForType(note.type);
     if(lane<0)return;
     const glow=ensureGlow(lane);
@@ -195,7 +197,7 @@
       while(hitCursor<notes.length&&notes[hitCursor].time<=t){
         const n=notes[hitCursor++];
         if(n.time>=t-.08){
-          if(n.type!=="kick")flashNote(n);
+          flashNote(n);
           suppressAutoGlow=true;
           try{flashPart(PART[n.type])}finally{suppressAutoGlow=false}
           if(n.type!=="kick"){
@@ -206,6 +208,29 @@
       }
       for(const lane of hitLanes)emit("PERFECT",lane);
     };
+  }else{
+    /* Production kick is automatic, so watch the timeline and flash its note bar
+       exactly when it reaches the goal line. */
+    let kickCursor=0,lastT=-1;
+    const resetKickCursor=t=>{
+      kickCursor=0;
+      while(kickCursor<notes.length&&notes[kickCursor].time<t-.03)kickCursor++;
+    };
+    const watchKick=()=>{
+      if(typeof notes!=="undefined"&&typeof current==="function"&&typeof running!=="undefined"&&running&&!paused){
+        const t=current();
+        if(lastT<0||t<lastT-.08)resetKickCursor(t);
+        while(kickCursor<notes.length&&notes[kickCursor].time<=t){
+          const n=notes[kickCursor++];
+          if(n.type==="kick"&&n.time>=Math.max(0,lastT)-.025)flashNote(n);
+        }
+        lastT=t;
+      }else{
+        lastT=-1;kickCursor=0;
+      }
+      requestAnimationFrame(watchKick);
+    };
+    requestAnimationFrame(watchKick);
   }
 
   new ResizeObserver(()=>requestAnimationFrame(syncGeometry)).observe(wrap);
