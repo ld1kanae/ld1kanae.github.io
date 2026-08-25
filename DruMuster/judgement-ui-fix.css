@@ -3,6 +3,32 @@
 /* Legacy single judgement node is kept in the markup but no longer rendered. */
 #judgementFx{display:none!important}
 
+/* Flash only the judgement-line segment belonging to the struck chart lane. */
+.lane-hit-glow{
+  position:absolute;
+  left:11%;
+  top:var(--lane-top,50%);
+  width:18px;
+  height:29.3333%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  opacity:0;
+  z-index:16;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 28%,rgba(255,255,255,.92) 50%,rgba(255,255,255,.18) 72%,transparent 100%);
+  box-shadow:0 0 7px rgba(255,255,255,.65),0 0 15px var(--lane-glow,rgba(120,220,255,.75));
+  mix-blend-mode:screen;
+}
+.lane-hit-glow[data-lane="0"]{--lane-glow:rgba(255,212,90,.85)}
+.lane-hit-glow[data-lane="1"]{--lane-glow:rgba(82,223,207,.85)}
+.lane-hit-glow[data-lane="2"]{--lane-glow:rgba(120,145,255,.9)}
+.lane-hit-glow.flash{animation:laneHitFlash .18s ease-out}
+@keyframes laneHitFlash{
+  0%{opacity:0;transform:translate(-50%,-50%) scaleX(.55)}
+  16%{opacity:1;transform:translate(-50%,-50%) scaleX(1.18)}
+  42%{opacity:.72;transform:translate(-50%,-50%) scaleX(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scaleX(.9)}
+}
+
 .lane-judge-fx{
   position:absolute;
   left:9%;
@@ -76,7 +102,7 @@
 .lane-judge-fx.play .lane-judge-text::before{animation:laneJudgeBloom .50s ease-out}
 .lane-judge-fx.play .lane-judge-text::after{animation:laneJudgeFlare .50s ease-out}
 
-/* Keep the same absolute peak timing as the 0.20s version; only the fade tail is longer. */
+/* Same fast peak timing; 0.50s total lifetime. */
 @keyframes laneJudgeLife{
   0%{opacity:0}
   3.2%{opacity:1}
