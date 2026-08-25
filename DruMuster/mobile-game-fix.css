@@ -1,123 +1,52 @@
-/* Mobile gameplay layout.
-   Fixed landscape stage: compact HUD at the top, a wide Taiko-style note highway below,
-   and the full drum kit in its original centered position and original rendered size underneath. */
+/* Mobile gameplay layout: fixed landscape stage. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .setup{
-    padding-left:max(36px,env(safe-area-inset-bottom));
-    padding-right:24px;
-  }
-
+  .setup{padding-left:max(36px,env(safe-area-inset-bottom));padding-right:24px}
   .game{overflow:hidden}
 
-  /* Make the HUD thinner and give the recovered vertical space to the chart.
-     The drum kit still begins at exactly the same Y position as before. */
-  .game header{
-    height:32px;
-    padding:2px 10px 2px max(32px,env(safe-area-inset-bottom));
-    gap:5px;
-  }
-  .rank{
-    width:24px;
-    height:24px;
-    font-size:13px;
-    margin:0 7px 0 3px;
-    border-width:1px;
-  }
+  .game header{height:32px;padding:2px 10px 2px max(32px,env(safe-area-inset-bottom));gap:5px}
+  .rank{width:24px;height:24px;font-size:13px;margin:0 7px 0 3px;border-width:1px}
   .song-hud{min-width:0;line-height:1}
   .song-hud b{font-size:12px;white-space:nowrap}
   .song-hud small{font-size:7px;white-space:nowrap}
   .score{padding-right:5px;min-width:68px}
   .score small{font-size:7px}
   .score strong{font-size:14px}
-  .game header #pause{
-    width:34px;
-    height:26px;
-    font-size:14px;
-    border-radius:6px;
-    box-shadow:0 0 0 2px #ffffff22;
-  }
+  .game header #pause{width:34px;height:26px;font-size:14px;border-radius:6px;box-shadow:0 0 0 2px #ffffff22}
 
-  /* The chart ends at the same line as the previous layout:
-     32px + (25% + 12px) == 44px + 25%.
-     So the drum kit does not move or resize, while the chart itself becomes taller. */
+  /* Keep the highway full-width but reduce its vertical footprint to about 80%. */
   #chartWrap{
     position:absolute;
     top:32px;
     left:max(32px,env(safe-area-inset-bottom));
     right:14px;
     width:auto;
-    height:calc(25% + 12px);
+    height:calc(20% + 10px);
     min-height:0;
     z-index:10;
     overflow:hidden;
     border:1px solid #3b4859;
     border-radius:0 0 10px 10px;
     background:#0a1019;
-    box-shadow:0 6px 18px #000a, inset 0 0 0 1px #ffffff08;
+    box-shadow:0 6px 18px #000a,inset 0 0 0 1px #ffffff08;
   }
   #chart{width:100%;height:100%}
-  #judgementFx{
-    left:11%;
-    bottom:0;
-    width:min(28%,260px);
-    height:94%;
-  }
+
+  #judgementFx{left:11%;bottom:0;width:min(28%,260px);height:94%}
   #judge{font-size:clamp(19px,3.1vw,35px)}
 
-  /* Exact previous drum-kit position and scale. */
-  #kit{
-    top:calc(25% + 44px);
-    background:radial-gradient(ellipse at 50% 42%,#242a31,#080b10 78%);
-  }
-  .kit-art{
-    width:100%;
-    height:100%;
-    left:0;
-    top:0;
-    object-fit:contain;
-    object-position:center center;
-  }
+  /* Follow the smaller chart so no dead gap opens between chart and kit. */
+  #kit{top:calc(20% + 42px);background:radial-gradient(ellipse at 50% 42%,#242a31,#080b10 78%)}
 
-  #hitLayer{
-    inset:auto;
-    top:0;
-    bottom:0;
-    left:50%;
-    right:auto;
-    width:auto;
-    height:100%;
-    aspect-ratio:1280 / 854;
-    transform:translateX(-50%);
-  }
+  /* Artwork and hit layer share the same source-image frame; layout-polish-fix.css
+     applies the requested 120% scale to their common parent. */
+  .kit-art{width:100%;height:100%;left:0;top:0;object-fit:contain;object-position:center center}
+  #hitLayer{inset:auto;top:0;bottom:0;left:50%;right:auto;width:auto;height:100%;aspect-ratio:1280 / 854;transform:translateX(-50%)}
 
-  /* Never paint inactive drum pieces black. */
   .dim-layer{display:none!important}
 
-  #hitLayer .crash{width:25%;height:34%;top:2%}
-  #hitLayer .crash.left{left:3%}
-  #hitLayer .crash.right{right:3%}
-  #hitLayer .hh{width:24%;height:38%;left:3%;top:42%}
-  #hitLayer .ride{width:26%;height:42%;right:3%;top:38%}
-  #hitLayer .high{width:23%;height:37%;left:27%;top:18%}
-  #hitLayer .mid{width:23%;height:37%;right:27%;top:18%}
-  #hitLayer .snare{width:28%;height:42%;left:20%;bottom:3%}
-  #hitLayer .floor{width:30%;height:44%;right:18%;bottom:1%}
-  #hitLayer .special{width:10%;height:16%;left:45%;top:50%}
-
-  #hitLayer kbd{
-    min-width:22px;
-    height:22px;
-    padding:0 5px;
-    font-size:11px;
-  }
+  #hitLayer kbd{min-width:22px;height:22px;padding:0 5px;font-size:11px}
   #hitLayer .special span{width:28px;height:20px}
 
-  #kickFx{
-    left:0;
-    right:0;
-    width:auto;
-    height:28%;
-  }
-
+  #kickFx{left:0;right:0;width:auto;height:28%}
   .result{padding-left:max(32px,env(safe-area-inset-bottom))}
 }
