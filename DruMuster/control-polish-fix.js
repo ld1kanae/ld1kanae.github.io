@@ -105,19 +105,9 @@
 
   const heldCodes=new Set();
 
-  /* Capture phase deliberately supersedes app.js's old one-key map. */
+  /* Capture phase deliberately supersedes app.js's old one-key map.
+     Spacebar pause/resume is intentionally disabled; use the pause button instead. */
   addEventListener("keydown",e=>{
-    if(e.code==="Space"){
-      if(e.repeat)return;
-      const tag=e.target?.tagName;
-      if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
-      if(typeof togglePause!=="function")return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      togglePause();
-      return;
-    }
-
     const binding=KEY_BINDINGS[e.code];
     if(!binding)return;
     e.preventDefault();
