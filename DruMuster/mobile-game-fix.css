@@ -1,8 +1,19 @@
-/* Mobile gameplay layout: compact HUD/chart and keep the whole drum kit inside the fixed landscape stage. */
+/* Mobile gameplay layout.
+   The app remains a fixed landscape stage even while the browser itself stays portrait.
+   The drum kit keeps the same rendered size as before; it is only right-aligned so the note highway can use the empty space beside it. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .setup{
+    padding-left:max(36px,env(safe-area-inset-bottom));
+    padding-right:24px;
+  }
+
+  .game{
+    overflow:hidden;
+  }
+
   .game header{
     height:44px;
-    padding:4px 10px;
+    padding:4px 12px 4px max(32px,env(safe-area-inset-bottom));
     gap:6px;
   }
   .rank{
@@ -38,20 +49,40 @@
     box-shadow:0 0 0 2px #ffffff22;
   }
 
+  /* Taiko/general rhythm-game style hierarchy:
+     a large, independent note highway with a fixed judgement zone on the left. */
   #chartWrap{
-    height:25%;
+    position:absolute;
+    top:64px;
+    left:36px;
+    width:40%;
+    height:60%;
     min-height:0;
-    box-shadow:0 4px 12px #0008;
+    z-index:10;
+    overflow:hidden;
+    border:1px solid #3b4859;
+    border-radius:14px;
+    background:#0a1019;
+    box-shadow:0 10px 28px #000b, inset 0 0 0 1px #ffffff08;
+  }
+  #chart{
+    width:100%;
+    height:100%;
+    border-radius:inherit;
   }
   #judgementFx{
-    width:min(28%,260px);
-    height:82%;
+    left:13%;
+    bottom:3%;
+    width:min(42%,280px);
+    height:88%;
   }
-  #judge{font-size:clamp(18px,3vw,34px)}
+  #judge{font-size:clamp(20px,3.2vw,36px)}
 
+  /* Do not resize the drum kit. Keep the same container height and contained-image scale
+     from the previous version; only move the contained image to the right edge. */
   #kit{
     top:calc(25% + 44px);
-    background:radial-gradient(ellipse at 50% 42%,#242a31,#080b10 78%);
+    background:radial-gradient(ellipse at 73% 42%,#242a31,#080b10 78%);
   }
   .kit-art{
     width:100%;
@@ -59,19 +90,25 @@
     left:0;
     top:0;
     object-fit:contain;
-    object-position:center center;
+    object-position:right center;
   }
 
-  /* The source drum-kit image is 1280x854. Keep interaction geometry on the same contained image box. */
-  #hitLayer,.dim-layer{
+  /* Match touch geometry to the exact same 1280x854 contained drum image, right-aligned. */
+  #hitLayer{
     inset:auto;
     top:0;
     bottom:0;
-    left:50%;
+    right:0;
+    left:auto;
     width:auto;
     height:100%;
     aspect-ratio:1280 / 854;
-    transform:translateX(-50%);
+    transform:none;
+  }
+
+  /* The black inactive-part masks are intentionally removed. */
+  .dim-layer{
+    display:none!important;
   }
 
   #hitLayer .crash{width:25%;height:34%;top:2%}
@@ -85,14 +122,6 @@
   #hitLayer .floor{width:30%;height:44%;right:18%;bottom:1%}
   #hitLayer .special{width:10%;height:16%;left:45%;top:50%}
 
-  .dim-layer [data-shade=crash]{width:100%;height:34%;left:0;top:2%}
-  .dim-layer [data-shade=hh]{width:24%;height:38%;left:3%;top:42%}
-  .dim-layer [data-shade=ride]{width:26%;height:42%;right:3%;top:38%}
-  .dim-layer [data-shade=highTom]{width:23%;height:37%;left:27%;top:18%}
-  .dim-layer [data-shade=midTom]{width:23%;height:37%;right:27%;top:18%}
-  .dim-layer [data-shade=snare]{width:28%;height:42%;left:20%;bottom:3%}
-  .dim-layer [data-shade=floorTom]{width:30%;height:44%;right:18%;bottom:1%}
-
   #hitLayer kbd{
     min-width:22px;
     height:22px;
@@ -103,5 +132,15 @@
     width:28px;
     height:20px;
   }
-  #kickFx{height:28%}
+
+  #kickFx{
+    left:auto;
+    right:0;
+    width:58%;
+    height:28%;
+  }
+
+  .result{
+    padding-left:max(32px,env(safe-area-inset-bottom));
+  }
 }
