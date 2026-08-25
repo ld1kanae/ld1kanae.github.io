@@ -1,0 +1,56 @@
+/* Additional gameplay visual polish. */
+
+/* Slightly larger song metadata in the gameplay HUD. */
+.game .song-hud b{font-size:18px;line-height:1.05}
+.game .song-hud small{font-size:11px;line-height:1.05;margin-top:2px}
+
+/* Draw a deliberately under-lit bass drum behind the existing kit artwork.
+   It lives behind the calibrated artwork/hit layer, so interaction geometry is unchanged. */
+.kit-stage{isolation:isolate}
+.kit-stage::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:50%;
+  bottom:1.5%;
+  width:35%;
+  aspect-ratio:1 / .91;
+  transform:translateX(-50%);
+  border-radius:50%;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 48% 45%,rgba(31,34,39,.30) 0 4%,transparent 5%),
+    radial-gradient(circle at 50% 50%,transparent 0 57%,rgba(67,72,79,.18) 58% 60%,rgba(3,5,8,.96) 61% 67%,transparent 68%),
+    radial-gradient(ellipse at 48% 38%,rgba(37,41,47,.18) 0%,rgba(12,15,19,.94) 41%,#040609 72%,#010203 100%);
+  box-shadow:
+    inset 0 0 42px rgba(0,0,0,.88),
+    inset 0 -18px 34px rgba(0,0,0,.72),
+    0 14px 38px rgba(0,0,0,.56);
+  opacity:.92;
+}
+.kit-stage .kit-art{z-index:1}
+.kit-stage #hitLayer{z-index:4}
+
+/* Four-key cymbal badges should stay readable without covering the kit. */
+@media (hover:hover) and (pointer:fine){
+  #hitLayer .key-badges{gap:2px}
+  #hitLayer .key-badges kbd{min-width:20px;height:22px;padding:0 4px;font-size:10px}
+}
+
+/* Italic/skewed AUTO PLAY used to clip the upper-right corner of the Y.
+   Give the glyph run real paint-room instead of letting the transformed edge meet its box. */
+#finalScore{
+  width:max-content;
+  max-width:calc(100% - 1rem);
+  margin-left:auto;
+  margin-right:auto;
+  padding:.08em .20em .10em .10em;
+  box-sizing:content-box;
+  overflow:visible;
+}
+.result.autoplay #finalScore{white-space:nowrap}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game .song-hud b{font-size:14px}
+  .game .song-hud small{font-size:9px;margin-top:1px}
+}
