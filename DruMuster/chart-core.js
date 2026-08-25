@@ -15,12 +15,23 @@ globalThis.DruMusterChart=(()=>{
   }
   function judgementZoneWidth(width){return Math.max(10,width*.014)}
 
+  function noteColor(type,group){
+    if(type==="snare")return "#ff3d73";
+    if(type==="highTom")return "#d76bff";
+    if(type==="midTom")return "#8875ff";
+    if(type==="floorTom")return "#329cff";
+    if(group==="cymbal")return "#ffd45a";
+    if(group==="hh")return "#52dfcf";
+    if(type==="kick"||group==="kick")return "#aeb9c7";
+    return "#a7b0bc";
+  }
+
   function noteVisual(type,group){
     const isOpen=type==="hhOpen",
           barWidth=isOpen?OPEN_HH_BAR_WIDTH:NOTE_BAR_WIDTH,
           gap=isOpen?OPEN_HH_GAP:0,
           totalWidth=isOpen?OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP:NOTE_BAR_WIDTH,
-          color=type==="snare"?"#38a9ff":String(type||"").includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc";
+          color=noteColor(type,group);
     return {kind:isOpen?"double":"single",barWidth,gap,totalWidth,color};
   }
 
@@ -137,5 +148,5 @@ globalThis.DruMusterChart=(()=>{
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
 
-  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteVisual,parseTempoTiming,secondsToBeat,draw};
+  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteColor,noteVisual,parseTempoTiming,secondsToBeat,draw};
 })();
