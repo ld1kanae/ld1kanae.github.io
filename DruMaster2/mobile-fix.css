@@ -1,14 +1,17 @@
-/* DruMaster2 mobile layout: always authored as landscape.
-   No orientation detection. In portrait, the landscape canvas is simply clipped;
-   when the user turns the device, the same layout becomes fully visible. */
+/* DruMaster2 mobile layout: always authored as a landscape virtual canvas.
+   No orientation media query and no rotation prompt. The canvas dimensions are
+   based on the long/short sides of the viewport, so portrait and landscape use
+   the same landscape composition. */
 @media (pointer:coarse){
-  html,body{height:100%;min-height:0;overflow:hidden}
-  body{display:block}
+  html,body{margin:0;width:100%;height:100%;min-height:0;overflow:hidden}
+  body{display:block;background:#05070a}
   .app{
-    width:max(960px,100vw);
-    height:min(620px,100dvh);
-    min-width:960px;
+    width:max(100vw,100dvh);
+    height:min(100vw,100dvh);
+    min-width:0;
     min-height:0;
+    max-width:none;
+    max-height:none;
     grid-template-rows:44px minmax(0,1fr) 42px;
   }
   .topbar{gap:8px;padding:0 10px}
@@ -32,15 +35,15 @@
   .hh-zone{left:15%;top:23%;width:22%;height:39%}
   .open-zone{left:0;top:25%;width:20%;height:42%}
   .snare-zone{left:23%;top:46%;width:30%;height:48%}
-  .settings-card{max-height:min(612px,calc(100dvh - 6px));width:min(520px,calc(100vw - 8px));grid-template-rows:44px minmax(0,1fr) 42px}
+  .settings-card{max-height:min(612px,calc(min(100vw,100dvh) - 6px));width:min(520px,calc(max(100vw,100dvh) - 8px));grid-template-rows:44px minmax(0,1fr) 42px}
   .settings-scroll{padding:4px 12px 10px}
   .toggle{min-height:42px}.range{padding:8px 0}.assets{margin-top:8px}.assets p{display:none}
 }
 
-/* Compact the same landscape composition when the available height is short.
-   This is height-based only; device orientation is never queried. */
+/* Compact the same landscape composition when the device short side is small.
+   Still no orientation detection. */
 @media (pointer:coarse) and (max-height:430px){
-  .app{height:100dvh;grid-template-rows:38px minmax(0,1fr) 36px}
+  .app{grid-template-rows:38px minmax(0,1fr) 36px}
   .topbar{padding:0 8px}
   .brand{font-size:12px}.brand span{font-size:15px}.song b{font-size:10px}
   .gear{width:27px;height:27px}
