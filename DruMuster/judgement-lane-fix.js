@@ -10,7 +10,7 @@
 
   function chartGeometry(){
     const w=canvas.clientWidth,h=canvas.clientHeight,
-          judgeX=w*.11,
+          judgeX=DruMusterChart.judgementX?DruMusterChart.judgementX(w):w*.11,
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
           laneH=mainH/3;
@@ -60,8 +60,6 @@
 
   function placeGlow(lane,node,note){
     const {judgeX,laneH}=chartGeometry(),visual=noteVisual(note);
-    // Hit feedback is centered on the goal line and uses the exact same bar/double-bar
-    // dimensions and timbre color as the chart note itself. No judgement-zone rectangle.
     node.style.left=`${judgeX-visual.totalWidth/2}px`;
     node.style.top=`${lane*laneH}px`;
     node.style.width=`${visual.totalWidth}px`;
@@ -124,8 +122,6 @@
     fx.classList.add("play");
   }
 
-  // Autoplay reaches flashPart after marking its note hit, so include just-hit notes
-  // and choose the closest one in a narrow timing window.
   if(typeof flashPart==="function"){
     const originalFlashPart=flashPart;
     flashPart=function(part,el){
@@ -137,8 +133,6 @@
     };
   }
 
-  // Production manual input: resolve the exact candidate before input marks it hit.
-  // The note-shaped flash always occurs at the goal line rather than as a rectangular zone.
   if(typeof input==="function"&&typeof showJudge==="function"){
     let activeLane=-1;
     const originalInput=input;
@@ -154,7 +148,6 @@
     showJudge=function(label){emit(label,activeLane)};
   }
 
-  // Preview AUTO has the exact note object, so its goal-line flash always uses that note's shape.
   if(typeof showPreviewJudge==="function"&&typeof updateHits==="function"){
     showPreviewJudge=function(label="PERFECT",lane=1){emit(label,lane)};
     updateHits=function(t){
