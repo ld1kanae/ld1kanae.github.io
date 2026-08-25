@@ -46,14 +46,23 @@
 
   function scoreText(value){return Math.max(0,Math.round(value)).toLocaleString("en-US")}
 
-  function addRecord(value){
+  function addRecord(value,hiddenMode){
     const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
     const rows=readRanking();
-    rows.push({id,score:Math.max(0,Math.round(value)),date:localDateString()});
+    rows.push({id,score:Math.max(0,Math.round(value)),date:localDateString(),hidden:!!hiddenMode});
     rows.sort((a,b)=>b.score-a.score||String(b.id).localeCompare(String(a.id)));
     const kept=rows.slice(0,MAX_RECORDS);
     writeRanking(kept);
     return {rows:kept,currentId:id};
+  }
+
+  function createHiddenMark(){
+    const mark=document.createElement("span");
+    mark.className="hidden-mark";
+    mark.setAttribute("aria-label","Hidden Mode");
+    mark.title="Hidden Mode";
+    mark.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/><path d="M4 3.5 20 20.5"/></svg>';
+    return mark;
   }
 
   function renderRanking(rows,currentId=null){
@@ -70,19 +79,20 @@
     rows.forEach((row,i)=>{
       const item=document.createElement("div");
       item.className="ranking-row"+(row.id===currentId?" current":"");
-      const rank=document.createElement("span"),scoreNode=document.createElement("span"),date=document.createElement("span");
-      rank.className="rank-no";scoreNode.className="rank-score";date.className="rank-date";
+      const rank=document.createElement("span"),scoreCell=document.createElement("span"),scoreNode=document.createElement("span"),date=document.createElement("span");
+      rank.className="rank-no";scoreCell.className="rank-score-cell";scoreNode.className="rank-score";date.className="rank-date";
       rank.textContent=`${i+1}`;
       scoreNode.textContent=scoreText(row.score);
       date.textContent=row.date;
-      item.append(rank,scoreNode,date);
+      if(row.hidden)scoreCell.appendChild(createHiddenMark());
+      scoreCell.appendChild(scoreNode);
+      item.append(rank,scoreCell,date);
       host.appendChild(item);
     });
   }
 
   installMarkup();
 
-  // Replace the legacy single-best result with a persistent dated top-10 ranking.
   finish=function(){
     running=false;
     cancelAnimationFrame(raf);
@@ -102,8 +112,9 @@
       return;
     }
 
+    const hiddenMode=!!globalThis.DruMasterMode?.isHidden?.();
     document.querySelector("#finalScore").textContent=scoreText(final);
-    const {rows,currentId}=addRecord(final);
+    const {rows,currentId}=addRecord(final,hiddenMode);
     renderRanking(rows,currentId);
   };
 })();
