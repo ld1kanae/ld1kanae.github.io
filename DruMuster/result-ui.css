@@ -85,12 +85,12 @@
 .result.autoplay .result-summary{display:none}
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .result{padding:8px 24px 9px 34px;justify-content:flex-start}
+  /* The whole .screen already has the 34px safe-edge shift; keep result internals symmetric. */
+  .result{padding:8px 24px 9px;justify-content:flex-start}
   .result .eyebrow{font-size:12px;margin-top:2px;margin-bottom:2px}
   .result h2{font-size:24px;line-height:1}
   .result-song-sub{font-size:12px;margin:2px 0 4px}
   .result-score-label{font-size:12px;letter-spacing:.34em}
-  /* About 1.3x the previous mobile score size. */
   #finalScore{font-size:clamp(58px,10.5vw,92px);margin:2px 0 6px}
   .result-summary{gap:28px;margin-bottom:7px}
   .result-summary span{font-size:10px}
