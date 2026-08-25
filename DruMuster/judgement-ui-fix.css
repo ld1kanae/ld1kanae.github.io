@@ -3,32 +3,46 @@
 /* Legacy single judgement node is kept in the markup but no longer rendered. */
 #judgementFx{display:none!important}
 
-/* Hit glow is positioned in exact canvas pixels by judgement-lane-fix.js.
-   No translate offset is used, so its center cannot drift from the note X coordinate. */
+/* Transient goal-line feedback now reuses the exact chart-note geometry.
+   There is no rectangular judgement-zone flash: only the judged note shape glows. */
 .lane-hit-glow{
   position:absolute;
   left:0;
   top:0;
-  width:14px;
+  width:var(--note-total-w,4px);
   height:0;
-  transform-origin:50% 50%;
   pointer-events:none;
   opacity:0;
   z-index:16;
   overflow:visible;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.14) 22%,rgba(255,255,255,.92) 50%,rgba(255,255,255,.14) 78%,transparent 100%);
-  box-shadow:0 0 6px rgba(255,255,255,.58),0 0 13px var(--lane-glow,rgba(120,220,255,.72));
+  background:none!important;
+  box-shadow:none!important;
   mix-blend-mode:screen;
+  filter:none;
 }
-.lane-hit-glow[data-lane="0"]{--lane-glow:rgba(255,212,90,.82)}
-.lane-hit-glow[data-lane="1"]{--lane-glow:rgba(82,223,207,.82)}
-.lane-hit-glow[data-lane="2"]{--lane-glow:rgba(120,145,255,.86)}
-.lane-hit-glow.flash{animation:laneHitFlash .18s ease-out}
+.lane-hit-glow::before,
+.lane-hit-glow::after{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:0;
+  width:var(--note-bar-w,4px);
+  background:var(--note-color,#fff);
+  box-shadow:0 0 4px 1px rgba(255,255,255,.82),0 0 10px 3px var(--note-color,#fff);
+  opacity:1;
+}
+.lane-hit-glow::after{display:none}
+.lane-hit-glow[data-shape="double"]::after{
+  display:block;
+  left:calc(var(--note-bar-w,3px) + var(--note-gap,1px));
+}
+.lane-hit-glow.flash{animation:laneHitFlash .20s ease-out}
 @keyframes laneHitFlash{
-  0%{opacity:0;transform:scaleX(.55)}
-  16%{opacity:1;transform:scaleX(1.18)}
-  42%{opacity:.72;transform:scaleX(1)}
-  100%{opacity:0;transform:scaleX(.9)}
+  0%{opacity:0;filter:brightness(1)}
+  12%{opacity:1;filter:brightness(1.75)}
+  42%{opacity:.78;filter:brightness(1.3)}
+  100%{opacity:0;filter:brightness(1)}
 }
 
 .lane-judge-fx{
