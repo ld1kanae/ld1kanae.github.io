@@ -8,6 +8,10 @@ globalThis.DruMusterChart=(()=>{
   const OPEN_HH_BAR_WIDTH=3;
   const OPEN_HH_GAP=1;
 
+  function judgementZoneWidth(width){
+    return Math.max(10,width*.014);
+  }
+
   function parseTempoTiming(ab){
     const d=new DataView(ab);let p=0;
     const str=n=>{let s="";while(n--)s+=String.fromCharCode(d.getUint8(p++));return s};
@@ -112,9 +116,11 @@ globalThis.DruMusterChart=(()=>{
           beatNow=secondsToBeat(currentSec,timing),
           division=timing.division||480,
           judgeX=w*.11,
+          judgeZoneW=judgementZoneWidth(w),
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
           laneH=mainH/3,
+          labelFont=Math.max(9,laneH*.13),
           labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
 
     ctx.clearRect(0,0,w,h);
@@ -129,18 +135,18 @@ globalThis.DruMusterChart=(()=>{
         ctx.strokeStyle="#53677d";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(w,laneH*i+.5);ctx.stroke();
       }
       ctx.fillStyle="#8b97a6";
-      ctx.font=`700 ${Math.max(9,laneH*.13)}px system-ui,sans-serif`;
+      ctx.font=`700 ${labelFont}px system-ui,sans-serif`;
       ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(labels[i],7,laneH*i+6);
     }
 
     ctx.fillStyle="#090e15";ctx.fillRect(0,mainH,w,kickH);
     ctx.strokeStyle="#5b6d82";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
-    ctx.fillStyle="#687483";ctx.font=`700 ${Math.max(8,kickH*.43)}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
+    ctx.fillStyle="#687483";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
 
     drawMeasureLines(ctx,w,h,judgeX,beatNow,timing);
 
-    // One clean fixed judgement line; no circular lane markers.
-    ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-Math.max(5,w*.007),0,Math.max(10,w*.014),h);
+    // The glow overlay uses this exact same zone width via judgementZoneWidth().
+    ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
 
     for(const n of notes){
@@ -158,7 +164,6 @@ globalThis.DruMusterChart=(()=>{
       if(lane<3){
         const barTop=lane*laneH,
               barH=laneH;
-        // Every playable note spans the full lane height. Open hi-hat alone is a tight double bar.
         if(n.type==="hhOpen"){
           const total=OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP,
                 left=x-total/2;
@@ -175,5 +180,5 @@ globalThis.DruMusterChart=(()=>{
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
 
-  return {PIXELS_PER_QUARTER,parseTempoTiming,secondsToBeat,draw};
+  return {PIXELS_PER_QUARTER,judgementZoneWidth,parseTempoTiming,secondsToBeat,draw};
 })();
