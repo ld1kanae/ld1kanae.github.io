@@ -70,7 +70,7 @@
     mark.className="hidden-mark";
     mark.setAttribute("aria-label","Hidden Mode");
     mark.title="Hidden Mode";
-    mark.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/><path d="M4 3.5 20 20.5"/></svg>';
+    mark.innerHTML='<svg viewBox="0 0 28 28" aria-hidden="true"><path class="eye" d="M2.5 14s4.3-7.2 11.5-7.2S25.5 14 25.5 14 21.2 21.2 14 21.2 2.5 14 2.5 14Z"/><circle cx="14" cy="14" r="3.6"/><path class="slash" d="M4.2 3.8 23.8 24.2"/></svg>';
     return mark;
   }
 
@@ -87,15 +87,15 @@
     }
     rows.forEach((row,i)=>{
       const item=document.createElement("div");
-      item.className="ranking-row"+(row.id===currentId?" current":"");
+      item.className="ranking-row"+(row.id===currentId?" current":"")+(row.hidden?" hidden-record":"");
       item.style.setProperty("--row-i",String(i));
       const rank=document.createElement("span"),scoreCell=document.createElement("span"),scoreNode=document.createElement("span"),date=document.createElement("span");
       rank.className="rank-no";scoreCell.className="rank-score-cell";scoreNode.className="rank-score";date.className="rank-date";
       rank.textContent=`${i+1}`;
       scoreNode.textContent=scoreText(row.score);
       date.textContent=row.date;
-      if(row.hidden)scoreCell.appendChild(createHiddenMark());
       scoreCell.appendChild(scoreNode);
+      if(row.hidden)scoreCell.appendChild(createHiddenMark());
       item.append(rank,scoreCell,date);
       host.appendChild(item);
     });
@@ -143,7 +143,8 @@
       return;
     }
 
-    const hiddenMode=!!globalThis.DruMasterMode?.isHidden?.();
+    const mode=globalThis.DruMasterMode,
+          hiddenMode=!!(mode?.wasHiddenRun?.()||mode?.isHidden?.()||document.body.dataset.hiddenRun==="1");
     const {rows,currentId}=addRecord(final,hiddenMode);
     renderRanking(rows,currentId);
     resultEl.classList.remove("hidden");
