@@ -1,0 +1,17 @@
+/* Final layout polish shared by production and preview. */
+
+/* Inactive-piece black oval/circle overlays are intentionally disabled on every platform. */
+.dim-layer{display:none!important}
+
+/* Mobile only: enlarge the drum artwork and its hit geometry together to 130%.
+   PC geometry and scale are unchanged. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .kit-art{
+    transform:scale(1.3);
+    transform-origin:50% 50%;
+  }
+  #hitLayer{
+    transform:translateX(-50%) scale(1.3)!important;
+    transform-origin:50% 50%;
+  }
+}
