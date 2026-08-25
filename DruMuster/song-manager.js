@@ -14,10 +14,8 @@
     ray:{
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,
       midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz",
-      /* Measured against the separated drums and original mix. */
-      timingOffsetSec:.030,
-      stemDelaySec:{drums:.015},
-      mix:{base:.80,vocals:.70,drums:.70},
+      /* The supplied MIDI/stems are already aligned. Do not add per-track timing offsets. */
+      mix:{base:.70,vocals:.60,drums:.70},
       stems:{
         base:{path:"songs/ray/offvocal.mp3",bytes:12221760,sha256:"b0f8b2b8930e054f7edfc71922a03b119771e54fc14f5dec6f4d94e6ff8e236c"},
         vocals:{path:"songs/ray/vocals.mp3",bytes:8735901,sha256:"b9225fa4869c56bd3a4009db88d9e86002b560083fb869f6183de29442dfde5d"},
@@ -55,8 +53,6 @@
     try{return (await task).slice(0)}catch(e){midiCache.delete(song.id);throw e}
   }
 
-  /* app.js and shared chart timing both request chart.mid. Serve the selected
-     song from the compressed binary asset. This path contains no base64/atob. */
   globalThis.fetch=async function(input,init){
     const song=requestedMidiSong(input);
     if(song){
