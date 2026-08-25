@@ -7,6 +7,15 @@ globalThis.DruMusterChart=(()=>{
   const NOTE_BAR_WIDTH=4;
   const OPEN_HH_BAR_WIDTH=3;
   const OPEN_HH_GAP=1;
+  const MOBILE_JUDGE_OFFSET=80;
+
+  function isMobileLayout(){
+    return !!globalThis.matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;
+  }
+
+  function judgementX(width){
+    return Math.min(width-16,width*.11+(isMobileLayout()?MOBILE_JUDGE_OFFSET:0));
+  }
 
   function judgementZoneWidth(width){
     return Math.max(10,width*.014);
@@ -73,7 +82,7 @@ globalThis.DruMusterChart=(()=>{
     timeSignatures.sort((a,b)=>a.tick-b.tick);
     const sigDedup=[];
     for(const e of timeSignatures){
-      if(sigDedup.length&&sigDedup[sigDedup.length-1].tick===e.tick)sigDedup[sigDedup.length-1]=e;
+      if(sigDedup.length&&sigDedup[sigDedup.length-1].tick===e.tick)dedup[dedup.length-1]=e;
       else sigDedup.push(e);
     }
     if(!sigDedup.length||sigDedup[0].tick>0)sigDedup.unshift({tick:0,numerator:4,denominator:4});
@@ -99,7 +108,6 @@ globalThis.DruMusterChart=(()=>{
           lastVisibleBeat=beatNow+(w-judgeX)/PIXELS_PER_QUARTER;
 
     ctx.save();
-    // Deliberately very faint: structural guide only, not another note lane.
     ctx.strokeStyle="rgba(255,255,255,.08)";
     ctx.lineWidth=1;
     for(let i=0;i<signatures.length;i++){
@@ -124,7 +132,7 @@ globalThis.DruMusterChart=(()=>{
           h=canvas.clientHeight,
           beatNow=secondsToBeat(currentSec,timing),
           division=timing.division||480,
-          judgeX=w*.11,
+          judgeX=judgementX(w),
           judgeZoneW=judgementZoneWidth(w),
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
@@ -140,7 +148,6 @@ globalThis.DruMusterChart=(()=>{
       ctx.fillStyle=i%2===0?"#0d1520":"#0a121c";
       ctx.fillRect(0,laneH*i,w,laneH);
       if(i>0){
-        // Stronger than before so lane boundaries stay legible under full-height notes.
         ctx.strokeStyle="#53677d";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(w,laneH*i+.5);ctx.stroke();
       }
       ctx.fillStyle="#8b97a6";
@@ -187,5 +194,5 @@ globalThis.DruMusterChart=(()=>{
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
 
-  return {PIXELS_PER_QUARTER,judgementZoneWidth,noteVisual,parseTempoTiming,secondsToBeat,draw};
+  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteVisual,parseTempoTiming,secondsToBeat,draw};
 })();
