@@ -1,0 +1,34 @@
+@media (pointer:coarse){
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070a;touch-action:none}
+  body{position:relative}
+  .app{min-width:0;min-height:0;max-width:none;max-height:none;grid-template-rows:44px minmax(0,1fr) 42px}
+  .topbar{gap:8px;padding:0 10px}
+  .brand{font-size:14px}.brand span{font-size:18px}
+  .song{gap:7px}.song b{font-size:11px}.song small{font-size:8px}
+  .score b{font-size:13px}.score small,.score em{font-size:7px}
+  .gear{width:30px;height:30px;font-size:14px}
+  .stage{min-height:0;overflow:hidden}
+  .lane-field{inset:0;z-index:8}
+  .judge-line{left:15%}.judge{left:15%;top:50%;font-size:clamp(17px,3.2vh,28px)}
+  .kit{position:absolute;inset:0;left:0;right:0;top:0;bottom:0;height:auto;z-index:4;overflow:hidden}
+  .kit svg{position:absolute;left:50%;top:50%;bottom:auto;width:92%;height:92%;max-width:none;transform:translate(-50%,-50%);overflow:visible}
+  .note{width:17px;height:17px}.note:after{inset:4px}
+  .keys{display:none}.status{right:8px;bottom:5px;font-size:7px}
+  .controls{padding:3px 10px}.controls button{height:32px;min-width:42px}.controls .primary{min-width:104px}
+  .crash-zone{left:0;top:0;width:30%;height:42%}.hh-zone{left:14%;top:20%;width:23%;height:42%}.open-zone{left:0;top:22%;width:21%;height:44%}.snare-zone{left:22%;top:45%;width:30%;height:50%}
+  .settings-card{grid-template-rows:44px minmax(0,1fr) 42px}.settings-scroll{padding:4px 12px 10px}.toggle{min-height:42px}.range{padding:8px 0}.assets{margin-top:8px}.assets p{display:none}
+}
+@media (pointer:coarse) and (orientation:portrait){
+  .app{position:absolute;top:0;left:0;width:100dvh;height:100vw;transform-origin:top left;transform:rotate(90deg) translateY(-100%)}
+  .settings-card{max-height:calc(100vw - 6px);width:min(520px,calc(100dvh - 8px))}
+}
+@media (pointer:coarse) and (orientation:landscape){
+  .app{position:relative;width:100vw;height:100dvh;transform:none}
+  .settings-card{max-height:calc(100dvh - 6px);width:min(520px,calc(100vw - 8px))}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:430px){
+  .app{grid-template-rows:38px minmax(0,1fr) 36px}
+  .topbar{padding:0 8px}.brand{font-size:12px}.brand span{font-size:15px}.song b{font-size:10px}.gear{width:27px;height:27px}
+  .kit svg{width:88%;height:88%}
+  .controls button{height:28px}.status{display:none}
+}
