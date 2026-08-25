@@ -67,8 +67,7 @@ globalThis.DruMusterChart=(()=>{
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
           laneH=mainH/3,
-          labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"],
-          laneColors=["#ffd45a","#52dfcf","#8898ff"];
+          labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
 
     ctx.clearRect(0,0,w,h);
     ctx.fillStyle="#081019";
@@ -80,10 +79,6 @@ globalThis.DruMusterChart=(()=>{
       if(i>0){
         ctx.strokeStyle="#2c3948";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(w,laneH*i+.5);ctx.stroke();
       }
-      const y=laneH*(i+.5);
-      ctx.strokeStyle=laneColors[i]+"bb";
-      ctx.lineWidth=Math.max(2,laneH*.04);
-      ctx.beginPath();ctx.arc(judgeX,y,Math.max(12,laneH*.20),0,Math.PI*2);ctx.stroke();
       ctx.fillStyle="#8b97a6";
       ctx.font=`700 ${Math.max(9,laneH*.13)}px system-ui,sans-serif`;
       ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(labels[i],7,laneH*i+6);
@@ -93,6 +88,7 @@ globalThis.DruMusterChart=(()=>{
     ctx.strokeStyle="#313a46";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
     ctx.fillStyle="#687483";ctx.font=`700 ${Math.max(8,kickH*.43)}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
 
+    // One clean fixed judgement line; no circular lane markers.
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-Math.max(5,w*.007),0,Math.max(10,w*.014),h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
 
