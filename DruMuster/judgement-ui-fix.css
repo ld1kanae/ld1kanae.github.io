@@ -13,7 +13,7 @@
   align-items:center;
   justify-content:center;
 }
-#judgementFx.play{animation:judgefade .26s ease-out}
+#judgementFx.play{animation:judgefade .24s ease-out}
 #judgementFx .shock,
 #judgementFx .particles{display:none!important}
 #judge{
@@ -22,63 +22,51 @@
   top:auto;
   bottom:auto;
   transform:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:72px;
-  padding:4px 10px;
-  border-radius:999px;
-  border:1px solid #ffffff22;
-  background:linear-gradient(180deg,#ffffff1f,#d8e6ff12);
-  color:#eef7ff;
-  font:900 clamp(10px,1.1vw,12px)/1 system-ui,sans-serif;
-  letter-spacing:.12em;
+  display:inline-block;
+  min-width:0;
+  padding:2px 4px;
+  border:0!important;
+  border-radius:0!important;
+  color:#f4f8ff;
+  font:900 9px/1 system-ui,sans-serif;
+  letter-spacing:.08em;
   white-space:nowrap;
   opacity:1;
-  box-shadow:0 0 0 1px #ffffff10 inset,0 4px 10px #03101f4d,0 0 10px #70caff22;
-  text-shadow:0 0 6px #ffffff44;
-  filter:none;
-  backdrop-filter:blur(4px);
+  box-shadow:none!important;
+  text-shadow:0 0 4px #ffffff35,0 0 8px #75cfff22;
+  filter:none!important;
+  backdrop-filter:none;
   -webkit-text-fill-color:initial;
   background-clip:border-box;
   -webkit-background-clip:border-box;
 }
 @keyframes judgefade{
-  0%{opacity:0;transform:translateX(-50%) translateY(3px) scale(.96)}
+  0%{opacity:0;transform:translateX(-50%) translateY(2px) scale(.98)}
   18%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
-  75%{opacity:.92}
-  100%{opacity:0;transform:translateX(-50%) translateY(-3px) scale(1)}
+  72%{opacity:.9}
+  100%{opacity:0;transform:translateX(-50%) translateY(-2px) scale(1)}
 }
 #judgementFx[data-grade="perfect"] #judge{
-  background:linear-gradient(180deg,#80e8ff30,#c59bff22);
-  border-color:#8fdcff44;
-  box-shadow:0 0 0 1px #ffffff12 inset,0 4px 10px #05132255,0 0 10px #80d6ff26;
-  color:#f6fbff;
+  background:linear-gradient(90deg,transparent 0,#78ddff1c 30%,#bb9dff18 68%,transparent 100%);
+  color:#f7fbff;
 }
 #judgementFx[data-grade="great"] #judge{
-  background:linear-gradient(180deg,#93ffd62c,#66e7c41d);
-  border-color:#8cf1cf40;
-  box-shadow:0 0 0 1px #ffffff12 inset,0 4px 10px #05132255,0 0 9px #6ee9be24;
-  color:#f3fff9;
+  background:linear-gradient(90deg,transparent 0,#78efc51a 35%,#a8f5d916 65%,transparent 100%);
+  color:#f4fff9;
 }
 #judgementFx[data-grade="good"] #judge{
-  background:linear-gradient(180deg,#ffe39a26,#ffb36b20);
-  border-color:#ffd27f3e;
-  box-shadow:0 0 0 1px #ffffff10 inset,0 4px 10px #05132255,0 0 8px #ffca7622;
-  color:#fffaf0;
+  background:linear-gradient(90deg,transparent 0,#ffd36b18 35%,#ffad7116 65%,transparent 100%);
+  color:#fffaf1;
 }
 #judgementFx[data-grade="miss"] #judge{
-  background:linear-gradient(180deg,#dde3eb20,#a7b2c11a);
-  border-color:#c0c8d332;
-  box-shadow:0 0 0 1px #ffffff0d inset,0 4px 10px #03091255,0 0 8px #afbac81a;
-  color:#eef1f6;
+  background:linear-gradient(90deg,transparent 0,#c1c9d415 35%,#8f9aa812 65%,transparent 100%);
+  color:#e9edf3;
+  text-shadow:0 0 4px #aab4c022;
 }
 #judgementFx[data-grade="auto"] #judge{
-  background:linear-gradient(180deg,#9bdfff22,#d7edff18);
-  border-color:#9dd8ff38;
-  box-shadow:0 0 0 1px #ffffff12 inset,0 4px 10px #05132250,0 0 9px #7bcfff20;
+  background:linear-gradient(90deg,transparent 0,#8bd7ff18 50%,transparent 100%);
   color:#f5fbff;
-  font-size:clamp(10px,1.1vw,12px);
+  font-size:9px;
 }
 
 /* Smartphones are touch-first; keyboard badges are only useful on PC. */
@@ -91,9 +79,12 @@
     height:auto;
   }
   #judge{
-    min-width:60px;
-    padding:3px 8px;
-    font-size:10px;
+    min-width:0;
+    padding:1px 3px;
+    border:0!important;
+    border-radius:0!important;
+    font-size:8px!important;
+    letter-spacing:.06em;
   }
-  #judgementFx[data-grade="auto"] #judge{font-size:10px}
+  #judgementFx[data-grade="auto"] #judge{font-size:8px!important}
 }
