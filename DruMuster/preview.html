@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#080b11">
+  <title>DruMuster UI Preview</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="game-ui.css">
+  <link rel="stylesheet" href="mobile-game-fix.css?v=20260825-ui4">
+</head>
+<body>
+  <main id="app">
+    <section id="game" class="screen game">
+      <header>
+        <div class="rank">D</div>
+        <div class="song-hud"><b>なないろ</b><small>BUMP OF CHICKEN</small></div>
+        <div class="score"><small>SCORE</small><strong id="score">AUTO</strong></div>
+        <button id="pause" aria-label="プレビューを停止">Ⅱ</button>
+      </header>
+      <div id="chartWrap">
+        <canvas id="chart"></canvas>
+        <div id="judgementFx"><div class="shock"></div><div class="particles"></div><div id="judge"></div></div>
+      </div>
+      <div id="kit" aria-label="ドラムセット">
+        <img class="kit-art" src="assets/drum-kit.webp" alt="" draggable="false">
+        <div class="dim-layer"></div>
+        <div id="hitLayer">
+          <button class="hit crash left" data-part="crash" data-key="Q"><kbd>Q</kbd></button>
+          <button class="hit crash right" data-part="crash" data-key="P"><kbd>P</kbd></button>
+          <button class="hit hh" data-part="hh" data-key="A"><kbd>A</kbd></button>
+          <button class="hit ride" data-part="ride" data-key="L"><kbd>L</kbd></button>
+          <button class="hit high" data-part="highTom" data-key="W"><kbd>W</kbd></button>
+          <button class="hit mid" data-part="midTom" data-key="E"><kbd>E</kbd></button>
+          <button class="hit snare" data-part="snare" data-key="S"><kbd>S</kbd></button>
+          <button class="hit floor" data-part="floorTom" data-key="K"><kbd>K</kbd></button>
+          <button class="hit special" data-part="special" data-key="D"><span>◇</span><kbd>D</kbd></button>
+        </div>
+      </div>
+      <div id="kickFx"></div>
+      <div id="pausePanel" class="hidden"><p>PAUSED</p><button id="resume">再開</button><button id="quit">最初から</button></div>
+    </section>
+  </main>
+  <script src="preview.js?v=20260825-preview1"></script>
+</body>
+</html>
