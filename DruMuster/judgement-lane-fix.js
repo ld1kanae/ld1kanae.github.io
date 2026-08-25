@@ -6,15 +6,21 @@
 
   const fxByLane=[];
   const glowByLane=[];
+  const LANE_LABELS=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
   let suppressAutoGlow=false;
+
+  function isMobile(){
+    return DruMusterChart.isMobileLayout?DruMusterChart.isMobileLayout():!!matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;
+  }
 
   function chartGeometry(){
     const w=canvas.clientWidth,h=canvas.clientHeight,
           judgeX=DruMusterChart.judgementX?DruMusterChart.judgementX(w):w*.11,
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
-          laneH=mainH/3;
-    return {w,h,judgeX,laneH};
+          laneH=mainH/3,
+          labelFont=Math.max(9,laneH*.13);
+    return {w,h,judgeX,laneH,labelFont};
   }
 
   function laneForPart(part){
@@ -54,8 +60,20 @@
   }
 
   function placeFx(lane,node){
-    const {laneH}=chartGeometry();
-    node.style.top=`${laneH*(lane+.5)}px`;
+    const {w,laneH,labelFont}=chartGeometry();
+    if(isMobile()){
+      ctx.save();
+      ctx.font=`700 ${labelFont}px system-ui,sans-serif`;
+      const labelWidth=ctx.measureText(LANE_LABELS[lane]||"").width;
+      ctx.restore();
+      node.style.left=`${Math.min(w-18,7+labelWidth+14)}px`;
+      node.style.top=`${lane*laneH+6+labelFont*.5}px`;
+      node.style.transform="translate(0,-50%)";
+    }else{
+      node.style.left="9%";
+      node.style.top=`${laneH*(lane+.5)}px`;
+      node.style.transform="translate(-50%,-50%)";
+    }
   }
 
   function placeGlow(lane,node,note){
@@ -80,6 +98,7 @@
     if(fxByLane[lane])return fxByLane[lane];
     const fx=document.createElement("div");
     fx.className="lane-judge-fx";
+    fx.dataset.lane=String(lane);
     const text=document.createElement("span");
     text.className="lane-judge-text";
     fx.appendChild(text);
@@ -114,8 +133,8 @@
     const grade=String(label||"").toLowerCase();
     if(lane<0||lane>2||grade==="miss"||grade==="auto")return;
     const {fx,text}=ensureFx(lane);
-    placeFx(lane,fx);
     text.textContent=String(label).toUpperCase();
+    placeFx(lane,fx);
     fx.dataset.grade=grade;
     fx.classList.remove("play");
     void fx.offsetWidth;
