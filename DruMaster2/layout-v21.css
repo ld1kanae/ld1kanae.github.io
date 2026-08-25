@@ -1,0 +1,23 @@
+/* Visual override for the rebuilt overhead kit. The reference composition is a close overhead crop: large visible heads, cymbals clipped by the frame, pedals absent. */
+.chart-panel,.lane-field{height:25%}
+.kit{top:25%;overflow:hidden;background:radial-gradient(ellipse at 50% 10%,rgba(92,67,42,.26),rgba(18,20,22,.08) 48%,rgba(0,0,0,.26) 100%)}
+.kit:before{background:linear-gradient(180deg,rgba(5,8,10,.01),rgba(0,0,0,.04) 64%,rgba(0,0,0,.16));z-index:2}
+/* Critical fix: keep the SVG at its native 1400:760 aspect and fill the wide play area. The old width+height percentages forced a very wide SVG viewport, so preserveAspectRatio=meet letterboxed the actual drum drawing into a tiny strip. */
+.kit-art{left:0;top:50%;width:100%;height:auto;aspect-ratio:1400/760;max-width:none;transform:translateY(-50%);filter:saturate(.92) contrast(1.04) brightness(1.03);z-index:1;overflow:visible}
+/* Non-playable drums remain visibly present under low light. Only the kick is intentionally pushed far into shadow. */
+.inactive{filter:brightness(.72) saturate(.67)}
+.rack-toms,.floor-tom{filter:brightness(.82) saturate(.72)}
+.kick{filter:brightness(.34) saturate(.38)}
+.stand{filter:brightness(.48) saturate(.35)}
+.active{filter:brightness(1.04) saturate(.96)}
+/* Broad invisible hit zones follow the close crop rather than the old miniature kit. */
+.crash-left{left:0;top:0;width:29%;height:34%}
+.crash-right{right:0;top:0;width:29%;height:34%}
+.open-zone{left:0;top:16%;width:16%;height:62%}
+.hh-zone{left:12%;top:16%;width:22%;height:62%}
+.snare-zone{left:15%;top:39%;width:34%;height:61%}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:430px){
+  .chart-panel,.lane-field{height:24%}
+  .kit{top:24%}
+  .kit-art{width:100%;height:auto;aspect-ratio:1400/760;transform:translateY(-50%)}
+}
