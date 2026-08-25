@@ -2,8 +2,8 @@
 
 // Beat-based note highway.
 // Scroll spacing is expressed musically: one quarter note = PIXELS_PER_QUARTER pixels.
-// This keeps note density stable across BPM/tempo changes instead of defining travel in seconds.
-const PIXELS_PER_QUARTER=40;
+// 10 px/quarter is one quarter of the previous 40 px/quarter visual speed.
+const PIXELS_PER_QUARTER=10;
 let beatTiming={division:480,segments:[{tick:0,sec:0,us:500000}]};
 
 function parseTempoTiming(ab){
@@ -54,7 +54,6 @@ function secondsToBeat(sec){
   return tick/beatTiming.division;
 }
 
-// The chart MIDI is already fetched by app.js; browser cache normally makes this effectively free.
 fetch(ASSET.midi,{cache:"force-cache"}).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(ab=>{beatTiming=parseTempoTiming(ab)}).catch(()=>{});
 
 draw=function(){
@@ -89,12 +88,10 @@ draw=function(){
     ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(labels[i],7,laneH*i+6);
   }
 
-  // Automatic bass drum is shown as a compact timing strip, not a full player lane.
   ctx.fillStyle="#090e15";ctx.fillRect(0,mainH,w,kickH);
   ctx.strokeStyle="#313a46";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
   ctx.fillStyle="#687483";ctx.font=`700 ${Math.max(8,kickH*.43)}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
 
-  // Taiko-like fixed judgement line near the left side.
   ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-Math.max(5,w*.007),0,Math.max(10,w*.014),h);
   ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
 
