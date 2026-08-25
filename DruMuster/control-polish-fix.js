@@ -1,11 +1,9 @@
 "use strict";
 
 (()=>{
-  const PERFECT_WINDOW=.035; // ±35 ms; previously ±55 ms.
+  const PERFECT_WINDOW=.035;
 
-  /* Keep artwork and hit targets in one transform space. Scaling this single
-     stage preserves the original calibrated relationship between the picture
-     and every clickable drum region. */
+  /* Keep artwork and hit targets in one transform space. */
   const kit=document.querySelector("#kit");
   if(kit&&!kit.querySelector(":scope > .kit-stage")){
     const stage=document.createElement("div");
@@ -14,9 +12,62 @@
     kit.appendChild(stage);
   }
 
-  /* Production judgement override. Keep GREAT/GOOD windows unchanged; only
-     PERFECT is tightened. This script loads before judgement-lane-fix.js so
-     lane-local PERFECT/GREAT/GOOD placement still wraps this input function. */
+  /* Two keys per playable timbre for two-hand PC drumming.
+     Crash uses the physical left/right cymbal buttons; other timbres share one pad. */
+  const KEY_BINDINGS={
+    KeyQ:{part:"crash",side:"left",label:"Q"},
+    KeyP:{part:"crash",side:"right",label:"P"},
+    KeyW:{part:"highTom",label:"W"},
+    KeyO:{part:"highTom",label:"O"},
+    KeyE:{part:"midTom",label:"E"},
+    KeyI:{part:"midTom",label:"I"},
+    KeyR:{part:"special",label:"R"},
+    KeyU:{part:"special",label:"U"},
+    KeyA:{part:"hh",label:"A"},
+    KeyS:{part:"hh",label:"S"},
+    KeyD:{part:"snare",label:"D"},
+    KeyF:{part:"snare",label:"F"},
+    KeyJ:{part:"floorTom",label:"J"},
+    KeyK:{part:"floorTom",label:"K"},
+    KeyL:{part:"ride",label:"L"},
+    Semicolon:{part:"ride",label:";"}
+  };
+
+  function visualForBinding(binding){
+    if(!binding)return null;
+    if(binding.part==="crash"&&binding.side){
+      return document.querySelector(`#hitLayer .crash.${binding.side}:not(.inactive)`);
+    }
+    return document.querySelector(`#hitLayer [data-part="${binding.part}"]:not(.inactive)`);
+  }
+
+  function setBadge(el,labels){
+    if(!el)return;
+    el.querySelectorAll(":scope > kbd,:scope > .key-badges").forEach(n=>n.remove());
+    const box=document.createElement("div");
+    box.className="key-badges";
+    for(const label of labels){
+      const k=document.createElement("kbd");
+      k.textContent=label;
+      box.appendChild(k);
+    }
+    el.appendChild(box);
+  }
+
+  function installBadges(){
+    setBadge(document.querySelector("#hitLayer .crash.left"),["Q"]);
+    setBadge(document.querySelector("#hitLayer .crash.right"),["P"]);
+    setBadge(document.querySelector('#hitLayer [data-part="highTom"]'),["W","O"]);
+    setBadge(document.querySelector('#hitLayer [data-part="midTom"]'),["E","I"]);
+    setBadge(document.querySelector('#hitLayer [data-part="special"]'),["R","U"]);
+    setBadge(document.querySelector('#hitLayer [data-part="hh"]'),["A","S"]);
+    setBadge(document.querySelector('#hitLayer [data-part="snare"]'),["D","F"]);
+    setBadge(document.querySelector('#hitLayer [data-part="floorTom"]'),["J","K"]);
+    setBadge(document.querySelector('#hitLayer [data-part="ride"]'),["L",";"]);
+  }
+  installBadges();
+
+  /* Production judgement override. GREAT/GOOD windows remain unchanged. */
   if(typeof input==="function"&&typeof notes!=="undefined"&&typeof PART!=="undefined"){
     input=function(part,visualEl){
       if(!running||paused||autoplay)return;
@@ -51,13 +102,42 @@
     };
   }
 
-  /* Space toggles pause/resume in both production and preview. */
+  const heldCodes=new Set();
+
+  /* Capture phase deliberately supersedes app.js's old one-key map. */
   addEventListener("keydown",e=>{
-    if(e.code!=="Space"||e.repeat)return;
-    const tag=e.target?.tagName;
-    if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
-    if(typeof togglePause!=="function")return;
+    if(e.code==="Space"){
+      if(e.repeat)return;
+      const tag=e.target?.tagName;
+      if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
+      if(typeof togglePause!=="function")return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      togglePause();
+      return;
+    }
+
+    const binding=KEY_BINDINGS[e.code];
+    if(!binding)return;
     e.preventDefault();
-    togglePause();
-  });
+    e.stopImmediatePropagation();
+    if(e.repeat||heldCodes.has(e.code))return;
+    const el=visualForBinding(binding);
+    if(!el)return;
+    heldCodes.add(e.code);
+    el.classList.add("pressed");
+    if(typeof input==="function")input(binding.part,el);
+  },true);
+
+  addEventListener("keyup",e=>{
+    const binding=KEY_BINDINGS[e.code];
+    if(!binding)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    heldCodes.delete(e.code);
+    const el=visualForBinding(binding);
+    if(!el)return;
+    const stillHeld=[...heldCodes].some(code=>visualForBinding(KEY_BINDINGS[code])===el);
+    if(!stillHeld)el.classList.remove("pressed");
+  },true);
 })();
