@@ -14,6 +14,11 @@
     ray:{
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,
       midi:"songs/ray/chart.mid",
+      /* Measured against the separated drums and the original mix:
+         MIDI-triggered gameplay is ~30 ms early; the guide-drum stem is ~15 ms early. */
+      timingOffsetSec:.030,
+      stemDelaySec:{drums:.015},
+      mix:{base:.80,vocals:.70,drums:.70},
       stems:{
         base:{path:"songs/ray/offvocal.mp3",bytes:12221760,sha256:"b0f8b2b8930e054f7edfc71922a03b119771e54fc14f5dec6f4d94e6ff8e236c"},
         vocals:{path:"songs/ray/vocals.mp3",bytes:8735901,sha256:"b9225fa4869c56bd3a4009db88d9e86002b560083fb869f6183de29442dfde5d"},
