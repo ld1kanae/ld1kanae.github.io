@@ -7,12 +7,13 @@
   <title>DruMaster</title>
   <link rel="stylesheet" href="styles.css?v=20260825-mobileframe1">
   <link rel="stylesheet" href="game-ui.css?v=20260825-fx2">
-  <link rel="stylesheet" href="mobile-game-fix.css?v=20260825-ui5">
+  <link rel="stylesheet" href="mobile-game-fix.css?v=20260825-ui6">
   <link rel="stylesheet" href="judgement-ui-fix.css?v=20260825-judge9">
   <link rel="stylesheet" href="layout-polish-fix.css?v=20260825-layout8">
   <link rel="stylesheet" href="mobile-shift-fix.css?v=20260825-shift34">
   <link rel="stylesheet" href="score-pulse.css?v=20260825-score1">
-  <link rel="stylesheet" href="result-ui.css?v=20260825-result1">
+  <link rel="stylesheet" href="mode-ui.css?v=20260825-mode1">
+  <link rel="stylesheet" href="result-ui.css?v=20260825-result2">
 </head>
 <body>
   <main id="app">
@@ -24,14 +25,20 @@
         <div><h1>なないろ</h1><p>BUMP OF CHICKEN</p></div>
       </div>
       <div class="options">
-        <label class="option"><span>ボーカル</span><input id="vocalToggle" type="checkbox" checked><i></i><b>ON</b></label>
-        <label class="option"><span>ガイドドラム</span><input id="guideToggle" type="checkbox"><i></i><b>OFF</b></label>
-        <label class="option"><span>オートプレイ</span><input id="autoToggle" type="checkbox"><i></i><b>OFF</b></label>
+        <label class="option"><span>Vocal</span><input id="vocalToggle" type="checkbox" checked><i></i><b>ON</b></label>
+        <label class="option"><span>Guide Drums</span><input id="guideToggle" type="checkbox"><i></i><b>OFF</b></label>
+        <label class="option hidden-mode-option"><span>Hidden Mode</span><input id="hiddenToggle" type="checkbox"><i></i><b>OFF</b></label>
+        <label class="option"><span>Auto</span><input id="autoToggle" type="checkbox"><i></i><b>OFF</b></label>
       </div>
       <div class="tempo-box">
         <div><span>TEMPO</span><strong id="tempoValue">100%</strong></div>
         <input id="tempo" type="range" min="80" max="120" step="5" value="100">
         <div class="scale"><span>80%</span><span>100%</span><span>120%</span></div>
+      </div>
+      <div class="volume-box">
+        <div><span>VOLUME</span><strong id="masterVolumeValue">80%</strong></div>
+        <input id="masterVolume" type="range" min="0" max="100" step="5" value="80">
+        <div class="scale"><span>0%</span><span>50%</span><span>100%</span></div>
       </div>
       <p id="loadState">曲データを読み込み中…</p>
       <button id="start" disabled>START</button>
@@ -80,6 +87,7 @@
   <script src="control-polish-fix.js?v=20260825-controls5"></script>
   <script src="score-pulse.js?v=20260825-score1"></script>
   <script src="judgement-lane-fix.js?v=20260825-lanejudge8"></script>
-  <script src="result-screen.js?v=20260825-result1"></script>
+  <script src="mode-ui.js?v=20260825-mode1"></script>
+  <script src="result-screen.js?v=20260825-result2"></script>
 </body>
 </html>
