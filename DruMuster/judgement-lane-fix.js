@@ -4,9 +4,9 @@
   const wrap=document.querySelector("#chartWrap"),canvas=document.querySelector("#chart");
   if(!wrap||!canvas)return;
 
-  const laneTop=[14.6667,44,73.3333];
   const fxByLane=[];
   const glowByLane=[];
+  const GLOW_WIDTH=14;
 
   function chartGeometry(){
     const w=canvas.clientWidth,h=canvas.clientHeight,
@@ -14,23 +14,64 @@
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
           laneH=mainH/3;
-    return {judgeX,laneH};
+    return {w,h,judgeX,laneH};
+  }
+
+  function activeTiming(){
+    if(typeof beatTiming!=="undefined"&&beatTiming?.division)return beatTiming;
+    if(typeof timing!=="undefined"&&timing?.division)return timing;
+    return null;
+  }
+
+  function noteXAt(note,t){
+    const tm=activeTiming();
+    if(!tm||!note||typeof note.tick!=="number")return NaN;
+    const {judgeX}=chartGeometry(),
+          beatNow=DruMusterChart.secondsToBeat(t,tm),
+          division=tm.division||480;
+    return judgeX+(note.tick/division-beatNow)*DruMusterChart.PIXELS_PER_QUARTER;
+  }
+
+  function laneForPart(part){
+    if(part==="crash")return 0;
+    if(part==="hh"||part==="ride"||part==="special")return 1;
+    if(part==="snare"||part==="highTom"||part==="midTom"||part==="floorTom")return 2;
+    return -1;
+  }
+  function laneForType(type){
+    const group=typeof GROUP!=="undefined"?GROUP[type]:null;
+    return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:-1;
+  }
+
+  function nearestNoteForPart(part,t,maxDelta=.16){
+    if(typeof notes==="undefined"||typeof PART==="undefined")return null;
+    let best=null,bestDelta=maxDelta+.000001;
+    for(const n of notes){
+      if(n.type==="kick"||PART[n.type]!==part)continue;
+      const d=Math.abs(n.time-t);
+      if(d<bestDelta){best=n;bestDelta=d}
+      if(n.time>t+maxDelta)break;
+    }
+    return best;
   }
 
   function placeFx(lane,node){
     const {laneH}=chartGeometry();
     node.style.top=`${laneH*(lane+.5)}px`;
   }
-  function placeGlow(lane,node){
-    const {judgeX,laneH}=chartGeometry();
-    node.style.left=`${judgeX}px`;
-    node.style.top=`${laneH*(lane+.5)}px`;
+
+  function placeGlow(lane,node,x){
+    const {laneH}=chartGeometry();
+    // Exact top/height and explicit half-width subtraction avoid transform rounding drift.
+    node.style.left=`${x-GLOW_WIDTH/2}px`;
+    node.style.top=`${lane*laneH}px`;
+    node.style.width=`${GLOW_WIDTH}px`;
     node.style.height=`${laneH}px`;
   }
+
   function syncGeometry(){
     for(let lane=0;lane<3;lane++){
       if(fxByLane[lane])placeFx(lane,fxByLane[lane].fx);
-      if(glowByLane[lane])placeGlow(lane,glowByLane[lane]);
     }
   }
 
@@ -38,7 +79,6 @@
     if(fxByLane[lane])return fxByLane[lane];
     const fx=document.createElement("div");
     fx.className="lane-judge-fx";
-    fx.style.setProperty("--lane-top",laneTop[lane]+"%");
     const text=document.createElement("span");
     text.className="lane-judge-text";
     fx.appendChild(text);
@@ -55,25 +95,13 @@
     glow.dataset.lane=String(lane);
     wrap.appendChild(glow);
     glowByLane[lane]=glow;
-    placeGlow(lane,glow);
     return glow;
   }
 
-  function laneForPart(part){
-    if(part==="crash")return 0;
-    if(part==="hh"||part==="ride"||part==="special")return 1;
-    if(part==="snare"||part==="highTom"||part==="midTom"||part==="floorTom")return 2;
-    return -1;
-  }
-  function laneForType(type){
-    const group=typeof GROUP!=="undefined"?GROUP[type]:null;
-    return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:-1;
-  }
-
-  function flashLane(lane){
-    if(lane<0||lane>2)return;
+  function flashLane(lane,x){
+    if(lane<0||lane>2||!Number.isFinite(x))return;
     const glow=ensureGlow(lane);
-    placeGlow(lane,glow);
+    placeGlow(lane,glow,x);
     glow.classList.remove("flash");
     void glow.offsetWidth;
     glow.classList.add("flash");
@@ -91,11 +119,18 @@
     fx.classList.add("play");
   }
 
-  // Any visible drum strike flashes the exact judgement-line segment for that lane.
+  // Drum-surface flash remains independent. The chart glow is emitted only when
+  // a nearby chart note exists, and it is centered on that note's current X.
   if(typeof flashPart==="function"){
     const originalFlashPart=flashPart;
     flashPart=function(part,el){
-      flashLane(laneForPart(part));
+      if(part!=="kick"&&typeof current==="function"){
+        const t=current(),note=nearestNoteForPart(part,t,.16);
+        if(note){
+          const lane=laneForType(note.type),x=noteXAt(note,t);
+          flashLane(lane,x);
+        }
+      }
       return originalFlashPart(part,el);
     };
   }
