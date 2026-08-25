@@ -262,8 +262,9 @@ function showJudge(text,cls){UI.judge.className=`judge ${cls}`;void UI.judge.off
 function flash(note){const id=PARTS[note],el=id&&document.getElementById(id);if(!el)return;el.classList.add('hit');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('hit'),90)}
 function drawScore(){
   UI.score.textContent=String(STATE.score).padStart(7,'0');
-  UI.combo.textContent=UI.auto.checked?'AUTO PLAY':`${STATE.combo} COMBO`;
-  if(UI.best)UI.best.textContent='BEST '+String(STATE.best).padStart(7,'0');
+  const best='BEST '+String(STATE.best).padStart(7,'0');
+  UI.combo.textContent=UI.auto.checked?'AUTO PLAY · '+best:`${STATE.combo} COMBO · ${best}`;
+  if(UI.best)UI.best.textContent=best;
 }
 function fmt(s){s=Math.max(0,Math.floor(s||0));return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
 function updateTime(t){UI.time.textContent=`${fmt(t)} / ${fmt(duration())}`}
