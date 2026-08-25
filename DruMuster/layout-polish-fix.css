@@ -3,43 +3,102 @@
 /* Inactive-piece black oval/circle overlays are intentionally disabled on every platform. */
 .dim-layer{display:none!important}
 
-/* Artwork and hit regions are wrapped together at runtime by control-polish-fix.js.
-   A single transform keeps visual drums and pointer hit-testing in the same coordinate system. */
+/* drum-kit.webp is 1280 x 854. Artwork and hit regions are put on the exact
+   same 1280:854 coordinate frame so pointer hit-testing cannot drift from the picture. */
 .kit-stage{
   position:absolute;
   inset:0;
   transform-origin:50% 50%;
 }
+.kit-stage .kit-art,
+.kit-stage #hitLayer{
+  position:absolute!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:auto!important;
+  height:118%!important;
+  top:-8%!important;
+  aspect-ratio:1280 / 854;
+  transform:translateX(-50%)!important;
+  transform-origin:50% 50%;
+}
+.kit-stage .kit-art{
+  object-fit:contain!important;
+  object-position:center center!important;
+}
 
-/* PC only: the complete calibrated kit stage is 80%. */
+/* PC: complete calibrated source frame at 80%. */
 @media (hover:hover) and (pointer:fine){
   .kit-stage{transform:scale(.8)}
 }
 
-/* Strike-light origins are aligned to the visible playing surfaces, not simply
-   to each large transparent hit target. */
+/* Calibrated regions in the same 1280x854 source-image frame.
+   These replace the old PC geometry that was based on a differently cropped image. */
+#hitLayer .crash{width:25%!important;height:34%!important;top:2%!important}
+#hitLayer .crash.left{left:3%!important;right:auto!important}
+#hitLayer .crash.right{right:3%!important;left:auto!important}
+#hitLayer .hh{width:24%!important;height:38%!important;left:3%!important;top:42%!important}
+#hitLayer .ride{width:26%!important;height:42%!important;right:3%!important;left:auto!important;top:38%!important}
+#hitLayer .high{width:23%!important;height:37%!important;left:27%!important;top:18%!important}
+#hitLayer .mid{width:23%!important;height:37%!important;right:27%!important;left:auto!important;top:18%!important}
+#hitLayer .snare{width:28%!important;height:42%!important;left:20%!important;top:auto!important;bottom:3%!important}
+#hitLayer .floor{width:30%!important;height:44%!important;right:18%!important;left:auto!important;top:auto!important;bottom:1%!important}
+#hitLayer .special{width:10%!important;height:16%!important;left:45%!important;top:50%!important}
+
+/* Strike-light origins on the visible playing surfaces.
+   Snare/toms=center, HH=lower-right, crash=lower area, ride=slightly left of center. */
 #hitLayer .snare::after,
 #hitLayer .high::after,
 #hitLayer .mid::after,
-#hitLayer .floor::after{
-  left:50%;
-  top:50%;
+#hitLayer .floor::after,
+#hitLayer .special::after{
+  left:50%!important;
+  top:50%!important;
 }
 #hitLayer .hh::after{
-  left:65%;
-  top:68%;
+  left:64%!important;
+  top:67%!important;
 }
 #hitLayer .crash::after{
-  left:50%;
-  top:69%;
+  left:50%!important;
+  top:72%!important;
 }
 #hitLayer .ride::after{
-  left:43%;
-  top:51%;
+  left:42%!important;
+  top:51%!important;
 }
 
-/* Mobile only: the same complete stage is enlarged to 130%.
-   Existing mobile #hitLayer translateX positioning remains intact inside it. */
+/* Two-key badges share one visual center without overlapping each other. */
+#hitLayer .key-badges{
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:3;
+  transform:translate(-50%,-50%);
+  display:flex;
+  gap:4px;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+}
+#hitLayer .key-badges kbd{
+  position:static!important;
+  left:auto!important;
+  top:auto!important;
+  transform:none!important;
+}
+#hitLayer .hit.pressed .key-badges kbd{
+  background:#dff7ff;
+  color:#101721;
+}
+
+/* Mobile keeps its requested 130% size, but also uses one shared image/hit frame. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .kit-stage{transform:scale(1.3)}
+  .kit-stage .kit-art,
+  .kit-stage #hitLayer{
+    height:100%!important;
+    top:0!important;
+  }
 }
