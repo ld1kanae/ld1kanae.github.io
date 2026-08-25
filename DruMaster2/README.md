@@ -11,12 +11,13 @@
 ## 音源配置先
 GitHub Pagesで自動読込する場合は以下へ配置します。
 
-- `assets/audio/nanairo-offvocal.wav`
-- `assets/audio/nanairo-vocals.wav`
-- `assets/audio/nanairo-guide-drums.wav`
-- `assets/audio/drumsound2.wav`
+- `songs/nanairo/nanairo-offvocal-192k.mp3`
+- `songs/nanairo/nanairo-vocals-192k.mp3`
+- `songs/nanairo/nanairo-drums-192k.mp3`
+- `soundset/drums/drumsound2-192k.mp3`
+- `soundset/drums/drumsound2.mid`
 
-未配置でも、Settingsから端末内のWAVを一時読み込みして動作確認できます。
+音源未配置でもDEMO MODEで譜面・判定・AUTO・タップ/キー操作を仮プレイできます。打音はWeb Audioの簡易合成音へ自動フォールバックします。
 
 ## 操作
 PC:
@@ -40,4 +41,4 @@ PC:
 - Kick/Pedal HHは淡色のAUTOノーツ
 
 ## 打音
-`drumsound2.wav` はBPM60、MIDI 35〜81を約2秒間隔で収録したスプライトとして扱います。各発音は独立Sourceで重ね、Open Hi-HatのみClosed/Pedal Hi-Hatでチョークします。音源未配置時にはWeb Audioの簡易合成音へフォールバックします。
+`drumsound2-192k.mp3` は元の `drumsound2.wav` と同じ並びを保ち、BPM60、MIDI 35〜81を約2秒間隔で収録したスプライトとして扱います。各発音は独立Sourceで重ね、Open Hi-HatのみClosed/Pedal Hi-Hatでチョークします。
