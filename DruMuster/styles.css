@@ -13,7 +13,6 @@ button,input{font:inherit}
 .song-card{width:min(480px,90vw);display:flex;gap:18px;align-items:center;padding:18px 22px;border:1px solid #2d3745;background:#111721c9;border-radius:18px}
 .song-card h1{margin:0;font-size:26px}
 .song-card p{margin:4px 0 0;color:var(--muted)}
-.disc{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:linear-gradient(145deg,#e7f0fa,#92a4ba);color:#101620;font-weight:900;font-size:26px;box-shadow:inset 0 0 0 9px #cad5e1}
 .options,.tempo-box{width:min(480px,90vw);margin-top:14px;padding:15px 20px;background:#111721;border:1px solid #2d3745;border-radius:15px}
 .option{display:flex;align-items:center;gap:12px;min-height:38px}
 .option+ .option{border-top:1px solid #252e39}
@@ -81,9 +80,6 @@ button,input{font:inherit}
 /* Smartphone layout is always rendered as a landscape stage. It does not wait for or react to device rotation. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   #app{position:fixed;left:0;top:0;width:100vh;height:100vw;transform-origin:0 0;transform:translateY(100vh) rotate(-90deg)}
-  /* The screenshots show the logical left edge (physical bottom edge before CSS rotation)
-     clipping the song card/rank. Move every screen 28px toward the physical top while
-     shortening it by the same amount, so the opposite edge remains inside the viewport. */
   .screen{width:calc(100% - 28px);margin-left:28px}
   .setup{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1fr);grid-template-areas:"brand options" "eyebrow options" "song tempo" "hint state" "hint start";column-gap:24px;row-gap:6px;align-content:center;justify-items:center;padding:12px 24px;overflow:hidden}
   .brand{grid-area:brand;font-size:clamp(38px,7vw,58px)}
