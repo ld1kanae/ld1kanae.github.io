@@ -6,7 +6,7 @@ const MIDI_MAP={35:"kick",36:"kick",38:"snare",40:"snare",41:"floorTom",43:"floo
 const GROUP={kick:"kick",snare:"drums",floorTom:"drums",midTom:"drums",highTom:"drums",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"hh",crash:"cymbal",special:"hh"};
 const PART={kick:"kick",snare:"snare",floorTom:"floorTom",midTom:"midTom",highTom:"highTom",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"ride",crash:"crash",special:"special"};
 
-const chartWrap=document.querySelector("#chartWrap"),canvas=document.querySelector("#chart"),ctx=canvas.getContext("2d"),pauseBtn=document.querySelector("#pause"),pausePanel=document.querySelector("#pausePanel"),resumeBtn=document.querySelector("#resume"),quitBtn=document.querySelector("#quit"),subtitle=document.querySelector(".song-hud small");
+const chartWrap=document.querySelector("#chartWrap"),canvas=document.querySelector("#chart"),ctx=canvas.getContext("2d"),pauseBtn=document.querySelector("#pause"),pausePanel=document.querySelector("#pausePanel"),resumeBtn=document.querySelector("#resume"),quitBtn=document.querySelector("#quit"),subtitle=document.querySelector(".song-hud small"),judgementFx=document.querySelector("#judgementFx"),judge=document.querySelector("#judge");
 let notes=[],timing={division:480,segments:[{tick:0,sec:0,us:500000}]},duration=0,previewStart=0,timeOffset=0,startPerf=0,pausedAt=0,paused=false,hitCursor=0,raf=0,ready=false;
 
 function parseDrumNotes(ab){
@@ -60,11 +60,29 @@ function current(){return paused?pausedAt:timeOffset+(performance.now()-startPer
 function draw(){
   DruMusterChart.draw({ctx,canvas,notes,currentSec:current(),timing,groupMap:GROUP,skipHit:false});
 }
+function showPreviewJudge(label="PERFECT"){
+  if(!judgementFx||!judge)return;
+  judge.textContent=label;
+  judgementFx.dataset.grade=label.toLowerCase();
+  judgementFx.classList.remove("play");
+  void judgementFx.offsetWidth;
+  judgementFx.classList.add("play");
+}
 function flashPart(part){
-  if(part==="kick"){const e=document.querySelector("#kickFx");if(e){e.classList.remove("hit");void e.offsetWidth;e.classList.add("hit")}return}
+  if(part==="kick")return;
   const el=document.querySelector(`#hitLayer [data-part="${part}"]:not(.inactive)`);if(!el)return;el.classList.remove("struck");void el.offsetWidth;el.classList.add("struck");
 }
-function updateHits(t){while(hitCursor<notes.length&&notes[hitCursor].time<=t){const n=notes[hitCursor++];if(n.time>=t-.08)flashPart(PART[n.type])}}
+function updateHits(t){
+  let showPerfect=false;
+  while(hitCursor<notes.length&&notes[hitCursor].time<=t){
+    const n=notes[hitCursor++];
+    if(n.time>=t-.08){
+      flashPart(PART[n.type]);
+      if(n.type!=="kick")showPerfect=true;
+    }
+  }
+  if(showPerfect)showPreviewJudge("PERFECT");
+}
 function setKit(){const used=new Set(notes.map(n=>PART[n.type]));document.querySelectorAll("#hitLayer [data-part]").forEach(el=>el.classList.toggle("inactive",!used.has(el.dataset.part)))}
 function restart(){if(!ready)return;paused=false;pausePanel.classList.add("hidden");pauseBtn.textContent="Ⅱ";timeOffset=previewStart;startPerf=performance.now();hitCursor=notes.findIndex(n=>n.time>=previewStart);if(hitCursor<0)hitCursor=0;cancelAnimationFrame(raf);loop()}
 function togglePause(forceResume=false){if(!ready)return;if(!paused&&!forceResume){pausedAt=current();paused=true;pausePanel.classList.remove("hidden");pauseBtn.textContent="▶";cancelAnimationFrame(raf)}else if(paused){timeOffset=pausedAt;startPerf=performance.now();paused=false;pausePanel.classList.add("hidden");pauseBtn.textContent="Ⅱ";loop()}}
