@@ -45,7 +45,7 @@
       $("#score").textContent=autoplay?"AUTO":"000000";
 
       const startAt=ac.currentTime+.055;
-      const stemOffset=song.id==="ray"?.020:0;
+      const stemOffset=song.id==="ray" ? 0.020 : 0;
       playAt(buffers.base,trackGain("base",.95),startAt,stemOffset);
       if($("#vocalToggle").checked)playAt(buffers.vocals,trackGain("vocals",.95),startAt,stemOffset);
       if($("#guideToggle").checked)playAt(buffers.drums,trackGain("drums",.70),startAt,stemOffset);
