@@ -12,22 +12,28 @@
     kit.appendChild(stage);
   }
 
-  /* Two keys per playable timbre for two-hand PC drumming. */
+  /* Expanded PC bindings: nearby keys can strike the same drum/cymbal. */
   const KEY_BINDINGS={
     KeyA:{part:"hh",label:"A"},
     KeyS:{part:"hh",label:"S"},
     KeyZ:{part:"snare",label:"Z"},
     KeyX:{part:"snare",label:"X"},
+    KeyC:{part:"snare",label:"C"},
     KeyW:{part:"crash",side:"left",label:"W"},
     KeyE:{part:"crash",side:"left",label:"E"},
+    KeyR:{part:"crash",side:"left",label:"R"},
+    KeyT:{part:"crash",side:"left",label:"T"},
     KeyD:{part:"highTom",label:"D"},
     KeyF:{part:"highTom",label:"F"},
     KeyG:{part:"midTom",label:"G"},
     KeyH:{part:"midTom",label:"H"},
     KeyB:{part:"floorTom",label:"B"},
     KeyN:{part:"floorTom",label:"N"},
+    KeyM:{part:"floorTom",label:"M"},
     KeyY:{part:"crash",side:"right",label:"Y"},
     KeyU:{part:"crash",side:"right",label:"U"},
+    KeyI:{part:"crash",side:"right",label:"I"},
+    KeyO:{part:"crash",side:"right",label:"O"},
     KeyJ:{part:"ride",label:"J"},
     KeyK:{part:"ride",label:"K"}
   };
@@ -56,15 +62,13 @@
 
   function installBadges(){
     setBadge(document.querySelector('#hitLayer [data-part="hh"]'),["A","S"]);
-    setBadge(document.querySelector('#hitLayer [data-part="snare"]'),["Z","X"]);
-    setBadge(document.querySelector("#hitLayer .crash.left"),["W","E"]);
+    setBadge(document.querySelector('#hitLayer [data-part="snare"]'),["Z","X","C"]);
+    setBadge(document.querySelector("#hitLayer .crash.left"),["W","E","R","T"]);
     setBadge(document.querySelector('#hitLayer [data-part="highTom"]'),["D","F"]);
     setBadge(document.querySelector('#hitLayer [data-part="midTom"]'),["G","H"]);
-    setBadge(document.querySelector('#hitLayer [data-part="floorTom"]'),["B","N"]);
-    setBadge(document.querySelector("#hitLayer .crash.right"),["Y","U"]);
+    setBadge(document.querySelector('#hitLayer [data-part="floorTom"]'),["B","N","M"]);
+    setBadge(document.querySelector("#hitLayer .crash.right"),["Y","U","I","O"]);
     setBadge(document.querySelector('#hitLayer [data-part="ride"]'),["J","K"]);
-    /* Special remains touch/click-only unless a key is assigned later. */
-    setBadge(document.querySelector('#hitLayer [data-part="special"]'),[]);
   }
   installBadges();
 
@@ -106,7 +110,7 @@
   const heldCodes=new Set();
 
   /* Capture phase deliberately supersedes app.js's old one-key map.
-     Spacebar pause/resume is intentionally disabled; use the pause button instead. */
+     Spacebar pause/resume remains intentionally disabled. */
   addEventListener("keydown",e=>{
     const binding=KEY_BINDINGS[e.code];
     if(!binding)return;
