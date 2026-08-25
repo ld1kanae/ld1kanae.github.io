@@ -5,14 +5,15 @@
 .game .song-hud small{font-size:11px;line-height:1.05;margin-top:5px}
 
 /* User-supplied bass drum artwork sits behind the calibrated kit artwork.
-   It shares the kit-stage transform, so PC/mobile scaling stays aligned. */
+   Match the user's reference by making it smaller and tucking it upward behind
+   the rack/lower drums. The source artwork itself is not cropped or altered. */
 .kit-stage{isolation:isolate}
 .kit-stage .bass-drum-art{
   position:absolute!important;
   z-index:0!important;
   left:50%!important;
-  top:43.5%!important;
-  width:24.5%!important;
+  top:35.5%!important;
+  width:18.5%!important;
   height:auto!important;
   transform:translateX(-50%)!important;
   transform-origin:50% 50%!important;
