@@ -4,6 +4,9 @@
 // All chart geometry and scroll-speed changes must be made here so the two modes stay identical.
 globalThis.DruMusterChart=(()=>{
   const PIXELS_PER_QUARTER=80;
+  const NOTE_BAR_WIDTH=4;
+  const OPEN_HH_BAR_WIDTH=3;
+  const OPEN_HH_GAP=1;
 
   function parseTempoTiming(ab){
     const d=new DataView(ab);let p=0;
@@ -101,20 +104,20 @@ globalThis.DruMusterChart=(()=>{
             y=lane<3?laneH*(lane+.5):mainH+kickH/2,
             alpha=.48+.52*n.velocity/127,
             color=n.type==="snare"?"#38a9ff":n.type.includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc",
-            barH=lane<3?Math.max(20,laneH*.62):Math.max(10,kickH-4),
-            barW=4;
+            barH=lane<3?Math.max(22,laneH*.68):Math.max(10,kickH-4);
 
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;
       ctx.fillStyle=color;
 
-      // Every note uses the same vertical-bar symbol as kick, except open hi-hat.
-      // Open hi-hat is a tight double bar with exactly the same height.
+      // No circles, triangles, crosses or diamonds: all notes are the same vertical bar.
+      // Open hi-hat alone uses two tightly spaced bars of exactly the same height.
       if(n.type==="hhOpen"){
-        const openBarW=3,gap=2,total=openBarW*2+gap,left=x-total/2;
-        ctx.fillRect(left,y-barH/2,openBarW,barH);
-        ctx.fillRect(left+openBarW+gap,y-barH/2,openBarW,barH);
+        const total=OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP,
+              left=x-total/2;
+        ctx.fillRect(left,y-barH/2,OPEN_HH_BAR_WIDTH,barH);
+        ctx.fillRect(left+OPEN_HH_BAR_WIDTH+OPEN_HH_GAP,y-barH/2,OPEN_HH_BAR_WIDTH,barH);
       }else{
-        ctx.fillRect(x-barW/2,y-barH/2,barW,barH);
+        ctx.fillRect(x-NOTE_BAR_WIDTH/2,y-barH/2,NOTE_BAR_WIDTH,barH);
       }
     }
 
