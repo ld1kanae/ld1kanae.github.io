@@ -11,6 +11,8 @@
     while(kit.firstChild)stage.appendChild(kit.firstChild);
     kit.appendChild(stage);
   }
+  const stage=kit?.querySelector(":scope > .kit-stage"),kickFx=document.querySelector("#kickFx");
+  if(stage&&kickFx&&kickFx.parentElement!==stage)stage.appendChild(kickFx);
 
   /* Expanded PC bindings: nearby keys can strike the same drum/cymbal. */
   const KEY_BINDINGS={
