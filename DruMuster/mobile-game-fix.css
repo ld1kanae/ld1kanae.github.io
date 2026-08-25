@@ -1,15 +1,13 @@
 /* Mobile gameplay layout.
-   The app remains a fixed landscape stage even while the browser itself stays portrait.
-   The drum kit keeps the same rendered size as before; it is only right-aligned so the note highway can use the empty space beside it. */
+   Fixed landscape stage: HUD at the top, note highway directly below it,
+   and the full drum kit in its original centered position underneath. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .setup{
     padding-left:max(36px,env(safe-area-inset-bottom));
     padding-right:24px;
   }
 
-  .game{
-    overflow:hidden;
-  }
+  .game{overflow:hidden}
 
   .game header{
     height:44px;
@@ -23,22 +21,10 @@
     margin:0 10px 0 4px;
     border-width:1px;
   }
-  .song-hud{
-    min-width:0;
-    line-height:1.05;
-  }
-  .song-hud b{
-    font-size:14px;
-    white-space:nowrap;
-  }
-  .song-hud small{
-    font-size:8px;
-    white-space:nowrap;
-  }
-  .score{
-    padding-right:6px;
-    min-width:72px;
-  }
+  .song-hud{min-width:0;line-height:1.05}
+  .song-hud b{font-size:14px;white-space:nowrap}
+  .song-hud small{font-size:8px;white-space:nowrap}
+  .score{padding-right:6px;min-width:72px}
   .score small{font-size:8px}
   .score strong{font-size:16px}
   .game header #pause{
@@ -49,40 +35,35 @@
     box-shadow:0 0 0 2px #ffffff22;
   }
 
-  /* Taiko/general rhythm-game style hierarchy:
-     a large, independent note highway with a fixed judgement zone on the left. */
+  /* Taiko-style vertical hierarchy: a wide horizontal highway above the instrument. */
   #chartWrap{
     position:absolute;
-    top:64px;
-    left:36px;
-    width:40%;
-    height:60%;
+    top:44px;
+    left:max(32px,env(safe-area-inset-bottom));
+    right:14px;
+    width:auto;
+    height:25%;
     min-height:0;
     z-index:10;
     overflow:hidden;
     border:1px solid #3b4859;
-    border-radius:14px;
+    border-radius:0 0 10px 10px;
     background:#0a1019;
-    box-shadow:0 10px 28px #000b, inset 0 0 0 1px #ffffff08;
+    box-shadow:0 6px 18px #000a, inset 0 0 0 1px #ffffff08;
   }
-  #chart{
-    width:100%;
-    height:100%;
-    border-radius:inherit;
-  }
+  #chart{width:100%;height:100%}
   #judgementFx{
-    left:13%;
-    bottom:3%;
-    width:min(42%,280px);
-    height:88%;
+    left:11%;
+    bottom:0;
+    width:min(28%,260px);
+    height:92%;
   }
-  #judge{font-size:clamp(20px,3.2vw,36px)}
+  #judge{font-size:clamp(18px,3vw,34px)}
 
-  /* Do not resize the drum kit. Keep the same container height and contained-image scale
-     from the previous version; only move the contained image to the right edge. */
+  /* Restore the drum kit to the previous centered position and scale. */
   #kit{
     top:calc(25% + 44px);
-    background:radial-gradient(ellipse at 73% 42%,#242a31,#080b10 78%);
+    background:radial-gradient(ellipse at 50% 42%,#242a31,#080b10 78%);
   }
   .kit-art{
     width:100%;
@@ -90,26 +71,23 @@
     left:0;
     top:0;
     object-fit:contain;
-    object-position:right center;
+    object-position:center center;
   }
 
-  /* Match touch geometry to the exact same 1280x854 contained drum image, right-aligned. */
   #hitLayer{
     inset:auto;
     top:0;
     bottom:0;
-    right:0;
-    left:auto;
+    left:50%;
+    right:auto;
     width:auto;
     height:100%;
     aspect-ratio:1280 / 854;
-    transform:none;
+    transform:translateX(-50%);
   }
 
-  /* The black inactive-part masks are intentionally removed. */
-  .dim-layer{
-    display:none!important;
-  }
+  /* Never paint inactive drum pieces black. */
+  .dim-layer{display:none!important}
 
   #hitLayer .crash{width:25%;height:34%;top:2%}
   #hitLayer .crash.left{left:3%}
@@ -128,19 +106,14 @@
     padding:0 5px;
     font-size:11px;
   }
-  #hitLayer .special span{
-    width:28px;
-    height:20px;
-  }
+  #hitLayer .special span{width:28px;height:20px}
 
   #kickFx{
-    left:auto;
+    left:0;
     right:0;
-    width:58%;
+    width:auto;
     height:28%;
   }
 
-  .result{
-    padding-left:max(32px,env(safe-area-inset-bottom));
-  }
+  .result{padding-left:max(32px,env(safe-area-inset-bottom))}
 }
