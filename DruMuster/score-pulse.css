@@ -1,0 +1,19 @@
+/* Right-side in-game score: slightly larger and flashes only when points increase. */
+.score strong{
+  display:inline-block;
+  font-size:23px;
+  transform-origin:100% 50%;
+}
+.score strong.score-gain-flash{
+  animation:scoreGainFlash .28s cubic-bezier(.16,.84,.24,1);
+}
+@keyframes scoreGainFlash{
+  0%{filter:brightness(1);text-shadow:0 0 10px #71c8ff99;transform:scale(1)}
+  18%{filter:brightness(1.85);text-shadow:0 0 2px #fff,0 0 8px #9eeaff,0 0 18px #6aaeff,0 0 28px #b57cff;transform:scale(1.11)}
+  48%{filter:brightness(1.35);text-shadow:0 0 2px #fff,0 0 10px #71dfff,0 0 20px #8a7cff;transform:scale(1.035)}
+  100%{filter:brightness(1);text-shadow:0 0 10px #71c8ff99;transform:scale(1)}
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .score strong{font-size:16px}
+}
