@@ -1,7 +1,16 @@
-/* Landscape-mobile layout overrides for DruMaster2 */
-@media (pointer:coarse) and (orientation:landscape), (max-height:620px) and (orientation:landscape){
+/* DruMaster2 mobile layout: always authored as landscape.
+   No orientation detection. In portrait, the landscape canvas is simply clipped;
+   when the user turns the device, the same layout becomes fully visible. */
+@media (pointer:coarse){
   html,body{height:100%;min-height:0;overflow:hidden}
-  .app{height:100dvh;min-height:0;grid-template-rows:44px minmax(0,1fr) 42px}
+  body{display:block}
+  .app{
+    width:max(960px,100vw);
+    height:min(620px,100dvh);
+    min-width:960px;
+    min-height:0;
+    grid-template-rows:44px minmax(0,1fr) 42px;
+  }
   .topbar{gap:8px;padding:0 10px}
   .brand{font-size:14px}.brand span{font-size:18px}
   .song{gap:7px}.song b{font-size:11px}.song small{font-size:8px}
@@ -23,14 +32,15 @@
   .hh-zone{left:15%;top:23%;width:22%;height:39%}
   .open-zone{left:0;top:25%;width:20%;height:42%}
   .snare-zone{left:23%;top:46%;width:30%;height:48%}
-  .settings-card{max-height:calc(100dvh - 6px);width:min(520px,calc(100vw - 8px));grid-template-rows:44px minmax(0,1fr) 42px}
+  .settings-card{max-height:min(612px,calc(100dvh - 6px));width:min(520px,calc(100vw - 8px));grid-template-rows:44px minmax(0,1fr) 42px}
   .settings-scroll{padding:4px 12px 10px}
   .toggle{min-height:42px}.range{padding:8px 0}.assets{margin-top:8px}.assets p{display:none}
 }
 
-/* Very short landscape viewports (browser chrome visible) */
-@media (max-height:430px) and (orientation:landscape){
-  .app{grid-template-rows:38px minmax(0,1fr) 36px}
+/* Compact the same landscape composition when the available height is short.
+   This is height-based only; device orientation is never queried. */
+@media (pointer:coarse) and (max-height:430px){
+  .app{height:100dvh;grid-template-rows:38px minmax(0,1fr) 36px}
   .topbar{padding:0 8px}
   .brand{font-size:12px}.brand span{font-size:15px}.song b{font-size:10px}
   .gear{width:27px;height:27px}
