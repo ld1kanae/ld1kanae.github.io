@@ -84,6 +84,50 @@
 .result.autoplay .ranking-panel{display:none}
 .result.autoplay .result-summary{display:none}
 
+/* Result reveal sequence: screen fade -> title -> score -> judgement summary -> ranking -> retry. */
+.result.result-reveal{animation:resultScreenIn .58s cubic-bezier(.2,.72,.2,1) both}
+.result.result-reveal::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 50% 34%,rgba(192,243,255,.16),transparent 44%);
+  animation:resultFlashIn .9s ease-out both;
+}
+.result.result-reveal .result-step{opacity:0;animation:resultItemIn .48s cubic-bezier(.16,.82,.24,1) both}
+.result.result-reveal .result-step-1{animation-delay:.12s}
+.result.result-reveal .result-step-2{animation-delay:.24s}
+.result.result-reveal .result-step-score{animation:resultScoreIn .78s cubic-bezier(.14,.82,.2,1) .28s both}
+.result.result-reveal .result-step-3{animation-delay:.48s}
+.result.result-reveal .result-step-4{animation-delay:.62s}
+.result.result-reveal .result-step-5{animation-delay:.82s}
+.result.result-reveal .ranking-row{opacity:0;animation:resultRowIn .34s ease-out calc(.73s + var(--row-i,0)*.045s) both}
+
+@keyframes resultScreenIn{
+  0%{opacity:0;filter:brightness(.55)}
+  100%{opacity:1;filter:brightness(1)}
+}
+@keyframes resultFlashIn{
+  0%{opacity:0;transform:scale(.65)}
+  28%{opacity:1;transform:scale(1.08)}
+  100%{opacity:.24;transform:scale(1)}
+}
+@keyframes resultItemIn{
+  0%{opacity:0;transform:translateY(10px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+@keyframes resultScoreIn{
+  0%{opacity:0;transform:skewX(-4deg) scaleX(.82) scale(.64);filter:drop-shadow(0 0 0 transparent) brightness(1.7)}
+  42%{opacity:1;transform:skewX(-4deg) scaleX(1.09) scale(1.12);filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 18px rgba(95,226,255,.85)) drop-shadow(0 0 30px rgba(190,104,255,.62)) brightness(1.35)}
+  72%{transform:skewX(-4deg) scaleX(1.02) scale(.98)}
+  100%{opacity:1;transform:skewX(-4deg) scaleX(1.04) scale(1);filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 8px rgba(95,226,255,.58)) drop-shadow(0 0 18px rgba(190,104,255,.42)) brightness(1)}
+}
+@keyframes resultRowIn{
+  0%{opacity:0;transform:translateX(-10px)}
+  100%{opacity:1;transform:translateX(0)}
+}
+
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   /* The whole .screen already has the 34px safe-edge shift; keep result internals symmetric. */
   .result{padding:8px 24px 9px;justify-content:flex-start}
@@ -108,4 +152,8 @@
   .rank-score-cell{gap:9px}
   .ranking-empty{font-size:14px;padding:18px 8px}
   #retry{margin-top:7px;padding:9px 42px;font-size:12px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .result.result-reveal,.result.result-reveal .result-step,.result.result-reveal .ranking-row,.result.result-reveal::after{animation-duration:.01ms!important;animation-delay:0s!important}
 }
