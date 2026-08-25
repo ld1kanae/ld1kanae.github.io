@@ -3,30 +3,32 @@
 /* Legacy single judgement node is kept in the markup but no longer rendered. */
 #judgementFx{display:none!important}
 
-/* Flash only the judgement-line segment belonging to the struck chart lane. */
+/* Hit glow is positioned in exact canvas pixels by judgement-lane-fix.js.
+   No translate offset is used, so its center cannot drift from the note X coordinate. */
 .lane-hit-glow{
   position:absolute;
-  left:11%;
-  top:var(--lane-top,50%);
-  width:18px;
-  height:29.3333%;
-  transform:translate(-50%,-50%);
+  left:0;
+  top:0;
+  width:14px;
+  height:0;
+  transform-origin:50% 50%;
   pointer-events:none;
   opacity:0;
   z-index:16;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 28%,rgba(255,255,255,.92) 50%,rgba(255,255,255,.18) 72%,transparent 100%);
-  box-shadow:0 0 7px rgba(255,255,255,.65),0 0 15px var(--lane-glow,rgba(120,220,255,.75));
+  overflow:visible;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.14) 22%,rgba(255,255,255,.92) 50%,rgba(255,255,255,.14) 78%,transparent 100%);
+  box-shadow:0 0 6px rgba(255,255,255,.58),0 0 13px var(--lane-glow,rgba(120,220,255,.72));
   mix-blend-mode:screen;
 }
-.lane-hit-glow[data-lane="0"]{--lane-glow:rgba(255,212,90,.85)}
-.lane-hit-glow[data-lane="1"]{--lane-glow:rgba(82,223,207,.85)}
-.lane-hit-glow[data-lane="2"]{--lane-glow:rgba(120,145,255,.9)}
+.lane-hit-glow[data-lane="0"]{--lane-glow:rgba(255,212,90,.82)}
+.lane-hit-glow[data-lane="1"]{--lane-glow:rgba(82,223,207,.82)}
+.lane-hit-glow[data-lane="2"]{--lane-glow:rgba(120,145,255,.86)}
 .lane-hit-glow.flash{animation:laneHitFlash .18s ease-out}
 @keyframes laneHitFlash{
-  0%{opacity:0;transform:translate(-50%,-50%) scaleX(.55)}
-  16%{opacity:1;transform:translate(-50%,-50%) scaleX(1.18)}
-  42%{opacity:.72;transform:translate(-50%,-50%) scaleX(1)}
-  100%{opacity:0;transform:translate(-50%,-50%) scaleX(.9)}
+  0%{opacity:0;transform:scaleX(.55)}
+  16%{opacity:1;transform:scaleX(1.18)}
+  42%{opacity:.72;transform:scaleX(1)}
+  100%{opacity:0;transform:scaleX(.9)}
 }
 
 .lane-judge-fx{
@@ -143,6 +145,22 @@
 .lane-judge-fx[data-grade="good"] .lane-judge-text{
   background-image:linear-gradient(105deg,#fffdf5 0%,#ffe99c 25%,#ffc36f 50%,#ff9fc2 74%,#fffaf2 100%);
   filter:drop-shadow(0 0 1px rgba(255,255,255,.92)) drop-shadow(0 0 2.6px rgba(255,205,100,.44)) drop-shadow(0 0 5px rgba(255,146,184,.18));
+}
+
+/* PC: the previous 9px label was too small at desktop viewing distance. */
+@media (hover:hover) and (pointer:fine){
+  .lane-judge-text{
+    font-size:18px;
+    letter-spacing:.06em;
+    -webkit-text-stroke:.46px rgba(255,255,255,.8);
+  }
+  .lane-judge-text::before{
+    left:-10px;
+    right:-10px;
+    top:-7px;
+    bottom:-7px;
+    filter:blur(7px);
+  }
 }
 
 /* Smartphones are touch-first; keyboard badges are only useful on PC. */
