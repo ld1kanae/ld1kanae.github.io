@@ -7,6 +7,7 @@
   const fxByLane=[];
   const glowByLane=[];
   const LANE_LABELS=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
+  const MOBILE_FX_Y_OFFSET=-2;
   let suppressAutoGlow=false,hiddenFx=null;
 
   function isMobile(){
@@ -70,7 +71,7 @@
       const labelWidth=ctx.measureText(LANE_LABELS[lane]||"").width;
       ctx.restore();
       node.style.left=`${Math.min(w-18,7+labelWidth+14)}px`;
-      node.style.top=`${lane*laneH+6+labelFont*.5}px`;
+      node.style.top=`${lane*laneH+6+labelFont*.5+MOBILE_FX_Y_OFFSET}px`;
       node.style.transform="translate(0,-50%)";
     }else{
       node.style.left="9%";
