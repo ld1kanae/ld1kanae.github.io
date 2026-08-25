@@ -3,8 +3,43 @@
 /* Inactive-piece black oval/circle overlays are intentionally disabled on every platform. */
 .dim-layer{display:none!important}
 
+/* PC only: reduce the artwork and its input geometry together to 80%.
+   Scaling from the center keeps the kit composition aligned. */
+@media (hover:hover) and (pointer:fine){
+  .kit-art{
+    transform:scale(.8);
+    transform-origin:50% 50%;
+  }
+  #hitLayer{
+    transform:scale(.8);
+    transform-origin:50% 50%;
+  }
+}
+
+/* Strike-light origins are aligned to the visible playing surfaces, not simply
+   to each large transparent hit target. */
+#hitLayer .snare::after,
+#hitLayer .high::after,
+#hitLayer .mid::after,
+#hitLayer .floor::after{
+  left:50%;
+  top:50%;
+}
+#hitLayer .hh::after{
+  left:65%;
+  top:68%;
+}
+#hitLayer .crash::after{
+  left:50%;
+  top:69%;
+}
+#hitLayer .ride::after{
+  left:43%;
+  top:51%;
+}
+
 /* Mobile only: enlarge the drum artwork and its hit geometry together to 130%.
-   PC geometry and scale are unchanged. */
+   This deliberately overrides the PC scale above. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .kit-art{
     transform:scale(1.3);
