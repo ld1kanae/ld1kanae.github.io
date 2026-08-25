@@ -22,67 +22,26 @@
     <section id="setup" class="screen setup">
       <div class="brand"><span>Dru</span><b>Master</b></div>
       <p class="eyebrow">DRUM RHYTHM GAME</p>
-      <div class="song-card">
-        <div class="disc">7</div>
-        <div>
-          <h1>なないろ</h1><p>BUMP OF CHICKEN</p>
-          <select id="songSelect" aria-label="曲を選択"><option value="nanairo">なないろ — BUMP OF CHICKEN</option></select>
-        </div>
-      </div>
+      <div class="song-card"><div class="disc">7</div><div><h1>なないろ</h1><p>BUMP OF CHICKEN</p><select id="songSelect" aria-label="曲を選択"><option value="nanairo">なないろ — BUMP OF CHICKEN</option></select></div></div>
       <div class="options">
         <label class="option"><span>Vocal</span><input id="vocalToggle" type="checkbox" checked><i></i><b>ON</b></label>
         <label class="option"><span>Guide Drums</span><input id="guideToggle" type="checkbox"><i></i><b>OFF</b></label>
         <label class="option hidden-mode-option"><span>Hidden Mode</span><input id="hiddenToggle" type="checkbox"><i></i><b>OFF</b></label>
         <label class="option"><span>Auto</span><input id="autoToggle" type="checkbox"><i></i><b>OFF</b></label>
       </div>
-      <div class="tempo-box">
-        <div><span>TEMPO</span><strong id="tempoValue">100%</strong></div>
-        <input id="tempo" type="range" min="80" max="120" step="5" value="100">
-        <div class="scale"><span>80%</span><span>100%</span><span>120%</span></div>
-      </div>
-      <div class="volume-box">
-        <div><span>VOLUME</span><strong id="masterVolumeValue">80%</strong></div>
-        <input id="masterVolume" type="range" min="0" max="100" step="5" value="80">
-        <div class="scale"><span>0%</span><span>50%</span><span>100%</span></div>
-      </div>
-      <p id="loadState">曲データを読み込み中…</p>
-      <button id="start" disabled>START</button>
-      <p class="hint">最初のタップで音声を有効にします</p>
+      <div class="tempo-box"><div><span>TEMPO</span><strong id="tempoValue">100%</strong></div><input id="tempo" type="range" min="80" max="120" step="5" value="100"><div class="scale"><span>80%</span><span>100%</span><span>120%</span></div></div>
+      <div class="volume-box"><div><span>VOLUME</span><strong id="masterVolumeValue">80%</strong></div><input id="masterVolume" type="range" min="0" max="100" step="5" value="80"><div class="scale"><span>0%</span><span>50%</span><span>100%</span></div></div>
+      <p id="loadState">曲データを読み込み中…</p><button id="start" disabled>START</button><p class="hint">最初のタップで音声を有効にします</p>
     </section>
-
     <section id="game" class="screen game hidden">
       <header><div class="rank">D</div><div class="song-hud"><b>なないろ</b><small>BUMP OF CHICKEN</small></div><div class="score"><small>SCORE</small><strong id="score">000000</strong></div><button id="pause" aria-label="再生を停止">Ⅱ</button></header>
-      <div id="chartWrap">
-        <canvas id="chart"></canvas>
-        <div id="judgementFx"><div class="shock"></div><div class="particles"></div><div id="judge"></div></div>
-      </div>
-      <div id="kit" aria-label="ドラムセット">
-        <img class="kit-art" src="assets/drum-kit.webp" alt="" draggable="false">
-        <div class="dim-layer"><i data-shade="crash"></i><i data-shade="hh"></i><i data-shade="ride"></i><i data-shade="highTom"></i><i data-shade="midTom"></i><i data-shade="snare"></i><i data-shade="floorTom"></i></div>
-        <div id="hitLayer">
-          <button class="hit crash left" data-part="crash" data-key="W" aria-label="左上シンバル（W・E・R・Tキー）"><kbd>W</kbd></button>
-          <button class="hit crash right" data-part="crash" data-key="Y" aria-label="右上シンバル（Y・U・I・Oキー）"><kbd>Y</kbd></button>
-          <button class="hit hh" data-part="hh" data-key="A" aria-label="ハイハット（A・Sキー）"><kbd>A</kbd></button>
-          <button class="hit ride" data-part="ride" data-key="J" aria-label="ライド（J・Kキー）"><kbd>J</kbd></button>
-          <button class="hit high" data-part="highTom" data-key="D" aria-label="左タム（D・Fキー）"><kbd>D</kbd></button>
-          <button class="hit mid" data-part="midTom" data-key="G" aria-label="右タム（G・Hキー）"><kbd>G</kbd></button>
-          <button class="hit snare" data-part="snare" data-key="Z" aria-label="スネア（Z・X・Cキー）"><kbd>Z</kbd></button>
-          <button class="hit floor" data-part="floorTom" data-key="B" aria-label="右下タム（B・N・Mキー）"><kbd>B</kbd></button>
-        </div>
-      </div>
-      <div id="kickFx"></div>
-      <div id="pausePanel" class="hidden"><p>PAUSED</p><button id="resume">再開</button><button id="quit">曲を終了</button></div>
+      <div id="chartWrap"><canvas id="chart"></canvas><div id="judgementFx"><div class="shock"></div><div class="particles"></div><div id="judge"></div></div></div>
+      <div id="kit" aria-label="ドラムセット"><img class="kit-art" src="assets/drum-kit.webp" alt="" draggable="false"><div class="dim-layer"><i data-shade="crash"></i><i data-shade="hh"></i><i data-shade="ride"></i><i data-shade="highTom"></i><i data-shade="midTom"></i><i data-shade="snare"></i><i data-shade="floorTom"></i></div><div id="hitLayer"><button class="hit crash left" data-part="crash" data-key="W" aria-label="左上シンバル（W・E・R・Tキー）"><kbd>W</kbd></button><button class="hit crash right" data-part="crash" data-key="Y" aria-label="右上シンバル（Y・U・I・Oキー）"><kbd>Y</kbd></button><button class="hit hh" data-part="hh" data-key="A" aria-label="ハイハット（A・Sキー）"><kbd>A</kbd></button><button class="hit ride" data-part="ride" data-key="J" aria-label="ライド（J・Kキー）"><kbd>J</kbd></button><button class="hit high" data-part="highTom" data-key="D" aria-label="左タム（D・Fキー）"><kbd>D</kbd></button><button class="hit mid" data-part="midTom" data-key="G" aria-label="右タム（G・Hキー）"><kbd>G</kbd></button><button class="hit snare" data-part="snare" data-key="Z" aria-label="スネア（Z・X・Cキー）"><kbd>Z</kbd></button><button class="hit floor" data-part="floorTom" data-key="B" aria-label="右下タム（B・N・Mキー）"><kbd>B</kbd></button></div></div>
+      <div id="kickFx"></div><div id="pausePanel" class="hidden"><p>PAUSED</p><button id="resume">再開</button><button id="quit">曲を終了</button></div>
     </section>
-
-    <section id="result" class="screen result hidden">
-      <p class="eyebrow">RESULT</p><h2>なないろ</h2>
-      <strong id="finalScore">000000</strong>
-      <div class="grades"><p><span>PERFECT</span><b id="perfectCount">0</b></p><p><span>GREAT</span><b id="greatCount">0</b></p><p><span>GOOD</span><b id="goodCount">0</b></p><p><span>MISS</span><b id="missCount">0</b></p></div>
-      <p>BEST <b id="bestScore">000000</b></p>
-      <button id="retry">RETRY</button>
-    </section>
+    <section id="result" class="screen result hidden"><p class="eyebrow">RESULT</p><h2>なないろ</h2><strong id="finalScore">000000</strong><div class="grades"><p><span>PERFECT</span><b id="perfectCount">0</b></p><p><span>GREAT</span><b id="greatCount">0</b></p><p><span>GOOD</span><b id="goodCount">0</b></p><p><span>MISS</span><b id="missCount">0</b></p></div><p>BEST <b id="bestScore">000000</b></p><button id="retry">RETRY</button></section>
   </main>
-  <script src="song-manager.js?v=20260826-song3"></script>
+  <script src="song-manager.js?v=20260826-directmidi1"></script>
   <script src="chart-core.js?v=20260826-chartcore10"></script>
   <script src="manifest-fallback.js?v=20260825-manifest1"></script>
   <script src="app.js"></script>
