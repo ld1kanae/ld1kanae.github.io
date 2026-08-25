@@ -1,15 +1,16 @@
 "use strict";
 
 // Visual note-scroll speed only.
-// 42 s across the note highway keeps the user's requested ~10% of the original 4.2 s visual speed.
-// Hit timing is still determined solely by note.time and is not changed here.
+// 8.4 s across the highway is half the original visual speed (4.2 s crossing),
+// but avoids the severe note congestion caused by the previous 42 s setting.
+// Hit timing still uses note.time and is not changed here.
 draw=function(){
   const w=canvas.clientWidth,
         h=canvas.clientHeight,
         t=current(),
-        judgeX=w*.13,
+        judgeX=w*.11,
         laneH=h/4,
-        travel=42,
+        travel=8.4,
         labels=["CYM","HH / RIDE","SNARE / TOM","KICK · AUTO"],
         laneColors=["#ffd45a","#52dfcf","#8898ff","#a7b0bc"];
 
@@ -17,7 +18,6 @@ draw=function(){
   ctx.fillStyle="#081019";
   ctx.fillRect(0,0,w,h);
 
-  // High-contrast highway lanes, similar to conventional rhythm-game note tracks.
   for(let i=0;i<4;i++){
     ctx.fillStyle=i%2===0?"#0d1520":"#0a121c";
     ctx.fillRect(0,laneH*i,w,laneH);
@@ -41,12 +41,12 @@ draw=function(){
     ctx.font=`700 ${Math.max(8,laneH*.12)}px system-ui,sans-serif`;
     ctx.textAlign="left";
     ctx.textBaseline="top";
-    ctx.fillText(labels[i],6,laneH*i+7);
+    ctx.fillText(labels[i],6,laneH*i+6);
   }
 
-  // Fixed judgement frame. Notes are meant to be struck at the center of this frame.
-  ctx.fillStyle="#eef6ff12";
-  ctx.fillRect(judgeX-Math.max(5,w*.009),0,Math.max(10,w*.018),h);
+  // Stable Taiko-like hit zone near the left side of the horizontal highway.
+  ctx.fillStyle="#eef6ff10";
+  ctx.fillRect(judgeX-Math.max(5,w*.007),0,Math.max(10,w*.014),h);
   ctx.strokeStyle="#f3f8ff";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -68,7 +68,7 @@ draw=function(){
     ctx.textBaseline="middle";
 
     if(n.type==="snare"||n.type.includes("Tom")){
-      const r=Math.max(9,laneH*.16);
+      const r=Math.max(8,laneH*.15);
       ctx.beginPath();
       ctx.arc(x,y,r,0,Math.PI*2);
       ctx.fill();
@@ -77,23 +77,23 @@ draw=function(){
       ctx.lineWidth=1.5;
       ctx.stroke();
     }else if(n.type==="hhClosed"||n.type==="hhPedal"){
-      ctx.font=`900 ${Math.max(22,laneH*.40)}px system-ui,sans-serif`;
+      ctx.font=`900 ${Math.max(20,laneH*.38)}px system-ui,sans-serif`;
       ctx.fillText("│",x,y);
     }else if(n.type==="hhOpen"){
-      ctx.font=`900 ${Math.max(22,laneH*.40)}px system-ui,sans-serif`;
+      ctx.font=`900 ${Math.max(20,laneH*.38)}px system-ui,sans-serif`;
       ctx.fillText("||",x,y);
     }else if(n.type==="ride"){
-      ctx.font=`900 ${Math.max(20,laneH*.34)}px system-ui,sans-serif`;
+      ctx.font=`900 ${Math.max(19,laneH*.33)}px system-ui,sans-serif`;
       ctx.fillText("△",x,y);
     }else if(n.type==="crash"){
-      ctx.font=`900 ${Math.max(24,laneH*.42)}px system-ui,sans-serif`;
+      ctx.font=`900 ${Math.max(22,laneH*.40)}px system-ui,sans-serif`;
       ctx.fillText("×",x,y);
     }else if(n.type==="kick"){
-      ctx.globalAlpha=.30+.30*n.velocity/127;
-      ctx.font=`900 ${Math.max(24,laneH*.42)}px system-ui,sans-serif`;
+      ctx.globalAlpha=.26+.25*n.velocity/127;
+      ctx.font=`900 ${Math.max(21,laneH*.38)}px system-ui,sans-serif`;
       ctx.fillText("┃",x,y);
     }else{
-      ctx.font=`900 ${Math.max(20,laneH*.34)}px system-ui,sans-serif`;
+      ctx.font=`900 ${Math.max(19,laneH*.33)}px system-ui,sans-serif`;
       ctx.fillText("◇",x,y);
     }
   }
