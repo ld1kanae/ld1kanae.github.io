@@ -23,12 +23,7 @@
 .result h2{margin:0 0 2px;font-size:clamp(18px,3vw,30px);font-weight:800;letter-spacing:.08em}
 .result-song-sub{margin:0 0 clamp(8px,1.8vh,16px);font-size:10px;color:#77879a;letter-spacing:.16em}
 
-.result-score-label{
-  margin:0;
-  font:800 10px/1 system-ui,sans-serif;
-  letter-spacing:.42em;
-  color:#8d9caf;
-}
+.result-score-label{margin:0;font:800 10px/1 system-ui,sans-serif;letter-spacing:.42em;color:#8d9caf}
 #finalScore{
   display:block;
   margin:4px 0 12px;
@@ -49,12 +44,7 @@
   transform-origin:center;
 }
 
-.result-summary{
-  display:flex;
-  justify-content:center;
-  gap:clamp(12px,3vw,34px);
-  margin:0 0 14px;
-}
+.result-summary{display:flex;justify-content:center;gap:clamp(12px,3vw,34px);margin:0 0 14px}
 .result-summary p{margin:0;text-align:center}
 .result-summary span{display:block;font:700 8px/1.2 system-ui,sans-serif;letter-spacing:.12em;color:#7e8b9c}
 .result-summary b{display:block;margin-top:3px;font-size:clamp(14px,2.3vw,22px);color:#eaf2fb}
@@ -71,57 +61,51 @@
   backdrop-filter:blur(8px);
   overflow:hidden;
 }
-.ranking-title{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  margin-bottom:7px;
-}
+.ranking-title{position:relative;display:flex;align-items:end;justify-content:space-between;margin-bottom:7px}
 .ranking-title h3{margin:0;font-size:12px;letter-spacing:.18em}
 .ranking-title span{font-size:8px;color:#6f7d8e;letter-spacing:.12em}
-.ranking-head,.ranking-row{
-  display:grid;
-  grid-template-columns:52px minmax(100px,1fr) 110px;
-  align-items:center;
-  min-height:27px;
-  padding:0 8px;
-}
+.ranking-head,.ranking-row{display:grid;grid-template-columns:52px minmax(100px,1fr) 110px;align-items:center;min-height:27px;padding:0 8px}
 .ranking-head{font-size:8px;color:#697788;letter-spacing:.12em;border-bottom:1px solid rgba(255,255,255,.08)}
 .ranking-list{max-height:calc(42vh - 58px);overflow:auto;scrollbar-width:thin}
 .ranking-row{font-size:11px;border-bottom:1px solid rgba(255,255,255,.045)}
 .ranking-row:last-child{border-bottom:0}
 .ranking-row .rank-no{font-weight:900;color:#92a3b8}
+.rank-score-cell{display:flex;align-items:center;gap:7px;min-width:0}
 .ranking-row .rank-score{font-weight:900;letter-spacing:.08em;color:#eff7ff}
 .ranking-row .rank-date{text-align:right;color:#8492a4;font-variant-numeric:tabular-nums}
+.hidden-mark{display:inline-grid;place-items:center;width:18px;height:18px;flex:0 0 auto;color:#aab6c4;opacity:.9}
+.hidden-mark svg{width:100%;height:100%;overflow:visible}
+.hidden-mark path,.hidden-mark circle{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ranking-row.current{background:linear-gradient(90deg,rgba(82,223,207,.10),rgba(173,130,255,.08));box-shadow:inset 2px 0 #7ee8ff}
 .ranking-row.current .rank-score{color:#fff;filter:drop-shadow(0 0 5px rgba(116,232,255,.45))}
 .ranking-empty{padding:15px 8px;text-align:center;font-size:10px;color:#657386}
 
-#retry{
-  margin-top:14px;
-  padding:11px 48px;
-  font-size:12px;
-}
+#retry{margin-top:14px;padding:11px 48px;font-size:12px}
 .result.autoplay .ranking-panel{display:none}
 .result.autoplay .result-summary{display:none}
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .result{padding:8px 18px 8px 24px;justify-content:flex-start}
-  .result .eyebrow{font-size:7px;margin-top:2px}
-  .result h2{font-size:14px}
-  .result-song-sub{font-size:7px;margin-bottom:2px}
-  .result-score-label{font-size:7px}
-  #finalScore{font-size:clamp(42px,8.5vw,72px);margin:2px 0 4px}
-  .result-summary{gap:18px;margin-bottom:5px}
-  .result-summary span{font-size:6px}
-  .result-summary b{font-size:12px}
-  .ranking-panel{width:min(610px,88%);max-height:44%;padding:5px 9px 7px;border-radius:9px}
-  .ranking-title{margin-bottom:3px}
-  .ranking-title h3{font-size:9px}
-  .ranking-title span{font-size:6px}
-  .ranking-head,.ranking-row{grid-template-columns:40px minmax(80px,1fr) 82px;min-height:20px;padding:0 6px}
-  .ranking-head{font-size:6px}
-  .ranking-list{max-height:calc(44vh - 44px)}
-  .ranking-row{font-size:8px}
-  #retry{margin-top:6px;padding:7px 35px;font-size:9px}
+  .result{padding:8px 24px 9px 34px;justify-content:flex-start}
+  .result .eyebrow{font-size:12px;margin-top:2px;margin-bottom:2px}
+  .result h2{font-size:24px;line-height:1}
+  .result-song-sub{font-size:12px;margin:2px 0 4px}
+  .result-score-label{font-size:12px;letter-spacing:.34em}
+  /* About 1.3x the previous mobile score size. */
+  #finalScore{font-size:clamp(58px,10.5vw,92px);margin:2px 0 6px}
+  .result-summary{gap:28px;margin-bottom:7px}
+  .result-summary span{font-size:10px}
+  .result-summary b{font-size:21px;margin-top:2px}
+
+  .ranking-panel{width:min(720px,94%);max-height:50%;padding:8px 14px 10px;border-radius:12px}
+  .ranking-title{display:block;position:relative;margin-bottom:6px;min-height:20px}
+  .ranking-title h3{width:100%;text-align:center;font-size:18px;letter-spacing:.16em;line-height:20px}
+  .ranking-title span{position:absolute;right:0;top:4px;font-size:10px}
+  .ranking-head,.ranking-row{grid-template-columns:56px minmax(120px,1fr) 116px;min-height:32px;padding:0 9px}
+  .ranking-head{font-size:11px}
+  .ranking-list{max-height:calc(50vh - 62px)}
+  .ranking-row{font-size:14px}
+  .hidden-mark{width:22px;height:22px}
+  .rank-score-cell{gap:9px}
+  .ranking-empty{font-size:14px;padding:18px 8px}
+  #retry{margin-top:7px;padding:9px 42px;font-size:12px}
 }
