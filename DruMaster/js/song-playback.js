@@ -18,9 +18,8 @@
     return source;
   }
 
-  /* The stems and gameplay clock share one AudioContext start timestamp.
-     Ray alone starts all three backing buffers 30 ms into the source while
-     leaving MIDI/game time untouched. */
+  /* All stems share one AudioContext timestamp. Per-song source offsets live in
+     song-manager.js so timing adjustments do not require editing playback code. */
   startGame=async function(){
     if(loading)return;
     loading=true;
@@ -45,7 +44,8 @@
       $("#score").textContent=autoplay?"AUTO":"000000";
 
       const startAt=ac.currentTime+.055;
-      const stemOffset=song.id==="ray" ? 0.030 : 0;
+      const configuredOffset=Number(song.playback?.stemOffsetSec);
+      const stemOffset=Number.isFinite(configuredOffset)?Math.max(0,configuredOffset):0;
       playAt(buffers.base,trackGain("base",.95),startAt,stemOffset);
       if($("#vocalToggle").checked)playAt(buffers.vocals,trackGain("vocals",.95),startAt,stemOffset);
       if($("#guideToggle").checked)playAt(buffers.drums,trackGain("drums",.70),startAt,stemOffset);
