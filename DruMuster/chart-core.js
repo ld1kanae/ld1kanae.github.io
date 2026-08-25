@@ -86,7 +86,8 @@ globalThis.DruMusterChart=(()=>{
           lastVisibleBeat=beatNow+(w-judgeX)/PIXELS_PER_QUARTER;
 
     ctx.save();
-    ctx.strokeStyle="rgba(255,255,255,.16)";
+    // Deliberately very faint: structural guide only, not another note lane.
+    ctx.strokeStyle="rgba(255,255,255,.08)";
     ctx.lineWidth=1;
     for(let i=0;i<signatures.length;i++){
       const sig=signatures[i],
@@ -124,7 +125,8 @@ globalThis.DruMusterChart=(()=>{
       ctx.fillStyle=i%2===0?"#0d1520":"#0a121c";
       ctx.fillRect(0,laneH*i,w,laneH);
       if(i>0){
-        ctx.strokeStyle="#2c3948";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(w,laneH*i+.5);ctx.stroke();
+        // Stronger than before so lane boundaries stay legible under full-height notes.
+        ctx.strokeStyle="#53677d";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(w,laneH*i+.5);ctx.stroke();
       }
       ctx.fillStyle="#8b97a6";
       ctx.font=`700 ${Math.max(9,laneH*.13)}px system-ui,sans-serif`;
@@ -132,10 +134,9 @@ globalThis.DruMusterChart=(()=>{
     }
 
     ctx.fillStyle="#090e15";ctx.fillRect(0,mainH,w,kickH);
-    ctx.strokeStyle="#313a46";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
+    ctx.strokeStyle="#5b6d82";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
     ctx.fillStyle="#687483";ctx.font=`700 ${Math.max(8,kickH*.43)}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
 
-    // Thin, low-contrast bar lines run straight through every lane.
     drawMeasureLines(ctx,w,h,judgeX,beatNow,timing);
 
     // One clean fixed judgement line; no circular lane markers.
@@ -148,7 +149,6 @@ globalThis.DruMusterChart=(()=>{
       if(x<judgeX-48||x>w+48)continue;
       const group=groupMap[n.type],
             lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
-            y=lane<3?laneH*(lane+.5):mainH+kickH/2,
             alpha=.48+.52*n.velocity/127,
             color=n.type==="snare"?"#38a9ff":n.type.includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc";
 
@@ -168,7 +168,6 @@ globalThis.DruMusterChart=(()=>{
           ctx.fillRect(x-NOTE_BAR_WIDTH/2,barTop,NOTE_BAR_WIDTH,barH);
         }
       }else{
-        // Keep the existing kick-strip bar geometry unchanged.
         ctx.fillRect(x-NOTE_BAR_WIDTH/2,mainH+2,NOTE_BAR_WIDTH,kickH-4);
       }
     }
