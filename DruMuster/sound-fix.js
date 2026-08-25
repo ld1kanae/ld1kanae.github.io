@@ -1,14 +1,14 @@
 "use strict";
 
-// Use the exact MP3 stems supplied for Nanairo instead of the converted WAV chunk set.
-const DIRECT_STEMS={
+const FALLBACK_STEMS={
   base:{path:"songs/nanairo/offvocal.mp3",bytes:6314638,sha256:"4dd43973168efdc730112bec742e3dced51024080d222dbd43f7065ef713a8b1"},
   vocals:{path:"songs/nanairo/vocals.mp3",bytes:6314638,sha256:"73e6ba324ffa608fb74b7a33206c9189e2b885a43c48779bd4b0094729e75c2f"},
   drums:{path:"songs/nanairo/drums.mp3",bytes:6314638,sha256:"6d50cf5fe21ab4fb73588d3cda1c8bb8ace2ae5234db1eaaca571374ff8e9eeb"}
 };
+function stemSpec(name){return globalThis.DruMasterSongs?.current?.stems?.[name]||FALLBACK_STEMS[name]}
 
-// Audio files are immutable assets at stable URLs. Prefer an existing browser
-// HTTP cache entry, while retaining the existing byte/hash validation below.
+/* Audio assets use stable URLs. Prefer an existing browser cache entry while
+   retaining exact byte/hash validation. */
 fetchJoined=async function(spec,label){
   const paths=spec.paths||Array.from({length:spec.parts},(_,i)=>`${spec.pathPrefix}${String(i).padStart(spec.digits||3,"0")}`),parts=[];
   for(let i=0;i<paths.length;i+=8){
@@ -28,7 +28,7 @@ fetchJoined=async function(spec,label){
 
 loadStem=async function(name,label){
   if(buffers[name])return;
-  const spec=DIRECT_STEMS[name];
+  const spec=stemSpec(name);
   if(!spec)throw Error(`${label}音源の設定がありません`);
   $("#loadState").textContent=`${label}音源を読み込み中…`;
   const r=await fetch(spec.path,{cache:"force-cache"});
@@ -63,8 +63,6 @@ function readWavFormat(ab){
   throw Error("ゲーム内ドラム音源のfmtチャンクが見つかりません");
 }
 
-// Validate the encoded WAV's own format before decodeAudioData().
-// decodeAudioData() is allowed to resample to the device AudioContext rate (commonly 48 kHz on Android).
 loadDrumSource=async function(manifest){
   $("#loadState").textContent="ゲーム内ドラム音源を読み込み中…";
   const [wav,midi]=await Promise.all([
@@ -93,8 +91,6 @@ loadDrumSource=async function(manifest){
   if(missing.length)throw Error(`ゲーム内ドラム音源に必要な基準音がありません（MIDI ${missing.join(", ")}）`);
 };
 
-// One canonical recording per drum articulation. Chart-note aliases only affect notation;
-// velocity changes loudness, never which recorded sample is selected.
 playDrum=function(_chartNote,type,v=.75){
   if(!ac||!drumBuffer)return;
   if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();
