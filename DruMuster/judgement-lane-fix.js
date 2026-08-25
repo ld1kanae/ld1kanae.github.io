@@ -11,26 +11,10 @@
   function chartGeometry(){
     const w=canvas.clientWidth,h=canvas.clientHeight,
           judgeX=w*.11,
-          glowW=DruMusterChart.judgementZoneWidth?DruMusterChart.judgementZoneWidth(w):Math.max(10,w*.014),
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
           laneH=mainH/3;
-    return {w,h,judgeX,glowW,laneH};
-  }
-
-  function activeTiming(){
-    if(typeof beatTiming!=="undefined"&&beatTiming?.division)return beatTiming;
-    if(typeof timing!=="undefined"&&timing?.division)return timing;
-    return null;
-  }
-
-  function noteXAt(note,t){
-    const tm=activeTiming();
-    if(!tm||!note||typeof note.tick!=="number")return NaN;
-    const {judgeX}=chartGeometry(),
-          beatNow=DruMusterChart.secondsToBeat(t,tm),
-          division=tm.division||480;
-    return judgeX+(note.tick/division-beatNow)*DruMusterChart.PIXELS_PER_QUARTER;
+    return {w,h,judgeX,laneH};
   }
 
   function laneForPart(part){
@@ -44,11 +28,11 @@
     return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:-1;
   }
 
-  function nearestNoteForPart(part,t,maxDelta=.16){
+  function nearestNoteForPart(part,t,maxDelta=.16,includeHit=false){
     if(typeof notes==="undefined"||typeof PART==="undefined")return null;
     let best=null,bestDelta=maxDelta+.000001;
     for(const n of notes){
-      if(n.hit||n.type==="kick"||PART[n.type]!==part)continue;
+      if((!includeHit&&n.hit)||n.type==="kick"||PART[n.type]!==part)continue;
       const d=Math.abs(n.time-t);
       if(d<bestDelta){best=n;bestDelta=d}
       if(n.time>t+maxDelta)break;
@@ -56,19 +40,38 @@
     return best;
   }
 
+  function noteVisual(note){
+    const group=typeof GROUP!=="undefined"?GROUP[note.type]:null;
+    if(DruMusterChart.noteVisual)return DruMusterChart.noteVisual(note.type,group);
+    const isOpen=note.type==="hhOpen";
+    return {
+      kind:isOpen?"double":"single",
+      barWidth:isOpen?3:4,
+      gap:isOpen?1:0,
+      totalWidth:isOpen?7:4,
+      color:note.type==="snare"?"#38a9ff":String(note.type||"").includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc"
+    };
+  }
+
   function placeFx(lane,node){
     const {laneH}=chartGeometry();
     node.style.top=`${laneH*(lane+.5)}px`;
   }
 
-  function placeGlow(lane,node,x){
-    const {laneH,glowW}=chartGeometry();
-    // Identical width to the chart's judgement zone. Explicit pixel edges avoid
-    // the asymmetric drift visible in the previous screenshot.
-    node.style.left=`${x-glowW/2}px`;
+  function placeGlow(lane,node,note){
+    const {judgeX,laneH}=chartGeometry(),visual=noteVisual(note);
+    // Hit feedback is centered on the goal line and uses the exact same bar/double-bar
+    // dimensions and timbre color as the chart note itself. No judgement-zone rectangle.
+    node.style.left=`${judgeX-visual.totalWidth/2}px`;
     node.style.top=`${lane*laneH}px`;
-    node.style.width=`${glowW}px`;
+    node.style.width=`${visual.totalWidth}px`;
     node.style.height=`${laneH}px`;
+    node.style.setProperty("--note-total-w",`${visual.totalWidth}px`);
+    node.style.setProperty("--note-bar-w",`${visual.barWidth}px`);
+    node.style.setProperty("--note-gap",`${visual.gap}px`);
+    node.style.setProperty("--note-color",visual.color);
+    node.dataset.shape=visual.kind;
+    node.dataset.type=note.type;
   }
 
   function syncGeometry(){
@@ -98,12 +101,12 @@
     return glow;
   }
 
-  function flashNote(note,t){
+  function flashNote(note){
     if(!note||note.type==="kick")return;
-    const lane=laneForType(note.type),x=noteXAt(note,t);
-    if(lane<0||!Number.isFinite(x))return;
+    const lane=laneForType(note.type);
+    if(lane<0)return;
     const glow=ensureGlow(lane);
-    placeGlow(lane,glow,x);
+    placeGlow(lane,glow,note);
     glow.classList.remove("flash");
     void glow.offsetWidth;
     glow.classList.add("flash");
@@ -121,21 +124,21 @@
     fx.classList.add("play");
   }
 
-  // Surface flash still works for autoplay and pointer taps. When no exact note
-  // is supplied, use the nearest still-unhit chart note at the current time.
+  // Autoplay reaches flashPart after marking its note hit, so include just-hit notes
+  // and choose the closest one in a narrow timing window.
   if(typeof flashPart==="function"){
     const originalFlashPart=flashPart;
     flashPart=function(part,el){
       if(!suppressAutoGlow&&part!=="kick"&&typeof current==="function"){
-        const t=current(),note=nearestNoteForPart(part,t,.16);
-        if(note)flashNote(note,t);
+        const note=nearestNoteForPart(part,current(),.05,true);
+        if(note)flashNote(note);
       }
       return originalFlashPart(part,el);
     };
   }
 
-  // Production manual input: resolve the exact candidate before input marks it hit,
-  // then flash at that note's current X rather than at the goal line.
+  // Production manual input: resolve the exact candidate before input marks it hit.
+  // The note-shaped flash always occurs at the goal line rather than as a rectangular zone.
   if(typeof input==="function"&&typeof showJudge==="function"){
     let activeLane=-1;
     const originalInput=input;
@@ -143,7 +146,7 @@
       const t=typeof current==="function"?current():0,
             note=nearestNoteForPart(part,t,.16);
       activeLane=note?laneForType(note.type):laneForPart(part);
-      if(note)flashNote(note,t);
+      if(note)flashNote(note);
       suppressAutoGlow=true;
       try{return originalInput(part,visualEl)}
       finally{suppressAutoGlow=false}
@@ -151,7 +154,7 @@
     showJudge=function(label){emit(label,activeLane)};
   }
 
-  // Preview AUTO knows the exact note object, so never infer from neighbors.
+  // Preview AUTO has the exact note object, so its goal-line flash always uses that note's shape.
   if(typeof showPreviewJudge==="function"&&typeof updateHits==="function"){
     showPreviewJudge=function(label="PERFECT",lane=1){emit(label,lane)};
     updateHits=function(t){
@@ -159,7 +162,7 @@
       while(hitCursor<notes.length&&notes[hitCursor].time<=t){
         const n=notes[hitCursor++];
         if(n.time>=t-.08){
-          if(n.type!=="kick")flashNote(n,t);
+          if(n.type!=="kick")flashNote(n);
           suppressAutoGlow=true;
           try{flashPart(PART[n.type])}finally{suppressAutoGlow=false}
           if(n.type!=="kick"){
