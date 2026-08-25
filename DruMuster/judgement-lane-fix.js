@@ -6,6 +6,7 @@
 
   const laneTop=[14.6667,44,73.3333];
   const fxByLane=[];
+  const glowByLane=[];
 
   function ensureFx(lane){
     if(fxByLane[lane])return fxByLane[lane];
@@ -20,6 +21,17 @@
     return fxByLane[lane];
   }
 
+  function ensureGlow(lane){
+    if(glowByLane[lane])return glowByLane[lane];
+    const glow=document.createElement("div");
+    glow.className="lane-hit-glow";
+    glow.dataset.lane=String(lane);
+    glow.style.setProperty("--lane-top",laneTop[lane]+"%");
+    wrap.appendChild(glow);
+    glowByLane[lane]=glow;
+    return glow;
+  }
+
   function laneForPart(part){
     if(part==="crash")return 0;
     if(part==="hh"||part==="ride"||part==="special")return 1;
@@ -31,6 +43,14 @@
     return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:-1;
   }
 
+  function flashLane(lane){
+    if(lane<0||lane>2)return;
+    const glow=ensureGlow(lane);
+    glow.classList.remove("flash");
+    void glow.offsetWidth;
+    glow.classList.add("flash");
+  }
+
   function emit(label,lane){
     const grade=String(label||"").toLowerCase();
     if(lane<0||lane>2||grade==="miss"||grade==="auto")return;
@@ -40,6 +60,16 @@
     fx.classList.remove("play");
     void fx.offsetWidth;
     fx.classList.add("play");
+  }
+
+  // Any visible drum strike flashes the corresponding judgement-line segment.
+  // This covers manual hits, production autoplay, preview AUTO and preview taps.
+  if(typeof flashPart==="function"){
+    const originalFlashPart=flashPart;
+    flashPart=function(part,el){
+      flashLane(laneForPart(part));
+      return originalFlashPart(part,el);
+    };
   }
 
   // Production: remember which playable drum part triggered input,
