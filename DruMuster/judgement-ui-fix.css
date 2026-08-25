@@ -13,12 +13,13 @@
   align-items:center;
   justify-content:center;
 }
-#judgementFx.play{animation:judgeNeon .22s ease-out}
+#judgementFx.play{animation:judgeContainer .34s linear}
 #judgementFx .shock,
 #judgementFx .particles{display:none!important}
 
 /* The judgement is the luminous lettering itself: no ring, plate, border or pill. */
 #judge{
+  --judge-x:1.04;
   position:relative;
   isolation:isolate;
   left:auto;
@@ -44,7 +45,7 @@
   background-repeat:no-repeat;
   text-shadow:none!important;
   filter:drop-shadow(0 0 1px rgba(255,255,255,.95)) drop-shadow(0 0 2.5px rgba(102,218,255,.48)) drop-shadow(0 0 5px rgba(189,112,255,.24));
-  transform:scaleX(1.04);
+  transform:scaleX(var(--judge-x));
   transform-origin:center;
 }
 
@@ -53,23 +54,62 @@
   content:"";
   position:absolute;
   z-index:-1;
-  left:-5px;
-  right:-5px;
-  top:-3px;
-  bottom:-3px;
+  left:-6px;
+  right:-6px;
+  top:-4px;
+  bottom:-4px;
   border:0;
   border-radius:0;
-  background:radial-gradient(ellipse at center,rgba(130,218,255,.18) 0%,rgba(181,113,255,.10) 42%,transparent 74%);
+  background:radial-gradient(ellipse at center,rgba(145,227,255,.26) 0%,rgba(205,126,255,.15) 36%,transparent 74%);
   filter:blur(5px);
   opacity:.8;
   pointer-events:none;
 }
 
-@keyframes judgeNeon{
-  0%{opacity:0;transform:translateX(-50%) translateY(2px) scale(.93)}
-  16%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.02)}
-  46%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
-  100%{opacity:0;transform:translateX(-50%) translateY(-2px) scale(1)}
+/* Tiny flare accent inspired by the supplied luminous-logo reference. */
+#judge::after{
+  content:"";
+  position:absolute;
+  left:52%;
+  top:48%;
+  width:2px;
+  height:2px;
+  border-radius:50%;
+  background:#fff;
+  opacity:0;
+  box-shadow:0 0 3px 1px #fff,0 0 6px 2px #8feaff;
+  pointer-events:none;
+}
+
+/* Explicit appearance: snap in small, overshoot once, settle, then fade. */
+#judgementFx.play #judge{animation:judgeTextArrival .34s cubic-bezier(.16,.84,.24,1)}
+#judgementFx.play #judge::before{animation:judgeBloomArrival .34s ease-out}
+#judgementFx.play #judge::after{animation:judgeFlare .34s ease-out}
+
+@keyframes judgeContainer{
+  0%{opacity:0}
+  8%{opacity:1}
+  68%{opacity:1}
+  100%{opacity:0}
+}
+@keyframes judgeTextArrival{
+  0%{opacity:0;transform:scaleX(var(--judge-x)) scale(.48) translateY(2px)}
+  13%{opacity:1;transform:scaleX(var(--judge-x)) scale(1.16) translateY(0)}
+  28%{transform:scaleX(var(--judge-x)) scale(.97)}
+  42%{transform:scaleX(var(--judge-x)) scale(1)}
+  100%{opacity:1;transform:scaleX(var(--judge-x)) scale(1) translateY(-1px)}
+}
+@keyframes judgeBloomArrival{
+  0%{opacity:0;transform:scale(.35)}
+  12%{opacity:1;transform:scale(1.35)}
+  36%{opacity:.72;transform:scale(1)}
+  100%{opacity:.18;transform:scale(.94)}
+}
+@keyframes judgeFlare{
+  0%,8%{opacity:0;transform:scale(.2)}
+  14%{opacity:1;transform:scale(2.2)}
+  27%{opacity:.35;transform:scale(1)}
+  42%,100%{opacity:0;transform:scale(.6)}
 }
 
 /* Iridescent chrome-neon palette based on the supplied FLUOR reference. */
@@ -100,17 +140,16 @@
     height:auto;
   }
   #judge{
+    --judge-x:1.03;
     font-size:8px;
     letter-spacing:.055em;
     -webkit-text-stroke:.22px rgba(255,255,255,.78);
-    transform:scaleX(1.03);
   }
   #judge::before{
     left:-4px;
     right:-4px;
-    top:-2px;
-    bottom:-2px;
+    top:-3px;
+    bottom:-3px;
     filter:blur(4px);
-    opacity:.72;
   }
 }
