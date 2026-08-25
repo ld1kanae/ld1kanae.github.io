@@ -1,0 +1,107 @@
+/* Mobile gameplay layout: compact HUD/chart and keep the whole drum kit inside the fixed landscape stage. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game header{
+    height:44px;
+    padding:4px 10px;
+    gap:6px;
+  }
+  .rank{
+    width:30px;
+    height:30px;
+    font-size:16px;
+    margin:0 10px 0 4px;
+    border-width:1px;
+  }
+  .song-hud{
+    min-width:0;
+    line-height:1.05;
+  }
+  .song-hud b{
+    font-size:14px;
+    white-space:nowrap;
+  }
+  .song-hud small{
+    font-size:8px;
+    white-space:nowrap;
+  }
+  .score{
+    padding-right:6px;
+    min-width:72px;
+  }
+  .score small{font-size:8px}
+  .score strong{font-size:16px}
+  .game header #pause{
+    width:38px;
+    height:32px;
+    font-size:16px;
+    border-radius:7px;
+    box-shadow:0 0 0 2px #ffffff22;
+  }
+
+  #chartWrap{
+    height:25%;
+    min-height:0;
+    box-shadow:0 4px 12px #0008;
+  }
+  #judgementFx{
+    width:min(28%,260px);
+    height:82%;
+  }
+  #judge{font-size:clamp(18px,3vw,34px)}
+
+  #kit{
+    top:calc(25% + 44px);
+    background:radial-gradient(ellipse at 50% 42%,#242a31,#080b10 78%);
+  }
+  .kit-art{
+    width:100%;
+    height:100%;
+    left:0;
+    top:0;
+    object-fit:contain;
+    object-position:center center;
+  }
+
+  /* The source drum-kit image is 1280x854. Keep interaction geometry on the same contained image box. */
+  #hitLayer,.dim-layer{
+    inset:auto;
+    top:0;
+    bottom:0;
+    left:50%;
+    width:auto;
+    height:100%;
+    aspect-ratio:1280 / 854;
+    transform:translateX(-50%);
+  }
+
+  #hitLayer .crash{width:25%;height:34%;top:2%}
+  #hitLayer .crash.left{left:3%}
+  #hitLayer .crash.right{right:3%}
+  #hitLayer .hh{width:24%;height:38%;left:3%;top:42%}
+  #hitLayer .ride{width:26%;height:42%;right:3%;top:38%}
+  #hitLayer .high{width:23%;height:37%;left:27%;top:18%}
+  #hitLayer .mid{width:23%;height:37%;right:27%;top:18%}
+  #hitLayer .snare{width:28%;height:42%;left:20%;bottom:3%}
+  #hitLayer .floor{width:30%;height:44%;right:18%;bottom:1%}
+  #hitLayer .special{width:10%;height:16%;left:45%;top:50%}
+
+  .dim-layer [data-shade=crash]{width:100%;height:34%;left:0;top:2%}
+  .dim-layer [data-shade=hh]{width:24%;height:38%;left:3%;top:42%}
+  .dim-layer [data-shade=ride]{width:26%;height:42%;right:3%;top:38%}
+  .dim-layer [data-shade=highTom]{width:23%;height:37%;left:27%;top:18%}
+  .dim-layer [data-shade=midTom]{width:23%;height:37%;right:27%;top:18%}
+  .dim-layer [data-shade=snare]{width:28%;height:42%;left:20%;bottom:3%}
+  .dim-layer [data-shade=floorTom]{width:30%;height:44%;right:18%;bottom:1%}
+
+  #hitLayer kbd{
+    min-width:22px;
+    height:22px;
+    padding:0 5px;
+    font-size:11px;
+  }
+  #hitLayer .special span{
+    width:28px;
+    height:20px;
+  }
+  #kickFx{height:28%}
+}
