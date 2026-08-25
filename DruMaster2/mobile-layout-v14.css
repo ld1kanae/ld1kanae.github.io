@@ -9,25 +9,25 @@
   .gear{width:30px;height:30px;font-size:14px}
   .stage{position:relative;min-height:0;overflow:hidden}
 
-  /* The chart and the drum kit are vertically separated. */
-  .lane-field{left:0;right:0;top:0;height:52%;bottom:auto;z-index:8;overflow:hidden}
+  /* Rhythm chart is intentionally compact: the drum controls are primary. */
+  .lane-field{left:0;right:0;top:0;height:34%;bottom:auto;z-index:8;overflow:hidden}
   .judge-line{left:15%}
   .judge{left:15%;top:50%;font-size:clamp(17px,3.2vh,28px)}
 
-  /* Drum kit starts below the chart; no visual overlap with the lanes. */
-  .kit{position:absolute;left:0;right:0;top:52%;bottom:0;height:auto;z-index:4;overflow:hidden}
-  .kit svg{position:absolute;left:50%;bottom:-2%;top:auto;width:96%;height:100%;max-width:none;transform:translateX(-50%);overflow:hidden}
+  /* Drum kit owns roughly two thirds of the playable area. */
+  .kit{position:absolute;left:0;right:0;top:34%;bottom:0;height:auto;z-index:4;overflow:hidden}
+  .kit svg{position:absolute;left:50%;bottom:-1%;top:auto;width:100%;height:100%;max-width:none;transform:translateX(-50%);overflow:hidden}
 
   .note{width:17px;height:17px}.note:after{inset:4px}
   .keys{display:none}
   .status{right:8px;bottom:5px;font-size:7px;z-index:10}
   .controls{padding:3px 10px}.controls button{height:32px;min-width:42px}.controls .primary{min-width:104px}
 
-  /* Touch regions are broad and invisible, all inside the lower drum area. */
-  .crash-zone{left:0;top:0;width:31%;height:48%}
-  .hh-zone{left:13%;top:8%;width:24%;height:52%}
-  .open-zone{left:0;top:10%;width:22%;height:54%}
-  .snare-zone{left:21%;top:36%;width:31%;height:60%}
+  /* Large invisible hit areas fill the drum region. */
+  .crash-zone{left:0;top:0;width:34%;height:45%}
+  .hh-zone{left:12%;top:5%;width:27%;height:48%}
+  .open-zone{left:0;top:6%;width:25%;height:50%}
+  .snare-zone{left:19%;top:33%;width:36%;height:64%}
 
   .settings-card{grid-template-rows:44px minmax(0,1fr) 42px}.settings-scroll{padding:4px 12px 10px}.toggle{min-height:42px}.range{padding:8px 0}.assets{margin-top:8px}.assets p{display:none}
 }
@@ -42,8 +42,8 @@
 @media (pointer:coarse) and (orientation:landscape) and (max-height:430px){
   .app{grid-template-rows:38px minmax(0,1fr) 36px}
   .topbar{padding:0 8px}.brand{font-size:12px}.brand span{font-size:15px}.song b{font-size:10px}.gear{width:27px;height:27px}
-  .lane-field{height:50%}
-  .kit{top:50%}
-  .kit svg{width:94%}
+  .lane-field{height:32%}
+  .kit{top:32%}
+  .kit svg{width:100%}
   .controls button{height:28px}.status{display:none}
 }
