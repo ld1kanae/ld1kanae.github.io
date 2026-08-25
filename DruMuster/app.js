@@ -1,5 +1,5 @@
 "use strict";
-const ASSET={midi:"songs/nanairo/chart.mid",manifest:"songs/nanairo/audio-manifest.json",samples:"assets/drums/samples.json"};
+const ASSET={midi:"songs/nanairo/chart.mid",manifest:"songs/nanairo/audio-manifest-v2.json",drums:"assets/drumsound-manifest.json"};
 const MIDI_MAP={35:"kick",36:"kick",38:"snare",40:"snare",41:"floorTom",43:"floorTom",45:"midTom",47:"midTom",48:"highTom",50:"highTom",42:"hhClosed",44:"hhPedal",46:"hhOpen",49:"crash",52:"crash",55:"crash",57:"crash",51:"ride",53:"ride",59:"ride"};
 const GROUP={kick:"kick",snare:"drums",floorTom:"drums",midTom:"drums",highTom:"drums",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"hh",crash:"cymbal",special:"hh"};
 const PART={kick:"kick",snare:"snare",floorTom:"floorTom",midTom:"midTom",highTom:"highTom",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"ride",crash:"crash",special:"special"};
@@ -10,7 +10,7 @@ const KEY_PART={KeyQ:"crash",KeyW:"highTom",KeyE:"midTom",KeyP:"crash",KeyA:"hh"
 // The guide-drum backing stem keeps its own independent volume.
 const DRUM_GAIN={kick:1.4,crash:1.2};
 const setup=document.querySelector("#setup"),game=document.querySelector("#game"),result=document.querySelector("#result"),canvas=document.querySelector("#chart"),ctx=canvas.getContext("2d");
-const $=s=>document.querySelector(s);let ac,audioManifest,buffers={},sampleBuffers={},openHatVoices=[],notes=[],duration=0,startedAt=0,rate=1,running=false,paused=false,autoplay=false,loading=false,raf=0,nextKick=0,nextAuto=0,missCursor=0,score=0,maxScore=1,counts={perfect:0,great:0,good:0,miss:0};
+const $=s=>document.querySelector(s);let ac,masterBus,safetyLimiter,audioManifest,buffers={},drumBuffer=null,drumRegions={},drumSourceVelocity=100,openHatVoices=[],notes=[],duration=0,startedAt=0,rate=1,running=false,paused=false,autoplay=false,loading=false,raf=0,nextKick=0,nextAuto=0,missCursor=0,score=0,maxScore=1,counts={perfect:0,great:0,good:0,miss:0};
 function parseMidi(ab){
   const d=new DataView(ab);let p=0;
   const str=n=>{let s="";while(n--)s+=String.fromCharCode(d.getUint8(p++));return s};
@@ -44,18 +44,58 @@ function parseMidi(ab){
   const tickToSec=tick=>{let sec=0,last=0,us=500000;for(const x of tempos){if(x.tick>=tick)break;sec+=(x.tick-last)*us/division/1e6;last=x.tick;us=x.us}return sec+(tick-last)*us/division/1e6};
   return raw.map(n=>({...n,time:tickToSec(n.tick),type:MIDI_MAP[n.note]||"special",hit:false})).sort((a,b)=>a.time-b.time);
 }
-async function fetchJoined(paths,label){const parts=[];for(let i=0;i<paths.length;i+=8){const batch=await Promise.all(paths.slice(i,i+8).map(p=>fetch(p).then(r=>{if(!r.ok)throw Error(p);return r.arrayBuffer()})));parts.push(...batch);$("#loadState").textContent=`${label}を読み込み中… ${Math.min(i+8,paths.length)}/${paths.length}`}const size=parts.reduce((n,b)=>n+b.byteLength,0),out=new Uint8Array(size);let at=0;for(const b of parts){out.set(new Uint8Array(b),at);at+=b.byteLength}return out.buffer}
-async function loadStem(name,label){if(buffers[name])return;const encoded=await fetchJoined(audioManifest[name],label);buffers[name]=await ac.decodeAudioData(encoded)}
-async function loadDrumSamples(manifest){const entries=Object.entries(manifest.samples);for(let i=0;i<entries.length;i+=8){const batch=entries.slice(i,i+8);const decoded=await Promise.all(batch.map(async([note,path])=>{const r=await fetch(path);if(!r.ok)throw Error(path);return [note,await ac.decodeAudioData(await r.arrayBuffer())]}));for(const [note,buffer] of decoded)sampleBuffers[note]=buffer;$("#loadState").textContent=`ドラム音源を読み込み中… ${Math.min(i+8,entries.length)}/${entries.length}`}}
-async function init(){try{const [m,manifest,sampleManifest]=await Promise.all([fetch(ASSET.midi).then(r=>{if(!r.ok)throw Error(ASSET.midi);return r.arrayBuffer()}),fetch(ASSET.manifest).then(r=>{if(!r.ok)throw Error(ASSET.manifest);return r.json()}),fetch(ASSET.samples).then(r=>{if(!r.ok)throw Error(ASSET.samples);return r.json()})]);notes=parseMidi(m);audioManifest=manifest;duration=Math.max(...notes.map(n=>n.time),263.05);ac=new (window.AudioContext||window.webkitAudioContext)();await loadDrumSamples(sampleManifest);maxScore=notes.filter(n=>n.type!=="kick").reduce((s,n)=>s+weight(n.type)*n.velocity/127,0)*1000;setKit();$("#loadState").textContent=`準備完了 · ${notes.length.toLocaleString()} notes`;$("#start").disabled=false}catch(e){console.error(e);$("#loadState").textContent="読み込みに失敗しました"}}
+function setupAudioGraph(){masterBus=ac.createGain();masterBus.gain.value=.8;safetyLimiter=ac.createDynamicsCompressor();safetyLimiter.threshold.value=-8;safetyLimiter.knee.value=6;safetyLimiter.ratio.value=20;safetyLimiter.attack.value=.002;safetyLimiter.release.value=.18;masterBus.connect(safetyLimiter).connect(ac.destination)}
+function fourCC(d,at){return String.fromCharCode(d.getUint8(at),d.getUint8(at+1),d.getUint8(at+2),d.getUint8(at+3))}
+async function hashBuffer(ab){return [...new Uint8Array(await crypto.subtle.digest("SHA-256",ab))].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function verifyStem(ab,spec,label){
+  if(ab.byteLength!==spec.bytes)throw Error(`${label}音源が不完全です（${ab.byteLength.toLocaleString()} / ${spec.bytes.toLocaleString()} bytes）`);
+  if(ab.byteLength<44)throw Error(`${label}音源のWAVヘッダーが不正です`);
+  const d=new DataView(ab),declared=d.getUint32(4,true)+8;
+  if(fourCC(d,0)!=="RIFF"||fourCC(d,8)!=="WAVE"||declared!==ab.byteLength)throw Error(`${label}音源のWAVデータが破損しています`);
+  if(spec.sha256&&globalThis.crypto?.subtle){
+    $("#loadState").textContent=`${label}音源を検証中…`;
+    const hash=await hashBuffer(ab);
+    if(hash!==spec.sha256)throw Error(`${label}音源の内容が一致しません`);
+  }
+}
+async function fetchJoined(spec,label){
+  const paths=spec.paths||Array.from({length:spec.parts},(_,i)=>`${spec.pathPrefix}${String(i).padStart(spec.digits||3,"0")}`),parts=[];
+  for(let i=0;i<paths.length;i+=8){
+    const batch=await Promise.all(paths.slice(i,i+8).map(p=>fetch(p,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(`${label}音源を取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})));
+    parts.push(...batch);$("#loadState").textContent=`${label}音源を読み込み中… ${Math.min(i+8,paths.length)}/${paths.length}`;
+  }
+  if(parts.length===1){await verifyStem(parts[0],spec,label);return parts[0]}
+  const size=parts.reduce((n,b)=>n+b.byteLength,0),out=new Uint8Array(size);let at=0;
+  for(const b of parts){out.set(new Uint8Array(b),at);at+=b.byteLength}
+  await verifyStem(out.buffer,spec,label);return out.buffer;
+}
+async function loadStem(name,label){if(buffers[name])return;const encoded=await fetchJoined(audioManifest[name],label);buffers[name]=await ac.decodeAudioData(encoded);if(Math.abs(buffers[name].duration-duration)>.1)throw Error(`${label}音源の長さが譜面と一致しません`)}
+async function loadDrumSource(manifest){
+  $("#loadState").textContent="ゲーム内ドラム音源を読み込み中…";
+  const [wav,midi]=await Promise.all([
+    fetchJoined(manifest.wav,"ゲーム内ドラム"),
+    fetch(manifest.midi.path,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
+  ]);
+  if(midi.byteLength!==manifest.midi.bytes)throw Error("ドラム音源MIDIが不完全です");
+  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ドラム音源MIDIの内容が一致しません");
+  drumBuffer=await ac.decodeAudioData(wav);const sourceNotes=parseMidi(midi);
+  if(!sourceNotes.length)throw Error("ドラム音源MIDIにノートがありません");
+  if(manifest.wav.sampleRate&&drumBuffer.sampleRate!==manifest.wav.sampleRate)throw Error("ゲーム内ドラム音源のサンプルレートが一致しません");
+  if(manifest.wav.channels&&drumBuffer.numberOfChannels!==manifest.wav.channels)throw Error("ゲーム内ドラム音源のチャンネル数が一致しません");
+  drumSourceVelocity=manifest.sourceVelocity||100;
+  drumRegions={};
+  sourceNotes.forEach((n,i)=>{const end=i+1<sourceNotes.length?sourceNotes[i+1].time:drumBuffer.duration;if(n.time>=drumBuffer.duration||end<=n.time)throw Error(`ドラム音源の再生位置が不正です（MIDI ${n.note}）`);drumRegions[String(n.note)]={offset:n.time,duration:end-n.time}});
+  const required=new Set([...notes.map(n=>n.note),...Object.values(DEFAULT_NOTE)]),missing=[...required].filter(note=>!drumRegions[String(note)]);
+  if(missing.length)throw Error(`ゲーム内ドラム音源に必要な音がありません（MIDI ${missing.join(", ")}）`);
+}
+async function init(){try{const [m,manifest,drumManifest]=await Promise.all([fetch(ASSET.midi).then(r=>{if(!r.ok)throw Error(ASSET.midi);return r.arrayBuffer()}),fetch(ASSET.manifest,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(ASSET.manifest);return r.json()}),fetch(ASSET.drums,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(ASSET.drums);return r.json()})]);notes=parseMidi(m);audioManifest=manifest;duration=Math.max(...notes.map(n=>n.time),263.05);ac=new (window.AudioContext||window.webkitAudioContext)();setupAudioGraph();await loadDrumSource(drumManifest);maxScore=notes.filter(n=>n.type!=="kick").reduce((s,n)=>s+weight(n.type)*n.velocity/127,0)*1000;setKit();$("#loadState").textContent=`準備完了 · ${notes.length.toLocaleString()} notes`;$("#start").disabled=false}catch(e){console.error(e);$("#loadState").textContent=e.message||"読み込みに失敗しました"}}
 function weight(t){return ["snare","highTom","midTom","floorTom"].includes(t)?1.5:["hhClosed","hhOpen","hhPedal"].includes(t)?.8:1}
 function setKit(){const used=new Set(notes.map(n=>PART[n.type]));document.querySelectorAll("#hitLayer [data-part]").forEach(el=>el.classList.toggle("inactive",!used.has(el.dataset.part)));document.querySelectorAll("[data-shade]").forEach(el=>el.classList.toggle("on",!used.has(el.dataset.shade)))}
-function playBuffer(buf,gain){const s=ac.createBufferSource(),g=ac.createGain();s.buffer=buf;s.playbackRate.value=rate;g.gain.value=gain;s.connect(g).connect(ac.destination);s.start();return s}
-function synth(type,v=.75){if(!ac)return;const now=ac.currentTime,g=ac.createGain(),mix=DRUM_GAIN[type]||1;g.gain.setValueAtTime(.001,now);g.gain.exponentialRampToValueAtTime(.35*v*mix,now+.004);const noise=ac.createBufferSource(),nb=ac.createBuffer(1,ac.sampleRate*.6,ac.sampleRate);const a=nb.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;noise.buffer=nb;const f=ac.createBiquadFilter();f.type="bandpass";let dur=.16;if(type==="kick"){const o=ac.createOscillator();o.frequency.setValueAtTime(120,now);o.frequency.exponentialRampToValueAtTime(45,now+.16);o.connect(g);o.start(now);o.stop(now+.2);dur=.2;f.frequency.value=110}else if(type==="snare"){f.frequency.value=1800;dur=.18}else if(type.includes("Tom")){f.frequency.value=type==="highTom"?320:type==="midTom"?230:150;dur=.28}else if(type==="hhOpen"||type==="crash"||type==="ride"){f.frequency.value=type==="hhOpen"?7000:5200;dur=type==="hhOpen"?.65:1.2}else{f.frequency.value=7500;dur=.08}noise.connect(f).connect(g);noise.start(now);noise.stop(now+dur);g.gain.exponentialRampToValueAtTime(.001,now+dur)}
+function playBuffer(buf,gain){const s=ac.createBufferSource(),g=ac.createGain();s.buffer=buf;s.playbackRate.value=rate;g.gain.value=gain;s.connect(g).connect(masterBus);s.start();return s}
 function chokeOpenHat(){const now=ac.currentTime;for(const voice of openHatVoices.splice(0)){try{voice.gain.gain.cancelScheduledValues(now);voice.gain.gain.setValueAtTime(Math.max(.001,voice.gain.gain.value),now);voice.gain.gain.exponentialRampToValueAtTime(.001,now+.025);voice.source.stop(now+.03)}catch{}}}
-function playDrum(note,type,v=.75){if(!ac)return;if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();const buffer=sampleBuffers[String(note)]||sampleBuffers[String(DEFAULT_NOTE[type])];if(!buffer){synth(type,v);return}const now=ac.currentTime,source=ac.createBufferSource(),gain=ac.createGain(),mix=DRUM_GAIN[type]||1,sourceVelocity=100/127,velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));source.buffer=buffer;gain.gain.value=.7*velocityGain*mix;source.connect(gain).connect(ac.destination);source.start(now);if(type==="hhOpen"){const voice={source,gain};openHatVoices.push(voice);source.onended=()=>{openHatVoices=openHatVoices.filter(x=>x!==voice)}}}
+function playDrum(note,type,v=.75){if(!ac||!drumBuffer)return;if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();const region=drumRegions[String(note)]||drumRegions[String(DEFAULT_NOTE[type])];if(!region)return;const now=ac.currentTime,source=ac.createBufferSource(),gain=ac.createGain(),mix=DRUM_GAIN[type]||1,sourceVelocity=drumSourceVelocity/127,velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));source.buffer=drumBuffer;gain.gain.value=.7*velocityGain*mix;source.connect(gain).connect(masterBus);source.start(now,region.offset,region.duration);if(type==="hhOpen"){const voice={source,gain};openHatVoices.push(voice);source.onended=()=>{openHatVoices=openHatVoices.filter(x=>x!==voice)}}}
 function current(){return (ac.currentTime-startedAt)*rate}
-async function startGame(){if(loading)return;loading=true;$("#start").disabled=true;try{await ac.resume();await loadStem("base","オフボーカル");if($("#vocalToggle").checked)await loadStem("vocals","ボーカル");if($("#guideToggle").checked)await loadStem("drums","ガイドドラム");rate=+$("#tempo").value/100;autoplay=$("#autoToggle").checked;notes.forEach(n=>n.hit=false);score=0;counts={perfect:0,great:0,good:0,miss:0};nextKick=0;nextAuto=0;missCursor=0;setup.classList.add("hidden");result.classList.add("hidden");result.classList.toggle("autoplay",autoplay);game.classList.remove("hidden");$("#score").textContent=autoplay?"AUTO":"000000";playBuffer(buffers.base,.95);if($("#vocalToggle").checked)playBuffer(buffers.vocals,.95);if($("#guideToggle").checked)playBuffer(buffers.drums,.7);startedAt=ac.currentTime;running=true;paused=false;resize();loop()}catch(e){console.error(e);$("#loadState").textContent="音源の読み込みに失敗しました";$("#start").disabled=false}finally{loading=false}}
+async function startGame(){if(loading)return;loading=true;$("#start").disabled=true;try{await ac.resume();await loadStem("base","オフボーカル");if($("#vocalToggle").checked)await loadStem("vocals","ボーカル");if($("#guideToggle").checked)await loadStem("drums","ガイドドラム");rate=+$("#tempo").value/100;autoplay=$("#autoToggle").checked;notes.forEach(n=>n.hit=false);score=0;counts={perfect:0,great:0,good:0,miss:0};nextKick=0;nextAuto=0;missCursor=0;setup.classList.add("hidden");result.classList.add("hidden");result.classList.toggle("autoplay",autoplay);game.classList.remove("hidden");$("#score").textContent=autoplay?"AUTO":"000000";playBuffer(buffers.base,.95);if($("#vocalToggle").checked)playBuffer(buffers.vocals,.95);if($("#guideToggle").checked)playBuffer(buffers.drums,.7);startedAt=ac.currentTime;running=true;paused=false;resize();loop()}catch(e){console.error(e);$("#loadState").textContent=e.message||"音源の読み込みに失敗しました";$("#start").disabled=false}finally{loading=false}}
 function flashPart(part,el){el=el||document.querySelector(`#hitLayer [data-part="${part}"]:not(.inactive)`);if(!el)return;el.classList.remove("struck");void el.offsetWidth;el.classList.add("struck")}
 function input(part,visualEl){if(!running||paused||autoplay)return;const t=current();let best=null,delta=Infinity;for(const n of notes){if(n.hit||PART[n.type]!==part||n.type==="kick")continue;const d=Math.abs(n.time-t);if(d<delta){best=n;delta=d}if(n.time>t+.16)break}const matched=best&&delta<=.16,vel=matched?best.velocity/127:.72,type=matched?best.type:DEFAULT_TYPE[part],note=matched?best.note:DEFAULT_NOTE[type];playDrum(note,type,vel);flashPart(part,visualEl);if(!matched)return;best.hit=true;let mult,label;if(delta<=.055){mult=1;label="PERFECT";counts.perfect++}else if(delta<=.105){mult=.75;label="GREAT";counts.great++}else{mult=.4;label="GOOD";counts.good++}score+=weight(best.type)*best.velocity/127*1000*mult;$("#score").textContent=String(Math.round(score/maxScore*1000000)).padStart(6,"0");showJudge(label)}
 function showJudge(s){const fx=$("#judgementFx"),j=$("#judge");j.textContent=s;fx.dataset.grade=s.toLowerCase();fx.classList.remove("play");void fx.offsetWidth;fx.classList.add("play")}
