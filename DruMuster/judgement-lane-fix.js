@@ -6,15 +6,16 @@
 
   const fxByLane=[];
   const glowByLane=[];
-  const GLOW_WIDTH=14;
+  let suppressAutoGlow=false;
 
   function chartGeometry(){
     const w=canvas.clientWidth,h=canvas.clientHeight,
           judgeX=w*.11,
+          glowW=DruMusterChart.judgementZoneWidth?DruMusterChart.judgementZoneWidth(w):Math.max(10,w*.014),
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
           laneH=mainH/3;
-    return {w,h,judgeX,laneH};
+    return {w,h,judgeX,glowW,laneH};
   }
 
   function activeTiming(){
@@ -47,7 +48,7 @@
     if(typeof notes==="undefined"||typeof PART==="undefined")return null;
     let best=null,bestDelta=maxDelta+.000001;
     for(const n of notes){
-      if(n.type==="kick"||PART[n.type]!==part)continue;
+      if(n.hit||n.type==="kick"||PART[n.type]!==part)continue;
       const d=Math.abs(n.time-t);
       if(d<bestDelta){best=n;bestDelta=d}
       if(n.time>t+maxDelta)break;
@@ -61,18 +62,17 @@
   }
 
   function placeGlow(lane,node,x){
-    const {laneH}=chartGeometry();
-    // Exact top/height and explicit half-width subtraction avoid transform rounding drift.
-    node.style.left=`${x-GLOW_WIDTH/2}px`;
+    const {laneH,glowW}=chartGeometry();
+    // Identical width to the chart's judgement zone. Explicit pixel edges avoid
+    // the asymmetric drift visible in the previous screenshot.
+    node.style.left=`${x-glowW/2}px`;
     node.style.top=`${lane*laneH}px`;
-    node.style.width=`${GLOW_WIDTH}px`;
+    node.style.width=`${glowW}px`;
     node.style.height=`${laneH}px`;
   }
 
   function syncGeometry(){
-    for(let lane=0;lane<3;lane++){
-      if(fxByLane[lane])placeFx(lane,fxByLane[lane].fx);
-    }
+    for(let lane=0;lane<3;lane++)if(fxByLane[lane])placeFx(lane,fxByLane[lane].fx);
   }
 
   function ensureFx(lane){
@@ -98,8 +98,10 @@
     return glow;
   }
 
-  function flashLane(lane,x){
-    if(lane<0||lane>2||!Number.isFinite(x))return;
+  function flashNote(note,t){
+    if(!note||note.type==="kick")return;
+    const lane=laneForType(note.type),x=noteXAt(note,t);
+    if(lane<0||!Number.isFinite(x))return;
     const glow=ensureGlow(lane);
     placeGlow(lane,glow,x);
     glow.classList.remove("flash");
@@ -119,34 +121,37 @@
     fx.classList.add("play");
   }
 
-  // Drum-surface flash remains independent. The chart glow is emitted only when
-  // a nearby chart note exists, and it is centered on that note's current X.
+  // Surface flash still works for autoplay and pointer taps. When no exact note
+  // is supplied, use the nearest still-unhit chart note at the current time.
   if(typeof flashPart==="function"){
     const originalFlashPart=flashPart;
     flashPart=function(part,el){
-      if(part!=="kick"&&typeof current==="function"){
+      if(!suppressAutoGlow&&part!=="kick"&&typeof current==="function"){
         const t=current(),note=nearestNoteForPart(part,t,.16);
-        if(note){
-          const lane=laneForType(note.type),x=noteXAt(note,t);
-          flashLane(lane,x);
-        }
+        if(note)flashNote(note,t);
       }
       return originalFlashPart(part,el);
     };
   }
 
-  // Production: place PERFECT/GREAT/GOOD on the lane that triggered input.
+  // Production manual input: resolve the exact candidate before input marks it hit,
+  // then flash at that note's current X rather than at the goal line.
   if(typeof input==="function"&&typeof showJudge==="function"){
     let activeLane=-1;
     const originalInput=input;
     input=function(part,visualEl){
-      activeLane=laneForPart(part);
-      return originalInput(part,visualEl);
+      const t=typeof current==="function"?current():0,
+            note=nearestNoteForPart(part,t,.16);
+      activeLane=note?laneForType(note.type):laneForPart(part);
+      if(note)flashNote(note,t);
+      suppressAutoGlow=true;
+      try{return originalInput(part,visualEl)}
+      finally{suppressAutoGlow=false}
     };
     showJudge=function(label){emit(label,activeLane)};
   }
 
-  // Preview AUTO can hit several lanes at once, so each receives its own feedback.
+  // Preview AUTO knows the exact note object, so never infer from neighbors.
   if(typeof showPreviewJudge==="function"&&typeof updateHits==="function"){
     showPreviewJudge=function(label="PERFECT",lane=1){emit(label,lane)};
     updateHits=function(t){
@@ -154,7 +159,9 @@
       while(hitCursor<notes.length&&notes[hitCursor].time<=t){
         const n=notes[hitCursor++];
         if(n.time>=t-.08){
-          flashPart(PART[n.type]);
+          if(n.type!=="kick")flashNote(n,t);
+          suppressAutoGlow=true;
+          try{flashPart(PART[n.type])}finally{suppressAutoGlow=false}
           if(n.type!=="kick"){
             const lane=laneForType(n.type);
             if(lane>=0)hitLanes.add(lane);
