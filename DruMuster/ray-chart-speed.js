@@ -4,12 +4,17 @@
   const chart=globalThis.DruMusterChart;
   if(!chart)return;
   const originalDraw=chart.draw;
-  const PX_PER_QUARTER=60;
+  const DEFAULT_PX_PER_QUARTER=80;
 
-  function drawMeasureLines(ctx,w,h,judgeX,beatNow,timing){
+  function pixelsPerQuarter(){
+    const configured=Number(globalThis.DruMasterSongs?.current?.chart?.pixelsPerQuarter);
+    return Number.isFinite(configured)&&configured>0?configured:DEFAULT_PX_PER_QUARTER;
+  }
+
+  function drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,pxPerQuarter){
     const signatures=timing.signatures?.length?timing.signatures:[{beat:0,measureBeats:4}],
-          firstVisibleBeat=beatNow-judgeX/PX_PER_QUARTER,
-          lastVisibleBeat=beatNow+(w-judgeX)/PX_PER_QUARTER;
+          firstVisibleBeat=beatNow-judgeX/pxPerQuarter,
+          lastVisibleBeat=beatNow+(w-judgeX)/pxPerQuarter;
     ctx.save();
     ctx.strokeStyle="rgba(255,255,255,.08)";
     ctx.lineWidth=1;
@@ -20,7 +25,7 @@
       let barBeat=segmentStart+Math.ceil((firstVisibleBeat-segmentStart)/measureBeats)*measureBeats;
       if(barBeat<segmentStart)barBeat=segmentStart;
       for(;barBeat<=lastVisibleBeat+.0001&&barBeat<segmentEnd-.0001;barBeat+=measureBeats){
-        const x=judgeX+(barBeat-beatNow)*PX_PER_QUARTER;
+        const x=judgeX+(barBeat-beatNow)*pxPerQuarter;
         if(x<0||x>w)continue;
         const crisp=Math.round(x)+.5;
         ctx.beginPath();ctx.moveTo(crisp,0);ctx.lineTo(crisp,h);ctx.stroke();
@@ -29,8 +34,8 @@
     ctx.restore();
   }
 
-  function drawRay({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
-    const w=canvas.clientWidth,h=canvas.clientHeight,
+  function drawConfigured({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
+    const pxPerQuarter=pixelsPerQuarter(),w=canvas.clientWidth,h=canvas.clientHeight,
           beatNow=chart.secondsToBeat(currentSec,timing),division=timing.division||480,
           judgeX=chart.judgementX(w),judgeZoneW=chart.judgementZoneWidth(w),
           kickH=Math.max(16,h*.12),mainH=h-kickH,laneH=mainH/3,
@@ -46,13 +51,13 @@
     ctx.strokeStyle="#5b6d82";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
     ctx.fillStyle="#687483";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
 
-    drawMeasureLines(ctx,w,h,judgeX,beatNow,timing);
+    drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,pxPerQuarter);
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
 
     for(const n of notes){
       if(skipHit&&n.hit)continue;
-      const x=judgeX+(n.tick/division-beatNow)*PX_PER_QUARTER;
+      const x=judgeX+(n.tick/division-beatNow)*pxPerQuarter;
       if(x<judgeX-48||x>w+48)continue;
       const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
             alpha=.48+.52*n.velocity/127,visual=chart.noteVisual(n.type,group);
@@ -71,7 +76,7 @@
   }
 
   chart.draw=function(args){
-    return globalThis.DruMasterSongs?.current?.id==="ray"?drawRay(args):originalDraw(args);
+    return pixelsPerQuarter()===DEFAULT_PX_PER_QUARTER?originalDraw(args):drawConfigured(args);
   };
-  chart.pixelsPerQuarter=()=>globalThis.DruMasterSongs?.current?.id==="ray"?60:80;
+  chart.pixelsPerQuarter=pixelsPerQuarter;
 })();
