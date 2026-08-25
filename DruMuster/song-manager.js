@@ -4,7 +4,7 @@
   const songs={
     nanairo:{
       id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,
-      midi:"songs/nanairo/chart.mid",
+      midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz",
       stems:{
         base:{path:"songs/nanairo/offvocal.mp3",bytes:6314638,sha256:"4dd43973168efdc730112bec742e3dced51024080d222dbd43f7065ef713a8b1"},
         vocals:{path:"songs/nanairo/vocals.mp3",bytes:6314638,sha256:"73e6ba324ffa608fb74b7a33206c9189e2b885a43c48779bd4b0094729e75c2f"},
@@ -13,9 +13,8 @@
     },
     ray:{
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,
-      midi:"songs/ray/chart.mid",
-      /* Measured against the separated drums and the original mix:
-         MIDI-triggered gameplay is ~30 ms early; the guide-drum stem is ~15 ms early. */
+      midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz",
+      /* Measured against the separated drums and original mix. */
       timingOffsetSec:.030,
       stemDelaySec:{drums:.015},
       mix:{base:.80,vocals:.70,drums:.70},
@@ -28,13 +27,46 @@
   };
 
   const params=new URLSearchParams(location.search),requested=params.get("song"),current=songs[requested]||songs.nanairo;
-  const nativeFetch=globalThis.fetch.bind(globalThis);
+  const nativeFetch=globalThis.fetch.bind(globalThis),midiCache=new Map();
   globalThis.DruMasterSongs={songs,current,nativeFetch};
 
-  globalThis.fetch=function(input,init){
+  function cleanUrl(input){
     const url=typeof input==="string"?input:input?.url;
-    if(current.id!=="nanairo"&&typeof url==="string"&&url.replace(/^\.\//,"").split(/[?#]/)[0].endsWith("songs/nanairo/chart.mid")){
-      return nativeFetch(current.midi,init);
+    return typeof url==="string"?url.replace(/^\.\//,"").split(/[?#]/)[0]:"";
+  }
+  function requestedMidiSong(input){
+    const url=cleanUrl(input);
+    if(url.endsWith("songs/nanairo/chart.mid"))return current;
+    if(url.endsWith("songs/ray/chart.mid"))return songs.ray;
+    return null;
+  }
+  async function loadMidi(song){
+    if(midiCache.has(song.id))return (await midiCache.get(song.id)).slice(0);
+    const task=(async()=>{
+      const r=await nativeFetch(song.midiGzip,{cache:"force-cache"});
+      if(!r.ok)throw Error(`${song.title} MIDIを取得できません（HTTP ${r.status}）`);
+      if(typeof DecompressionStream!=="function")throw Error("このブラウザではMIDI展開機能を利用できません");
+      const stream=r.body.pipeThrough(new DecompressionStream("gzip"));
+      const ab=await new Response(stream).arrayBuffer();
+      if(ab.byteLength<14||String.fromCharCode(...new Uint8Array(ab.slice(0,4)))!=="MThd")throw Error(`${song.title} MIDIが破損しています`);
+      return ab;
+    })();
+    midiCache.set(song.id,task);
+    try{return (await task).slice(0)}catch(e){midiCache.delete(song.id);throw e}
+  }
+
+  /* app.js and shared chart timing both request chart.mid. Serve the selected
+     song from the compressed binary asset. This path contains no base64/atob. */
+  globalThis.fetch=async function(input,init){
+    const song=requestedMidiSong(input);
+    if(song){
+      const method=String(init?.method||"GET").toUpperCase();
+      if(method==="HEAD"){
+        const r=await nativeFetch(song.midiGzip,{method:"HEAD",cache:"no-store"});
+        return new Response(null,{status:r.status,statusText:r.statusText,headers:{"Content-Type":"audio/midi"}});
+      }
+      const ab=await loadMidi(song);
+      return new Response(ab,{status:200,headers:{"Content-Type":"audio/midi","Cache-Control":"no-store"}});
     }
     return nativeFetch(input,init);
   };
@@ -73,7 +105,7 @@
   async function validateSelectedSong(){
     if(!select)return;
     const s=current;
-    const ready=(await Promise.all([s.midi,s.stems.base.path,s.stems.vocals.path,s.stems.drums.path].map(assetExists))).every(Boolean);
+    const ready=(await Promise.all([s.midiGzip,s.stems.base.path,s.stems.vocals.path,s.stems.drums.path].map(assetExists))).every(Boolean);
     if(!ready){
       const opt=[...select.options].find(o=>o.value===s.id);
       if(opt)opt.textContent=`${s.title} — ${s.artist}（assets pending）`;
