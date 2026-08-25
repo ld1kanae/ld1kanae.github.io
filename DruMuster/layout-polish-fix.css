@@ -3,17 +3,17 @@
 /* Inactive-piece black oval/circle overlays are intentionally disabled on every platform. */
 .dim-layer{display:none!important}
 
-/* PC only: reduce the artwork and its input geometry together to 80%.
-   Scaling from the center keeps the kit composition aligned. */
+/* Artwork and hit regions are wrapped together at runtime by control-polish-fix.js.
+   A single transform keeps visual drums and pointer hit-testing in the same coordinate system. */
+.kit-stage{
+  position:absolute;
+  inset:0;
+  transform-origin:50% 50%;
+}
+
+/* PC only: the complete calibrated kit stage is 80%. */
 @media (hover:hover) and (pointer:fine){
-  .kit-art{
-    transform:scale(.8);
-    transform-origin:50% 50%;
-  }
-  #hitLayer{
-    transform:scale(.8);
-    transform-origin:50% 50%;
-  }
+  .kit-stage{transform:scale(.8)}
 }
 
 /* Strike-light origins are aligned to the visible playing surfaces, not simply
@@ -38,15 +38,8 @@
   top:51%;
 }
 
-/* Mobile only: enlarge the drum artwork and its hit geometry together to 130%.
-   This deliberately overrides the PC scale above. */
+/* Mobile only: the same complete stage is enlarged to 130%.
+   Existing mobile #hitLayer translateX positioning remains intact inside it. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .kit-art{
-    transform:scale(1.3);
-    transform-origin:50% 50%;
-  }
-  #hitLayer{
-    transform:translateX(-50%) scale(1.3)!important;
-    transform-origin:50% 50%;
-  }
+  .kit-stage{transform:scale(1.3)}
 }
