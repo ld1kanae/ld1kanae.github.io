@@ -12,25 +12,24 @@
     kit.appendChild(stage);
   }
 
-  /* Two keys per playable timbre for two-hand PC drumming.
-     Crash uses the physical left/right cymbal buttons; other timbres share one pad. */
+  /* Two keys per playable timbre for two-hand PC drumming. */
   const KEY_BINDINGS={
-    KeyQ:{part:"crash",side:"left",label:"Q"},
-    KeyP:{part:"crash",side:"right",label:"P"},
-    KeyW:{part:"highTom",label:"W"},
-    KeyO:{part:"highTom",label:"O"},
-    KeyE:{part:"midTom",label:"E"},
-    KeyI:{part:"midTom",label:"I"},
-    KeyR:{part:"special",label:"R"},
-    KeyU:{part:"special",label:"U"},
     KeyA:{part:"hh",label:"A"},
     KeyS:{part:"hh",label:"S"},
-    KeyD:{part:"snare",label:"D"},
-    KeyF:{part:"snare",label:"F"},
-    KeyJ:{part:"floorTom",label:"J"},
-    KeyK:{part:"floorTom",label:"K"},
-    KeyL:{part:"ride",label:"L"},
-    Semicolon:{part:"ride",label:";"}
+    KeyZ:{part:"snare",label:"Z"},
+    KeyX:{part:"snare",label:"X"},
+    KeyW:{part:"crash",side:"left",label:"W"},
+    KeyE:{part:"crash",side:"left",label:"E"},
+    KeyD:{part:"highTom",label:"D"},
+    KeyF:{part:"highTom",label:"F"},
+    KeyG:{part:"midTom",label:"G"},
+    KeyH:{part:"midTom",label:"H"},
+    KeyB:{part:"floorTom",label:"B"},
+    KeyN:{part:"floorTom",label:"N"},
+    KeyY:{part:"crash",side:"right",label:"Y"},
+    KeyU:{part:"crash",side:"right",label:"U"},
+    KeyJ:{part:"ride",label:"J"},
+    KeyK:{part:"ride",label:"K"}
   };
 
   function visualForBinding(binding){
@@ -44,6 +43,7 @@
   function setBadge(el,labels){
     if(!el)return;
     el.querySelectorAll(":scope > kbd,:scope > .key-badges").forEach(n=>n.remove());
+    if(!labels.length)return;
     const box=document.createElement("div");
     box.className="key-badges";
     for(const label of labels){
@@ -55,15 +55,16 @@
   }
 
   function installBadges(){
-    setBadge(document.querySelector("#hitLayer .crash.left"),["Q"]);
-    setBadge(document.querySelector("#hitLayer .crash.right"),["P"]);
-    setBadge(document.querySelector('#hitLayer [data-part="highTom"]'),["W","O"]);
-    setBadge(document.querySelector('#hitLayer [data-part="midTom"]'),["E","I"]);
-    setBadge(document.querySelector('#hitLayer [data-part="special"]'),["R","U"]);
     setBadge(document.querySelector('#hitLayer [data-part="hh"]'),["A","S"]);
-    setBadge(document.querySelector('#hitLayer [data-part="snare"]'),["D","F"]);
-    setBadge(document.querySelector('#hitLayer [data-part="floorTom"]'),["J","K"]);
-    setBadge(document.querySelector('#hitLayer [data-part="ride"]'),["L",";"]);
+    setBadge(document.querySelector('#hitLayer [data-part="snare"]'),["Z","X"]);
+    setBadge(document.querySelector("#hitLayer .crash.left"),["W","E"]);
+    setBadge(document.querySelector('#hitLayer [data-part="highTom"]'),["D","F"]);
+    setBadge(document.querySelector('#hitLayer [data-part="midTom"]'),["G","H"]);
+    setBadge(document.querySelector('#hitLayer [data-part="floorTom"]'),["B","N"]);
+    setBadge(document.querySelector("#hitLayer .crash.right"),["Y","U"]);
+    setBadge(document.querySelector('#hitLayer [data-part="ride"]'),["J","K"]);
+    /* Special remains touch/click-only unless a key is assigned later. */
+    setBadge(document.querySelector('#hitLayer [data-part="special"]'),[]);
   }
   installBadges();
 
