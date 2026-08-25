@@ -53,7 +53,25 @@
     right:0!important;
     bottom:0!important;
   }
-  /* The taller kit area already enlarges the source frame; 1.25 keeps the full set usable
-     while still filling the screen instead of cropping it excessively. */
   body.hidden-mode .kit-stage{transform:scale(1.25)!important}
+
+  /* The judgement is independent of the hidden chart. Put it in the visual center
+     of the song/score header, above the kit and away from either edge HUD block. */
+  body.hidden-mode #game header{overflow:visible}
+  body.hidden-mode .hidden-header-judge{
+    display:block!important;
+    left:50%!important;
+    top:50%!important;
+    width:auto!important;
+    height:auto!important;
+    transform:translate(-50%,-50%)!important;
+    z-index:40!important;
+  }
+  body.hidden-mode .hidden-header-judge .lane-judge-text{
+    --judge-x:1.04;
+    font-size:14px!important;
+    letter-spacing:.06em;
+    -webkit-text-stroke:.35px rgba(255,255,255,.86);
+    filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 4px rgba(102,218,255,.62)) drop-shadow(0 0 8px rgba(189,112,255,.36));
+  }
 }
