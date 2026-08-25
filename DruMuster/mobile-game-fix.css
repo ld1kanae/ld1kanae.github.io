@@ -10,17 +10,18 @@
   .song-hud small{font-size:7px;white-space:nowrap}
   .score{padding-right:5px;min-width:68px}
   .score small{font-size:7px}
-  .score strong{font-size:14px}
+  .score strong{font-size:16px}
   .game header #pause{width:34px;height:26px;font-size:14px;border-radius:6px;box-shadow:0 0 0 2px #ffffff22}
 
-  /* Keep the highway full-width but reduce its vertical footprint to about 80%. */
+  /* 75% of the previous mobile chart footprint: 20% + 10px -> 15% + 8px.
+     Width stays full so horizontal reading distance and scroll speed do not change. */
   #chartWrap{
     position:absolute;
     top:32px;
     left:max(32px,env(safe-area-inset-bottom));
     right:14px;
     width:auto;
-    height:calc(20% + 10px);
+    height:calc(15% + 8px);
     min-height:0;
     z-index:10;
     overflow:hidden;
@@ -34,11 +35,9 @@
   #judgementFx{left:11%;bottom:0;width:min(28%,260px);height:94%}
   #judge{font-size:clamp(19px,3.1vw,35px)}
 
-  /* Follow the smaller chart so no dead gap opens between chart and kit. */
-  #kit{top:calc(20% + 42px);background:radial-gradient(ellipse at 50% 42%,#242a31,#080b10 78%)}
+  /* Chart bottom is 32px + (15% + 8px) = 15% + 40px. */
+  #kit{top:calc(15% + 40px);background:radial-gradient(ellipse at 50% 42%,#242a31,#080b10 78%)}
 
-  /* Artwork and hit layer share the same source-image frame; layout-polish-fix.css
-     applies the requested 120% scale to their common parent. */
   .kit-art{width:100%;height:100%;left:0;top:0;object-fit:contain;object-position:center center}
   #hitLayer{inset:auto;top:0;bottom:0;left:50%;right:auto;width:auto;height:100%;aspect-ratio:1280 / 854;transform:translateX(-50%)}
 
