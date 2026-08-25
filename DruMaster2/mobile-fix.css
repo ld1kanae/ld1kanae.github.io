@@ -1,0 +1,42 @@
+/* Landscape-mobile layout overrides for DruMaster2 */
+@media (pointer:coarse) and (orientation:landscape), (max-height:620px) and (orientation:landscape){
+  html,body{height:100%;min-height:0;overflow:hidden}
+  .app{height:100dvh;min-height:0;grid-template-rows:44px minmax(0,1fr) 42px}
+  .topbar{gap:8px;padding:0 10px}
+  .brand{font-size:14px}.brand span{font-size:18px}
+  .song{gap:7px}.song b{font-size:11px}.song small{font-size:8px}
+  .score b{font-size:13px}.score small,.score em{font-size:7px}
+  .gear{width:30px;height:30px;font-size:14px}
+  .stage{min-height:0}
+  .lane-field{inset:0 0 24% 0}
+  .judge-line{left:15%}
+  .judge{left:15%;top:50%;font-size:clamp(17px,3.2vh,28px)}
+  .kit{height:58%;bottom:-8%;overflow:hidden}
+  .kit svg{width:min(100%,1100px);height:100%;max-width:none;transform:translateX(-50%);object-fit:contain}
+  .note{width:17px;height:17px}.note:after{inset:4px}
+  .keys{display:none}
+  .status{right:8px;bottom:5px;font-size:7px}
+  .controls{padding:3px max(10px,env(safe-area-inset-right)) max(3px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+  .controls button{height:32px;min-width:42px}
+  .controls .primary{min-width:104px}
+  .crash-zone{left:0;top:0;width:28%;height:38%}
+  .hh-zone{left:15%;top:23%;width:22%;height:39%}
+  .open-zone{left:0;top:25%;width:20%;height:42%}
+  .snare-zone{left:23%;top:46%;width:30%;height:48%}
+  .settings-card{max-height:calc(100dvh - 6px);width:min(520px,calc(100vw - 8px));grid-template-rows:44px minmax(0,1fr) 42px}
+  .settings-scroll{padding:4px 12px 10px}
+  .toggle{min-height:42px}.range{padding:8px 0}.assets{margin-top:8px}.assets p{display:none}
+}
+
+/* Very short landscape viewports (browser chrome visible) */
+@media (max-height:430px) and (orientation:landscape){
+  .app{grid-template-rows:38px minmax(0,1fr) 36px}
+  .topbar{padding:0 8px}
+  .brand{font-size:12px}.brand span{font-size:15px}.song b{font-size:10px}
+  .gear{width:27px;height:27px}
+  .lane-field{bottom:20%}
+  .kit{height:52%;bottom:-6%}
+  .kit svg{width:min(92%,980px)}
+  .controls button{height:28px}
+  .status{display:none}
+}
