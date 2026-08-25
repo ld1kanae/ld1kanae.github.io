@@ -99,28 +99,22 @@ globalThis.DruMusterChart=(()=>{
       const group=groupMap[n.type],
             lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
             y=lane<3?laneH*(lane+.5):mainH+kickH/2,
-            alpha=.48+.52*n.velocity/127;
+            alpha=.48+.52*n.velocity/127,
+            color=n.type==="snare"?"#38a9ff":n.type.includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc",
+            barH=lane<3?Math.max(20,laneH*.62):Math.max(10,kickH-4),
+            barW=4;
 
-      ctx.globalAlpha=alpha;
-      ctx.strokeStyle=ctx.fillStyle=n.type==="snare"?"#38a9ff":n.type.includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc";
-      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;
+      ctx.fillStyle=color;
 
-      if(n.type==="snare"||n.type.includes("Tom")){
-        const r=Math.max(12,laneH*.20);
-        ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-        ctx.globalAlpha=Math.min(1,alpha+.15);ctx.strokeStyle="#ffffffaa";ctx.lineWidth=1.5;ctx.stroke();
-      }else if(n.type==="hhClosed"||n.type==="hhPedal"){
-        ctx.font=`900 ${Math.max(28,laneH*.50)}px system-ui,sans-serif`;ctx.fillText("│",x,y);
-      }else if(n.type==="hhOpen"){
-        ctx.font=`900 ${Math.max(28,laneH*.50)}px system-ui,sans-serif`;ctx.fillText("||",x,y);
-      }else if(n.type==="ride"){
-        ctx.font=`900 ${Math.max(25,laneH*.43)}px system-ui,sans-serif`;ctx.fillText("△",x,y);
-      }else if(n.type==="crash"){
-        ctx.font=`900 ${Math.max(30,laneH*.52)}px system-ui,sans-serif`;ctx.fillText("×",x,y);
-      }else if(n.type==="kick"){
-        ctx.globalAlpha=.32+.28*n.velocity/127;ctx.fillStyle="#a7b0bc";ctx.fillRect(x-2,mainH+2,4,kickH-4);
+      // Every note uses the same vertical-bar symbol as kick, except open hi-hat.
+      // Open hi-hat is a tight double bar with exactly the same height.
+      if(n.type==="hhOpen"){
+        const openBarW=3,gap=2,total=openBarW*2+gap,left=x-total/2;
+        ctx.fillRect(left,y-barH/2,openBarW,barH);
+        ctx.fillRect(left+openBarW+gap,y-barH/2,openBarW,barH);
       }else{
-        ctx.font=`900 ${Math.max(25,laneH*.43)}px system-ui,sans-serif`;ctx.fillText("◇",x,y);
+        ctx.fillRect(x-barW/2,y-barH/2,barW,barH);
       }
     }
 
