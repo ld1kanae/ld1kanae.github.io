@@ -4,6 +4,7 @@
   const songs={
     nanairo:{
       id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,
+      chart:{pixelsPerQuarter:80},
       midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz",
       stems:{
         base:{path:"songs/nanairo/offvocal.mp3",bytes:6314638,sha256:"4dd43973168efdc730112bec742e3dced51024080d222dbd43f7065ef713a8b1"},
@@ -13,8 +14,8 @@
     },
     ray:{
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,
+      chart:{pixelsPerQuarter:60},
       midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz",
-      /* The supplied MIDI/stems are already aligned. Do not add per-track timing offsets. */
       mix:{base:.70,vocals:.60,drums:.70},
       stems:{
         base:{path:"songs/ray/offvocal.mp3",bytes:12221760,sha256:"b0f8b2b8930e054f7edfc71922a03b119771e54fc14f5dec6f4d94e6ff8e236c"},
