@@ -1,17 +1,18 @@
 "use strict";
 
 (()=>{
-  const wrap=document.querySelector("#chartWrap"),canvas=document.querySelector("#chart");
+  const wrap=document.querySelector("#chartWrap"),canvas=document.querySelector("#chart"),gameHeader=document.querySelector("#game header");
   if(!wrap||!canvas)return;
 
   const fxByLane=[];
   const glowByLane=[];
   const LANE_LABELS=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
-  let suppressAutoGlow=false;
+  let suppressAutoGlow=false,hiddenFx=null;
 
   function isMobile(){
     return DruMusterChart.isMobileLayout?DruMusterChart.isMobileLayout():!!matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;
   }
+  function isHiddenMode(){return !!(isMobile()&&globalThis.DruMasterMode?.isHidden?.())}
 
   function chartGeometry(){
     const w=canvas.clientWidth,h=canvas.clientHeight,
@@ -94,18 +95,28 @@
     for(let lane=0;lane<3;lane++)if(fxByLane[lane])placeFx(lane,fxByLane[lane].fx);
   }
 
-  function ensureFx(lane){
-    if(fxByLane[lane])return fxByLane[lane];
+  function buildFx(className,parent){
     const fx=document.createElement("div");
-    fx.className="lane-judge-fx";
-    fx.dataset.lane=String(lane);
+    fx.className=className;
     const text=document.createElement("span");
     text.className="lane-judge-text";
     fx.appendChild(text);
-    wrap.appendChild(fx);
-    fxByLane[lane]={fx,text};
-    placeFx(lane,fx);
-    return fxByLane[lane];
+    parent.appendChild(fx);
+    return {fx,text};
+  }
+  function ensureFx(lane){
+    if(fxByLane[lane])return fxByLane[lane];
+    const pair=buildFx("lane-judge-fx",wrap);
+    pair.fx.dataset.lane=String(lane);
+    fxByLane[lane]=pair;
+    placeFx(lane,pair.fx);
+    return pair;
+  }
+  function ensureHiddenFx(){
+    if(hiddenFx)return hiddenFx;
+    if(!gameHeader)return null;
+    hiddenFx=buildFx("lane-judge-fx hidden-header-judge",gameHeader);
+    return hiddenFx;
   }
 
   function ensureGlow(lane){
@@ -119,7 +130,7 @@
   }
 
   function flashNote(note){
-    if(!note||note.type==="kick")return;
+    if(!note||note.type==="kick"||isHiddenMode())return;
     const lane=laneForType(note.type);
     if(lane<0)return;
     const glow=ensureGlow(lane);
@@ -129,16 +140,26 @@
     glow.classList.add("flash");
   }
 
+  function playFx(pair,label,grade){
+    if(!pair)return;
+    pair.text.textContent=String(label).toUpperCase();
+    pair.fx.dataset.grade=grade;
+    pair.fx.classList.remove("play");
+    void pair.fx.offsetWidth;
+    pair.fx.classList.add("play");
+  }
+
   function emit(label,lane){
     const grade=String(label||"").toLowerCase();
-    if(lane<0||lane>2||grade==="miss"||grade==="auto")return;
-    const {fx,text}=ensureFx(lane);
-    text.textContent=String(label).toUpperCase();
-    placeFx(lane,fx);
-    fx.dataset.grade=grade;
-    fx.classList.remove("play");
-    void fx.offsetWidth;
-    fx.classList.add("play");
+    if(grade==="miss"||grade==="auto")return;
+    if(isHiddenMode()){
+      playFx(ensureHiddenFx(),label,grade);
+      return;
+    }
+    if(lane<0||lane>2)return;
+    const pair=ensureFx(lane);
+    placeFx(lane,pair.fx);
+    playFx(pair,label,grade);
   }
 
   if(typeof flashPart==="function"){
