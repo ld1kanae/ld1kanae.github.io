@@ -1,0 +1,28 @@
+/* Hidden Mode records: show a clear eye-with-slash mark immediately after the score. */
+.rank-score-cell{display:flex;align-items:center;gap:8px;min-width:0}
+.hidden-mark{
+  display:inline-grid!important;
+  place-items:center;
+  width:20px;
+  height:20px;
+  flex:0 0 20px;
+  margin-left:2px;
+  color:#c7d1dd;
+  opacity:1;
+  filter:drop-shadow(0 0 4px rgba(145,211,255,.18));
+}
+.hidden-mark svg{display:block;width:100%;height:100%;overflow:visible}
+.hidden-mark .eye,.hidden-mark circle,.hidden-mark .slash{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.35;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.hidden-mark .slash{stroke-width:2.7}
+.ranking-row.hidden-record .rank-score{color:#fff}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .rank-score-cell{gap:10px}
+  .hidden-mark{width:26px;height:26px;flex-basis:26px;margin-left:3px}
+}
