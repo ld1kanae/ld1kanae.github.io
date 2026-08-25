@@ -1,15 +1,8 @@
 /* Final layout polish shared by production and preview. */
 
-/* Inactive-piece black oval/circle overlays are intentionally disabled on every platform. */
 .dim-layer{display:none!important}
 
-/* drum-kit.webp is 1280 x 854. Artwork and hit regions are put on the exact
-   same 1280:854 coordinate frame so pointer hit-testing cannot drift from the picture. */
-.kit-stage{
-  position:absolute;
-  inset:0;
-  transform-origin:50% 50%;
-}
+.kit-stage{position:absolute;inset:0;transform-origin:50% 50%}
 .kit-stage .kit-art,
 .kit-stage #hitLayer{
   position:absolute!important;
@@ -23,82 +16,39 @@
   transform:translateX(-50%)!important;
   transform-origin:50% 50%;
 }
-.kit-stage .kit-art{
-  object-fit:contain!important;
-  object-position:center center!important;
-}
+.kit-stage .kit-art{object-fit:contain!important;object-position:center center!important}
 
-/* PC: keep the original full-size calibrated frame. */
-@media (hover:hover) and (pointer:fine){
-  .kit-stage{transform:none}
-}
+@media (hover:hover) and (pointer:fine){.kit-stage{transform:none}}
 
-/* Calibrated regions in the same 1280x854 source-image frame.
-   These replace the old PC geometry that was based on a differently cropped image. */
-#hitLayer .crash{width:25%!important;height:34%!important;top:2%!important}
-#hitLayer .crash.left{left:3%!important;right:auto!important}
-#hitLayer .crash.right{right:3%!important;left:auto!important}
-#hitLayer .hh{width:24%!important;height:38%!important;left:3%!important;top:42%!important}
-#hitLayer .ride{width:26%!important;height:42%!important;right:3%!important;left:auto!important;top:38%!important}
-#hitLayer .high{width:23%!important;height:37%!important;left:27%!important;top:18%!important}
-#hitLayer .mid{width:23%!important;height:37%!important;right:27%!important;left:auto!important;top:18%!important}
-#hitLayer .snare{width:28%!important;height:42%!important;left:20%!important;top:auto!important;bottom:3%!important}
-#hitLayer .floor{width:30%!important;height:44%!important;right:18%!important;left:auto!important;top:auto!important;bottom:1%!important}
+/* Hit regions measured from the user's coloured reference image. */
+#hitLayer .crash{height:31.1%!important;top:.5%!important}
+#hitLayer .crash.left{left:4.2%!important;right:auto!important;width:26.9%!important}
+#hitLayer .crash.right{left:63%!important;right:auto!important;top:-1.3%!important;width:26%!important;height:32.9%!important}
+#hitLayer .hh{left:-1.2%!important;right:auto!important;top:36.7%!important;width:24.1%!important;height:31.7%!important}
+#hitLayer .ride{left:70.2%!important;right:auto!important;top:32.6%!important;width:29%!important;height:41.9%!important}
+#hitLayer .high{left:26.8%!important;right:auto!important;top:20.2%!important;width:20.4%!important;height:29.3%!important}
+#hitLayer .mid{left:48.8%!important;right:auto!important;top:21.2%!important;width:20.8%!important;height:30.5%!important}
+#hitLayer .snare{left:20%!important;right:auto!important;top:49.5%!important;bottom:auto!important;width:25.5%!important;height:36.4%!important}
+#hitLayer .floor{left:49%!important;right:auto!important;top:51.1%!important;bottom:auto!important;width:26.5%!important;height:38.6%!important}
 #hitLayer .special{width:10%!important;height:16%!important;left:45%!important;top:50%!important}
 
-/* Strike-light origins on the visible playing surfaces.
-   Snare/toms=center, HH=lower-right, crash=lower area, ride=slightly left of center. */
-#hitLayer .snare::after,
-#hitLayer .high::after,
-#hitLayer .mid::after,
-#hitLayer .floor::after,
-#hitLayer .special::after{
-  left:50%!important;
-  top:50%!important;
-}
-#hitLayer .hh::after{
-  left:64%!important;
-  top:67%!important;
-}
-#hitLayer .crash::after{
-  left:50%!important;
-  top:72%!important;
-}
-#hitLayer .ride::after{
-  left:42%!important;
-  top:51%!important;
-}
+/* Strike-light origins measured from the user's red-dot reference image. */
+#hitLayer .crash.left::after{left:61.1%!important;top:79.1%!important}
+#hitLayer .crash.right::after{left:34.6%!important;top:78.6%!important}
+#hitLayer .hh::after{left:69.9%!important;top:64.9%!important}
+#hitLayer .ride::after{left:30.1%!important;top:55.9%!important}
+#hitLayer .high::after{left:49.9%!important;top:52%!important}
+#hitLayer .mid::after{left:52.1%!important;top:44.9%!important}
+#hitLayer .snare::after{left:44.4%!important;top:43.5%!important}
+#hitLayer .floor::after{left:55.9%!important;top:45.6%!important}
+#hitLayer .special::after{left:50%!important;top:50%!important}
 
-/* Two-key badges share one visual center without overlapping each other. */
-#hitLayer .key-badges{
-  position:absolute;
-  left:50%;
-  top:50%;
-  z-index:3;
-  transform:translate(-50%,-50%);
-  display:flex;
-  gap:4px;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-}
-#hitLayer .key-badges kbd{
-  position:static!important;
-  left:auto!important;
-  top:auto!important;
-  transform:none!important;
-}
-#hitLayer .hit.pressed .key-badges kbd{
-  background:#dff7ff;
-  color:#101721;
-}
+#hitLayer .key-badges{position:absolute;left:50%;top:50%;z-index:3;transform:translate(-50%,-50%);display:flex;gap:4px;align-items:center;justify-content:center;pointer-events:none}
+#hitLayer .key-badges kbd{position:static!important;left:auto!important;top:auto!important;transform:none!important}
+#hitLayer .hit.pressed .key-badges kbd{background:#dff7ff;color:#101721}
 
-/* Mobile keeps its requested 130% size, but also uses one shared image/hit frame. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .kit-stage{transform:scale(1.3)}
+  .kit-stage{transform:scale(1.2)}
   .kit-stage .kit-art,
-  .kit-stage #hitLayer{
-    height:100%!important;
-    top:0!important;
-  }
+  .kit-stage #hitLayer{height:100%!important;top:0!important}
 }
