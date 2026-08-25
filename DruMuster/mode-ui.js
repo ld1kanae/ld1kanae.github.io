@@ -7,9 +7,10 @@
         startButton=document.querySelector("#start"),
         mobileQuery=matchMedia("(hover:none) and (pointer:coarse) and (max-width:900px)");
 
-  const state={active:false};
+  const state={active:false,startedHidden:false};
   globalThis.DruMasterMode={
     isHidden:()=>state.active,
+    wasHiddenRun:()=>state.startedHidden,
     isMobile:()=>mobileQuery.matches
   };
 
@@ -38,8 +39,6 @@
   volume?.addEventListener("input",applyVolume);
   applyVolume();
 
-  /* game-speed-fix.js has already installed the shared chart draw function.
-     Hidden Mode suppresses Canvas rendering altogether rather than merely hiding it. */
   if(typeof draw==="function"){
     const normalDraw=draw;
     draw=function(){
@@ -51,8 +50,11 @@
   if(startButton&&typeof startGame==="function"){
     const normalStart=startGame;
     startButton.onclick=async()=>{
-      state.active=!!(mobileQuery.matches&&hiddenToggle?.checked);
-      document.body.classList.toggle("hidden-mode",state.active);
+      const hidden=!!(mobileQuery.matches&&hiddenToggle?.checked);
+      state.active=hidden;
+      state.startedHidden=hidden;
+      document.body.classList.toggle("hidden-mode",hidden);
+      document.body.dataset.hiddenRun=hidden?"1":"0";
       applyVolume();
       return normalStart();
     };
