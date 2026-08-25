@@ -8,19 +8,19 @@
     const v=song.mix?.[name];
     return Number.isFinite(v)?v:fallback;
   }
-  function playAt(buf,gain,when){
+  function playAt(buf,gain,when,offset=0){
     const source=ac.createBufferSource(),g=ac.createGain();
     source.buffer=buf;
     source.playbackRate.value=rate;
     g.gain.value=gain;
     source.connect(g).connect(masterBus);
-    source.start(when);
+    source.start(when,Math.max(0,offset));
     return source;
   }
 
-  /* The supplied MIDI and stems are source-aligned. Schedule every backing stem
-     and the gameplay clock from the exact same AudioContext timestamp instead of
-     compensating the song with hand-tuned millisecond offsets. */
+  /* The stems and gameplay clock share one AudioContext start timestamp.
+     Ray alone is auditioned 20 ms earlier by beginning all three backing
+     buffers at 0.020 s into the source while leaving MIDI/game time untouched. */
   startGame=async function(){
     if(loading)return;
     loading=true;
@@ -44,12 +44,11 @@
       game.classList.remove("hidden");
       $("#score").textContent=autoplay?"AUTO":"000000";
 
-      /* A short lead gives the browser enough time to queue all sources while
-         preserving exact sample alignment between them and the gameplay clock. */
       const startAt=ac.currentTime+.055;
-      playAt(buffers.base,trackGain("base",.95),startAt);
-      if($("#vocalToggle").checked)playAt(buffers.vocals,trackGain("vocals",.95),startAt);
-      if($("#guideToggle").checked)playAt(buffers.drums,trackGain("drums",.70),startAt);
+      const stemOffset=song.id==="ray"?.020:0;
+      playAt(buffers.base,trackGain("base",.95),startAt,stemOffset);
+      if($("#vocalToggle").checked)playAt(buffers.vocals,trackGain("vocals",.95),startAt,stemOffset);
+      if($("#guideToggle").checked)playAt(buffers.drums,trackGain("drums",.70),startAt,stemOffset);
 
       startedAt=startAt;
       running=true;
@@ -65,7 +64,6 @@
     }
   };
 
-  /* app.js bound the previous function object before this override loaded. */
   const start=document.querySelector("#start");
   if(start)start.onclick=startGame;
 })();
