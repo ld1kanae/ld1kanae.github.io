@@ -3,6 +3,17 @@
 (()=>{
   const PERFECT_WINDOW=.035; // ±35 ms; previously ±55 ms.
 
+  /* Keep artwork and hit targets in one transform space. Scaling this single
+     stage preserves the original calibrated relationship between the picture
+     and every clickable drum region. */
+  const kit=document.querySelector("#kit");
+  if(kit&&!kit.querySelector(":scope > .kit-stage")){
+    const stage=document.createElement("div");
+    stage.className="kit-stage";
+    while(kit.firstChild)stage.appendChild(kit.firstChild);
+    kit.appendChild(stage);
+  }
+
   /* Production judgement override. Keep GREAT/GOOD windows unchanged; only
      PERFECT is tightened. This script loads before judgement-lane-fix.js so
      lane-local PERFECT/GREAT/GOOD placement still wraps this input function. */
@@ -40,8 +51,7 @@
     };
   }
 
-  /* Space toggles pause/resume in both production and preview. The existing
-     drum-key handler ignores Space, so this does not interfere with Q/W/etc. */
+  /* Space toggles pause/resume in both production and preview. */
   addEventListener("keydown",e=>{
     if(e.code!=="Space"||e.repeat)return;
     const tag=e.target?.tagName;
