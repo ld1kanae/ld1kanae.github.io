@@ -1,0 +1,59 @@
+/* Setup / Hidden Mode / PC volume additions. */
+
+/* Logo refinement: darker Dru, heavier and brighter Master. */
+.brand{position:relative;letter-spacing:-.06em}
+.brand span{color:#626e7b!important;font-weight:350;text-shadow:0 1px 0 #0008}
+.brand b{
+  font-weight:1000!important;
+  color:#f7fbff;
+  background:linear-gradient(115deg,#ffffff 0%,#dceeff 52%,#9edcff 100%);
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 0 #0008) drop-shadow(0 0 7px rgba(87,190,255,.18));
+}
+
+/* Hidden Mode is smartphone-only for now. */
+.hidden-mode-option{display:none}
+
+/* PC-only volume panel. */
+.volume-box{display:none;width:min(480px,90vw);margin-top:14px;padding:13px 20px;background:#111721;border:1px solid #2d3745;border-radius:15px}
+.volume-box>div{display:flex;align-items:baseline;justify-content:space-between}
+.volume-box span{font-size:12px;font-weight:700;letter-spacing:.08em}
+.volume-box strong{font-size:12px;color:#a9b6c6;font-variant-numeric:tabular-nums}
+.volume-box input{width:100%;margin:10px 0 1px;accent-color:var(--blue)}
+.volume-box .scale{margin-top:0}
+
+@media (hover:hover) and (pointer:fine){
+  .volume-box{display:block}
+}
+
+@media (max-height:520px) and (hover:hover) and (pointer:fine){
+  .setup{
+    grid-template-areas:
+      "brand options"
+      "eyebrow options"
+      "song tempo"
+      "volume state"
+      "hint start"!important;
+  }
+  .volume-box{grid-area:volume;width:min(430px,44vw);margin:0;padding:8px 16px}
+  .volume-box input{margin:5px 0 0}
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .hidden-mode-option{display:flex}
+  .volume-box{display:none!important}
+
+  /* Hidden Mode: no chart area; the drum kit occupies the complete play area below the HUD. */
+  body.hidden-mode #chartWrap{display:none!important}
+  body.hidden-mode #kit{
+    top:32px!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+  }
+  /* The taller kit area already enlarges the source frame; 1.25 keeps the full set usable
+     while still filling the screen instead of cropping it excessively. */
+  body.hidden-mode .kit-stage{transform:scale(1.25)!important}
+}
