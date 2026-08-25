@@ -12,6 +12,15 @@ globalThis.DruMusterChart=(()=>{
     return Math.max(10,width*.014);
   }
 
+  function noteVisual(type,group){
+    const isOpen=type==="hhOpen",
+          barWidth=isOpen?OPEN_HH_BAR_WIDTH:NOTE_BAR_WIDTH,
+          gap=isOpen?OPEN_HH_GAP:0,
+          totalWidth=isOpen?OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP:NOTE_BAR_WIDTH,
+          color=type==="snare"?"#38a9ff":String(type||"").includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc";
+    return {kind:isOpen?"double":"single",barWidth,gap,totalWidth,color};
+  }
+
   function parseTempoTiming(ab){
     const d=new DataView(ab);let p=0;
     const str=n=>{let s="";while(n--)s+=String.fromCharCode(d.getUint8(p++));return s};
@@ -145,7 +154,6 @@ globalThis.DruMusterChart=(()=>{
 
     drawMeasureLines(ctx,w,h,judgeX,beatNow,timing);
 
-    // The glow overlay uses this exact same zone width via judgementZoneWidth().
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
 
@@ -156,29 +164,28 @@ globalThis.DruMusterChart=(()=>{
       const group=groupMap[n.type],
             lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
             alpha=.48+.52*n.velocity/127,
-            color=n.type==="snare"?"#38a9ff":n.type.includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc";
+            visual=noteVisual(n.type,group);
 
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;
-      ctx.fillStyle=color;
+      ctx.fillStyle=visual.color;
 
       if(lane<3){
         const barTop=lane*laneH,
               barH=laneH;
-        if(n.type==="hhOpen"){
-          const total=OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP,
-                left=x-total/2;
-          ctx.fillRect(left,barTop,OPEN_HH_BAR_WIDTH,barH);
-          ctx.fillRect(left+OPEN_HH_BAR_WIDTH+OPEN_HH_GAP,barTop,OPEN_HH_BAR_WIDTH,barH);
+        if(visual.kind==="double"){
+          const left=x-visual.totalWidth/2;
+          ctx.fillRect(left,barTop,visual.barWidth,barH);
+          ctx.fillRect(left+visual.barWidth+visual.gap,barTop,visual.barWidth,barH);
         }else{
-          ctx.fillRect(x-NOTE_BAR_WIDTH/2,barTop,NOTE_BAR_WIDTH,barH);
+          ctx.fillRect(x-visual.totalWidth/2,barTop,visual.barWidth,barH);
         }
       }else{
-        ctx.fillRect(x-NOTE_BAR_WIDTH/2,mainH+2,NOTE_BAR_WIDTH,kickH-4);
+        ctx.fillRect(x-visual.totalWidth/2,mainH+2,visual.barWidth,kickH-4);
       }
     }
 
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
 
-  return {PIXELS_PER_QUARTER,judgementZoneWidth,parseTempoTiming,secondsToBeat,draw};
+  return {PIXELS_PER_QUARTER,judgementZoneWidth,noteVisual,parseTempoTiming,secondsToBeat,draw};
 })();
