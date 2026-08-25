@@ -16,7 +16,7 @@ globalThis.DruMusterChart=(()=>{
     const vlq=()=>{let v=0,b;do{b=d.getUint8(p++);v=(v<<7)|(b&127)}while(b&128);return v};
     if(str(4)!=="MThd")throw Error("MIDI timing header error");
     const headerLength=u32();u16();const tracks=u16(),division=u16();p+=headerLength-6;
-    const tempos=[];
+    const tempos=[],timeSignatures=[];
     for(let t=0;t<tracks;t++){
       if(str(4)!=="MTrk")throw Error("MIDI timing track error");
       const trackLength=u32(),end=p+trackLength;let tick=0,runningStatus=0;
@@ -26,7 +26,12 @@ globalThis.DruMusterChart=(()=>{
         else{status=first;if(status<240)runningStatus=status}
         if(status===255){
           const type=d.getUint8(p++),len=vlq();
-          if(type===81&&len===3)tempos.push({tick,us:(d.getUint8(p)<<16)|(d.getUint8(p+1)<<8)|d.getUint8(p+2)});
+          if(type===81&&len===3){
+            tempos.push({tick,us:(d.getUint8(p)<<16)|(d.getUint8(p+1)<<8)|d.getUint8(p+2)});
+          }else if(type===88&&len>=2){
+            const numerator=d.getUint8(p),denominator=2**d.getUint8(p+1);
+            timeSignatures.push({tick,numerator,denominator});
+          }
           p+=len;
         }else if(status===240||status===247){
           runningStatus=0;const len=vlq();p+=len;
@@ -51,7 +56,21 @@ globalThis.DruMusterChart=(()=>{
       if(e.tick===0)segments[0]={tick:0,sec:0,us};
       else segments.push({tick:e.tick,sec:lastSec,us});
     }
-    return {division,segments};
+
+    timeSignatures.sort((a,b)=>a.tick-b.tick);
+    const sigDedup=[];
+    for(const e of timeSignatures){
+      if(sigDedup.length&&sigDedup[sigDedup.length-1].tick===e.tick)sigDedup[sigDedup.length-1]=e;
+      else sigDedup.push(e);
+    }
+    if(!sigDedup.length||sigDedup[0].tick>0)sigDedup.unshift({tick:0,numerator:4,denominator:4});
+    const signatures=sigDedup.map(e=>({
+      ...e,
+      beat:e.tick/division,
+      measureBeats:e.numerator*4/e.denominator
+    }));
+
+    return {division,segments,signatures};
   }
 
   function secondsToBeat(sec,timing){
@@ -59,6 +78,31 @@ globalThis.DruMusterChart=(()=>{
     for(let i=1;i<segs.length&&segs[i].sec<=sec;i++)seg=segs[i];
     const tick=seg.tick+(sec-seg.sec)*1e6/seg.us*timing.division;
     return tick/timing.division;
+  }
+
+  function drawMeasureLines(ctx,w,h,judgeX,beatNow,timing){
+    const signatures=timing.signatures?.length?timing.signatures:[{beat:0,measureBeats:4}],
+          firstVisibleBeat=beatNow-judgeX/PIXELS_PER_QUARTER,
+          lastVisibleBeat=beatNow+(w-judgeX)/PIXELS_PER_QUARTER;
+
+    ctx.save();
+    ctx.strokeStyle="rgba(255,255,255,.16)";
+    ctx.lineWidth=1;
+    for(let i=0;i<signatures.length;i++){
+      const sig=signatures[i],
+            segmentStart=sig.beat||0,
+            segmentEnd=i+1<signatures.length?signatures[i+1].beat:Infinity,
+            measureBeats=sig.measureBeats||4;
+      let barBeat=segmentStart+Math.ceil((firstVisibleBeat-segmentStart)/measureBeats)*measureBeats;
+      if(barBeat<segmentStart)barBeat=segmentStart;
+      for(;barBeat<=lastVisibleBeat+.0001&&barBeat<segmentEnd-.0001;barBeat+=measureBeats){
+        const x=judgeX+(barBeat-beatNow)*PIXELS_PER_QUARTER;
+        if(x<0||x>w)continue;
+        const crisp=Math.round(x)+.5;
+        ctx.beginPath();ctx.moveTo(crisp,0);ctx.lineTo(crisp,h);ctx.stroke();
+      }
+    }
+    ctx.restore();
   }
 
   function draw({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
@@ -91,6 +135,9 @@ globalThis.DruMusterChart=(()=>{
     ctx.strokeStyle="#313a46";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
     ctx.fillStyle="#687483";ctx.font=`700 ${Math.max(8,kickH*.43)}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
 
+    // Thin, low-contrast bar lines run straight through every lane.
+    drawMeasureLines(ctx,w,h,judgeX,beatNow,timing);
+
     // One clean fixed judgement line; no circular lane markers.
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-Math.max(5,w*.007),0,Math.max(10,w*.014),h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
@@ -103,21 +150,26 @@ globalThis.DruMusterChart=(()=>{
             lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
             y=lane<3?laneH*(lane+.5):mainH+kickH/2,
             alpha=.48+.52*n.velocity/127,
-            color=n.type==="snare"?"#38a9ff":n.type.includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc",
-            barH=lane<3?Math.max(22,laneH*.68):Math.max(10,kickH-4);
+            color=n.type==="snare"?"#38a9ff":n.type.includes("Tom")?"#ad82ff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#a7b0bc";
 
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;
       ctx.fillStyle=color;
 
-      // No circles, triangles, crosses or diamonds: all notes are the same vertical bar.
-      // Open hi-hat alone uses two tightly spaced bars of exactly the same height.
-      if(n.type==="hhOpen"){
-        const total=OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP,
-              left=x-total/2;
-        ctx.fillRect(left,y-barH/2,OPEN_HH_BAR_WIDTH,barH);
-        ctx.fillRect(left+OPEN_HH_BAR_WIDTH+OPEN_HH_GAP,y-barH/2,OPEN_HH_BAR_WIDTH,barH);
+      if(lane<3){
+        const barTop=lane*laneH,
+              barH=laneH;
+        // Every playable note spans the full lane height. Open hi-hat alone is a tight double bar.
+        if(n.type==="hhOpen"){
+          const total=OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP,
+                left=x-total/2;
+          ctx.fillRect(left,barTop,OPEN_HH_BAR_WIDTH,barH);
+          ctx.fillRect(left+OPEN_HH_BAR_WIDTH+OPEN_HH_GAP,barTop,OPEN_HH_BAR_WIDTH,barH);
+        }else{
+          ctx.fillRect(x-NOTE_BAR_WIDTH/2,barTop,NOTE_BAR_WIDTH,barH);
+        }
       }else{
-        ctx.fillRect(x-NOTE_BAR_WIDTH/2,y-barH/2,NOTE_BAR_WIDTH,barH);
+        // Keep the existing kick-strip bar geometry unchanged.
+        ctx.fillRect(x-NOTE_BAR_WIDTH/2,mainH+2,NOTE_BAR_WIDTH,kickH-4);
       }
     }
 
