@@ -5,13 +5,13 @@
 .game .song-hud small{font-size:11px;line-height:1.05;margin-top:5px}
 
 /* User-supplied bass drum artwork sits behind the calibrated kit artwork.
-   Keep the current scale and move it exactly 20 CSS px upward. */
+   From the previous approved position, move it 4px left and 2px down only. */
 .kit-stage{isolation:isolate}
 .kit-stage .bass-drum-art{
   position:absolute!important;
   z-index:0!important;
-  left:50%!important;
-  top:calc(35.5% - 20px)!important;
+  left:calc(50% - 4px)!important;
+  top:calc(35.5% - 18px)!important;
   width:18.5%!important;
   height:auto!important;
   transform:translateX(-50%)!important;
@@ -23,33 +23,32 @@
 .kit-stage .kit-art{z-index:1}
 .kit-stage #hitLayer{z-index:4}
 
-/* app.js already pulses #kickFx for every automatic bass-drum note. */
+/* Automatic bass-drum strike flash. Position follows the red reference point.
+   Motion matches the normal drum strike flash; only the colour is monochrome. */
 #kickFx{
   display:block!important;
   position:absolute!important;
   z-index:3!important;
-  left:49.1%!important;
+  left:48.8%!important;
   right:auto!important;
-  top:73.2%!important;
+  top:72.6%!important;
   bottom:auto!important;
   width:7%!important;
   height:auto!important;
   aspect-ratio:1!important;
-  transform:translate(-50%,-50%)!important;
+  transform:translate(-50%,-50%) scale(.7)!important;
   border:0!important;
   border-radius:50%!important;
-  background:radial-gradient(circle,rgba(238,242,246,.38) 0 10%,rgba(211,218,225,.22) 20%,rgba(176,186,196,.10) 42%,rgba(155,166,177,.04) 56%,transparent 72%)!important;
-  box-shadow:none!important;
+  background:radial-gradient(circle,#fff 0 8%,rgba(215,221,226,.58) 24%,transparent 67%)!important;
+  box-shadow:0 0 28px rgba(207,214,220,.75)!important;
   opacity:0;
   pointer-events:none;
   mix-blend-mode:screen;
 }
-#kickFx.hit{animation:bassDrumGlow .28s ease-out!important}
-@keyframes bassDrumGlow{
-  0%{opacity:0;filter:brightness(.9);transform:translate(-50%,-50%) scale(.55)!important}
-  16%{opacity:.72;filter:brightness(1.25);transform:translate(-50%,-50%) scale(.92)!important}
-  42%{opacity:.42;filter:brightness(1.08);transform:translate(-50%,-50%) scale(1.04)!important}
-  100%{opacity:0;filter:brightness(1);transform:translate(-50%,-50%) scale(1.18)!important}
+#kickFx.hit{animation:kickDrumFlash .24s ease-out!important}
+@keyframes kickDrumFlash{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.4)!important}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)!important}
 }
 
 /* Four-key cymbal badges should stay readable without covering the kit. */
