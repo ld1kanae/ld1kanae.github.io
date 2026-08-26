@@ -47,12 +47,15 @@
 
   function nearestPlayable(t){
     if(typeof notes==="undefined")return null;
+    const search=globalThis.DruMasterNoteSearch;
+    if(search?.nearest)return search.nearest(notes,t,GOOD_WINDOW,n=>!n.hit&&n.type!=="kick");
     let best=null,bestDelta=GOOD_WINDOW+.000001;
     for(const n of notes){
+      if(n.time<t-GOOD_WINDOW)continue;
+      if(n.time>t+GOOD_WINDOW)break;
       if(n.hit||n.type==="kick")continue;
       const d=Math.abs(n.time-t);
       if(d<bestDelta){best=n;bestDelta=d}
-      if(n.time>t+GOOD_WINDOW)break;
     }
     return best?{note:best,delta:bestDelta}:null;
   }
