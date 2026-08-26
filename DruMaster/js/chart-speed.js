@@ -15,29 +15,6 @@
     return Number.isFinite(base)&&base>0?base:DEFAULT_PX_PER_QUARTER;
   }
 
-  function drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,pxPerQuarter){
-    const signatures=timing.signatures?.length?timing.signatures:[{beat:0,measureBeats:4}],
-          firstVisibleBeat=beatNow-judgeX/pxPerQuarter,
-          lastVisibleBeat=beatNow+(w-judgeX)/pxPerQuarter;
-    ctx.save();
-    ctx.strokeStyle="rgba(255,255,255,.08)";
-    ctx.lineWidth=1;
-    for(let i=0;i<signatures.length;i++){
-      const sig=signatures[i],segmentStart=sig.beat||0,
-            segmentEnd=i+1<signatures.length?signatures[i+1].beat:Infinity,
-            measureBeats=sig.measureBeats||4;
-      let barBeat=segmentStart+Math.ceil((firstVisibleBeat-segmentStart)/measureBeats)*measureBeats;
-      if(barBeat<segmentStart)barBeat=segmentStart;
-      for(;barBeat<=lastVisibleBeat+.0001&&barBeat<segmentEnd-.0001;barBeat+=measureBeats){
-        const x=judgeX+(barBeat-beatNow)*pxPerQuarter;
-        if(x<0||x>w)continue;
-        const crisp=Math.round(x)+.5;
-        ctx.beginPath();ctx.moveTo(crisp,0);ctx.lineTo(crisp,h);ctx.stroke();
-      }
-    }
-    ctx.restore();
-  }
-
   function drawConfigured({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
     const pxPerQuarter=pixelsPerQuarter(),w=canvas.clientWidth,h=canvas.clientHeight,
           beatNow=chart.secondsToBeat(currentSec,timing),division=timing.division||480,
@@ -55,7 +32,7 @@
     ctx.strokeStyle="#5b6d82";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
     ctx.fillStyle="#687483";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
 
-    drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,pxPerQuarter);
+    chart.drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,pxPerQuarter);
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
 
