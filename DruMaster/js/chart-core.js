@@ -6,6 +6,7 @@ globalThis.DruMusterChart=(()=>{
   const OPEN_HH_BAR_WIDTH=3;
   const OPEN_HH_GAP=1;
   const MOBILE_JUDGE_OFFSET=80;
+  const signatureCache=new WeakMap();
 
   function isMobileLayout(){
     return !!globalThis.matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;
@@ -104,6 +105,7 @@ globalThis.DruMusterChart=(()=>{
      Valid MIDI time signatures are respected; missing or malformed data falls
      back to 4/4 so every song always has one separator per measure. */
   function normalizedSignatures(timing){
+    if(timing&&typeof timing==="object"&&signatureCache.has(timing))return signatureCache.get(timing);
     const raw=Array.isArray(timing?.signatures)?timing.signatures:[],out=[];
     for(const sig of raw){
       const beat=Number(sig?.beat),measureBeats=Number(sig?.measureBeats);
@@ -113,6 +115,7 @@ globalThis.DruMusterChart=(()=>{
       else out.push(entry);
     }
     if(!out.length||out[0].beat>1e-7)out.unshift({beat:0,measureBeats:4});
+    if(timing&&typeof timing==="object")signatureCache.set(timing,out);
     return out;
   }
 
@@ -140,6 +143,12 @@ globalThis.DruMusterChart=(()=>{
     ctx.restore();
   }
 
+  function visibleRange(notes,minTick,maxTick){
+    const search=globalThis.DruMasterNoteSearch;
+    if(search?.visibleTickRange)return search.visibleTickRange(notes,minTick,maxTick);
+    return {start:0,end:notes.length};
+  }
+
   function draw({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
     const w=canvas.clientWidth,h=canvas.clientHeight,beatNow=secondsToBeat(currentSec,timing),division=timing.division||480,
           judgeX=judgementX(w),judgeZoneW=judgementZoneWidth(w),kickH=Math.max(16,h*.12),mainH=h-kickH,laneH=mainH/3,
@@ -156,9 +165,14 @@ globalThis.DruMusterChart=(()=>{
     drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,PIXELS_PER_QUARTER);
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
-    for(const n of notes){
+
+    const minBeat=beatNow-48/PIXELS_PER_QUARTER,
+          maxBeat=beatNow+(w+48-judgeX)/PIXELS_PER_QUARTER,
+          {start,end}=visibleRange(notes,minBeat*division,maxBeat*division);
+    for(let i=start;i<end;i++){
+      const n=notes[i];
       if(skipHit&&n.hit)continue;
-      const x=judgeX+(n.tick/division-beatNow)*PIXELS_PER_QUARTER;if(x<judgeX-48||x>w+48)continue;
+      const x=judgeX+(n.tick/division-beatNow)*PIXELS_PER_QUARTER;
       const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,alpha=.48+.52*n.velocity/127,visual=noteVisual(n.type,group);
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;ctx.fillStyle=visual.color;
       if(lane<3){
