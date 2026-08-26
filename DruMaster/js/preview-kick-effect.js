@@ -10,7 +10,7 @@
     fx.classList.remove("hit","auto-hit");
     kickAnimation?.cancel();
     kickAnimation=fx.animate([
-      {opacity:.9,transform:"translate(-50%,-50%) scale(.4)"},
+      {opacity:.8,transform:"translate(-50%,-50%) scale(.4)"},
       {opacity:0,transform:"translate(-50%,-50%) scale(1.5)"}
     ],{duration:240,easing:"ease-out"});
   }
