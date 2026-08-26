@@ -29,7 +29,7 @@
     if(ab.byteLength<14||cc(0)!=="MThd")throw Error("MIDIヘッダーが不正です");
     const headerLen=d.getUint32(4,false),tracks=d.getUint16(10,false),division=d.getUint16(12,false);
     if(division&0x8000)throw Error("SMPTE time divisionには未対応です");
-    const ppq=division,rawNotes=[],tempos=[{tick:0,us:500000}],rawEvents=[];
+    const ppq=division,rawNotes=[],tempos=[{tick:0,us:500000}];
     let pos=8+headerLen;
     for(let tr=0;tr<tracks;tr++){
       if(pos+8>bytes.length||cc(pos)!=="MTrk")throw Error(`MIDI track ${tr+1} が不正です`);
@@ -48,7 +48,6 @@
         if(i+need>end)break;
         const a=bytes[i++],b=need===2?bytes[i++]:0;
         if(hi===0x90&&b>0)rawNotes.push({tick,note:a,velocity:b,track:tr});
-        rawEvents.push({tick,status:statusByte,a,b});
       }
       pos=end;
     }
@@ -148,14 +147,11 @@
 
   function stopSource(){if(source){try{source.onended=null;source.stop()}catch{}try{source.disconnect()}catch{}source=null}}
   function stopClicks(){for(const o of activeClicks){try{o.stop()}catch{}try{o.disconnect()}catch{}}activeClicks.clear();if(clickTimer)clearInterval(clickTimer);clickTimer=0}
-  function stopPlayback(keepPosition=true){
-    if(playing&&keepPosition)logicalStart=currentTime();playing=false;stopSource();stopClicks();playBtn.textContent="▶ 再生";draw();
-  }
+  function stopPlayback(keepPosition=true){if(playing&&keepPosition)logicalStart=currentTime();playing=false;stopSource();stopClicks();playBtn.textContent="▶ 再生";draw()}
   function scheduleAudio(logical,when){
     stopSource();const s=ac.createBufferSource();s.buffer=audioBuffer;s.connect(ac.destination);source=s;
     const audioPos=logical+offsetMs/1000;
-    if(audioPos>=0)s.start(when,Math.min(audioPos,audioBuffer.duration-.001));
-    else s.start(when-audioPos,0);
+    if(audioPos>=0)s.start(when,Math.min(audioPos,audioBuffer.duration-.001));else s.start(when-audioPos,0);
     s.onended=()=>{if(source===s&&playing&&currentTime()>=duration-.02){logicalStart=duration;stopPlayback(false)}};
   }
   function firstNoteAt(t){let lo=0,hi=midiNotes.length;while(lo<hi){const m=(lo+hi)>>1;if(midiNotes[m].time<t)lo=m+1;else hi=m}return lo}
@@ -172,13 +168,15 @@
     const t=logicalStart,when=ac.currentTime+.045;contextStart=when;logicalStart=t;playing=true;scheduleAudio(t,when);nextClickIndex=firstNoteAt(t-.01);stopClicks();clickTimer=setInterval(scheduleClicks,35);scheduleClicks();playBtn.textContent="Ⅱ 一時停止";animate();
   }
   function restartAtSameLogical(){if(!playing)return;const t=currentTime();stopSource();stopClicks();logicalStart=t;contextStart=ac.currentTime+.035;scheduleAudio(t,contextStart);nextClickIndex=firstNoteAt(t-.01);clickTimer=setInterval(scheduleClicks,35);scheduleClicks()}
-  function animate(){if(raf)cancelAnimationFrame(raf);const tick=()=>{raf=0;if(playing){const t=currentTime(),end=viewStart+viewportDuration();if(t<viewStart||t>end){setViewStart(clamp(t-viewportDuration()*.25,0,maxViewStart()))}draw();if(t>=duration){logicalStart=duration;stopPlayback(false);return}raf=requestAnimationFrame(tick)}};raf=requestAnimationFrame(tick)}
+  function animate(){if(raf)cancelAnimationFrame(raf);const tick=()=>{raf=0;if(playing){const t=currentTime(),end=viewStart+viewportDuration();if(t<viewStart||t>end)setViewStart(clamp(t-viewportDuration()*.25,0,maxViewStart()));draw();if(t>=duration){logicalStart=duration;stopPlayback(false);return}raf=requestAnimationFrame(tick)}};raf=requestAnimationFrame(tick)}
 
   function seek(t){logicalStart=clamp(t,0,duration);if(playing)restartAtSameLogical();draw()}
   function setOffset(v,restart=true){offsetMs=round01(clamp(Number(v)||0,-500,500));offsetInput.value=offsetMs.toFixed(1);offsetReadout.textContent=fmtMs(offsetMs);$("#productionCode").textContent=`playback:{stemOffsetSec:${formatSec(offsetMs)}}`;draw();if(restart&&playing)restartAtSameLogical()}
   function formatSec(ms){const s=round01(ms)/1000;if(s===0)return "0";const abs=Math.abs(s).toFixed(4).replace(/^0/,"").replace(/0+$/,"");return `${s<0?"-":""}${abs}`}
 
-  playBtn.onclick=()=>playing?stopPlayback(true):startPlayback();stopBtn.onclick=()=>{stopPlayback(false);logicalStart=0;draw()};$("#back1").onclick=()=>seek(currentTime()-1);$("#forward1").onclick=()=>seek(currentTime()+1);
+  playBtn.onclick=()=>playing?stopPlayback(true):startPlayback();
+  stopBtn.onclick=()=>{stopPlayback(false);logicalStart=0;draw()};
+  $("#back1").onclick=()=>seek(currentTime()-1);$("#forward1").onclick=()=>seek(currentTime()+1);
   offsetInput.addEventListener("change",()=>setOffset(offsetInput.value));offsetInput.addEventListener("keydown",e=>{if(e.key==="Enter"){setOffset(offsetInput.value);offsetInput.blur()}});
   document.querySelectorAll("[data-nudge]").forEach(b=>b.onclick=()=>setOffset(offsetMs+Number(b.dataset.nudge)));
   $("#resetOffset").onclick=()=>setOffset(PRODUCTION_OFFSET_MS);
@@ -186,22 +184,19 @@
   $("#copyCode").onclick=async()=>{await navigator.clipboard?.writeText($("#productionCode").textContent);$("#copyCode").textContent="コピー済";setTimeout(()=>$("#copyCode").textContent="コードをコピー",800)};
   midiClick.onchange=()=>{if(playing){stopClicks();nextClickIndex=firstNoteAt(currentTime());if(midiClick.checked){clickTimer=setInterval(scheduleClicks,35);scheduleClicks()}}};
 
-  zoomInput.oninput=()=>{const old=pxPerSec,center=viewStart+viewportDuration()/2;pxPerSec=Number(zoomInput.value);zoomText.textContent=`${pxPerSec} px/s`;viewStart=clamp(center-viewportDuration()/2,0,maxViewStart());syncScrollFromView();draw()};
+  zoomInput.oninput=()=>{const center=viewStart+viewportDuration()/2;pxPerSec=Number(zoomInput.value);zoomText.textContent=`${pxPerSec} px/s`;viewStart=clamp(center-viewportDuration()/2,0,maxViewStart());syncScrollFromView();draw()};
   scrollInput.oninput=()=>{const m=maxViewStart();viewStart=m*Number(scrollInput.value)/1000;draw()};
   canvas.addEventListener("wheel",e=>{
     e.preventDefault();const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,anchor=xToTime(x);
-    if(e.ctrlKey){pxPerSec=clamp(Math.round(pxPerSec*(e.deltaY<0?1.22:.82)/10)*10,60,6000);zoomInput.value=String(pxPerSec);zoomText.textContent=`${pxPerSec} px/s`;viewStart=clamp(anchor-x/pxPerSec,0,maxViewStart());syncScrollFromView();draw()}
-    else setViewStart(viewStart+e.deltaY/pxPerSec*1.8);
+    if(e.ctrlKey){pxPerSec=clamp(Math.round(pxPerSec*(e.deltaY<0?1.22:.82)/10)*10,60,6000);zoomInput.value=String(pxPerSec);zoomText.textContent=`${pxPerSec} px/s`;viewStart=clamp(anchor-x/pxPerSec,0,maxViewStart());syncScrollFromView();draw()}else setViewStart(viewStart+e.deltaY/pxPerSec*1.8);
   },{passive:false});
 
   canvas.addEventListener("pointerdown",e=>{
     const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,waveBottom=Math.round(r.height*.62);
-    if(y>=27&&y<=waveBottom){drag={id:e.pointerId,startX:x,startOffset:offsetMs,moved:false};canvas.setPointerCapture(e.pointerId);canvas.style.cursor="ew-resize"}
-    else seek(xToTime(x));
+    if(y>=27&&y<=waveBottom){drag={id:e.pointerId,startX:x,startOffset:offsetMs,moved:false};canvas.setPointerCapture(e.pointerId);canvas.style.cursor="ew-resize"}else seek(xToTime(x));
   });
   canvas.addEventListener("pointermove",e=>{
     if(!drag||drag.id!==e.pointerId)return;const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,dx=x-drag.startX;if(Math.abs(dx)>1)drag.moved=true;
-    /* Dragging the waveform right means delaying it, i.e. decreasing the positive source-skip offset. */
     setOffset(drag.startOffset-dx/pxPerSec*1000,false);
   });
   function finishDrag(e){if(!drag||drag.id!==e.pointerId)return;const d=drag;drag=null;canvas.style.cursor="crosshair";try{canvas.releasePointerCapture(e.pointerId)}catch{}if(playing)restartAtSameLogical();if(!d.moved){const r=canvas.getBoundingClientRect();seek(xToTime(e.clientX-r.left))}}
@@ -209,7 +204,8 @@
 
   async function load(){
     try{
-      if(matchMedia("(hover:none) and (pointer:coarse)").matches||innerWidth<1100){$("#pcOnly").hidden=false;return}
+      /* This is a desktop-oriented tool, not a device-gated tool. Browser width,
+         emulation flags and pointer heuristics are intentionally not used to block it. */
       ensureAudioContext();status.textContent="Rayドラム音源を読み込み中…";
       const [audioRes,midiRes]=await Promise.all([fetch(AUDIO_URL,{cache:"force-cache"}),fetch(MIDI_URL,{cache:"no-store"})]);
       if(!audioRes.ok)throw Error(`ドラム音源 HTTP ${audioRes.status}`);if(!midiRes.ok)throw Error(`MIDI HTTP ${midiRes.status}`);
