@@ -6,7 +6,7 @@ const MIDI_MAP={35:"kick",36:"kick",38:"snare",40:"snare",41:"floorTom",43:"floo
 const PART={kick:"kick",snare:"snare",floorTom:"floorTom",midTom:"midTom",highTom:"highTom",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"ride",crash:"crash",special:"special"};
 
 const pauseBtn=document.querySelector("#pause"),pausePanel=document.querySelector("#pausePanel"),resumeBtn=document.querySelector("#resume"),quitBtn=document.querySelector("#quit"),subtitle=document.querySelector(".song-hud small"),hiddenJudge=document.querySelector(".hidden-header-judge"),hiddenJudgeText=hiddenJudge?.querySelector(".lane-judge-text");
-let notes=[],timing={division:480,segments:[{tick:0,sec:0,us:500000}]},duration=0,previewStart=0,timeOffset=0,startPerf=0,pausedAt=0,paused=false,hitCursor=0,raf=0,ready=false;
+let notes=[],timing={division:480,segments:[{tick:0,sec:0,us:500000}]},duration=0,previewStart=0,timeOffset=0,startPerf=0,pausedAt=0,paused=false,hitCursor=0,raf=0,ready=false,judgeLifeAnimation=null,judgeTextAnimation=null;
 
 function parseDrumNotes(ab){
   const d=new DataView(ab);let p=0;
@@ -50,9 +50,31 @@ function showHiddenJudge(label="PERFECT"){
   if(!hiddenJudge||!hiddenJudgeText)return;
   hiddenJudgeText.textContent=label;
   hiddenJudge.dataset.grade=label.toLowerCase();
+
+  // Keep the production CSS bloom/flare, but restart the visible lifetime with
+  // Web Animations as well so the preview always shows a judgement even when
+  // several notes arrive in adjacent animation frames.
   hiddenJudge.classList.remove("play");
   void hiddenJudge.offsetWidth;
   hiddenJudge.classList.add("play");
+
+  judgeLifeAnimation?.cancel();
+  judgeTextAnimation?.cancel();
+  judgeLifeAnimation=hiddenJudge.animate([
+    {opacity:0,offset:0},
+    {opacity:1,offset:.032},
+    {opacity:1,offset:.096},
+    {opacity:.58,offset:.192},
+    {opacity:.22,offset:.288},
+    {opacity:0,offset:1}
+  ],{duration:500,easing:"linear"});
+  judgeTextAnimation=hiddenJudgeText.animate([
+    {opacity:0,transform:"scaleX(1.04) scale(.48) translateY(2px)",offset:0},
+    {opacity:1,transform:"scaleX(1.04) scale(1.14) translateY(0)",offset:.048},
+    {opacity:1,transform:"scaleX(1.04) scale(.98)",offset:.10},
+    {opacity:1,transform:"scaleX(1.04) scale(1)",offset:.152},
+    {opacity:.35,transform:"scaleX(1.04) scale(1) translateY(-1px)",offset:1}
+  ],{duration:500,easing:"cubic-bezier(.16,.84,.24,1)"});
 }
 
 function flashPart(part){
