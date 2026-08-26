@@ -28,27 +28,26 @@
   filter:none!important;
 }
 
-/* Visible centre-out radial gradient only: no rim, ring, stroke, or enclosing disc. */
+/* Expanded centre-out radial gradient only: no white core, rim, ring, stroke, or disc. */
 .game header .rank::before{
   content:"";
   position:absolute;
   z-index:0;
   left:50%;
   top:50%;
-  width:40px;
-  height:40px;
+  width:52px;
+  height:52px;
   transform:translate(-50%,-50%);
   border:0;
   border-radius:0;
   pointer-events:none;
   background:radial-gradient(circle at center,
-    rgba(245,255,252,.78) 0%,
-    rgba(170,255,244,.68) 16%,
-    rgba(82,223,207,.52) 34%,
-    rgba(42,205,181,.32) 50%,
-    rgba(50,183,204,.16) 62%,
-    rgba(50,183,204,.06) 70%,
-    transparent 78%);
+    rgba(170,255,244,.68) 0%,
+    rgba(82,223,207,.56) 18%,
+    rgba(42,205,181,.38) 38%,
+    rgba(50,183,204,.20) 56%,
+    rgba(50,183,204,.08) 68%,
+    transparent 80%);
   box-shadow:none;
   opacity:.82;
   filter:none;
@@ -89,8 +88,8 @@
     margin:0 6px 0 2px;
   }
   .game header .rank::before{
-    width:25px;
-    height:25px;
+    width:33px;
+    height:33px;
     opacity:.78;
   }
   .game header .rank span{
