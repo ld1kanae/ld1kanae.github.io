@@ -182,6 +182,10 @@
     bottom:-7px;
     filter:blur(7px);
   }
+  /* Cumulative desktop correction: 4px + 4px + 2px left. */
+  .lane-judge-fx[data-lane]{
+    transform:translate(calc(-50% - 10px),-50%)!important;
+  }
 }
 
 /* Smartphones are touch-first; keyboard badges are only useful on PC. */
@@ -203,5 +207,9 @@
     top:-3px;
     bottom:-3px;
     filter:blur(4px);
+  }
+  /* judgement.js already contributes +2px; add another +2px here. */
+  .lane-judge-fx[data-lane]{
+    transform:translate(2px,-50%)!important;
   }
 }
