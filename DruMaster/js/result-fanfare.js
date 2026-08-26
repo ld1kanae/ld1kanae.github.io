@@ -34,7 +34,7 @@
     try{
       const source=ac.createBufferSource(),gain=ac.createGain();
       source.buffer=buffer;
-      gain.gain.value=.7;
+      gain.gain.value=.5;
       source.connect(gain).connect(typeof masterBus!=="undefined"&&masterBus?masterBus:ac.destination);
       source.onended=()=>{
         if(voice!==source)return;
