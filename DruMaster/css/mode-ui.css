@@ -13,8 +13,20 @@
   filter:drop-shadow(0 1px 0 #0008) drop-shadow(0 0 7px rgba(87,190,255,.18));
 }
 
-/* Hidden Mode is smartphone-only for now. */
-.hidden-mode-option{display:none}
+/* Smartphone-only modes. */
+.hidden-mode-option,.performance-mode-option{display:none}
+.performance-mode-option select{
+  min-width:138px;
+  padding:5px 24px 5px 8px;
+  border:1px solid #344354;
+  border-radius:7px;
+  background:#0b1119;
+  color:#e8f1fa;
+  font:700 10px/1.15 system-ui,sans-serif;
+  outline:none;
+}
+.option.mode-locked{opacity:.34}
+.option.mode-locked i{filter:grayscale(1)}
 
 /* PC-only volume panel. */
 .volume-box{display:none;width:min(480px,90vw);margin-top:14px;padding:13px 20px;background:#111721;border:1px solid #2d3745;border-radius:15px}
@@ -42,7 +54,10 @@
 }
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .hidden-mode-option{display:flex}
+  .hidden-mode-option,.performance-mode-option{display:flex}
+  .performance-mode-option{min-height:34px}
+  .performance-mode-option>span{font-size:12px}
+  .performance-mode-option select{font-size:10px;max-width:170px}
   .volume-box{display:none!important}
 
   /* Hidden Mode: no chart area; the drum kit occupies the complete play area below the HUD. */
