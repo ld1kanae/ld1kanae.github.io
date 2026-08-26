@@ -1,8 +1,8 @@
 "use strict";
 
 (()=>{
-  const STORAGE_KEY="drumasterRankingV2",LEGACY_KEY="drumasterRankingV1",
-        PERFORMANCE_STORAGE_KEY="drumasterPerformanceRankingV1",MAX_RECORDS=10;
+  const STORAGE_KEY="drumasterRankingV3",
+        PERFORMANCE_STORAGE_KEY="drumasterPerformanceRankingV2",MAX_RECORDS=10;
   const resultEl=document.querySelector("#result");
   if(!resultEl)return;
 
@@ -33,16 +33,8 @@
 
   function readAll(){
     try{
-      let data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-      if(!Array.isArray(data))data=[];
-      if(!data.length){
-        const legacy=JSON.parse(localStorage.getItem(LEGACY_KEY)||"[]");
-        if(Array.isArray(legacy)&&legacy.length){
-          data=legacy.filter(x=>x&&Number.isFinite(+x.score)&&typeof x.date==="string").map(x=>({...x,song:"nanairo"}));
-          writeAll(data);
-        }
-      }
-      return data.filter(x=>x&&Number.isFinite(+x.score)&&typeof x.date==="string");
+      const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+      return Array.isArray(data)?data.filter(x=>x&&Number.isFinite(+x.score)&&typeof x.date==="string"):[];
     }catch{return []}
   }
   function writeAll(rows){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(rows))}catch{}}
@@ -58,10 +50,6 @@
     }catch{return []}
   }
   function writePerformanceAll(rows){try{localStorage.setItem(PERFORMANCE_STORAGE_KEY,JSON.stringify(rows))}catch{}}
-  function readPerformanceRanking(){
-    const id=song().id;
-    return readPerformanceAll().filter(x=>(x.song||"nanairo")===id).sort((a,b)=>b.score-a.score||String(b.id).localeCompare(String(a.id))).slice(0,MAX_RECORDS);
-  }
 
   function localDateString(){
     const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
@@ -168,7 +156,7 @@
     cancelAnimationFrame(raf);
     game.classList.add("hidden");
 
-    const final=Math.max(0,Math.round(score/maxScore*1000000));
+    const final=Math.max(0,Math.round(score));
     document.querySelector("#perfectCount").textContent=counts.perfect;
     document.querySelector("#greatCount").textContent=counts.great;
     document.querySelector("#goodCount").textContent=counts.good;
