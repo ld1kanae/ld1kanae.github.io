@@ -1,13 +1,13 @@
 "use strict";
 
 (()=>{
-  /* Real-time playback must never compete with network work. All required song
-     data is fetched and decoded before running becomes true. Network access is
-     restored while paused and after finish so future sync/admin work remains
-     possible outside the timing-critical section. */
+  /* Real-time gameplay must never compete with network work. All required song
+     data is fetched and decoded before running becomes true. Once a run starts,
+     keep network access disabled for the entire run, including pause, and only
+     restore it after RESULT / HOME so nothing can wake the radio mid-session. */
   const isPlaybackLocked=()=>{
     try{
-      return typeof running!=="undefined"&&typeof paused!=="undefined"&&running&&!paused;
+      return typeof running!=="undefined"&&running;
     }catch{return false}
   };
 
