@@ -137,6 +137,9 @@
       await loadStem("base","オフボーカル");
       if($("#vocalToggle").checked)await loadStem("vocals","ボーカル");
       if($("#guideToggle").checked)await loadStem("drums","ガイドドラム");
+      /* Decode the result fanfare before the timing-critical run begins. */
+      try{await globalThis.DruMasterResultFanfare?.prepare?.()}
+      catch(e){console.warn("Result fanfare preload failed",e)}
       /* Ensure static artwork/font requests are also finished before the timing-
          critical section begins. No resource load is intentionally left active. */
       await finishVisualPreload();
@@ -155,6 +158,7 @@
       result.classList.toggle("autoplay",autoplay);
       game.classList.remove("hidden");
 
+      globalThis.DruMasterResultFanfare?.stop?.();
       stopRunAudio();
       const startAt=ac.currentTime+.055;
       startStemSet(startAt);
