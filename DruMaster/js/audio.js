@@ -79,7 +79,7 @@ loadDrumSource=async function(manifest){
 
   drumBuffer=await ac.decodeAudioData(wav.slice(0));
   const sourceNotes=parseMidi(midi);
-  if(!sourceNotes.length)throw Error("ドラム音源MIDIにノートがありません");
+  if(!sourceNotes.length)throw Error("ゲーム内ドラム音源MIDIにノートがありません");
   drumSourceVelocity=manifest.sourceVelocity||100;
   drumRegions={};
   sourceNotes.forEach((n,i)=>{
@@ -106,10 +106,16 @@ playDrum=function(_chartNote,type,v=.75){
   source.buffer=drumBuffer;
   gain.gain.value=.7*velocityGain*mix;
   source.connect(gain).connect(masterBus);
-  source.start(now,region.offset,region.duration);
+
+  let voice=null;
   if(type==="hhOpen"){
-    const voice={source,gain};
+    voice={source,gain};
     openHatVoices.push(voice);
-    source.onended=()=>{openHatVoices=openHatVoices.filter(x=>x!==voice)};
   }
+  source.onended=()=>{
+    if(voice)openHatVoices=openHatVoices.filter(x=>x!==voice);
+    try{source.disconnect()}catch{}
+    try{gain.disconnect()}catch{}
+  };
+  source.start(now,region.offset,region.duration);
 };
