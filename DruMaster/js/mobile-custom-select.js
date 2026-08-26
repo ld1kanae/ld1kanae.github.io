@@ -59,7 +59,8 @@
 
     const value=document.createElement("span");
     value.className="mobile-custom-select-value";
-    const arrow=document.createElement("i");
+    /* Do not use <i> here: .option i is the legacy toggle-switch knob selector. */
+    const arrow=document.createElement("span");
     arrow.className="mobile-custom-select-arrow";
     arrow.setAttribute("aria-hidden","true");
     trigger.append(value,arrow);
