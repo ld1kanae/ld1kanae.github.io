@@ -13,7 +13,7 @@
       <div>
         <p class="eyebrow">DRUMASTER / DEBUG TOOL</p>
         <h1>Ray — Drum Stem / MIDI Sync</h1>
-        <p class="sub">伴奏ドラム波形と譜面MIDIを同一時間軸で比較します。波形を左右へドラッグするとオフセットを変更できます。</p>
+        <p class="sub">伴奏ドラム波形と譜面MIDIを同一時間軸で比較します。波形を左右へドラッグするとオフセットを0.1ms単位で変更できます。</p>
       </div>
       <div class="status-box"><span>STATUS</span><b id="status">読み込み中…</b></div>
     </header>
@@ -34,22 +34,22 @@
       <div class="panel offset-panel">
         <span class="panel-label">STEM OFFSET</span>
         <div class="offset-main">
-          <label><input id="offset" type="number" min="-500" max="500" step="0.5" value="21.5"><span>ms</span></label>
+          <label><input id="offset" type="number" min="-500" max="500" step="0.1" value="21.5"><span>ms</span></label>
           <strong id="offsetReadout">+21.5 ms</strong>
         </div>
         <div class="offset-buttons">
-          <button data-nudge="-10">−10</button><button data-nudge="-1">−1</button>
-          <button data-nudge="1">＋1</button><button data-nudge="10">＋10</button>
+          <button data-nudge="-1">−1.0</button><button data-nudge="-0.1">−0.1</button>
+          <button data-nudge="0.1">＋0.1</button><button data-nudge="1">＋1.0</button>
           <button id="resetOffset">本番値 21.5ms</button><button id="copyOffset">値をコピー</button>
         </div>
-        <p>＋：音源の頭をスキップしてドラム音を前へ出す ／ −：ドラム音を後ろへ遅らせる</p>
+        <p>すべて0.1ms単位。＋：音源の頭をスキップしてドラム音を前へ出す ／ −：ドラム音を後ろへ遅らせる</p>
       </div>
 
       <div class="panel view-panel">
         <span class="panel-label">VIEW</span>
-        <label>拡大率 <input id="zoom" type="range" min="60" max="520" step="10" value="180"><output id="zoomText">180 px/s</output></label>
+        <label>拡大率 <input id="zoom" type="range" min="60" max="6000" step="10" value="180"><output id="zoomText">180 px/s</output></label>
         <label>表示位置 <input id="scroll" type="range" min="0" max="1000" step="1" value="0"></label>
-        <p>マウスホイール：時間軸移動 ／ Ctrl＋ホイール：ズーム</p>
+        <p>マウスホイール：時間軸移動 ／ Ctrl＋ホイール：ズーム（最大6000px/s）</p>
       </div>
     </section>
 
@@ -59,7 +59,7 @@
         <div class="legend"><span class="wave-key">WAVE</span><span class="midi-key">MIDI NOTE</span><span class="cursor-key">PLAYHEAD</span></div>
       </div>
       <canvas id="timeline" aria-label="Rayドラム波形とMIDI譜面"></canvas>
-      <p class="drag-help">波形エリアを左右にドラッグして調整　｜　ルーラー／MIDIレーンをクリックしてシーク</p>
+      <p class="drag-help">波形エリアを左右にドラッグして0.1ms単位で調整　｜　ルーラー／MIDIレーンをクリックしてシーク</p>
     </section>
 
     <section class="info-grid">
@@ -73,6 +73,6 @@
       <p>横幅のあるPCブラウザで開いてください。</p>
     </section>
   </main>
-  <script src="js/ray-sync-debug.js?v=20260827-raysync1"></script>
+  <script src="js/ray-sync-debug.js?v=20260827-raysync2"></script>
 </body>
 </html>
