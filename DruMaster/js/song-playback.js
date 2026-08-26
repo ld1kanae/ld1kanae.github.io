@@ -120,6 +120,9 @@
         try{await img.decode()}catch{}
       }
     }));
+    /* game-chart.js performs one timing-MIDI request during page setup. Await it
+       explicitly so no already-started network request can overlap gameplay. */
+    try{await globalThis.DruMasterChartTimingReady}catch{}
     try{await document.fonts?.ready}catch{}
   }
 
