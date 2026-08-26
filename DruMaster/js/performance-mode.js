@@ -67,7 +67,7 @@
     else{mult=.4;label="GOOD";counts.good++}
     score+=weight(note.type)*note.velocity/127*1000*mult;
     const scoreNode=document.querySelector("#score");
-    if(scoreNode)scoreNode.textContent=String(Math.round(score/maxScore*1000000)).padStart(6,"0");
+    if(scoreNode)scoreNode.textContent=String(Math.round(score)).padStart(6,"0");
     return label;
   }
 
