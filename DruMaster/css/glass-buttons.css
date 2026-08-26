@@ -1,0 +1,93 @@
+/* Dark translucent glass controls inspired by the supplied pill-button reference.
+   Drum hit targets and the compact pause icon are intentionally excluded. */
+#start,
+#pausePanel button,
+.result-actions button,
+.mic-cal-actions button{
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate;
+  border:1px solid rgba(160,205,232,.38)!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(73,116,148,.25) 0%,rgba(19,38,54,.29) 50%,rgba(7,18,29,.42) 100%)!important;
+  color:#edf8ff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(244,253,255,.24),
+    inset 0 -1px 0 rgba(70,124,160,.15),
+    0 9px 24px rgba(0,0,0,.24),
+    0 0 18px rgba(66,177,230,.055)!important;
+  backdrop-filter:blur(13px) saturate(135%);
+  -webkit-backdrop-filter:blur(13px) saturate(135%);
+  text-shadow:0 1px 0 rgba(0,0,0,.48);
+  transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,transform .08s ease!important;
+}
+#start::after,
+#pausePanel button::after,
+.result-actions button::after,
+.mic-cal-actions button::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  left:9%;
+  right:9%;
+  top:1px;
+  height:45%;
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(226,249,255,.20),rgba(158,224,247,.055) 55%,transparent 100%);
+  filter:blur(.1px);
+}
+#start:hover:not(:disabled),
+#pausePanel button:hover,
+.result-actions button:hover,
+.mic-cal-actions button:hover:not(:disabled){
+  border-color:rgba(128,219,255,.66)!important;
+  background:linear-gradient(180deg,rgba(67,153,202,.30),rgba(16,49,67,.34) 52%,rgba(7,23,34,.46))!important;
+  box-shadow:inset 0 1px 0 rgba(247,254,255,.32),inset 0 -1px 0 rgba(80,150,188,.19),0 0 22px rgba(72,196,255,.12),0 10px 24px rgba(0,0,0,.26)!important;
+}
+#start:active:not(:disabled),
+#pausePanel button:active,
+.result-actions button:active,
+.mic-cal-actions button:active:not(:disabled){transform:translateY(1px);}
+
+/* Primary actions: same glass construction, slightly brighter cyan volume. */
+#start,
+#retry,
+#resume,
+#micCalStart{
+  border-color:rgba(111,216,255,.58)!important;
+  background:linear-gradient(180deg,rgba(51,166,220,.34) 0%,rgba(18,70,94,.34) 52%,rgba(7,29,43,.47) 100%)!important;
+  color:#f5fcff!important;
+  box-shadow:inset 0 1px 0 rgba(244,254,255,.32),inset 0 -1px 0 rgba(53,145,185,.17),0 0 20px rgba(56,169,255,.13),0 9px 24px rgba(0,0,0,.24)!important;
+}
+
+/* Secondary actions stay darker so the hierarchy remains readable. */
+#home,
+#quit,
+#endRun,
+#micCalRetry{
+  border-color:rgba(151,181,207,.38)!important;
+  background:linear-gradient(180deg,rgba(55,76,99,.25),rgba(15,29,43,.36) 55%,rgba(7,15,25,.47))!important;
+  color:#e7f1fa!important;
+  box-shadow:inset 0 1px 0 rgba(240,248,255,.18),inset 0 -1px 0 rgba(89,116,143,.13),0 8px 22px rgba(0,0,0,.24)!important;
+}
+
+#start:disabled,
+#micCalStart:disabled{
+  border-color:rgba(113,132,151,.20)!important;
+  background:linear-gradient(180deg,rgba(48,60,72,.19),rgba(17,25,34,.30))!important;
+  color:#667687!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+  text-shadow:none;
+  opacity:.72;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  #start,
+  #pausePanel button,
+  .result-actions button,
+  .mic-cal-actions button{
+    backdrop-filter:blur(9px) saturate(125%);
+    -webkit-backdrop-filter:blur(9px) saturate(125%);
+  }
+}
