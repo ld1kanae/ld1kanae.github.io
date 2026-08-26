@@ -2,7 +2,21 @@
 
 (()=>{
   const STORAGE_KEY="drumasterRankingV3",
-        PERFORMANCE_STORAGE_KEY="drumasterPerformanceRankingV2",MAX_RECORDS=10;
+        PERFORMANCE_STORAGE_KEY="drumasterPerformanceRankingV2",MAX_RECORDS=10,
+        RESET_KEY="drumasterRankingReset20260826RawScore1";
+
+  /* The score scale changed from normalized 1,000,000-point scoring to raw
+     accumulated points. Clear all older local ranking generations once so
+     incomparable records never appear beside the new scoring system. */
+  try{
+    if(localStorage.getItem(RESET_KEY)!=="1"){
+      ["drumasterRankingV1","drumasterRankingV2","drumasterRankingV3",
+       "drumasterPerformanceRankingV1","drumasterPerformanceRankingV2"]
+        .forEach(key=>localStorage.removeItem(key));
+      localStorage.setItem(RESET_KEY,"1");
+    }
+  }catch{}
+
   const resultEl=document.querySelector("#result");
   if(!resultEl)return;
 
