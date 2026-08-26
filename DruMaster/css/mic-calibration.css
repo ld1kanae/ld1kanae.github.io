@@ -1,60 +1,13 @@
 /* Pad-practice microphone calibration screen. */
-.mic-calibration{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:18px 28px;
-  background:
-    radial-gradient(circle at 50% 24%,rgba(56,169,255,.16),transparent 34%),
-    linear-gradient(180deg,#0d1723,#070b11 72%);
-}
-.mic-calibration-card{
-  width:min(760px,95%);
-  padding:18px 24px 16px;
-  border:1px solid rgba(127,164,201,.34);
-  border-radius:18px;
-  background:rgba(10,17,26,.92);
-  box-shadow:0 20px 52px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.035);
-  text-align:center;
-}
-.mic-cal-eyebrow{margin:0 0 5px;color:#8090a3;font:800 9px/1 system-ui,sans-serif;letter-spacing:.28em}
-.mic-calibration-card h2{margin:0 0 8px;font-size:24px;letter-spacing:.06em}
-.mic-cal-instruction{min-height:24px;margin:0 0 10px;color:#f2f7fc;font:800 16px/1.4 system-ui,sans-serif}
-.mic-cal-meter{position:relative;width:min(560px,90%);height:13px;margin:0 auto 14px;overflow:visible;border:1px solid #33465b;border-radius:99px;background:#071019;box-shadow:inset 0 1px 5px rgba(0,0,0,.65)}
-.mic-cal-meter>i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#4bb6ff,#52dfcf 62%,#ffe06c);box-shadow:0 0 9px rgba(82,223,207,.32);transition:width .045s linear}
-#micCalThresholdMarker{display:none;position:absolute;top:-5px;bottom:-5px;width:2px;transform:translateX(-1px);border-radius:2px;background:#fff4a9;box-shadow:0 0 7px rgba(255,230,123,.8)}
-#micCalThresholdMarker.show{display:block}
-.mic-cal-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:0 auto 10px}
-.mic-cal-steps>div{min-width:0;padding:8px 6px;border:1px solid #283748;border-radius:10px;background:#0c141e;transition:.16s ease}
-.mic-cal-steps span{display:grid;place-items:center;width:20px;height:20px;margin:0 auto 4px;border:1px solid #46596e;border-radius:50%;color:#9aa9ba;font:900 9px/1 system-ui,sans-serif}
-.mic-cal-steps b{display:block;color:#eaf2fa;font:850 11px/1.1 system-ui,sans-serif;white-space:nowrap}
-.mic-cal-steps em{display:block;margin-top:4px;color:#687789;font:700 8px/1 system-ui,sans-serif;font-style:normal;letter-spacing:.04em}
-.mic-cal-steps>div[data-state="active"]{border-color:#55bfff;background:linear-gradient(180deg,rgba(56,169,255,.15),rgba(11,23,34,.92));box-shadow:0 0 15px rgba(56,169,255,.12)}
-.mic-cal-steps>div[data-state="active"] span{border-color:#6ed2ff;color:#dff7ff}
-.mic-cal-steps>div[data-state="active"] em{color:#79d5ff}
-.mic-cal-steps>div[data-state="done"]{border-color:rgba(82,223,207,.50);background:linear-gradient(180deg,rgba(82,223,207,.10),rgba(10,20,28,.94))}
-.mic-cal-steps>div[data-state="done"] span{border-color:#62e8d4;color:#a8fff0}
-.mic-cal-steps>div[data-state="done"] em{color:#77e7d8}
-.mic-cal-detail{min-height:30px;margin:0 auto 10px;color:#8392a4;font:650 10px/1.45 system-ui,sans-serif}
-.mic-cal-actions{display:flex;justify-content:center;gap:10px}
-.mic-cal-actions button{width:142px;min-width:142px;height:38px;padding:0 18px;border-radius:999px;font:900 12px/1 system-ui,sans-serif;letter-spacing:.05em}
-#micCalStart{border:0;background:var(--blue);color:#001322;box-shadow:0 0 20px rgba(56,169,255,.26)}
-#micCalStart:disabled{background:#283441;color:#677687;box-shadow:none}
-#micCalRetry{border:1px solid #586a7d;background:#131e2b;color:#eaf2fa}
-#micCalRetry:active{background:#1c2a39}
-
-@media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .mic-calibration{padding:5px 16px}
-  .mic-calibration-card{width:min(790px,97%);padding:9px 18px 8px;border-radius:14px}
-  .mic-cal-eyebrow{font-size:8px;margin-bottom:2px}
-  .mic-calibration-card h2{font-size:19px;margin-bottom:4px}
-  .mic-cal-instruction{min-height:19px;margin-bottom:5px;font-size:13px}
-  .mic-cal-meter{height:10px;margin-bottom:7px}
-  .mic-cal-steps{gap:5px;margin-bottom:6px}
-  .mic-cal-steps>div{padding:5px 4px}
-  .mic-cal-steps span{width:17px;height:17px;margin-bottom:2px;font-size:7.5px}
-  .mic-cal-steps b{font-size:9.5px}
-  .mic-cal-steps em{font-size:7px;margin-top:2px}
-  .mic-cal-detail{min-height:24px;margin-bottom:5px;font-size:8.5px}
-  .mic-cal-actions button{width:132px;min-width:132px;height:34px;font-size:11px}
-}
+.mic-calibration{display:flex;align-items:center;justify-content:center;padding:18px 28px;background:radial-gradient(circle at 50% 24%,rgba(56,169,255,.16),transparent 34%),linear-gradient(180deg,#0d1723,#070b11 72%)}
+.mic-calibration-card{width:min(820px,96%);padding:18px 24px 16px;border:1px solid rgba(127,164,201,.34);border-radius:18px;background:rgba(10,17,26,.92);box-shadow:0 20px 52px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.035);text-align:center}
+.mic-cal-eyebrow{margin:0 0 5px;color:#8090a3;font:800 9px/1 system-ui,sans-serif;letter-spacing:.28em}.mic-calibration-card h2{margin:0 0 8px;font-size:24px;letter-spacing:.06em}.mic-cal-instruction{min-height:24px;margin:0 0 10px;color:#f2f7fc;font:800 16px/1.4 system-ui,sans-serif}
+.mic-cal-meter{position:relative;width:min(560px,90%);height:13px;margin:0 auto 14px;overflow:visible;border:1px solid #33465b;border-radius:99px;background:#071019;box-shadow:inset 0 1px 5px rgba(0,0,0,.65)}.mic-cal-meter>i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#4bb6ff,#52dfcf 62%,#ffe06c);box-shadow:0 0 9px rgba(82,223,207,.32);transition:width .045s linear}#micCalThresholdMarker{display:none;position:absolute;top:-5px;bottom:-5px;width:2px;transform:translateX(-1px);border-radius:2px;background:#fff4a9;box-shadow:0 0 7px rgba(255,230,123,.8)}#micCalThresholdMarker.show{display:block}
+.mic-cal-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:0 auto 10px}.mic-cal-steps>div{min-width:0;padding:8px 6px;border:1px solid #283748;border-radius:10px;background:#0c141e;transition:.16s ease}.mic-cal-steps span{display:grid;place-items:center;width:20px;height:20px;margin:0 auto 4px;border:1px solid #46596e;border-radius:50%;color:#9aa9ba;font:900 9px/1 system-ui,sans-serif}.mic-cal-steps b{display:block;color:#eaf2fa;font:850 11px/1.1 system-ui,sans-serif;white-space:nowrap}.mic-cal-steps em{display:block;margin-top:4px;color:#687789;font:700 8px/1 system-ui,sans-serif;font-style:normal;letter-spacing:.04em}.mic-cal-steps>div[data-state="active"]{border-color:#55bfff;background:linear-gradient(180deg,rgba(56,169,255,.15),rgba(11,23,34,.92));box-shadow:0 0 15px rgba(56,169,255,.12)}.mic-cal-steps>div[data-state="active"] span{border-color:#6ed2ff;color:#dff7ff}.mic-cal-steps>div[data-state="active"] em{color:#79d5ff}.mic-cal-steps>div[data-state="done"]{border-color:rgba(82,223,207,.50);background:linear-gradient(180deg,rgba(82,223,207,.10),rgba(10,20,28,.94))}.mic-cal-steps>div[data-state="done"] span{border-color:#62e8d4;color:#a8fff0}.mic-cal-steps>div[data-state="done"] em{color:#77e7d8}
+.mic-cal-candidate{min-height:18px;margin:0 auto 3px;color:#cdefff;font:850 10px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace}.mic-cal-detail{min-height:30px;margin:0 auto 10px;color:#8392a4;font:650 10px/1.45 system-ui,sans-serif}
+.mic-cal-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}.mic-cal-actions button{width:148px;min-width:148px;height:38px;padding:0 16px;border-radius:999px;font:900 11px/1 system-ui,sans-serif;letter-spacing:.035em}.mic-cal-actions button.hidden{display:none!important}
+#micCalAction{border:1px solid rgba(86,194,244,.72);background:#163047;color:#eefaff;box-shadow:0 0 18px rgba(56,169,255,.13)}#micCalAction:disabled{opacity:.5;box-shadow:none}
+#micCalAccept{border:1px solid rgba(82,223,207,.72);background:#123b39;color:#eafffa;box-shadow:0 0 18px rgba(82,223,207,.12)}
+#micCalStart{border:0;background:var(--blue);color:#001322;box-shadow:0 0 20px rgba(56,169,255,.26)}#micCalStart:disabled{background:#283441;color:#677687;box-shadow:none}
+#micCalRetry{border:1px solid #586a7d;background:#131e2b;color:#eaf2fa}#micCalRetry:active{background:#1c2a39}
+@media (hover:none) and (pointer:coarse) and (max-width:900px){.mic-calibration{padding:5px 12px}.mic-calibration-card{width:min(840px,98%);padding:8px 14px 7px;border-radius:14px}.mic-cal-eyebrow{font-size:7.5px;margin-bottom:2px}.mic-calibration-card h2{font-size:18px;margin-bottom:3px}.mic-cal-instruction{min-height:18px;margin-bottom:4px;font-size:12px}.mic-cal-meter{height:9px;margin-bottom:6px}.mic-cal-steps{gap:4px;margin-bottom:5px}.mic-cal-steps>div{padding:4px 3px}.mic-cal-steps span{width:16px;height:16px;margin-bottom:2px;font-size:7px}.mic-cal-steps b{font-size:9px}.mic-cal-steps em{font-size:6.8px;margin-top:2px}.mic-cal-candidate{min-height:14px;font-size:8px}.mic-cal-detail{min-height:22px;margin-bottom:4px;font-size:8px}.mic-cal-actions{gap:6px}.mic-cal-actions button{width:128px;min-width:128px;height:31px;font-size:9.5px;padding:0 9px}}
