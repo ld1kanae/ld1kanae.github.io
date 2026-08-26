@@ -23,7 +23,7 @@
 .kit-stage #hitLayer{z-index:4}
 
 /* Automatic bass-drum strike flash. Position follows the red reference point.
-   Motion matches the normal drum strike flash; only the colour is monochrome. */
+   Motion matches the normal drum strike flash; monochrome intensity is reduced to about 50%. */
 #kickFx{
   display:block!important;
   position:absolute!important;
@@ -38,23 +38,23 @@
   transform:translate(-50%,-50%) scale(.7)!important;
   border:0!important;
   border-radius:50%!important;
-  background:radial-gradient(circle,#fff 0 8%,rgba(215,221,226,.58) 24%,transparent 67%)!important;
-  box-shadow:0 0 28px rgba(207,214,220,.75)!important;
+  background:radial-gradient(circle,rgba(255,255,255,.50) 0 8%,rgba(215,221,226,.29) 24%,transparent 67%)!important;
+  box-shadow:0 0 28px rgba(207,214,220,.375)!important;
   opacity:0;
   pointer-events:none;
   mix-blend-mode:screen;
 }
 #kickFx.hit{animation:kickDrumFlash .24s ease-out!important}
 @keyframes kickDrumFlash{
-  0%{opacity:1;transform:translate(-50%,-50%) scale(.4)!important}
+  0%{opacity:.5;transform:translate(-50%,-50%) scale(.4)!important}
   100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)!important}
 }
 
 /* Desktop-only bass-drum placement adjustment. Mobile keeps the calibrated position above. */
 @media (hover:hover) and (pointer:fine){
   .kit-stage .bass-drum-art{
-    left:calc(50% - 15px)!important;
-    top:calc(35.5% - 3px)!important;
+    left:calc(50% - 17px)!important;
+    top:calc(35.5% - 5px)!important;
   }
   #hitLayer .key-badges{gap:2px}
   #hitLayer .key-badges kbd{min-width:20px;height:22px;padding:0 4px;font-size:10px}
