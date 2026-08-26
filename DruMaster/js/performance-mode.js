@@ -84,14 +84,17 @@
     return true;
   }
 
-  /* Capture phase makes the whole gameplay surface one input without also
-     firing the calibrated individual drum hit targets underneath it. */
+  /* Touch mode only captures the pointer when a chart note can actually be
+     consumed. With no note inside the normal GOOD window, let the event keep
+     propagating so the calibrated drum hit target underneath behaves exactly
+     like normal play and can still be used as a free drum pad. */
   game.addEventListener("pointerdown",e=>{
     if(runMode!=="touch"||!mobileQuery.matches||!running||paused)return;
     if(e.target.closest("#pause,#pausePanel button"))return;
+    const consumed=consumeNearest("touch");
+    if(!consumed)return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    consumeNearest("touch");
   },true);
 
   async function ensureMic(){
