@@ -30,6 +30,11 @@
       if($("#vocalToggle").checked)await loadStem("vocals","ボーカル");
       if($("#guideToggle").checked)await loadStem("drums","ガイドドラム");
 
+      /* app.js's legacy loop waits until duration + 0.5s before finish().
+         Compensate only after stem validation so RESULT appears exactly at the
+         configured song end without changing audio-length verification. */
+      duration=Math.max(0,duration-.5);
+
       rate=+$("#tempo").value/100;
       autoplay=$("#autoToggle").checked;
       notes.forEach(n=>n.hit=false);
