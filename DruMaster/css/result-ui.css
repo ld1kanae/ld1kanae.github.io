@@ -67,7 +67,15 @@
 .ranking-title span{font-size:8px;color:#6f7d8e;letter-spacing:.12em}
 .ranking-head,.ranking-row{display:grid;grid-template-columns:52px minmax(100px,1fr) 110px;align-items:center;min-height:27px;padding:0 8px}
 .ranking-head{font-size:8px;color:#697788;letter-spacing:.12em;border-bottom:1px solid rgba(255,255,255,.08)}
-.ranking-list{max-height:calc(42vh - 58px);overflow:auto;scrollbar-width:thin}
+.ranking-list{
+  max-height:calc(42vh - 58px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
 .ranking-row{font-size:11px;border-bottom:1px solid rgba(255,255,255,.045)}
 .ranking-row:last-child{border-bottom:0}
 .ranking-row .rank-no{font-weight:900;color:#92a3b8}
@@ -81,11 +89,21 @@
 .ranking-row.current .rank-score{color:#fff;filter:drop-shadow(0 0 5px rgba(116,232,255,.45))}
 .ranking-empty{padding:15px 8px;text-align:center;font-size:10px;color:#657386}
 
-#retry{margin-top:14px;padding:11px 48px;font-size:12px}
+.result-actions{display:flex;justify-content:center;gap:12px;margin-top:14px}
+.result-actions button{
+  min-width:132px;
+  padding:11px 28px;
+  border-radius:999px;
+  font:900 12px/1 system-ui,sans-serif;
+  letter-spacing:.08em;
+}
+#retry{margin:0;background:var(--blue);color:#001322;border:0;box-shadow:0 0 22px #38a9ff44}
+#home{margin:0;background:#172130;color:#edf5fd;border:1px solid #5e7085;box-shadow:none}
+#home:active{background:#213044}
 .result.autoplay .ranking-panel{display:none}
 .result.autoplay .result-summary{display:none}
 
-/* Result reveal sequence: screen fade -> title -> score -> judgement summary -> ranking -> retry. */
+/* Result reveal sequence: screen fade -> title -> score -> judgement summary -> ranking -> actions. */
 .result.result-reveal{animation:resultScreenIn .58s cubic-bezier(.2,.72,.2,1) both}
 .result.result-reveal::after{
   content:"";
@@ -147,12 +165,13 @@
   .ranking-title span{position:absolute;right:0;top:4px;font-size:10px}
   .ranking-head,.ranking-row{grid-template-columns:56px minmax(120px,1fr) 116px;min-height:32px;padding:0 9px}
   .ranking-head{font-size:11px}
-  .ranking-list{max-height:calc(50vh - 62px)}
+  .ranking-list{max-height:calc(50vh - 62px);touch-action:pan-y}
   .ranking-row{font-size:14px}
   .hidden-mark{width:22px;height:22px}
   .rank-score-cell{gap:9px}
   .ranking-empty{font-size:14px;padding:18px 8px}
-  #retry{margin-top:7px;padding:9px 42px;font-size:12px}
+  .result-actions{gap:10px;margin-top:7px}
+  .result-actions button{min-width:118px;padding:9px 24px;font-size:12px}
 }
 
 @media (prefers-reduced-motion:reduce){
