@@ -36,10 +36,14 @@
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
 
-    for(const n of notes){
+    const minBeat=beatNow-48/pxPerQuarter,
+          maxBeat=beatNow+(w+48-judgeX)/pxPerQuarter,
+          search=globalThis.DruMasterNoteSearch,
+          range=search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length};
+    for(let i=range.start;i<range.end;i++){
+      const n=notes[i];
       if(skipHit&&n.hit)continue;
       const x=judgeX+(n.tick/division-beatNow)*pxPerQuarter;
-      if(x<judgeX-48||x>w+48)continue;
       const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
             alpha=.48+.52*n.velocity/127,visual=chart.noteVisual(n.type,group);
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;
