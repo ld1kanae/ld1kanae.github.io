@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const dataDir = path.resolve(__dirname, '..', 'data');
+const meaningOverrides = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'semantic_meaning_overrides.json'), 'utf8')
+);
 
 // 国語辞典の語義と現代の用例に照らし、誤読・意味の取り違え・不自然な用例を修正する。
 // 指定のないフィールドは元データを維持する。
@@ -518,11 +521,18 @@ for (const filename of fs.readdirSync(dataDir).filter((name) => /^vocabulary_\d{
   let touched = false;
   for (const row of rows) {
     const fix = fixes[row.id];
-    if (!fix) continue;
-    if (fix.phrase && fix.phrase !== row.phrase) phraseChanges += 1;
-    Object.assign(row, fix);
-    changed += 1;
-    touched = true;
+    if (fix) {
+      if (fix.phrase && fix.phrase !== row.phrase) phraseChanges += 1;
+      Object.assign(row, fix);
+      changed += 1;
+      touched = true;
+    }
+    const reviewedMeaning = meaningOverrides[row.phrase];
+    if (reviewedMeaning && reviewedMeaning !== row.meaning) {
+      row.meaning = reviewedMeaning;
+      changed += 1;
+      touched = true;
+    }
   }
   if (touched) fs.writeFileSync(fullPath, `${JSON.stringify(rows, null, 2)}\n`);
 }
