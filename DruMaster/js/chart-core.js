@@ -100,18 +100,41 @@ globalThis.DruMusterChart=(()=>{
     return tick/timing.division;
   }
 
-  function drawMeasureLines(ctx,w,h,judgeX,beatNow,timing){
-    const signatures=timing.signatures?.length?timing.signatures:[{beat:0,measureBeats:4}],
-          firstVisibleBeat=beatNow-judgeX/PIXELS_PER_QUARTER,
-          lastVisibleBeat=beatNow+(w-judgeX)/PIXELS_PER_QUARTER;
-    ctx.save();ctx.strokeStyle="rgba(255,255,255,.08)";ctx.lineWidth=1;
+  /* Measure lines are a chart invariant, not a song-specific feature.
+     Valid MIDI time signatures are respected; missing or malformed data falls
+     back to 4/4 so every song always has one separator per measure. */
+  function normalizedSignatures(timing){
+    const raw=Array.isArray(timing?.signatures)?timing.signatures:[],out=[];
+    for(const sig of raw){
+      const beat=Number(sig?.beat),measureBeats=Number(sig?.measureBeats);
+      if(!Number.isFinite(beat)||beat<0||!Number.isFinite(measureBeats)||measureBeats<=0)continue;
+      const entry={beat,measureBeats};
+      if(out.length&&Math.abs(out[out.length-1].beat-beat)<1e-7)out[out.length-1]=entry;
+      else out.push(entry);
+    }
+    if(!out.length||out[0].beat>1e-7)out.unshift({beat:0,measureBeats:4});
+    return out;
+  }
+
+  function drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,pxPerQuarter=PIXELS_PER_QUARTER){
+    const speed=Number.isFinite(pxPerQuarter)&&pxPerQuarter>0?pxPerQuarter:PIXELS_PER_QUARTER,
+          signatures=normalizedSignatures(timing),
+          firstVisibleBeat=beatNow-judgeX/speed,
+          lastVisibleBeat=beatNow+(w-judgeX)/speed;
+    ctx.save();
+    ctx.strokeStyle="rgba(255,255,255,.14)";
+    ctx.lineWidth=1;
     for(let i=0;i<signatures.length;i++){
-      const sig=signatures[i],segmentStart=sig.beat||0,segmentEnd=i+1<signatures.length?signatures[i+1].beat:Infinity,measureBeats=sig.measureBeats||4;
+      const sig=signatures[i],segmentStart=sig.beat,
+            segmentEnd=i+1<signatures.length?signatures[i+1].beat:Infinity,
+            measureBeats=sig.measureBeats;
       let barBeat=segmentStart+Math.ceil((firstVisibleBeat-segmentStart)/measureBeats)*measureBeats;
       if(barBeat<segmentStart)barBeat=segmentStart;
       for(;barBeat<=lastVisibleBeat+.0001&&barBeat<segmentEnd-.0001;barBeat+=measureBeats){
-        const x=judgeX+(barBeat-beatNow)*PIXELS_PER_QUARTER;if(x<0||x>w)continue;
-        const crisp=Math.round(x)+.5;ctx.beginPath();ctx.moveTo(crisp,0);ctx.lineTo(crisp,h);ctx.stroke();
+        const x=judgeX+(barBeat-beatNow)*speed;
+        if(x<0||x>w)continue;
+        const crisp=Math.round(x)+.5;
+        ctx.beginPath();ctx.moveTo(crisp,0);ctx.lineTo(crisp,h);ctx.stroke();
       }
     }
     ctx.restore();
@@ -130,7 +153,7 @@ globalThis.DruMusterChart=(()=>{
     ctx.fillStyle="#090e15";ctx.fillRect(0,mainH,w,kickH);
     ctx.strokeStyle="#5b6d82";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
     ctx.fillStyle="#687483";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
-    drawMeasureLines(ctx,w,h,judgeX,beatNow,timing);
+    drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,PIXELS_PER_QUARTER);
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
     for(const n of notes){
@@ -148,5 +171,5 @@ globalThis.DruMusterChart=(()=>{
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
 
-  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteColor,noteVisual,parseTempoTiming,secondsToBeat,draw};
+  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteColor,noteVisual,parseTempoTiming,secondsToBeat,drawMeasureLines,draw};
 })();
