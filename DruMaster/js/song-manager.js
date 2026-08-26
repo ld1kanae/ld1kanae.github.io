@@ -70,17 +70,34 @@
     return nativeFetch(input,init);
   };
 
-  function syncHudBpm(){
-    const hud=document.querySelector(".song-hud");
-    if(!hud)return;
-    let node=hud.querySelector(".hud-bpm");
+  function bpmText(){
+    const tempo=document.querySelector("#tempo"),percent=Number(tempo?.value||100),base=Number(current.bpm)||0;
+    return `♪＝${Math.round(base*(Number.isFinite(percent)?percent/100:1))}`;
+  }
+  function ensureSetupBpm(){
+    const card=document.querySelector(".song-card");
+    if(!card)return null;
+    let node=card.querySelector(".setup-bpm");
     if(!node){
       node=document.createElement("span");
-      node.className="hud-bpm";
-      hud.appendChild(node);
+      node.className="setup-bpm";
+      card.appendChild(node);
     }
-    const tempo=document.querySelector("#tempo"),percent=Number(tempo?.value||100),base=Number(current.bpm)||0;
-    node.textContent=`♪＝${Math.round(base*(Number.isFinite(percent)?percent/100:1))}`;
+    return node;
+  }
+  function syncBpmLabels(){
+    const hud=document.querySelector(".song-hud");
+    if(hud){
+      let node=hud.querySelector(".hud-bpm");
+      if(!node){
+        node=document.createElement("span");
+        node.className="hud-bpm";
+        hud.appendChild(node);
+      }
+      node.textContent=bpmText();
+    }
+    const setupBpm=ensureSetupBpm();
+    if(setupBpm)setupBpm.textContent=bpmText();
   }
 
   function applyLabels(){
@@ -88,7 +105,7 @@
     document.querySelector(".song-card p")?.replaceChildren(document.createTextNode(current.artist));
     document.querySelector(".song-hud b")?.replaceChildren(document.createTextNode(current.title));
     document.querySelector(".song-hud small")?.replaceChildren(document.createTextNode(current.artist));
-    syncHudBpm();
+    syncBpmLabels();
   }
 
   const select=document.querySelector("#songSelect");
@@ -107,7 +124,7 @@
       location.href=url.toString();
     });
   }
-  document.querySelector("#tempo")?.addEventListener("input",syncHudBpm);
+  document.querySelector("#tempo")?.addEventListener("input",syncBpmLabels);
   applyLabels();
 
   /* Asset availability is validated by the actual pre-game MIDI/stem loads.
