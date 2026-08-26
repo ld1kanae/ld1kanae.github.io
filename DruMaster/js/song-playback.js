@@ -17,6 +17,21 @@
     source.start(when,Math.max(0,offset));
     return source;
   }
+  async function finishVisualPreload(){
+    const images=[...document.images];
+    await Promise.all(images.map(async img=>{
+      if(!img.complete){
+        await new Promise(resolve=>{
+          img.addEventListener("load",resolve,{once:true});
+          img.addEventListener("error",resolve,{once:true});
+        });
+      }
+      if(typeof img.decode==="function"){
+        try{await img.decode()}catch{}
+      }
+    }));
+    try{await document.fonts?.ready}catch{}
+  }
 
   /* All stems share one AudioContext timestamp. Per-song source offsets live in
      song-manager.js so timing adjustments do not require editing playback code. */
@@ -29,6 +44,9 @@
       await loadStem("base","オフボーカル");
       if($("#vocalToggle").checked)await loadStem("vocals","ボーカル");
       if($("#guideToggle").checked)await loadStem("drums","ガイドドラム");
+      /* Ensure static artwork/font requests are also finished before the timing-
+         critical section begins. No resource load is intentionally left active. */
+      await finishVisualPreload();
 
       /* app.js's legacy loop waits until duration + 0.5s before finish().
          Compensate only after stem validation so RESULT appears exactly at the
