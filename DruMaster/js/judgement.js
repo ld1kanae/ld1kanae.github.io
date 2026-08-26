@@ -69,9 +69,6 @@
   function placeFx(lane,node){
     const {judgeX,laneH}=chartGeometry();
     if(isMobile()){
-      /* Every mobile lane uses the same horizontal anchor. The widest grade
-         (PERFECT) is measured once against the goal line so shorter labels do
-         not drift left/right between lanes. */
       ctx.save();
       ctx.font=`900 ${MOBILE_JUDGE_FONT}px system-ui,sans-serif`;
       const letterSpacing=MOBILE_JUDGE_FONT*.055;
@@ -83,9 +80,6 @@
       node.style.top=`${laneH*(lane+.5)+MOBILE_OPTICAL_Y}px`;
       node.style.transform="translate(0,-50%)";
     }else{
-      /* Keep the percentage anchor stable and apply the requested desktop
-         correction in transform space so it cannot be cancelled by left-based
-         centering. */
       node.style.left="9%";
       node.style.top=`${laneH*(lane+.5)}px`;
       node.style.transform=`translate(calc(-50% + ${DESKTOP_OPTICAL_X}px),-50%)`;
@@ -222,8 +216,6 @@
       for(const lane of hitLanes)emit("PERFECT",lane);
     };
   }else{
-    /* Production kick is automatic, so watch the timeline and flash its note bar
-       exactly when it reaches the goal line. */
     let kickCursor=0,lastT=-1;
     const resetKickCursor=t=>{
       kickCursor=0;
@@ -245,6 +237,17 @@
     };
     requestAnimationFrame(watchKick);
   }
+
+  /* Shared entry point for input modes that match a note without choosing a
+     drum lane first (anywhere-touch / microphone pad practice). */
+  globalThis.DruMasterJudgement={
+    flashNote,
+    emitForNote(note,label,options={}){
+      if(!note)return;
+      if(options.flash!==false)flashNote(note);
+      emit(label,laneForType(note.type));
+    }
+  };
 
   new ResizeObserver(()=>requestAnimationFrame(syncGeometry)).observe(wrap);
   addEventListener("resize",()=>requestAnimationFrame(syncGeometry),{passive:true});
