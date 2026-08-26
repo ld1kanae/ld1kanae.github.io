@@ -2,9 +2,8 @@
 .song-card{position:relative;z-index:18;overflow:visible}
 .song-card>div:first-child{min-width:0;flex:1}
 .song-card .setup-bpm{
-  align-self:flex-start;
+  align-self:center;
   margin-left:auto;
-  padding-top:1px;
   white-space:nowrap;
   color:inherit;
   font-family:inherit;
@@ -14,6 +13,9 @@
   letter-spacing:normal;
 }
 .song-hud .hud-bpm{
+  grid-column:2;
+  grid-row:1 / span 2;
+  align-self:center;
   white-space:nowrap;
   color:inherit;
   font-family:inherit;
@@ -43,7 +45,7 @@
 .mobile-custom-select{display:none}
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .song-card .setup-bpm{font-size:22px;padding-top:0}
+  .song-card .setup-bpm{font-size:22px}
   .song-hud .hud-bpm{font-size:14px;line-height:1.05}
 
   /* Native Android select popups ignore #app's forced 90deg transform, so the
