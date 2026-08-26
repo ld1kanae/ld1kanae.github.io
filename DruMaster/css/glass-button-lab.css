@@ -1,0 +1,141 @@
+*{box-sizing:border-box}
+:root{
+  color-scheme:dark;
+  --bg:#070b11;
+  --text:#eef6ff;
+  --muted:#7e8da0;
+}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:44px 28px;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(53,126,177,.16),transparent 32%),
+    radial-gradient(circle at 18% 82%,rgba(79,56,143,.10),transparent 34%),
+    linear-gradient(180deg,#0c141e 0%,#070b11 72%);
+}
+.lab{width:min(1040px,96vw)}
+.lab-head{text-align:center;margin-bottom:34px}
+.lab-head p{margin:0 0 7px;color:#7f92a8;font:800 10px/1 system-ui,sans-serif;letter-spacing:.26em}
+.lab-head h1{margin:0;font-size:28px;letter-spacing:.04em}
+.lab-head small{display:block;margin-top:8px;color:var(--muted);font-size:11px}
+.preview-panel{
+  padding:34px 30px 38px;
+  border:1px solid rgba(127,155,183,.16);
+  border-radius:24px;
+  background:rgba(5,10,16,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 24px 70px rgba(0,0,0,.34);
+  backdrop-filter:blur(10px);
+}
+.preview-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;margin:0 0 28px}
+.preview-row:last-child{margin-bottom:0}
+.preview-label{width:100%;text-align:center;color:#65788e;font:800 9px/1 system-ui,sans-serif;letter-spacing:.20em;margin-bottom:-10px}
+
+/* Reusable glass surface. The proportions come from the supplied reference:
+   bright rim, dark optical glass, soft lower reflection, thin top highlight,
+   and a very restrained outer glow. Shape is controlled only by radius/size. */
+.glass-btn{
+  --glass-radius:999px;
+  --glass-top:rgba(4,13,21,.91);
+  --glass-mid:rgba(10,24,36,.78);
+  --glass-bottom:rgba(121,145,160,.46);
+  --glass-rim-top:rgba(226,244,255,.86);
+  --glass-rim-side:rgba(127,159,178,.34);
+  --glass-rim-bottom:rgba(205,227,240,.70);
+  --glass-glow:rgba(71,163,214,.12);
+  --glass-text:#eef7ff;
+  position:relative;
+  isolation:isolate;
+  display:inline-grid;
+  place-items:center;
+  min-width:172px;
+  height:60px;
+  padding:0 34px;
+  border:1px solid transparent;
+  border-radius:var(--glass-radius);
+  color:var(--glass-text);
+  background:
+    linear-gradient(180deg,var(--glass-top) 0%,rgba(5,17,27,.90) 24%,var(--glass-mid) 58%,var(--glass-bottom) 100%) padding-box,
+    linear-gradient(180deg,var(--glass-rim-top) 0%,var(--glass-rim-side) 33%,rgba(64,87,101,.26) 68%,var(--glass-rim-bottom) 100%) border-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.25),
+    inset 0 -1px 0 rgba(255,255,255,.16),
+    inset 0 -13px 28px rgba(212,230,240,.06),
+    inset 0 11px 20px rgba(0,0,0,.42),
+    0 0 0 1px rgba(0,8,15,.92),
+    0 8px 20px rgba(0,0,0,.36),
+    0 0 18px var(--glass-glow);
+  backdrop-filter:blur(18px) saturate(118%);
+  -webkit-backdrop-filter:blur(18px) saturate(118%);
+  overflow:hidden;
+  cursor:pointer;
+  font:900 15px/1 system-ui,sans-serif;
+  letter-spacing:.08em;
+  text-shadow:0 1px 2px rgba(0,0,0,.62),0 0 8px rgba(210,239,255,.08);
+  transition:transform .12s ease,filter .12s ease,box-shadow .12s ease;
+}
+.glass-btn::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:5%;right:5%;top:1px;
+  height:42%;
+  border-radius:inherit;
+  background:linear-gradient(180deg,rgba(244,252,255,.22) 0%,rgba(188,220,238,.07) 22%,rgba(255,255,255,0) 100%);
+  filter:blur(.2px);
+  pointer-events:none;
+}
+.glass-btn::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:7%;right:7%;bottom:-9%;
+  height:58%;
+  border-radius:50%;
+  background:radial-gradient(ellipse at 50% 100%,rgba(226,238,245,.18) 0%,rgba(181,205,219,.10) 38%,rgba(255,255,255,0) 72%);
+  filter:blur(5px);
+  pointer-events:none;
+}
+.glass-btn:hover{
+  filter:brightness(1.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.34),
+    inset 0 -1px 0 rgba(255,255,255,.20),
+    inset 0 -13px 28px rgba(212,230,240,.08),
+    inset 0 11px 20px rgba(0,0,0,.36),
+    0 0 0 1px rgba(0,8,15,.92),
+    0 9px 24px rgba(0,0,0,.40),
+    0 0 24px var(--glass-glow);
+}
+.glass-btn:active{transform:translateY(1px) scale(.988);filter:brightness(.96)}
+.glass-btn:focus-visible{outline:2px solid rgba(116,216,255,.86);outline-offset:4px}
+
+.glass-btn.primary{
+  --glass-top:rgba(3,18,29,.92);
+  --glass-mid:rgba(7,34,51,.80);
+  --glass-bottom:rgba(76,143,170,.45);
+  --glass-rim-top:rgba(211,246,255,.94);
+  --glass-rim-side:rgba(85,180,216,.38);
+  --glass-rim-bottom:rgba(147,225,247,.76);
+  --glass-glow:rgba(65,202,255,.22);
+  --glass-text:#f2fbff;
+}
+.glass-btn.violet{
+  --glass-top:rgba(14,10,27,.92);
+  --glass-mid:rgba(28,20,49,.80);
+  --glass-bottom:rgba(132,116,163,.43);
+  --glass-rim-top:rgba(238,230,255,.88);
+  --glass-rim-side:rgba(154,126,211,.35);
+  --glass-rim-bottom:rgba(206,184,246,.66);
+  --glass-glow:rgba(159,119,255,.16);
+}
+.glass-btn.wide{min-width:330px}
+.glass-btn.compact{min-width:128px;height:46px;padding:0 24px;font-size:12px}
+.glass-btn.rounded{--glass-radius:18px;min-width:180px}
+.glass-btn.square{--glass-radius:18px;min-width:0;width:74px;height:74px;padding:0;font-size:20px}
+.glass-btn.circle{--glass-radius:50%;min-width:0;width:74px;height:74px;padding:0;font-size:20px}
+
+.note{text-align:center;margin-top:22px;color:#637489;font-size:10px}
+@media(max-width:650px){body{padding:24px 14px}.preview-panel{padding:26px 14px}.glass-btn.wide{min-width:min(330px,84vw)}}
