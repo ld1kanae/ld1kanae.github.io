@@ -5,10 +5,14 @@
   if(!chart)return;
   const originalDraw=chart.draw;
   const DEFAULT_PX_PER_QUARTER=80;
+  const desktopMq=matchMedia("(hover:hover) and (pointer:fine)");
 
   function pixelsPerQuarter(){
-    const configured=Number(globalThis.DruMasterSongs?.current?.chart?.pixelsPerQuarter);
-    return Number.isFinite(configured)&&configured>0?configured:DEFAULT_PX_PER_QUARTER;
+    const config=globalThis.DruMasterSongs?.current?.chart,
+          desktop=Number(config?.desktopPixelsPerQuarter),
+          base=Number(config?.pixelsPerQuarter);
+    if(desktopMq.matches&&Number.isFinite(desktop)&&desktop>0)return desktop;
+    return Number.isFinite(base)&&base>0?base:DEFAULT_PX_PER_QUARTER;
   }
 
   function drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,pxPerQuarter){
