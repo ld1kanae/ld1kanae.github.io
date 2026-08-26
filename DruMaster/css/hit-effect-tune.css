@@ -5,7 +5,7 @@
   box-shadow:0 0 34px rgba(108,215,255,1),0 0 52px rgba(82,223,207,.72),0 0 72px rgba(82,223,207,.28)!important;
 }
 
-/* Gameplay D badge: no drum/rim/shell motif. Only a faint green hit flash sits
+/* Gameplay D badge: no drum/rim/shell motif. Only a faint green hit glow sits
    directly behind the D, and the D uses the same visual treatment as #finalScore. */
 .game header .rank{
   position:relative;
@@ -28,32 +28,26 @@
   filter:none!important;
 }
 
-/* Faint, compact version of the green/cyan kit hit flash. */
+/* Compact amorphous hit glow: deliberately no circular rim or enclosing disc. */
 .game header .rank::before{
   content:"";
   position:absolute;
   z-index:0;
   left:50%;
   top:50%;
-  width:38px;
-  height:36px;
-  transform:translate(-50%,-50%);
+  width:34px;
+  height:28px;
+  transform:translate(-50%,-50%) rotate(-6deg);
   border:0;
-  border-radius:50%;
+  border-radius:0;
   pointer-events:none;
-  background:radial-gradient(ellipse at center,
-    rgba(255,255,255,.38) 0 8%,
-    rgba(170,255,244,.34) 20%,
-    rgba(82,223,207,.26) 40%,
-    rgba(82,223,207,.12) 57%,
-    rgba(108,215,255,.05) 68%,
-    transparent 76%);
-  box-shadow:
-    0 0 6px rgba(207,255,247,.24),
-    0 0 11px rgba(82,223,207,.20),
-    0 0 17px rgba(82,223,207,.10);
-  opacity:.52;
-  filter:blur(.35px);
+  background:
+    radial-gradient(ellipse at 34% 46%,rgba(210,255,248,.32) 0 8%,rgba(92,226,205,.20) 28%,transparent 64%),
+    radial-gradient(ellipse at 68% 54%,rgba(122,244,222,.22) 0 12%,rgba(83,218,197,.13) 34%,transparent 68%),
+    radial-gradient(ellipse at 51% 50%,rgba(108,215,255,.08),transparent 72%);
+  box-shadow:none;
+  opacity:.40;
+  filter:blur(3.2px);
 }
 
 /* Exact result-score typography/finish, scaled only to fit the HUD. */
@@ -90,14 +84,10 @@
     margin:0 6px 0 2px;
   }
   .game header .rank::before{
-    width:24px;
-    height:22px;
-    box-shadow:
-      0 0 4px rgba(207,255,247,.22),
-      0 0 7px rgba(82,223,207,.18),
-      0 0 10px rgba(82,223,207,.08);
-    opacity:.48;
-    filter:blur(.25px);
+    width:20px;
+    height:16px;
+    opacity:.34;
+    filter:blur(2.2px);
   }
   .game header .rank span{
     font-size:27px;
