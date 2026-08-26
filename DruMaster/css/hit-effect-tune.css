@@ -5,7 +5,7 @@
   box-shadow:0 0 34px rgba(108,215,255,1),0 0 52px rgba(82,223,207,.72),0 0 72px rgba(82,223,207,.28)!important;
 }
 
-/* Gameplay D badge: compact drum-head motif inspired by the result-score finish. */
+/* Gameplay D badge: green strike flash behind the result-score-style D. */
 .game header .rank{
   position:relative;
   isolation:isolate;
@@ -17,56 +17,71 @@
   margin:0 16px 0 3px;
   overflow:visible;
   transform:none!important;
+  border:0!important;
   border-radius:50%;
-  border:2px solid rgba(226,241,255,.96);
-  background-image:
-    linear-gradient(105deg,#fff 0%,#d9f7ff 17%,#69eaff 36%,#fff 50%,#c993ff 69%,#74ecff 84%,#fff 100%),
-    radial-gradient(circle at 50% 46%,rgba(21,54,86,.98) 0 42%,rgba(7,24,42,.98) 60%,#030810 100%);
-  background-clip:text,padding-box;
-  -webkit-background-clip:text,padding-box;
-  color:transparent;
-  -webkit-text-fill-color:transparent;
-  -webkit-text-stroke:.65px rgba(255,255,255,.84);
+  background:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent!important;
+  font-size:0!important;
+  filter:none!important;
+}
+
+/* Static version of the green/cyan drum-hit flash. */
+.game header .rank::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:50%;
+  top:50%;
+  width:64px;
+  height:64px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle,
+    rgba(255,255,255,.92) 0 7%,
+    rgba(190,255,245,.84) 13%,
+    rgba(82,223,207,.62) 28%,
+    rgba(55,207,177,.36) 43%,
+    rgba(108,215,255,.16) 57%,
+    transparent 72%);
   box-shadow:
-    inset 0 0 0 3px rgba(6,17,31,.96),
-    inset 0 0 0 6px rgba(209,230,249,.92),
-    inset 0 0 0 8px rgba(35,103,154,.88),
-    inset 0 0 18px rgba(78,221,255,.28),
-    0 0 0 1px rgba(2,8,15,.9),
-    0 0 13px rgba(84,221,255,.48),
-    0 0 26px rgba(70,169,255,.22);
+    0 0 15px rgba(207,255,247,.78),
+    0 0 29px rgba(82,223,207,.76),
+    0 0 46px rgba(82,223,207,.36),
+    0 0 62px rgba(108,215,255,.16);
+  opacity:.96;
+}
+
+/* Foreground D: same luminous finish as the result score, with a dark edge so
+   it stays readable over the bright strike flash. */
+.game header .rank::after{
+  content:"D";
+  position:absolute;
+  z-index:2;
+  inset:0;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
   font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;
-  font-size:39px;
+  font-size:42px;
   font-weight:1000;
   font-style:italic;
   line-height:1;
   letter-spacing:-.08em;
-  text-indent:-.05em;
-  text-shadow:none;
-  filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 5px rgba(108,236,255,.52));
-}
-.game header .rank::before{
-  content:"";
-  position:absolute;
-  inset:7px;
-  border-radius:50%;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 50% 50%,transparent 0 69%,rgba(72,234,255,.98) 70% 73%,transparent 74%),
-    radial-gradient(circle at 48% 42%,rgba(107,236,255,.16),transparent 64%);
-  box-shadow:inset 0 0 12px rgba(81,205,255,.26),0 0 10px rgba(72,230,255,.16);
-}
-.game header .rank::after{
-  content:"";
-  position:absolute;
-  inset:-4px;
-  border-radius:50%;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 50% 0%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px),
-    radial-gradient(circle at 100% 50%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px),
-    radial-gradient(circle at 50% 100%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px),
-    radial-gradient(circle at 0% 50%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px);
+  text-indent:-.06em;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+  -webkit-text-stroke:1.25px rgba(4,12,20,.94);
+  background-image:linear-gradient(105deg,#fff 0%,#e8fbff 15%,#65ecff 34%,#fff 49%,#d18cff 68%,#72edff 82%,#fff 100%);
+  background-clip:text;
+  -webkit-background-clip:text;
+  text-shadow:0 1px 2px rgba(0,0,0,.62);
+  filter:
+    drop-shadow(0 0 1px rgba(255,255,255,.98))
+    drop-shadow(0 0 5px rgba(112,239,255,.72))
+    drop-shadow(0 0 10px rgba(86,180,255,.36));
 }
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
@@ -75,24 +90,20 @@
     height:29px;
     flex-basis:29px;
     margin:0 6px 0 2px;
-    border-width:1px;
-    font-size:22px;
-    -webkit-text-stroke:.35px rgba(255,255,255,.84);
-    box-shadow:
-      inset 0 0 0 1px rgba(6,17,31,.96),
-      inset 0 0 0 3px rgba(209,230,249,.92),
-      inset 0 0 0 4px rgba(35,103,154,.88),
-      inset 0 0 8px rgba(78,221,255,.24),
-      0 0 0 1px rgba(2,8,15,.9),
-      0 0 8px rgba(84,221,255,.48);
   }
-  .game header .rank::before{inset:4px}
+  .game header .rank::before{
+    width:37px;
+    height:37px;
+    box-shadow:
+      0 0 8px rgba(207,255,247,.76),
+      0 0 16px rgba(82,223,207,.70),
+      0 0 24px rgba(82,223,207,.30);
+  }
   .game header .rank::after{
-    inset:-2px;
-    background:
-      radial-gradient(circle at 50% 0%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px),
-      radial-gradient(circle at 100% 50%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px),
-      radial-gradient(circle at 50% 100%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px),
-      radial-gradient(circle at 0% 50%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px);
+    font-size:24px;
+    -webkit-text-stroke:.8px rgba(4,12,20,.95);
+    filter:
+      drop-shadow(0 0 1px rgba(255,255,255,.96))
+      drop-shadow(0 0 3px rgba(112,239,255,.70));
   }
 }
