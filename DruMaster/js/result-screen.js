@@ -1,7 +1,8 @@
 "use strict";
 
 (()=>{
-  const STORAGE_KEY="drumasterRankingV2",LEGACY_KEY="drumasterRankingV1",MAX_RECORDS=10;
+  const STORAGE_KEY="drumasterRankingV2",LEGACY_KEY="drumasterRankingV1",
+        PERFORMANCE_STORAGE_KEY="drumasterPerformanceRankingV1",MAX_RECORDS=10;
   const resultEl=document.querySelector("#result");
   if(!resultEl)return;
 
@@ -49,6 +50,19 @@
     const id=song().id;
     return readAll().filter(x=>(x.song||"nanairo")===id).sort((a,b)=>b.score-a.score||String(b.id).localeCompare(String(a.id))).slice(0,MAX_RECORDS);
   }
+
+  function readPerformanceAll(){
+    try{
+      const data=JSON.parse(localStorage.getItem(PERFORMANCE_STORAGE_KEY)||"[]");
+      return Array.isArray(data)?data.filter(x=>x&&Number.isFinite(+x.score)&&typeof x.date==="string"&&["touch","mic"].includes(x.input)):[];
+    }catch{return []}
+  }
+  function writePerformanceAll(rows){try{localStorage.setItem(PERFORMANCE_STORAGE_KEY,JSON.stringify(rows))}catch{}}
+  function readPerformanceRanking(){
+    const id=song().id;
+    return readPerformanceAll().filter(x=>(x.song||"nanairo")===id).sort((a,b)=>b.score-a.score||String(b.id).localeCompare(String(a.id))).slice(0,MAX_RECORDS);
+  }
+
   function localDateString(){
     const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
     return `${y}.${m}.${day}`;
@@ -65,6 +79,16 @@
     return {rows:mine,currentId:id};
   }
 
+  function addPerformanceRecord(value,input){
+    const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,songId=song().id;
+    const all=readPerformanceAll();
+    all.push({id,score:Math.max(0,Math.round(value)),date:localDateString(),input:input==="mic"?"mic":"touch",song:songId});
+    const mine=all.filter(x=>(x.song||"nanairo")===songId).sort((a,b)=>b.score-a.score||String(b.id).localeCompare(String(a.id))).slice(0,MAX_RECORDS);
+    const others=all.filter(x=>(x.song||"nanairo")!==songId);
+    writePerformanceAll([...others,...mine]);
+    return {rows:mine,currentId:id};
+  }
+
   function createHiddenMark(){
     const mark=document.createElement("span");
     mark.className="hidden-mark";
@@ -72,6 +96,21 @@
     mark.title="Hidden Mode";
     mark.innerHTML='<svg viewBox="0 0 28 28" aria-hidden="true"><path class="eye" d="M2.5 14s4.3-7.2 11.5-7.2S25.5 14 25.5 14 21.2 21.2 14 21.2 2.5 14 2.5 14Z"/><circle cx="14" cy="14" r="3.6"/><path class="slash" d="M4.2 3.8 23.8 24.2"/></svg>';
     return mark;
+  }
+
+  function createMicMark(){
+    const mark=document.createElement("span");
+    mark.className="mic-mark";
+    mark.setAttribute("aria-label","パッド練習（マイク入力）");
+    mark.title="パッド練習（マイク入力）";
+    mark.innerHTML='<svg viewBox="0 0 28 28" aria-hidden="true"><rect x="9" y="3.5" width="10" height="14" rx="5"/><path d="M5.5 13.5v.8a8.5 8.5 0 0 0 17 0v-.8M14 22.8v2.7M9.5 25.5h9"/></svg>';
+    return mark;
+  }
+
+  function setRankingKind(performance){
+    const title=resultEl.querySelector(".ranking-title h3"),panel=resultEl.querySelector(".ranking-panel");
+    if(title)title.textContent=performance?"PERFORMANCE RANKING":"RECORD RANKING";
+    if(panel)panel.setAttribute("aria-label",performance?"どこでもタッチ・パッド練習ランキング":"過去のスコアランキング");
   }
 
   function renderRanking(rows,currentId=null){
@@ -87,7 +126,7 @@
     }
     rows.forEach((row,i)=>{
       const item=document.createElement("div");
-      item.className="ranking-row"+(row.id===currentId?" current":"")+(row.hidden?" hidden-record":"");
+      item.className="ranking-row"+(row.id===currentId?" current":"")+(row.hidden?" hidden-record":"")+(row.input==="mic"?" mic-record":"");
       item.style.setProperty("--row-i",String(i));
       const rank=document.createElement("span"),scoreCell=document.createElement("span"),scoreNode=document.createElement("span"),date=document.createElement("span");
       rank.className="rank-no";scoreCell.className="rank-score-cell";scoreNode.className="rank-score";date.className="rank-date";
@@ -96,6 +135,7 @@
       date.textContent=row.date;
       scoreCell.appendChild(scoreNode);
       if(row.hidden)scoreCell.appendChild(createHiddenMark());
+      if(row.input==="mic")scoreCell.appendChild(createMicMark());
       item.append(rank,scoreCell,date);
       host.appendChild(item);
     });
@@ -135,7 +175,11 @@
     document.querySelector("#missCount").textContent=counts.miss;
     resultEl.classList.toggle("autoplay",autoplay);
 
+    const performanceMode=globalThis.DruMasterPerformanceMode;
+    performanceMode?.stopMic?.();
+
     if(autoplay){
+      setRankingKind(false);
       document.querySelector("#finalScore").textContent="AUTO PLAY";
       renderRanking(readRanking());
       resultEl.classList.remove("hidden");
@@ -143,6 +187,18 @@
       return;
     }
 
+    if(performanceMode?.isPerformanceRun?.()){
+      setRankingKind(true);
+      const input=performanceMode.isPadRun?.()?"mic":"touch",
+            {rows,currentId}=addPerformanceRecord(final,input);
+      renderRanking(rows,currentId);
+      resultEl.classList.remove("hidden");
+      reveal();
+      animateScore(final);
+      return;
+    }
+
+    setRankingKind(false);
     const mode=globalThis.DruMasterMode,
           hiddenMode=!!(mode?.wasHiddenRun?.()||mode?.isHidden?.()||document.body.dataset.hiddenRun==="1");
     const {rows,currentId}=addRecord(final,hiddenMode);
