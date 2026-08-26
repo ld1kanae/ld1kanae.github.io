@@ -48,6 +48,42 @@ for (const row of rows) {
   else normalized.set(key, row);
 }
 
+// 過去に実際に混入した誤読・語義の横流しを回帰検査する。
+// 「含まれていればよい」ではなく、学習画面に出る主要フィールドを固定して確認する。
+const semanticChecks = {
+  '背筋を正す': {
+    reading: 'せすじをただす',
+    meaning: '背中をまっすぐ伸ばし、姿勢を整える。'
+  },
+  '悔恨に苛まれる': {
+    reading: 'かいこんにさいなまれる'
+  },
+  '心細さを覚える': {
+    reading: 'こころぼそさをおぼえる'
+  },
+  '指で弾く': {
+    reading: 'ゆびではじく'
+  },
+  '視線を受け止める': {
+    reading: 'しせんをうけとめる'
+  },
+  '日が暮れる': {
+    reading: 'ひがくれる',
+    meaning: '太陽が沈み、辺りが暗くなる。転じて、一日が終わりに近づく。'
+  }
+};
+
+for (const [phrase, expected] of Object.entries(semanticChecks)) {
+  const row = rows.find((entry) => entry.phrase === phrase);
+  if (!row) {
+    problems.push(`意味回帰検査: ${phrase} が見つかりません`);
+    continue;
+  }
+  for (const [field, value] of Object.entries(expected)) {
+    if (row[field] !== value) problems.push(`意味回帰検査: ${phrase} の ${field} が不正 (${row[field]})`);
+  }
+}
+
 if (problems.length) {
   console.error(problems.join('\n'));
   process.exitCode = 1;
@@ -55,4 +91,3 @@ if (problems.length) {
   const newRows = rows.filter((row) => Number(row.id.slice(3)) >= 1201);
   console.log(`検査合格: 全${rows.length}件、追加${newRows.length}件、ID・表記・読み・意味・用例の重複なし`);
 }
-
