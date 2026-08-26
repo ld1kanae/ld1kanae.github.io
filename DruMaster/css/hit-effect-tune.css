@@ -5,7 +5,7 @@
   box-shadow:0 0 34px rgba(108,215,255,1),0 0 52px rgba(82,223,207,.72),0 0 72px rgba(82,223,207,.28)!important;
 }
 
-/* Gameplay D badge: no drum/rim/shell motif. Only a faint green hit glow sits
+/* Gameplay D badge: no drum/rim/shell motif. Only a faint radial hit glow sits
    directly behind the D, and the D uses the same visual treatment as #finalScore. */
 .game header .rank{
   position:relative;
@@ -28,26 +28,29 @@
   filter:none!important;
 }
 
-/* Compact amorphous hit glow: deliberately no circular rim or enclosing disc. */
+/* Circular gradient only: no ring, rim, stroke, or enclosing disc. */
 .game header .rank::before{
   content:"";
   position:absolute;
   z-index:0;
   left:50%;
   top:50%;
-  width:34px;
-  height:28px;
-  transform:translate(-50%,-50%) rotate(-6deg);
+  width:35px;
+  height:35px;
+  transform:translate(-50%,-50%);
   border:0;
   border-radius:0;
   pointer-events:none;
-  background:
-    radial-gradient(ellipse at 34% 46%,rgba(210,255,248,.32) 0 8%,rgba(92,226,205,.20) 28%,transparent 64%),
-    radial-gradient(ellipse at 68% 54%,rgba(122,244,222,.22) 0 12%,rgba(83,218,197,.13) 34%,transparent 68%),
-    radial-gradient(ellipse at 51% 50%,rgba(108,215,255,.08),transparent 72%);
+  background:radial-gradient(circle at center,
+    rgba(235,255,251,.36) 0%,
+    rgba(170,255,244,.30) 18%,
+    rgba(82,223,207,.22) 38%,
+    rgba(82,223,207,.11) 56%,
+    rgba(108,215,255,.045) 68%,
+    transparent 78%);
   box-shadow:none;
-  opacity:.40;
-  filter:blur(3.2px);
+  opacity:.52;
+  filter:blur(.7px);
 }
 
 /* Exact result-score typography/finish, scaled only to fit the HUD. */
@@ -84,10 +87,10 @@
     margin:0 6px 0 2px;
   }
   .game header .rank::before{
-    width:20px;
-    height:16px;
-    opacity:.34;
-    filter:blur(2.2px);
+    width:22px;
+    height:22px;
+    opacity:.46;
+    filter:blur(.5px);
   }
   .game header .rank span{
     font-size:27px;
