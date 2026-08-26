@@ -4,4 +4,11 @@
     width:calc(100% - 34px)!important;
     margin-left:34px!important;
   }
+
+  /* judgement.js places mobile lane judgements 3px above the lane centre.
+     Move only the visible judgement effect back down so its text baseline
+     matches the vertically centred lane label text. */
+  .lane-judge-fx[data-lane]{
+    transform:translate(2px,calc(-50% + 3px))!important;
+  }
 }
