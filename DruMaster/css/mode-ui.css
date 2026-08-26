@@ -60,9 +60,29 @@
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .hidden-mode-option,.performance-mode-option{display:flex}
-  .performance-mode-option{min-height:34px}
+
+  /* Five setup rows now live in the right panel. Compact only the vertical
+     chrome so the forced-landscape UI fits short phone viewports without
+     clipping the top options or the START button. */
+  .setup{
+    padding-top:4px!important;
+    padding-bottom:4px!important;
+    row-gap:2px!important;
+  }
+  .options{
+    padding-top:4px!important;
+    padding-bottom:4px!important;
+  }
+  .option{min-height:27px!important}
+  .performance-mode-option{min-height:29px!important}
   .performance-mode-option>span{font-size:12px}
   .performance-mode-option select{font-size:10px;max-width:170px}
+  .song-card{padding-top:8px!important;padding-bottom:8px!important}
+  .tempo-box{padding-top:6px!important;padding-bottom:6px!important}
+  #start{padding-top:8px!important;padding-bottom:8px!important}
+  #loadState{margin-top:0!important;margin-bottom:0!important}
+  .hint{margin-top:0!important;margin-bottom:0!important}
+
   .mic-mark{width:22px;height:22px}
   .volume-box{display:none!important}
 
