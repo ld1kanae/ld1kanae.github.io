@@ -28,7 +28,7 @@
     voice=null;gainNode=null;
   }
 
-  function play(){
+  function startPrepared(){
     if(!buffer||typeof ac==="undefined"||!ac)return false;
     stop();
     try{
@@ -50,6 +50,13 @@
       stop();
       return false;
     }
+  }
+
+  function play(){
+    if(!buffer||typeof ac==="undefined"||!ac)return false;
+    if(ac.state==="running")return startPrepared();
+    ac.resume().then(startPrepared,e=>console.warn("Result fanfare resume failed",e));
+    return true;
   }
 
   globalThis.DruMasterResultFanfare={prepare,play,stop,isReady:()=>!!buffer};
