@@ -1,0 +1,89 @@
+class DruMasterAcousticCanceller extends AudioWorkletProcessor {
+  constructor(){
+    super();
+    this.taps=160;
+    this.maxDelay=Math.round(sampleRate*0.28);
+    let ringSize=1;
+    while(ringSize<this.maxDelay+this.taps+512) ringSize<<=1;
+    this.ring=new Float32Array(ringSize);
+    this.mask=ringSize-1;
+    this.w=new Float32Array(this.taps);
+    this.write=0;
+    this.delaySamples=Math.round(sampleRate*0.06);
+    this.mu=.16;
+    this.eps=1e-6;
+    this.adapt=false;
+    this.freezeSamples=0;
+    this.noiseRms=0.0005;
+    this.padProtect=0.01;
+    this.gate=1;
+    this.capture=null;
+    this.metricFrames=0;
+    this.rawPow=0;this.refPow=0;this.resPow=0;this.metricSamples=0;
+    this.port.onmessage=e=>this.onMessage(e.data||{});
+  }
+  onMessage(m){
+    if(m.type==='setDelay') this.delaySamples=Math.max(0,Math.min(this.maxDelay,Math.round(m.samples||0)));
+    else if(m.type==='setNoise') {this.noiseRms=Math.max(1e-6,+m.noiseRms||1e-6);this.padProtect=Math.max(this.noiseRms*4,+m.padProtect||0.01);}
+    else if(m.type==='adapt') this.adapt=!!m.enabled;
+    else if(m.type==='resetFilter') this.w.fill(0);
+    else if(m.type==='freeze') this.freezeSamples=Math.max(this.freezeSamples,Math.round(sampleRate*(+m.ms||0)/1000));
+    else if(m.type==='beginCapture'){
+      const n=Math.max(1024,Math.min(Math.round(sampleRate*(+m.seconds||2.6)),Math.round(sampleRate*5)));
+      this.capture={mic:new Float32Array(n),ref:new Float32Array(n),at:0};
+    }
+  }
+  maybeFinishCapture(){
+    const c=this.capture;
+    if(!c||c.at<c.mic.length)return;
+    this.capture=null;
+    this.port.postMessage({type:'capture',mic:c.mic.buffer,ref:c.ref.buffer,sampleRate},[c.mic.buffer,c.ref.buffer]);
+  }
+  process(inputs,outputs){
+    const micIn=inputs[0]||[],refIn=inputs[1]||[],out=outputs[0]||[];
+    if(!out[0])return true;
+    const mic=micIn[0]||null,refL=refIn[0]||null,refR=refIn[1]||null,dst=out[0],n=dst.length;
+    let rawPow=0,refPow=0,resPow=0;
+    for(let i=0;i<n;i++){
+      const d=mic?mic[i]||0:0;
+      const xl=refL?(refL[i]||0):0,xr=refR?(refR[i]||0):xl,x=refL?(refR?(xl+xr)*.5:xl):0;
+      this.ring[this.write]=x;
+      let y=0,norm=this.eps;
+      const base=(this.write-this.delaySamples)&this.mask;
+      for(let k=0;k<this.taps;k++){
+        const xv=this.ring[(base-k)&this.mask];
+        y+=this.w[k]*xv;
+        norm+=xv*xv;
+      }
+      const err=d-y;
+      const protectedTransient=Math.abs(err)>this.padProtect || Math.abs(d)>this.padProtect*1.35;
+      if(this.adapt&&this.freezeSamples<=0&&!protectedTransient&&norm>this.eps*4){
+        const step=this.mu*err/norm;
+        for(let k=0;k<this.taps;k++)this.w[k]+=step*this.ring[(base-k)&this.mask];
+      }
+      if(this.freezeSamples>0)this.freezeSamples--;
+      const level=Math.abs(err),lo=this.noiseRms*1.15,hi=this.noiseRms*4.5;
+      let target=level<=lo?.08:level>=hi?1:.08+.92*(level-lo)/(hi-lo);
+      const coeff=target<this.gate?.18:.055;
+      this.gate+=coeff*(target-this.gate);
+      const cleaned=err*this.gate;
+      dst[i]=cleaned;
+      for(let c=1;c<out.length;c++)out[c][i]=cleaned;
+      rawPow+=d*d;refPow+=x*x;resPow+=cleaned*cleaned;
+      if(this.capture){
+        const at=this.capture.at;
+        if(at<this.capture.mic.length){this.capture.mic[at]=d;this.capture.ref[at]=x;this.capture.at=at+1;}
+      }
+      this.write=(this.write+1)&this.mask;
+    }
+    this.maybeFinishCapture();
+    this.rawPow+=rawPow;this.refPow+=refPow;this.resPow+=resPow;this.metricSamples+=n;
+    if(++this.metricFrames>=12){
+      const count=Math.max(1,this.metricSamples),raw=Math.sqrt(this.rawPow/count),ref=Math.sqrt(this.refPow/count),res=Math.sqrt(this.resPow/count),erle=10*Math.log10((this.rawPow+1e-12)/(this.resPow+1e-12));
+      this.port.postMessage({type:'metrics',rawRms:raw,refRms:ref,residualRms:res,erleDb:erle,delaySamples:this.delaySamples});
+      this.metricFrames=0;this.rawPow=this.refPow=this.resPow=0;this.metricSamples=0;
+    }
+    return true;
+  }
+}
+registerProcessor('drumaster-acoustic-canceller',DruMasterAcousticCanceller);
