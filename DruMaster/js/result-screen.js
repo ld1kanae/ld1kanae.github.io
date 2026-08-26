@@ -22,6 +22,20 @@
 
   const song=()=>globalThis.DruMasterSongs?.current||{id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN"};
 
+  function retryCurrentSong(){
+    resultEl.classList.add("hidden");
+    resultEl.classList.remove("result-reveal");
+    const start=document.querySelector("#start");
+    if(!start){location.reload();return}
+    start.disabled=false;
+    start.click();
+  }
+  function goHome(){
+    const url=new URL(location.href);
+    url.searchParams.delete("v");
+    location.href=url.toString();
+  }
+
   function installMarkup(){
     const s=song();
     resultEl.innerHTML=`
@@ -41,8 +55,12 @@
         <div class="ranking-head"><span>RANK</span><span>SCORE</span><span style="text-align:right">DATE</span></div>
         <div id="rankingList" class="ranking-list"></div>
       </section>
-      <button id="retry" class="result-step result-step-5">RETRY</button>`;
-    document.querySelector("#retry").onclick=()=>location.reload();
+      <div class="result-actions result-step result-step-5">
+        <button id="retry" type="button">リトライ</button>
+        <button id="home" type="button">ホーム</button>
+      </div>`;
+    document.querySelector("#retry").onclick=retryCurrentSong;
+    document.querySelector("#home").onclick=goHome;
   }
 
   function readAll(){
