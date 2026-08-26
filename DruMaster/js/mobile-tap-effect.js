@@ -22,6 +22,7 @@
   }
 
   function showAt(x,y){
+    if(!Number.isFinite(x)||!Number.isFinite(y))return;
     const slot=pool[cursor++%POOL_SIZE],fx=slot.fx;
     slot.animation?.cancel();
     fx.style.left=`${x}px`;
@@ -31,6 +32,14 @@
       {opacity:0,transform:"translate(-50%,-50%) scale(1.5)"}
     ],{duration:240,easing:"ease-out"});
   }
+
+  function showElement(el){
+    if(!(el instanceof Element))return;
+    const r=el.getBoundingClientRect();
+    showAt(r.left+r.width/2,r.top+r.height/2);
+  }
+
+  globalThis.DruMasterMobileTapEffect={showAt,showElement};
 
   /* Window capture runs before performance-mode's game capture handler, so
      touch feedback still appears when a nearest note consumes the event. */
