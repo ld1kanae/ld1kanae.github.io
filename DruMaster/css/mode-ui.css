@@ -74,6 +74,21 @@
     padding-bottom:4px!important;
   }
   .option{min-height:27px!important}
+
+  /* Mobile switches: preserve the same proportions but trim them slightly. */
+  .option>i{
+    width:44px;
+    height:24px;
+    border-radius:12px;
+  }
+  .option>i::after{
+    width:18px;
+    height:18px;
+    left:3px;
+    top:3px;
+  }
+  .option input:checked+i::after{transform:translateX(20px)}
+
   .performance-mode-option{min-height:29px!important}
   .performance-mode-option>span{font-size:12px}
   .performance-mode-option select{font-size:10px;max-width:170px}
