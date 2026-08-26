@@ -1,0 +1,176 @@
+/* Pad-practice microphone calibration screen. */
+.mic-calibration{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px 28px;
+  background:
+    radial-gradient(circle at 50% 24%,rgba(56,169,255,.16),transparent 34%),
+    linear-gradient(180deg,#0d1723,#070b11 72%);
+}
+.mic-calibration-card{
+  width:min(720px,94%);
+  padding:18px 24px 16px;
+  border:1px solid rgba(127,164,201,.34);
+  border-radius:18px;
+  background:rgba(10,17,26,.92);
+  box-shadow:0 20px 52px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.035);
+  text-align:center;
+}
+.mic-cal-eyebrow{
+  margin:0 0 5px;
+  color:#8090a3;
+  font:800 9px/1 system-ui,sans-serif;
+  letter-spacing:.28em;
+}
+.mic-calibration-card h2{
+  margin:0 0 8px;
+  font-size:24px;
+  letter-spacing:.06em;
+}
+.mic-cal-instruction{
+  min-height:24px;
+  margin:0 0 10px;
+  color:#f2f7fc;
+  font:800 16px/1.4 system-ui,sans-serif;
+}
+.mic-cal-meter{
+  position:relative;
+  width:min(540px,90%);
+  height:13px;
+  margin:0 auto 14px;
+  overflow:visible;
+  border:1px solid #33465b;
+  border-radius:99px;
+  background:#071019;
+  box-shadow:inset 0 1px 5px rgba(0,0,0,.65);
+}
+.mic-cal-meter>i{
+  display:block;
+  width:0;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#4bb6ff,#52dfcf 62%,#ffe06c);
+  box-shadow:0 0 9px rgba(82,223,207,.32);
+  transition:width .045s linear;
+}
+#micCalThresholdMarker{
+  display:none;
+  position:absolute;
+  top:-5px;
+  bottom:-5px;
+  width:2px;
+  transform:translateX(-1px);
+  border-radius:2px;
+  background:#fff4a9;
+  box-shadow:0 0 7px rgba(255,230,123,.8);
+}
+#micCalThresholdMarker.show{display:block}
+.mic-cal-steps{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin:0 auto 10px;
+}
+.mic-cal-steps>div{
+  min-width:0;
+  padding:8px 7px;
+  border:1px solid #283748;
+  border-radius:10px;
+  background:#0c141e;
+  transition:.16s ease;
+}
+.mic-cal-steps span{
+  display:grid;
+  place-items:center;
+  width:20px;
+  height:20px;
+  margin:0 auto 4px;
+  border:1px solid #46596e;
+  border-radius:50%;
+  color:#9aa9ba;
+  font:900 9px/1 system-ui,sans-serif;
+}
+.mic-cal-steps b{
+  display:block;
+  color:#eaf2fa;
+  font:850 12px/1.1 system-ui,sans-serif;
+}
+.mic-cal-steps em{
+  display:block;
+  margin-top:4px;
+  color:#687789;
+  font:700 8px/1 system-ui,sans-serif;
+  font-style:normal;
+  letter-spacing:.04em;
+}
+.mic-cal-steps>div[data-state="active"]{
+  border-color:#55bfff;
+  background:linear-gradient(180deg,rgba(56,169,255,.15),rgba(11,23,34,.92));
+  box-shadow:0 0 15px rgba(56,169,255,.12);
+}
+.mic-cal-steps>div[data-state="active"] span{border-color:#6ed2ff;color:#dff7ff}
+.mic-cal-steps>div[data-state="active"] em{color:#79d5ff}
+.mic-cal-steps>div[data-state="done"]{
+  border-color:rgba(82,223,207,.50);
+  background:linear-gradient(180deg,rgba(82,223,207,.10),rgba(10,20,28,.94));
+}
+.mic-cal-steps>div[data-state="done"] span{border-color:#62e8d4;color:#a8fff0}
+.mic-cal-steps>div[data-state="done"] em{color:#77e7d8}
+.mic-cal-detail{
+  min-height:30px;
+  margin:0 auto 10px;
+  color:#8392a4;
+  font:650 10px/1.45 system-ui,sans-serif;
+}
+.mic-cal-actions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+}
+.mic-cal-actions button{
+  width:142px;
+  min-width:142px;
+  height:38px;
+  padding:0 18px;
+  border-radius:999px;
+  font:900 12px/1 system-ui,sans-serif;
+  letter-spacing:.05em;
+}
+#micCalStart{
+  border:0;
+  background:var(--blue);
+  color:#001322;
+  box-shadow:0 0 20px rgba(56,169,255,.26);
+}
+#micCalStart:disabled{
+  background:#283441;
+  color:#677687;
+  box-shadow:none;
+}
+#micCalRetry{
+  border:1px solid #586a7d;
+  background:#131e2b;
+  color:#eaf2fa;
+}
+#micCalRetry:active{background:#1c2a39}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .mic-calibration{padding:6px 18px}
+  .mic-calibration-card{
+    width:min(760px,96%);
+    padding:10px 20px 9px;
+    border-radius:14px;
+  }
+  .mic-cal-eyebrow{font-size:8px;margin-bottom:3px}
+  .mic-calibration-card h2{font-size:20px;margin-bottom:5px}
+  .mic-cal-instruction{min-height:20px;margin-bottom:6px;font-size:14px}
+  .mic-cal-meter{height:11px;margin-bottom:8px}
+  .mic-cal-steps{gap:7px;margin-bottom:7px}
+  .mic-cal-steps>div{padding:6px 5px}
+  .mic-cal-steps span{width:18px;height:18px;margin-bottom:3px;font-size:8px}
+  .mic-cal-steps b{font-size:11px}
+  .mic-cal-steps em{font-size:7.5px;margin-top:3px}
+  .mic-cal-detail{min-height:25px;margin-bottom:6px;font-size:9px}
+  .mic-cal-actions button{width:132px;min-width:132px;height:34px;font-size:11px}
+}
