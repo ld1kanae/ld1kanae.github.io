@@ -22,7 +22,7 @@
   const modeSelect=modeRow.querySelector("select");
 
   let runMode="normal",micStream=null,micSource=null,micFilter=null,micAnalyser=null,
-      micData=null,micRaf=0,micNoiseFloor=.003,micPrevRms=0,micPrevPeak=0,micLastHit=-Infinity;
+      micData=null,micRaf=0,micNoiseFloor=.0003,micPrevRms=0,micPrevPeak=0,micLastHit=-Infinity;
 
   function selectedMode(){return mobileQuery.matches?(modeSelect?.value||"normal"):"normal"}
   function isPerformanceMode(mode=runMode){return mode==="touch"||mode==="pad"}
@@ -149,7 +149,7 @@
     micAnalyser.smoothingTimeConstant=0;
     micData=new Float32Array(micAnalyser.fftSize);
     micSource.connect(micFilter).connect(micAnalyser);
-    micNoiseFloor=.003;micPrevRms=0;micPrevPeak=0;micLastHit=-Infinity;
+    micNoiseFloor=.0003;micPrevRms=0;micPrevPeak=0;micLastHit=-Infinity;
   }
 
   function stopMicLoop(){
@@ -174,10 +174,13 @@
       const rms=Math.sqrt(sum/micData.length),
             rise=rms-micPrevRms,
             peakRise=peak-micPrevPeak,
-            threshold=Math.max(.0065,micNoiseFloor*1.65),
-            riseGate=Math.max(.0015,micNoiseFloor*.18),
-            peakGate=Math.max(.022,micNoiseFloor*3.2),
-            peakRiseGate=Math.max(.004,micNoiseFloor*.55),
+            /* Roughly one tenth of the previous absolute gates. Dynamic gates
+               stay only slightly above the measured room noise so quiet pad
+               transients are not rejected on low-gain smartphone microphones. */
+            threshold=Math.max(.00065,micNoiseFloor*1.18),
+            riseGate=Math.max(.00015,micNoiseFloor*.06),
+            peakGate=Math.max(.0022,micNoiseFloor*1.55),
+            peakRiseGate=Math.max(.0004,micNoiseFloor*.18),
             now=performance.now();
       const loudEnough=rms>threshold||peak>peakGate,
             transient=rise>riseGate||peakRise>peakRiseGate,
@@ -185,8 +188,8 @@
       if(onset){
         micLastHit=now;
         consumePadMicHit();
-      }else if(rms<threshold*1.25){
-        micNoiseFloor=Math.max(.0015,Math.min(.03,micNoiseFloor*.98+rms*.02));
+      }else if(rms<threshold*1.5){
+        micNoiseFloor=Math.max(.00015,Math.min(.01,micNoiseFloor*.995+rms*.005));
       }
       micPrevRms=rms;
       micPrevPeak=peak;
