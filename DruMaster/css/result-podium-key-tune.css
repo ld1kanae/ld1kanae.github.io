@@ -1,0 +1,145 @@
+/* Result hierarchy / podium effects / desktop key-badge placement. */
+
+/* Permanent, restrained podium tint. The stronger animation only runs when the
+   newly recorded score actually lands in the top three. */
+.ranking-row.rank-gold .rank-no{color:#ffe38b;text-shadow:0 0 7px rgba(255,214,91,.38)}
+.ranking-row.rank-silver .rank-no{color:#e7f0f7;text-shadow:0 0 7px rgba(200,227,244,.32)}
+.ranking-row.rank-bronze .rank-no{color:#e9a66e;text-shadow:0 0 7px rgba(218,126,65,.28)}
+.ranking-row.rank-gold:not(.current){background:linear-gradient(90deg,rgba(255,221,105,.035),transparent 42%)}
+.ranking-row.rank-silver:not(.current){background:linear-gradient(90deg,rgba(213,232,244,.028),transparent 42%)}
+.ranking-row.rank-bronze:not(.current){background:linear-gradient(90deg,rgba(218,132,74,.028),transparent 42%)}
+
+.ranking-row.podium-record{
+  overflow:hidden;
+  isolation:isolate;
+}
+.ranking-row.podium-record>*{position:relative;z-index:2}
+.ranking-row.current.rank-gold{
+  background:linear-gradient(90deg,rgba(255,224,115,.15),rgba(110,231,255,.10) 56%,rgba(206,145,255,.08));
+  box-shadow:inset 2px 0 #ffe071,inset 0 0 18px rgba(255,230,137,.05);
+}
+.ranking-row.current.rank-silver{
+  background:linear-gradient(90deg,rgba(220,237,248,.14),rgba(117,224,255,.09) 56%,rgba(179,199,221,.07));
+  box-shadow:inset 2px 0 #dcecf6,inset 0 0 18px rgba(218,239,255,.055);
+}
+.ranking-row.current.rank-bronze{
+  background:linear-gradient(90deg,rgba(223,139,79,.15),rgba(245,184,121,.08) 56%,rgba(143,90,67,.06));
+  box-shadow:inset 2px 0 #dc8c54,inset 0 0 18px rgba(236,151,91,.05);
+}
+.ranking-row.podium-record::before{
+  content:"";
+  position:absolute;
+  z-index:1;
+  top:-90%;
+  bottom:-90%;
+  left:-38%;
+  width:23%;
+  pointer-events:none;
+  transform:skewX(-22deg);
+  opacity:0;
+  animation:podiumGlassSweep 1.25s cubic-bezier(.22,.72,.22,1) 1s 2;
+}
+.ranking-row.podium-record.rank-gold::before{
+  background:linear-gradient(90deg,transparent,rgba(255,238,157,.10),rgba(255,255,255,.82),rgba(255,222,114,.32),transparent);
+}
+.ranking-row.podium-record.rank-silver::before{
+  background:linear-gradient(90deg,transparent,rgba(220,239,252,.10),rgba(255,255,255,.86),rgba(182,220,242,.34),transparent);
+}
+.ranking-row.podium-record.rank-bronze::before{
+  background:linear-gradient(90deg,transparent,rgba(239,168,111,.10),rgba(255,239,219,.82),rgba(210,116,61,.34),transparent);
+}
+@keyframes podiumGlassSweep{
+  0%{left:-38%;opacity:0}
+  14%{opacity:.96}
+  70%{opacity:.78}
+  100%{left:122%;opacity:0}
+}
+
+.podium-badge{
+  display:inline-flex;
+  align-items:center;
+  height:17px;
+  padding:0 6px;
+  flex:0 0 auto;
+  border-radius:999px;
+  font:900 8px/1 system-ui,sans-serif;
+  letter-spacing:.10em;
+}
+.podium-badge.gold{border:1px solid rgba(255,234,145,.74);background:rgba(255,210,78,.10);color:#fff0a2;box-shadow:0 0 8px rgba(255,215,95,.24)}
+.podium-badge.silver{border:1px solid rgba(221,239,250,.72);background:rgba(210,231,245,.09);color:#edf8ff;box-shadow:0 0 8px rgba(196,229,250,.22)}
+.podium-badge.bronze{border:1px solid rgba(228,157,105,.74);background:rgba(208,119,66,.10);color:#f3b383;box-shadow:0 0 8px rgba(222,132,73,.22)}
+
+.ranking-panel.silver-achieved{border-color:rgba(212,234,248,.58);box-shadow:inset 0 0 0 1px rgba(255,255,255,.10),0 0 20px rgba(183,220,244,.16),0 12px 30px rgba(0,0,0,.28)}
+.ranking-panel.bronze-achieved{border-color:rgba(221,145,92,.58);box-shadow:inset 0 0 0 1px rgba(255,225,205,.08),0 0 20px rgba(216,124,67,.15),0 12px 30px rgba(0,0,0,.28)}
+.ranking-panel.silver-achieved .ranking-title span{color:#e4f3fc;font-weight:900;text-shadow:0 0 8px rgba(191,225,246,.42)}
+.ranking-panel.bronze-achieved .ranking-title span{color:#efad7b;font-weight:900;text-shadow:0 0 8px rgba(220,126,69,.42)}
+
+.result.new-second .best-celebration,
+.result.new-third .best-celebration{display:block;animation:bestSparkleField 1.9s ease-out .72s both}
+.result.new-second .best-celebration{
+  background:
+    radial-gradient(circle at 18% 22%,rgba(236,248,255,.95) 0 1px,transparent 2px),
+    radial-gradient(circle at 77% 18%,rgba(172,226,255,.95) 0 1.5px,transparent 3px),
+    radial-gradient(circle at 86% 53%,rgba(223,239,250,.90) 0 1px,transparent 2.5px),
+    radial-gradient(circle at 14% 67%,rgba(185,213,236,.92) 0 1.5px,transparent 3px),
+    radial-gradient(circle at 31% 82%,rgba(199,237,255,.90) 0 1px,transparent 2.5px),
+    radial-gradient(circle at 69% 79%,rgba(245,252,255,.94) 0 1.5px,transparent 3px);
+}
+.result.new-third .best-celebration{
+  background:
+    radial-gradient(circle at 18% 22%,rgba(255,204,159,.95) 0 1px,transparent 2px),
+    radial-gradient(circle at 77% 18%,rgba(236,145,87,.95) 0 1.5px,transparent 3px),
+    radial-gradient(circle at 86% 53%,rgba(255,222,190,.90) 0 1px,transparent 2.5px),
+    radial-gradient(circle at 14% 67%,rgba(205,112,65,.92) 0 1.5px,transparent 3px),
+    radial-gradient(circle at 31% 82%,rgba(246,171,112,.90) 0 1px,transparent 2.5px),
+    radial-gradient(circle at 69% 79%,rgba(255,230,203,.94) 0 1.5px,transparent 3px);
+}
+
+.result-score-note{margin:-3px 0 11px;color:#8190a2;font:700 10px/1.3 system-ui,sans-serif;letter-spacing:.05em}
+.result-score-note.hidden{display:none!important}
+.result.no-score #finalScore{font-size:clamp(42px,7vw,70px);letter-spacing:.04em}
+
+/* PC screenshot showed an overly steep hierarchy: score dominated while title,
+   judgement and ranking text read too small. Narrow the spread without flattening it. */
+@media (hover:hover) and (pointer:fine){
+  .result .eyebrow{font-size:11px}
+  .result h2{font-size:clamp(24px,2.8vw,32px)}
+  .result-song-sub{font-size:11px}
+  .result-score-label{font-size:11px}
+  #finalScore{font-size:clamp(58px,9vw,96px);margin-top:6px;margin-bottom:14px}
+  .result-summary{gap:clamp(18px,3.2vw,38px);margin-bottom:15px}
+  .result-summary span{font-size:9.5px}
+  .result-summary b{font-size:clamp(18px,2.1vw,23px)}
+  .ranking-title h3{font-size:13px}
+  .ranking-title span{font-size:9px}
+  .ranking-head{font-size:9px}
+  .ranking-row{font-size:12px;min-height:30px}
+
+  /* Put keyboard assignments physically above the circular hit flash. */
+  #hitLayer .key-badges{
+    position:absolute!important;
+    z-index:8!important;
+    left:50%!important;
+    top:50%!important;
+    transform:translate(-50%,calc(-50% - 58px))!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:3px!important;
+    width:max-content!important;
+    pointer-events:none!important;
+    white-space:nowrap!important;
+  }
+  #hitLayer .key-badges kbd{
+    position:static!important;
+    left:auto!important;
+    top:auto!important;
+    transform:none!important;
+    flex:0 0 auto!important;
+  }
+  #hitLayer .hit.pressed .key-badges kbd{transform:scale(.9)!important}
+  #hitLayer .hit > kbd{
+    top:calc(50% - 58px)!important;
+    z-index:8!important;
+  }
+}
