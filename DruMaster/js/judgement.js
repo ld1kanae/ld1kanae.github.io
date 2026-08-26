@@ -6,11 +6,9 @@
 
   const fxByLane=[];
   const glowByLane=[];
-  const LANE_LABELS=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
   const MOBILE_JUDGE_FONT=9;
-  const MOBILE_LABEL_GAP=6;
   const MOBILE_GOAL_GAP=12;
-  const MOBILE_OPTICAL_Y=-1;
+  const MOBILE_OPTICAL_Y=-3;
   let suppressAutoGlow=false,hiddenFx=null;
 
   function isMobile(){
@@ -67,26 +65,23 @@
   }
 
   function placeFx(lane,node){
-    const {w,judgeX,laneH,labelFont}=chartGeometry();
+    const {judgeX,laneH}=chartGeometry();
     if(isMobile()){
+      /* Every mobile lane uses the same horizontal anchor.  The widest grade
+         (PERFECT) is measured once against the goal line so shorter labels do
+         not drift left/right between lanes. */
       ctx.save();
-      ctx.font=`700 ${labelFont}px system-ui,sans-serif`;
-      const labelWidth=ctx.measureText(LANE_LABELS[lane]||"").width;
       ctx.font=`900 ${MOBILE_JUDGE_FONT}px system-ui,sans-serif`;
       const letterSpacing=MOBILE_JUDGE_FONT*.055;
       const judgeWidth=ctx.measureText("PERFECT").width+letterSpacing*6;
       ctx.restore();
 
-      const labelEnd=7+labelWidth;
-      const desiredLeft=labelEnd+MOBILE_LABEL_GAP;
-      const latestSafeLeft=judgeX-judgeWidth-MOBILE_GOAL_GAP;
-      const left=Math.max(7,Math.min(desiredLeft,latestSafeLeft));
-
+      const left=Math.max(7,judgeX-judgeWidth-MOBILE_GOAL_GAP);
       node.style.left=`${left}px`;
       node.style.top=`${laneH*(lane+.5)+MOBILE_OPTICAL_Y}px`;
       node.style.transform="translate(0,-50%)";
     }else{
-      node.style.left="9%";
+      node.style.left="calc(9% - 4px)";
       node.style.top=`${laneH*(lane+.5)}px`;
       node.style.transform="translate(-50%,-50%)";
     }
