@@ -1,7 +1,11 @@
 /* Gameplay-only visual layer. Touch geometry is intentionally transparent. */
 .game header{height:58px;padding:6px 13px;background:linear-gradient(90deg,#101823ed,#080c13f5);z-index:12;box-shadow:0 5px 18px #0008}
 .rank{width:42px;height:42px;display:grid;place-items:center;transform:rotate(45deg);border:2px solid #9a82ff;background:#211b3c;box-shadow:0 0 16px #8b6cff88;color:#dcd4ff;font-size:22px;margin:0 18px 0 6px}
-.song-hud b,.song-hud small{display:block}
+.song-hud{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:14px;align-items:center;min-width:0}
+.song-hud b,.song-hud small{display:block;grid-column:1;min-width:0}
+.song-hud b{grid-row:1}
+.song-hud small{grid-row:2}
+.song-hud .hud-bpm{grid-column:2;grid-row:1 / span 2;align-self:center;white-space:nowrap;color:#aab8c8;font:800 12px/1 system-ui,sans-serif;letter-spacing:.05em;opacity:.92}
 .score{padding-right:14px}
 .score strong{text-shadow:0 0 10px #71c8ff99}
 .game header #pause{width:46px;height:42px;border:2px solid #cfd7e4;border-radius:9px;background:linear-gradient(#f8f9fd,#cbd2df);color:#424a66;font-size:20px;font-weight:900;box-shadow:0 0 0 4px #ffffff22}
@@ -69,3 +73,8 @@
 #judgementFx[data-grade="auto"] #judge{background-image:linear-gradient(90deg,#fff,#80d7ff,#fff);font-size:clamp(18px,3.2vw,34px)}
 .result.autoplay .grades{display:none}
 .result.autoplay #finalScore{font-size:clamp(42px,9vw,82px)}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .song-hud{column-gap:8px}
+  .song-hud .hud-bpm{font-size:8px;letter-spacing:.02em}
+}
