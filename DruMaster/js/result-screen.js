@@ -5,9 +5,6 @@
         PERFORMANCE_STORAGE_KEY="drumasterPerformanceRankingV2",MAX_RECORDS=10,
         RESET_KEY="drumasterRankingReset20260826RawScore1";
 
-  /* The score scale changed from normalized 1,000,000-point scoring to raw
-     accumulated points. Clear all older local ranking generations once so
-     incomparable records never appear beside the new scoring system. */
   try{
     if(localStorage.getItem(RESET_KEY)!=="1"){
       ["drumasterRankingV1","drumasterRankingV2","drumasterRankingV3",
@@ -181,6 +178,12 @@
     resultEl.classList.add("result-reveal");
   }
 
+  function showResult(){
+    resultEl.classList.remove("hidden");
+    globalThis.DruMasterResultFanfare?.play?.();
+    reveal();
+  }
+
   installMarkup();
 
   finish=function(){
@@ -202,8 +205,7 @@
       setRankingKind(false);
       document.querySelector("#finalScore").textContent="AUTO PLAY";
       renderRanking(readRanking());
-      resultEl.classList.remove("hidden");
-      reveal();
+      showResult();
       return;
     }
 
@@ -212,8 +214,7 @@
       const input=performanceMode.isPadRun?.()?"mic":"touch",
             {rows,currentId}=addPerformanceRecord(final,input);
       renderRanking(rows,currentId);
-      resultEl.classList.remove("hidden");
-      reveal();
+      showResult();
       animateScore(final);
       return;
     }
@@ -223,8 +224,7 @@
           hiddenMode=!!(mode?.wasHiddenRun?.()||mode?.isHidden?.()||document.body.dataset.hiddenRun==="1");
     const {rows,currentId}=addRecord(final,hiddenMode);
     renderRanking(rows,currentId);
-    resultEl.classList.remove("hidden");
-    reveal();
+    showResult();
     animateScore(final);
   };
 })();
