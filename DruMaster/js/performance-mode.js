@@ -12,7 +12,7 @@
   if(!setup||!options||!startButton||!game)return;
 
   const PERFECT_WINDOW=.035,GREAT_WINDOW=.105,GOOD_WINDOW=.160;
-  const MIC_REFRACTORY_MS=62;
+  const MIC_REFRACTORY_MS=72;
   const MIC_TIMING_OFFSET_SEC=0; // Keep explicit for later device calibration.
 
   const modeRow=document.createElement("label");
@@ -22,7 +22,7 @@
   const modeSelect=modeRow.querySelector("select");
 
   let runMode="normal",micStream=null,micSource=null,micFilter=null,micAnalyser=null,
-      micData=null,micRaf=0,micNoiseFloor=.006,micPrevRms=0,micLastHit=-Infinity;
+      micData=null,micRaf=0,micNoiseFloor=.003,micPrevRms=0,micPrevPeak=0,micLastHit=-Infinity;
 
   function selectedMode(){return mobileQuery.matches?(modeSelect?.value||"normal"):"normal"}
   function isPerformanceMode(mode=runMode){return mode==="touch"||mode==="pad"}
@@ -71,6 +71,12 @@
     return label;
   }
 
+  function emitGrade(note,label){
+    const judgement=globalThis.DruMasterJudgement;
+    if(judgement?.emitForNote)judgement.emitForNote(note,label,{flash:false});
+    else if(typeof showJudge==="function")showJudge(label);
+  }
+
   function consumeNearest(source="touch"){
     if(!mobileQuery.matches||!isPerformanceMode()||typeof running==="undefined"||!running||paused||autoplay)return false;
     const inputTime=current()-(source==="mic"?MIC_TIMING_OFFSET_SEC:0),match=nearestPlayable(inputTime);
@@ -81,9 +87,33 @@
     playDrum(note.note,note.type,note.velocity/127);
     if(typeof flashPart==="function"&&typeof PART!=="undefined")flashPart(PART[note.type]);
     const label=gradeHit(note,delta);
-    const judgement=globalThis.DruMasterJudgement;
-    if(judgement?.emitForNote)judgement.emitForNote(note,label,{flash:false});
-    else if(typeof showJudge==="function")showJudge(label);
+    emitGrade(note,label);
+    return true;
+  }
+
+  function showPadSnareFeedback(){
+    if(typeof playDrum==="function"&&typeof DEFAULT_NOTE!=="undefined"){
+      playDrum(DEFAULT_NOTE.snare,"snare",.90);
+    }
+    const snare=document.querySelector('#hitLayer [data-part="snare"]:not(.inactive)')||document.querySelector('#hitLayer [data-part="snare"]');
+    if(snare&&typeof flashPart==="function")flashPart("snare",snare);
+    globalThis.DruMasterMobileTapEffect?.showElement?.(snare);
+  }
+
+  function consumePadMicHit(){
+    if(!mobileQuery.matches||runMode!=="pad"||typeof running==="undefined"||!running||paused||autoplay)return false;
+
+    /* A physical pad hit always behaves like a snare strike for audio/visual
+       feedback. Scoring remains timing-only: if a chart note is inside the
+       normal GOOD window, consume that note without replacing the snare sound. */
+    showPadSnareFeedback();
+
+    const match=nearestPlayable(current()-MIC_TIMING_OFFSET_SEC);
+    if(!match||match.delta>GOOD_WINDOW)return false;
+    const {note,delta}=match;
+    note.hit=true;
+    const label=gradeHit(note,delta);
+    emitGrade(note,label);
     return true;
   }
 
@@ -106,20 +136,20 @@
     if(typeof ac==="undefined"||!ac)throw Error("オーディオ機能の準備ができていません");
 
     micStream=await navigator.mediaDevices.getUserMedia({
-      audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:false,channelCount:1},
+      audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1},
       video:false
     });
     micSource=ac.createMediaStreamSource(micStream);
     micFilter=ac.createBiquadFilter();
     micFilter.type="highpass";
-    micFilter.frequency.value=700;
-    micFilter.Q.value=.7;
+    micFilter.frequency.value=250;
+    micFilter.Q.value=.55;
     micAnalyser=ac.createAnalyser();
-    micAnalyser.fftSize=512;
+    micAnalyser.fftSize=256;
     micAnalyser.smoothingTimeConstant=0;
     micData=new Float32Array(micAnalyser.fftSize);
     micSource.connect(micFilter).connect(micAnalyser);
-    micNoiseFloor=.006;micPrevRms=0;micLastHit=-Infinity;
+    micNoiseFloor=.003;micPrevRms=0;micPrevPeak=0;micLastHit=-Infinity;
   }
 
   function stopMicLoop(){
@@ -141,25 +171,31 @@
       micAnalyser.getFloatTimeDomainData(micData);
       let sum=0,peak=0;
       for(const x of micData){const a=Math.abs(x);sum+=x*x;if(a>peak)peak=a}
-      const rms=Math.sqrt(sum/micData.length),rise=rms-micPrevRms,
-            threshold=Math.max(.018,micNoiseFloor*2.8),
-            riseGate=Math.max(.006,micNoiseFloor*.7),
-            peakGate=Math.max(.065,micNoiseFloor*6),
-            crest=peak/Math.max(.0001,rms),now=performance.now();
-      const onset=rms>threshold&&rise>riseGate&&peak>peakGate&&crest>2.05&&now-micLastHit>=MIC_REFRACTORY_MS;
+      const rms=Math.sqrt(sum/micData.length),
+            rise=rms-micPrevRms,
+            peakRise=peak-micPrevPeak,
+            threshold=Math.max(.0065,micNoiseFloor*1.65),
+            riseGate=Math.max(.0015,micNoiseFloor*.18),
+            peakGate=Math.max(.022,micNoiseFloor*3.2),
+            peakRiseGate=Math.max(.004,micNoiseFloor*.55),
+            now=performance.now();
+      const loudEnough=rms>threshold||peak>peakGate,
+            transient=rise>riseGate||peakRise>peakRiseGate,
+            onset=loudEnough&&transient&&now-micLastHit>=MIC_REFRACTORY_MS;
       if(onset){
         micLastHit=now;
-        consumeNearest("mic");
-      }else if(rms<threshold*1.35){
-        micNoiseFloor=micNoiseFloor*.985+rms*.015;
+        consumePadMicHit();
+      }else if(rms<threshold*1.25){
+        micNoiseFloor=Math.max(.0015,Math.min(.03,micNoiseFloor*.98+rms*.02));
       }
       micPrevRms=rms;
+      micPrevPeak=peak;
     }
     micRaf=requestAnimationFrame(micFrame);
   }
   function startMicLoop(){
     stopMicLoop();
-    micLastHit=-Infinity;micPrevRms=0;
+    micLastHit=-Infinity;micPrevRms=0;micPrevPeak=0;
     micRaf=requestAnimationFrame(micFrame);
   }
 
@@ -193,6 +229,7 @@
     isPerformanceRun:()=>isPerformanceMode(runMode),
     isPadRun:()=>runMode==="pad",
     consumeNearest,
+    consumePadMicHit,
     stopMic:releaseMic,
     micTimingOffsetSec:()=>MIC_TIMING_OFFSET_SEC
   };
