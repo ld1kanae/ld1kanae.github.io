@@ -4,8 +4,7 @@
 .game .song-hud b{font-size:18px;line-height:1.05}
 .game .song-hud small{font-size:11px;line-height:1.05;margin-top:5px}
 
-/* User-supplied bass drum artwork sits behind the calibrated kit artwork.
-   From the immediately previous image position, move the artwork 4px left and 20px up only. */
+/* User-supplied bass drum artwork sits behind the calibrated kit artwork. */
 .kit-stage{isolation:isolate}
 .kit-stage .bass-drum-art{
   position:absolute!important;
@@ -51,8 +50,12 @@
   100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)!important}
 }
 
-/* Four-key cymbal badges should stay readable without covering the kit. */
+/* Desktop-only bass-drum placement adjustment. Mobile keeps the calibrated position above. */
 @media (hover:hover) and (pointer:fine){
+  .kit-stage .bass-drum-art{
+    left:calc(50% - 15px)!important;
+    top:calc(35.5% - 3px)!important;
+  }
   #hitLayer .key-badges{gap:2px}
   #hitLayer .key-badges kbd{min-width:20px;height:22px;padding:0 4px;font-size:10px}
 }
