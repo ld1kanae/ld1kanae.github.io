@@ -4,3 +4,107 @@
   background:radial-gradient(circle,#fff 0 10%,rgba(170,255,244,.98) 25%,rgba(82,223,207,.48) 47%,rgba(108,215,255,.18) 58%,transparent 70%)!important;
   box-shadow:0 0 34px rgba(108,215,255,1),0 0 52px rgba(82,223,207,.72),0 0 72px rgba(82,223,207,.28)!important;
 }
+
+/* Gameplay D badge: compact drum-head motif inspired by the result-score finish. */
+.game header .rank{
+  position:relative;
+  isolation:isolate;
+  width:52px;
+  height:52px;
+  flex:0 0 52px;
+  display:grid;
+  place-items:center;
+  margin:0 16px 0 3px;
+  overflow:visible;
+  transform:none!important;
+  border-radius:50%;
+  border:2px solid rgba(226,241,255,.96);
+  background:
+    radial-gradient(circle at 50% 46%,rgba(21,54,86,.98) 0 42%,rgba(7,24,42,.98) 60%,#030810 100%);
+  box-shadow:
+    inset 0 0 0 3px rgba(6,17,31,.96),
+    inset 0 0 0 6px rgba(209,230,249,.92),
+    inset 0 0 0 8px rgba(35,103,154,.88),
+    inset 0 0 18px rgba(78,221,255,.28),
+    0 0 0 1px rgba(2,8,15,.9),
+    0 0 13px rgba(84,221,255,.48),
+    0 0 26px rgba(70,169,255,.22);
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+  -webkit-text-stroke:.65px rgba(255,255,255,.88);
+  background-clip:padding-box;
+  font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;
+  font-size:39px;
+  font-weight:1000;
+  font-style:italic;
+  line-height:1;
+  letter-spacing:-.08em;
+  text-indent:-.05em;
+  text-shadow:none;
+}
+.game header .rank::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:7px;
+  border-radius:50%;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 50%,transparent 0 69%,rgba(72,234,255,.98) 70% 73%,transparent 74%),
+    radial-gradient(circle at 48% 42%,rgba(107,236,255,.16),transparent 64%);
+  box-shadow:inset 0 0 12px rgba(81,205,255,.26),0 0 10px rgba(72,230,255,.16);
+}
+.game header .rank::after{
+  content:"";
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+  z-index:2;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 0%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px),
+    radial-gradient(circle at 100% 50%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px),
+    radial-gradient(circle at 50% 100%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px),
+    radial-gradient(circle at 0% 50%,#f6fbff 0 3px,#7189a6 3.5px 5px,#152438 5.5px 6.5px,transparent 7px);
+}
+/* Repaint the D itself with the same iridescent language as the result score. */
+.game header .rank{
+  background-color:#07111d;
+}
+.game header .rank{
+  background-image:
+    radial-gradient(circle at 50% 46%,rgba(21,54,86,.98) 0 42%,rgba(7,24,42,.98) 60%,#030810 100%);
+}
+.game header .rank{
+  color:#f8fdff;
+  -webkit-text-fill-color:#f8fdff;
+  filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 5px rgba(108,236,255,.72)) drop-shadow(0 0 10px rgba(145,126,255,.38));
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game header .rank{
+    width:29px;
+    height:29px;
+    flex-basis:29px;
+    margin:0 6px 0 2px;
+    border-width:1px;
+    font-size:22px;
+    -webkit-text-stroke:.35px rgba(255,255,255,.88);
+    box-shadow:
+      inset 0 0 0 1px rgba(6,17,31,.96),
+      inset 0 0 0 3px rgba(209,230,249,.92),
+      inset 0 0 0 4px rgba(35,103,154,.88),
+      inset 0 0 8px rgba(78,221,255,.24),
+      0 0 0 1px rgba(2,8,15,.9),
+      0 0 8px rgba(84,221,255,.48);
+  }
+  .game header .rank::before{inset:4px}
+  .game header .rank::after{
+    inset:-2px;
+    background:
+      radial-gradient(circle at 50% 0%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px),
+      radial-gradient(circle at 100% 50%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px),
+      radial-gradient(circle at 50% 100%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px),
+      radial-gradient(circle at 0% 50%,#f6fbff 0 1.5px,#7189a6 2px 3px,transparent 3.5px);
+  }
+}
