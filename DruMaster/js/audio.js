@@ -70,7 +70,7 @@ loadDrumSource=async function(manifest){
     fetch(manifest.midi.path,{cache:"force-cache"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
   ]);
   if(midi.byteLength!==manifest.midi.bytes)throw Error("ドラム音源MIDIが不完全です");
-  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ドラム音源MIDIの内容が一致しません");
+  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ゲーム内ドラム音源MIDIの内容が一致しません");
 
   const fmt=readWavFormat(wav),expectedRate=manifest.wav.sourceSampleRate||manifest.wav.sampleRate;
   if(expectedRate&&fmt.sampleRate!==expectedRate)throw Error(`ゲーム内ドラム音源の元サンプルレートが不正です（${fmt.sampleRate}Hz / ${expectedRate}Hz）`);
@@ -90,6 +90,8 @@ loadDrumSource=async function(manifest){
   const required=new Set(Object.values(DEFAULT_NOTE)),missing=[...required].filter(note=>!drumRegions[String(note)]);
   if(missing.length)throw Error(`ゲーム内ドラム音源に必要な基準音がありません（MIDI ${missing.join(", ")}）`);
 };
+
+const activeDrumVoices=new Set();
 
 playDrum=function(_chartNote,type,v=.75){
   if(!ac||!drumBuffer)return;
@@ -112,10 +114,26 @@ playDrum=function(_chartNote,type,v=.75){
     voice={source,gain};
     openHatVoices.push(voice);
   }
+  const tracked={source,gain};
+  activeDrumVoices.add(tracked);
   source.onended=()=>{
+    activeDrumVoices.delete(tracked);
     if(voice)openHatVoices=openHatVoices.filter(x=>x!==voice);
     try{source.disconnect()}catch{}
     try{gain.disconnect()}catch{}
   };
   source.start(now,region.offset,region.duration);
+};
+
+globalThis.DruMasterAudioControl={
+  stopAllDrumVoices(){
+    const now=ac?.currentTime||0;
+    openHatVoices=[];
+    for(const voice of [...activeDrumVoices]){
+      activeDrumVoices.delete(voice);
+      try{voice.source.onended=null;voice.source.stop(now)}catch{}
+      try{voice.source.disconnect()}catch{}
+      try{voice.gain.disconnect()}catch{}
+    }
+  }
 };
