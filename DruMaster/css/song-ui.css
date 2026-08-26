@@ -1,6 +1,28 @@
 /* Song selector shared by PC and smartphone setup screens. */
 .song-card{position:relative;z-index:18;overflow:visible}
 .song-card>div:last-child{min-width:0;flex:1}
+.song-card .setup-bpm{
+  align-self:flex-start;
+  margin-left:auto;
+  padding-top:1px;
+  white-space:nowrap;
+  color:inherit;
+  font-family:inherit;
+  font-size:26px;
+  font-weight:700;
+  line-height:1.2;
+  letter-spacing:normal;
+}
+.song-hud .hud-bpm{
+  white-space:nowrap;
+  color:inherit;
+  font-family:inherit;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.05;
+  letter-spacing:normal;
+  opacity:1;
+}
 #songSelect{
   display:block;
   width:100%;
@@ -21,6 +43,9 @@
 .mobile-custom-select{display:none}
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .song-card .setup-bpm{font-size:22px;padding-top:0}
+  .song-hud .hud-bpm{font-size:14px;line-height:1.05}
+
   /* Native Android select popups ignore #app's forced 90deg transform, so the
      real select stays only as the data/control source and a DOM menu is shown. */
   #songSelect{margin-top:4px;padding:8px 26px 8px 10px;font-size:14px;border-radius:7px}
