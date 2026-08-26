@@ -10,15 +10,26 @@
   layer.setAttribute("aria-hidden","true");
   document.body.appendChild(layer);
 
-  function showAt(x,y){
+  const POOL_SIZE=8,pool=[];
+  let cursor=0;
+  for(let i=0;i<POOL_SIZE;i++){
     const fx=document.createElement("span");
     fx.className="mobile-tap-hit-fx";
+    fx.style.animation="none";
+    fx.style.opacity="0";
+    layer.appendChild(fx);
+    pool.push({fx,animation:null});
+  }
+
+  function showAt(x,y){
+    const slot=pool[cursor++%POOL_SIZE],fx=slot.fx;
+    slot.animation?.cancel();
     fx.style.left=`${x}px`;
     fx.style.top=`${y}px`;
-    layer.appendChild(fx);
-    const remove=()=>fx.remove();
-    fx.addEventListener("animationend",remove,{once:true});
-    setTimeout(remove,500);
+    slot.animation=fx.animate([
+      {opacity:.9,transform:"translate(-50%,-50%) scale(.4)"},
+      {opacity:0,transform:"translate(-50%,-50%) scale(1.5)"}
+    ],{duration:240,easing:"ease-out"});
   }
 
   /* Window capture runs before performance-mode's game capture handler, so
