@@ -41,8 +41,8 @@
     Object.assign(fx.style,{
       position:"absolute",left,top,width:"42%",aspectRatio:"1",
       borderRadius:"50%",transform:"translate(-50%,-50%) scale(.7)",opacity:"0",
-      pointerEvents:"none",background:"radial-gradient(circle,#fff 0 8%,#9ce8ffcc 24%,transparent 67%)",
-      boxShadow:"0 0 28px #6cd7ff,0 0 42px rgba(108,215,255,.34)",zIndex:"1"
+      pointerEvents:"none",background:"radial-gradient(circle,#fff 0 10%,rgba(170,255,244,.98) 25%,rgba(82,223,207,.48) 47%,rgba(108,215,255,.18) 58%,transparent 70%)",
+      boxShadow:"0 0 34px rgba(108,215,255,1),0 0 52px rgba(82,223,207,.72),0 0 72px rgba(82,223,207,.28)",zIndex:"1"
     });
     target.appendChild(fx);
     slot={fx,animation:null};
