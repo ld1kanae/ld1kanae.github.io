@@ -5,21 +5,22 @@
   box-shadow:0 0 34px rgba(108,215,255,1),0 0 52px rgba(82,223,207,.72),0 0 72px rgba(82,223,207,.28)!important;
 }
 
-/* Gameplay D badge: green strike flash behind the result-score-style D. */
+/* Gameplay D badge: only the green strike flash remains behind the letter.
+   There is deliberately no drum shell, rim, hoop, lug, bolt, or circular frame. */
 .game header .rank{
   position:relative;
   isolation:isolate;
-  width:52px;
+  width:54px;
   height:52px;
-  flex:0 0 52px;
+  flex:0 0 54px;
   display:grid;
   place-items:center;
-  margin:0 16px 0 3px;
+  margin:0 15px 0 3px;
   overflow:visible;
   transform:none!important;
   border:0!important;
-  border-radius:50%;
-  background:transparent!important;
+  border-radius:0!important;
+  background:none!important;
   box-shadow:none!important;
   color:transparent!important;
   -webkit-text-fill-color:transparent!important;
@@ -27,35 +28,35 @@
   filter:none!important;
 }
 
-/* Static version of the green/cyan drum-hit flash. */
+/* Static version of the same green/cyan hit flash used on the kit. */
 .game header .rank::before{
   content:"";
   position:absolute;
   z-index:0;
   left:50%;
   top:50%;
-  width:64px;
-  height:64px;
-  transform:translate(-50%,-50%);
+  width:67px;
+  height:55px;
+  transform:translate(-50%,-50%) rotate(-8deg);
+  border:0;
   border-radius:50%;
   pointer-events:none;
-  background:radial-gradient(circle,
-    rgba(255,255,255,.92) 0 7%,
-    rgba(190,255,245,.84) 13%,
-    rgba(82,223,207,.62) 28%,
-    rgba(55,207,177,.36) 43%,
-    rgba(108,215,255,.16) 57%,
-    transparent 72%);
+  background:radial-gradient(ellipse at center,
+    rgba(255,255,255,.98) 0 8%,
+    rgba(170,255,244,.96) 18%,
+    rgba(82,223,207,.62) 37%,
+    rgba(82,223,207,.30) 53%,
+    rgba(108,215,255,.12) 64%,
+    transparent 75%);
   box-shadow:
-    0 0 15px rgba(207,255,247,.78),
-    0 0 29px rgba(82,223,207,.76),
-    0 0 46px rgba(82,223,207,.36),
-    0 0 62px rgba(108,215,255,.16);
-  opacity:.96;
+    0 0 18px rgba(207,255,247,.78),
+    0 0 34px rgba(82,223,207,.72),
+    0 0 52px rgba(82,223,207,.30);
+  opacity:.94;
+  filter:blur(.25px);
 }
 
-/* Foreground D: same luminous finish as the result score, with a dark edge so
-   it stays readable over the bright strike flash. */
+/* Foreground D: intentionally matches #finalScore's typography and finish. */
 .game header .rank::after{
   content:"D";
   position:absolute;
@@ -65,45 +66,40 @@
   place-items:center;
   pointer-events:none;
   font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;
-  font-size:42px;
   font-weight:1000;
   font-style:italic;
-  line-height:1;
-  letter-spacing:-.08em;
-  text-indent:-.06em;
+  font-size:46px;
+  line-height:.9;
+  letter-spacing:.025em;
   color:transparent;
   -webkit-text-fill-color:transparent;
-  -webkit-text-stroke:1.25px rgba(4,12,20,.94);
-  background-image:linear-gradient(105deg,#fff 0%,#e8fbff 15%,#65ecff 34%,#fff 49%,#d18cff 68%,#72edff 82%,#fff 100%);
+  -webkit-text-stroke:1px rgba(255,255,255,.82);
+  background-image:linear-gradient(105deg,#fff 0%,#ffd8f6 13%,#6cecff 29%,#fff1a0 44%,#d18cff 62%,#72edff 81%,#fff 100%);
   background-clip:text;
   -webkit-background-clip:text;
-  text-shadow:0 1px 2px rgba(0,0,0,.62);
-  filter:
-    drop-shadow(0 0 1px rgba(255,255,255,.98))
-    drop-shadow(0 0 5px rgba(112,239,255,.72))
-    drop-shadow(0 0 10px rgba(86,180,255,.36));
+  filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 8px rgba(95,226,255,.58)) drop-shadow(0 0 18px rgba(190,104,255,.42));
+  transform:skewX(-4deg) scaleX(1.04);
+  transform-origin:center;
 }
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .game header .rank{
-    width:29px;
+    width:31px;
     height:29px;
-    flex-basis:29px;
+    flex-basis:31px;
     margin:0 6px 0 2px;
   }
   .game header .rank::before{
-    width:37px;
-    height:37px;
+    width:40px;
+    height:34px;
     box-shadow:
-      0 0 8px rgba(207,255,247,.76),
-      0 0 16px rgba(82,223,207,.70),
-      0 0 24px rgba(82,223,207,.30);
+      0 0 9px rgba(207,255,247,.76),
+      0 0 17px rgba(82,223,207,.66),
+      0 0 25px rgba(82,223,207,.28);
   }
   .game header .rank::after{
-    font-size:24px;
-    -webkit-text-stroke:.8px rgba(4,12,20,.95);
-    filter:
-      drop-shadow(0 0 1px rgba(255,255,255,.96))
-      drop-shadow(0 0 3px rgba(112,239,255,.70));
+    font-size:27px;
+    -webkit-text-stroke:.65px rgba(255,255,255,.84);
+    filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 4px rgba(95,226,255,.58)) drop-shadow(0 0 8px rgba(190,104,255,.36));
   }
 }
