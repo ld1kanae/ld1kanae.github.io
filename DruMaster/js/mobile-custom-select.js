@@ -75,7 +75,20 @@
       item.type="button";
       item.className="mobile-custom-select-option";
       item.setAttribute("role","option");
-      item.textContent=option.textContent;
+
+      const label=document.createElement("span");
+      label.className="mobile-custom-select-option-label";
+      label.textContent=option.textContent;
+      item.appendChild(label);
+
+      if(select.id==="performanceModeSelect"&&option.value==="pad"){
+        const mic=document.createElement("span");
+        mic.className="mobile-custom-select-mic";
+        mic.setAttribute("aria-hidden","true");
+        mic.innerHTML='<svg viewBox="0 0 24 24"><rect x="8.5" y="2.5" width="7" height="11" rx="3.5"/><path d="M5.5 10.5v.7a6.5 6.5 0 0 0 13 0v-.7M12 17.7V21M8.5 21h7"/></svg>';
+        item.appendChild(mic);
+      }
+
       item.disabled=option.disabled;
       item.addEventListener("pointerdown",e=>e.stopPropagation());
       item.addEventListener("click",()=>{
