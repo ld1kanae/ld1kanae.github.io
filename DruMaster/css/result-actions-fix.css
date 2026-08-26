@@ -1,0 +1,36 @@
+/* Final result-action sizing override.
+   #retry also has a legacy global ID rule in base.css, so use result-scoped
+   ID selectors here to guarantee both result buttons have identical geometry. */
+#result .result-actions #retry,
+#result .result-actions #home{
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:140px;
+  min-width:140px;
+  max-width:140px;
+  height:38px;
+  min-height:38px;
+  flex:0 0 140px;
+  margin:0;
+  padding:0 20px;
+  border-radius:999px;
+  font:900 12px/1 system-ui,sans-serif;
+  letter-spacing:.08em;
+  white-space:nowrap;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  #result .result-actions #retry,
+  #result .result-actions #home{
+    width:126px;
+    min-width:126px;
+    max-width:126px;
+    height:34px;
+    min-height:34px;
+    flex-basis:126px;
+    padding:0 18px;
+    font-size:12px;
+  }
+}
