@@ -28,7 +28,7 @@
   filter:none!important;
 }
 
-/* Medium centre-out radial gradient: no white core, rim, ring, stroke, or disc. */
+/* Glow-style radial falloff: broad, soft decay with no white core, rim or hard edge. */
 .game header .rank::before{
   content:"";
   position:absolute;
@@ -42,12 +42,14 @@
   border-radius:0;
   pointer-events:none;
   background:radial-gradient(circle at center,
-    rgba(170,255,244,.82) 0%,
-    rgba(82,223,207,.70) 18%,
-    rgba(42,205,181,.50) 38%,
-    rgba(50,183,204,.26) 56%,
-    rgba(50,183,204,.10) 68%,
-    transparent 80%);
+    rgba(170,255,244,.76) 0%,
+    rgba(142,248,235,.72) 12%,
+    rgba(104,234,219,.60) 28%,
+    rgba(74,218,205,.44) 46%,
+    rgba(58,201,199,.28) 64%,
+    rgba(52,190,204,.15) 80%,
+    rgba(52,190,204,.06) 92%,
+    transparent 100%);
   box-shadow:none;
   opacity:.82;
   filter:none;
