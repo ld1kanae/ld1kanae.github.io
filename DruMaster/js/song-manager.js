@@ -85,6 +85,13 @@
     }
     return node;
   }
+  function positionSetupBpm(){
+    const card=document.querySelector(".song-card"),title=card?.querySelector("h1"),artist=card?.querySelector("p"),node=card?.querySelector(".setup-bpm");
+    if(!card||!title||!artist||!node)return;
+    const top=title.offsetTop,
+          bottom=artist.offsetTop+artist.offsetHeight;
+    node.style.top=`${(top+bottom)/2}px`;
+  }
   function syncBpmLabels(){
     const hud=document.querySelector(".song-hud");
     if(hud){
@@ -98,6 +105,7 @@
     }
     const setupBpm=ensureSetupBpm();
     if(setupBpm)setupBpm.textContent=bpmText();
+    requestAnimationFrame(positionSetupBpm);
   }
 
   function applyLabels(){
@@ -125,6 +133,7 @@
     });
   }
   document.querySelector("#tempo")?.addEventListener("input",syncBpmLabels);
+  addEventListener("resize",()=>requestAnimationFrame(positionSetupBpm));
   applyLabels();
 
   /* Asset availability is validated by the actual pre-game MIDI/stem loads.
