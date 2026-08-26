@@ -116,11 +116,13 @@
     letter-spacing:.018em;
     white-space:normal;
   }
-  .mobile-custom-select-option+.mobile-custom-select-option{border-top:1px solid rgba(255,255,255,.07);border-top-left-radius:0;border-top-right-radius:0}
+  /* Keep every row independently rounded; the previous radius reset made the
+     top edge of selected rows look clipped. */
+  .mobile-custom-select-option+.mobile-custom-select-option{border-top:1px solid rgba(255,255,255,.07)}
   .mobile-custom-select-option.selected{
     background:linear-gradient(90deg,rgba(56,169,255,.22),rgba(82,223,207,.10));
     color:#fff;
-    box-shadow:inset 3px 0 #59c8ff;
+    box-shadow:none;
   }
   .mobile-custom-select-option:active{background:rgba(92,194,255,.20)}
   .mobile-custom-select-option:disabled{color:#667382;opacity:.55}
