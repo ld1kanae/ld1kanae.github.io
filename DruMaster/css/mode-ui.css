@@ -101,6 +101,14 @@
   .mic-mark{width:22px;height:22px}
   .volume-box{display:none!important}
 
+  /* Hidden Mode: no PC keyboard-assignment badges on smartphone. controls.js
+     creates .key-badges after load, so hide the generated wrapper itself too. */
+  body.hidden-mode #hitLayer .key-badges,
+  body.hidden-mode #hitLayer kbd{
+    display:none!important;
+    visibility:hidden!important;
+  }
+
   /* Hidden Mode: no chart area; the drum kit occupies the complete play area below the HUD. */
   body.hidden-mode #chartWrap{display:none!important}
   body.hidden-mode #kit{
