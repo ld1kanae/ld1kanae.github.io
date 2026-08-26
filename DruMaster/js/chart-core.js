@@ -125,7 +125,7 @@ globalThis.DruMusterChart=(()=>{
           firstVisibleBeat=beatNow-judgeX/speed,
           lastVisibleBeat=beatNow+(w-judgeX)/speed;
     ctx.save();
-    ctx.strokeStyle="rgba(255,255,255,.14)";
+    ctx.strokeStyle="rgba(255,255,255,.245)";
     ctx.lineWidth=1;
     for(let i=0;i<signatures.length;i++){
       const sig=signatures[i],segmentStart=sig.beat,
