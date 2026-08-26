@@ -28,6 +28,11 @@
 .option.mode-locked{opacity:.34}
 .option.mode-locked i{filter:grayscale(1)}
 
+/* Microphone marker used by the shared touch/pad ranking. */
+.mic-mark{display:inline-grid;place-items:center;width:18px;height:18px;flex:0 0 auto;color:#9edcff;opacity:.95}
+.mic-mark svg{width:100%;height:100%;overflow:visible}
+.mic-mark rect,.mic-mark path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
 /* PC-only volume panel. */
 .volume-box{display:none;width:min(480px,90vw);margin-top:14px;padding:13px 20px;background:#111721;border:1px solid #2d3745;border-radius:15px}
 .volume-box>div{display:flex;align-items:baseline;justify-content:space-between}
@@ -58,6 +63,7 @@
   .performance-mode-option{min-height:34px}
   .performance-mode-option>span{font-size:12px}
   .performance-mode-option select{font-size:10px;max-width:170px}
+  .mic-mark{width:22px;height:22px}
   .volume-box{display:none!important}
 
   /* Hidden Mode: no chart area; the drum kit occupies the complete play area below the HUD. */
