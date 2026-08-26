@@ -7,42 +7,52 @@ body{min-height:100vh;display:grid;place-items:center;padding:38px 26px;backgrou
 .preview-panel{padding:30px 28px 34px;border:1px solid rgba(125,145,160,.14);border-radius:24px;background:rgba(3,7,11,.40);box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 24px 70px rgba(0,0,0,.38)}
 .preview-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;margin:0 0 28px}.preview-row:last-child{margin-bottom:0}.preview-label{width:100%;text-align:center;color:#637181;font:800 9px/1 system-ui,sans-serif;letter-spacing:.20em;margin-bottom:-9px}
 
-/* FACE: one continuous, very thin full-height overlay only.
-   top #000 @ 10% -> bottom #fff @ 10%. */
+/* The rim below is intentionally the previously approved version.
+   Only the interior material layers are changed from here on. */
 .glass-btn{
   --glass-radius:999px;
   position:relative;isolation:isolate;display:inline-grid;place-items:center;
   min-width:172px;height:60px;padding:0 34px;
-  border:1px solid rgba(8,19,25,.92);border-radius:var(--glass-radius);overflow:hidden;cursor:pointer;
+  border:1px solid rgba(22,39,48,.88);border-radius:var(--glass-radius);overflow:hidden;cursor:pointer;
   color:#eef3f7;
-  background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(255,255,255,.10)),rgba(7,17,24,.27);
-  box-shadow:0 0 0 1px rgba(0,8,13,.88),0 0 0 2px rgba(0,49,57,.09),0 0 0 3px rgba(8,16,62,.05),0 8px 20px rgba(0,0,0,.34);
+  /* Interior layer 1: one full-height black -> white overlay at 10%. */
+  background:
+    linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(255,255,255,.10) 100%),
+    rgba(7,17,24,.27);
+  /* Approved rim: bright top/bottom, dark sides, very faint outer fringe. */
+  box-shadow:
+    inset 0 1px 0 rgba(203,230,245,.92),
+    inset 0 -1px 0 rgba(184,209,225,.88),
+    inset 1px 0 0 rgba(8,20,27,.54),
+    inset -1px 0 0 rgba(8,20,27,.54),
+    0 0 0 1px rgba(0,8,13,.88),
+    0 0 0 2px rgba(0,49,57,.10),
+    0 0 0 3px rgba(8,16,62,.065),
+    0 8px 20px rgba(0,0,0,.34);
   backdrop-filter:blur(12px) saturate(101%);-webkit-backdrop-filter:blur(12px) saturate(101%);
   font:900 15px/1 system-ui,sans-serif;letter-spacing:.08em;text-shadow:0 1px 2px rgba(0,0,0,.76);
   transition:transform .11s ease,filter .11s ease,box-shadow .11s ease;
 }
-.glass-btn>span{position:relative;z-index:3}
+.glass-btn>span{position:relative;z-index:4}
 
-/* RIM: a dedicated 2px ring. Bright at top/bottom, dark at the sides.
-   Masking keeps this gradient out of the glass face itself. */
+/* Interior layer 2: dark optical shadow, blurred and shifted slightly down.
+   Kept away from the rim so the approved outline is untouched. */
 .glass-btn::before{
-  content:"";position:absolute;inset:0;padding:2px;border-radius:inherit;pointer-events:none;z-index:2;
-  background:linear-gradient(180deg,
-    rgba(203,230,245,.98) 0%,
-    rgba(109,137,151,.66) 9%,
-    rgba(25,43,52,.34) 24%,
-    rgba(5,15,21,.16) 43%,
-    rgba(5,15,21,.16) 58%,
-    rgba(31,50,59,.36) 78%,
-    rgba(116,145,159,.66) 92%,
-    rgba(184,209,225,.96) 100%);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;
-  mask-composite:exclude;
+  content:"";position:absolute;z-index:1;pointer-events:none;
+  inset:4px 5px 3px;border-radius:inherit;
+  background:rgba(0,8,13,.20);
+  filter:blur(9px);
+  transform:translateY(7%);
 }
-/* Outside fringe from the PNG: extremely faint cyan/navy only. */
-.glass-btn::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;z-index:1;box-shadow:0 0 6px rgba(0,74,78,.045),0 0 10px rgba(8,16,70,.025)}
-.glass-btn:hover{filter:brightness(1.035);box-shadow:0 0 0 1px rgba(0,8,13,.88),0 0 0 2px rgba(0,49,57,.11),0 0 0 3px rgba(8,16,62,.06),0 9px 22px rgba(0,0,0,.37)}
+
+/* Interior layer 3: subtle lower caustic, about 10%, not a white horizontal band. */
+.glass-btn::after{
+  content:"";position:absolute;z-index:2;pointer-events:none;
+  left:7%;right:7%;bottom:1px;height:35%;border-radius:0 0 50% 50% / 0 0 75% 75%;
+  background:radial-gradient(ellipse at 50% 100%,rgba(210,232,240,.10) 0%,rgba(162,196,209,.055) 38%,rgba(255,255,255,0) 74%);
+  filter:blur(5px);
+}
+.glass-btn:hover{filter:brightness(1.04);box-shadow:inset 0 1px 0 rgba(209,235,247,.96),inset 0 -1px 0 rgba(190,216,231,.92),inset 1px 0 0 rgba(8,20,27,.54),inset -1px 0 0 rgba(8,20,27,.54),0 0 0 1px rgba(0,8,13,.88),0 0 0 2px rgba(0,49,57,.12),0 0 0 3px rgba(8,16,62,.075),0 9px 22px rgba(0,0,0,.37)}
 .glass-btn:active{transform:translateY(1px) scale(.988);filter:brightness(.95)}.glass-btn:focus-visible{outline:2px solid rgba(205,232,244,.72);outline-offset:4px}
 .glass-btn.primary,.glass-btn.violet{color:#f1f5f8}
 .glass-btn.reference-circle{--glass-radius:50%;min-width:0;width:260px;height:260px;padding:0;font-size:16px}
