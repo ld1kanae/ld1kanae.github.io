@@ -21,7 +21,8 @@
 
   function retryCurrentSong(){
     resultEl.classList.add("hidden");
-    resultEl.classList.remove("result-reveal");
+    resultEl.classList.remove("result-reveal","new-best");
+    resultEl.querySelector(".ranking-panel")?.classList.remove("best-achieved");
     const start=document.querySelector("#start");
     if(!start){location.reload();return}
     start.disabled=false;
@@ -52,6 +53,7 @@
         <div class="ranking-head"><span>RANK</span><span>SCORE</span><span style="text-align:right">DATE</span></div>
         <div id="rankingList" class="ranking-list"></div>
       </section>
+      <div class="best-celebration" aria-hidden="true"></div>
       <div class="result-actions result-step result-step-5">
         <button id="retry" type="button">リトライ</button>
         <button id="home" type="button">ホーム</button>
@@ -131,19 +133,27 @@
   }
 
   function renderRanking(rows,currentId=null){
-    const host=document.querySelector("#rankingList");
-    if(!host)return;
+    const host=document.querySelector("#rankingList"),panel=resultEl.querySelector(".ranking-panel"),meta=resultEl.querySelector(".ranking-title span");
+    if(!host)return false;
+    const currentIndex=currentId?rows.findIndex(row=>row.id===currentId):-1,
+          isBest=currentIndex===0;
+
+    resultEl.classList.remove("new-best");
+    panel?.classList.toggle("best-achieved",isBest);
+    if(meta)meta.textContent=isBest?"NEW BEST":"TOP 10";
+
     host.replaceChildren();
     if(!rows.length){
       const empty=document.createElement("div");
       empty.className="ranking-empty";
       empty.textContent="記録はまだありません";
       host.appendChild(empty);
-      return;
+      return false;
     }
     rows.forEach((row,i)=>{
+      const isCurrent=row.id===currentId;
       const item=document.createElement("div");
-      item.className="ranking-row"+(row.id===currentId?" current":"")+(row.hidden?" hidden-record":"")+(row.input==="mic"?" mic-record":"");
+      item.className="ranking-row"+(isCurrent?" current":"")+(row.hidden?" hidden-record":"")+(row.input==="mic"?" mic-record":"")+(isCurrent&&i===0?" best-record":"");
       item.style.setProperty("--row-i",String(i));
       const rank=document.createElement("span"),scoreCell=document.createElement("span"),scoreNode=document.createElement("span"),date=document.createElement("span");
       rank.className="rank-no";scoreCell.className="rank-score-cell";scoreNode.className="rank-score";date.className="rank-date";
@@ -153,9 +163,21 @@
       scoreCell.appendChild(scoreNode);
       if(row.hidden)scoreCell.appendChild(createHiddenMark());
       if(row.input==="mic")scoreCell.appendChild(createMicMark());
+      if(isCurrent&&i===0){
+        const badge=document.createElement("span");
+        badge.className="best-badge";
+        badge.textContent="BEST";
+        scoreCell.appendChild(badge);
+      }
       item.append(rank,scoreCell,date);
       host.appendChild(item);
     });
+
+    if(isBest){
+      void resultEl.offsetWidth;
+      resultEl.classList.add("new-best");
+    }
+    return isBest;
   }
 
   function animateScore(final){
