@@ -139,9 +139,9 @@
       await finishVisualPreload();
 
       /* app.js's legacy loop waits until duration + 0.5s before finish().
-         Compensate only after stem validation so RESULT appears exactly at the
-         configured song end without changing audio-length verification. */
-      duration=Math.max(0,duration-.5);
+         Rebuild this value from the song config on every run so repeated RETRY
+         actions do not shorten the song by another 0.5s each time. */
+      duration=Math.max(0,(Number(song.duration)||duration)-.5);
 
       rate=+$("#tempo").value/100;
       autoplay=$("#autoToggle").checked;
