@@ -69,7 +69,7 @@ loadDrumSource=async function(manifest){
     fetchJoined(manifest.wav,"ゲーム内ドラム"),
     fetch(manifest.midi.path,{cache:"force-cache"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
   ]);
-  if(midi.byteLength!==manifest.midi.bytes)throw Error("ドラム音源MIDIが不完全です");
+  if(midi.byteLength!==manifest.midi.bytes)throw Error("ゲーム内ドラム音源MIDIが不完全です");
   if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ゲーム内ドラム音源MIDIの内容が一致しません");
 
   const fmt=readWavFormat(wav),expectedRate=manifest.wav.sourceSampleRate||manifest.wav.sampleRate;
@@ -106,7 +106,7 @@ playDrum=function(_chartNote,type,v=.75){
         sourceVelocity=drumSourceVelocity/127,
         velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
   source.buffer=drumBuffer;
-  gain.gain.value=.7*velocityGain*mix;
+  gain.gain.value=.85*velocityGain*mix;
   source.connect(gain).connect(masterBus);
 
   let voice=null;
