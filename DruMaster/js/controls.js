@@ -74,19 +74,27 @@
   }
   installBadges();
 
+  function nearestPartNote(part,t,maxDelta=.16){
+    const search=globalThis.DruMasterNoteSearch;
+    if(search?.nearest){
+      return search.nearest(notes,t,maxDelta,n=>!n.hit&&n.type!=="kick"&&PART[n.type]===part);
+    }
+    let best=null,delta=maxDelta+1e-9;
+    for(const n of notes){
+      if(n.time<t-maxDelta)continue;
+      if(n.time>t+maxDelta)break;
+      if(n.hit||n.type==="kick"||PART[n.type]!==part)continue;
+      const d=Math.abs(n.time-t);if(d<delta){best=n;delta=d}
+    }
+    return best?{note:best,delta}:null;
+  }
+
   /* Production judgement override. GREAT/GOOD windows remain unchanged. */
   if(typeof input==="function"&&typeof notes!=="undefined"&&typeof PART!=="undefined"){
     input=function(part,visualEl){
       if(!running||paused||autoplay)return;
-      const t=current();
-      let best=null,delta=Infinity;
-      for(const n of notes){
-        if(n.hit||PART[n.type]!==part||n.type==="kick")continue;
-        const d=Math.abs(n.time-t);
-        if(d<delta){best=n;delta=d}
-        if(n.time>t+.16)break;
-      }
-      const matched=best&&delta<=.16,
+      const t=current(),match=nearestPartNote(part,t,.16),best=match?.note||null,delta=match?.delta??Infinity;
+      const matched=!!best,
             vel=matched?best.velocity/127:.72,
             type=matched?best.type:DEFAULT_TYPE[part],
             note=matched?best.note:DEFAULT_NOTE[type];
