@@ -5,39 +5,44 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070b11">
   <title>Glass Button Preview | DruMaster</title>
-  <link rel="stylesheet" href="css/glass-button-lab.css?v=20260827-glasslab1">
+  <link rel="stylesheet" href="css/glass-button-lab.css?v=20260827-glasslab2">
 </head>
 <body>
   <main class="lab">
     <header class="lab-head">
       <p>DRUMASTER / UI MATERIAL LAB</p>
       <h1>Glass Button Preview</h1>
-      <small>本番UIには未適用。ガラス表現だけを確認するための専用ページです。</small>
+      <small>本番UIには未適用。参照画像の材質をCSSだけで再現するテストです。</small>
     </header>
 
     <section class="preview-panel">
       <div class="preview-row">
+        <div class="preview-label">REFERENCE SCALE / CIRCLE</div>
+        <button class="glass-btn reference-circle"><span>GLASS</span></button>
+      </div>
+
+      <div class="preview-row">
         <div class="preview-label">PILL / STANDARD</div>
-        <button class="glass-btn">ホーム</button>
-        <button class="glass-btn primary">リトライ</button>
-        <button class="glass-btn violet">終了</button>
+        <button class="glass-btn"><span>ホーム</span></button>
+        <button class="glass-btn primary"><span>リトライ</span></button>
+        <button class="glass-btn violet"><span>終了</span></button>
       </div>
 
       <div class="preview-row">
         <div class="preview-label">PILL / SIZE VARIATION</div>
-        <button class="glass-btn compact">やり直す</button>
-        <button class="glass-btn wide primary">演奏を開始</button>
+        <button class="glass-btn compact"><span>やり直す</span></button>
+        <button class="glass-btn wide primary"><span>演奏を開始</span></button>
       </div>
 
       <div class="preview-row">
-        <div class="preview-label">OTHER SHAPES — SAME GLASS MATERIAL</div>
-        <button class="glass-btn rounded">設定</button>
-        <button class="glass-btn square primary">Ⅱ</button>
-        <button class="glass-btn circle">▶</button>
+        <div class="preview-label">OTHER SHAPES — SAME MATERIAL</div>
+        <button class="glass-btn rounded"><span>設定</span></button>
+        <button class="glass-btn square primary"><span>Ⅱ</span></button>
+        <button class="glass-btn circle"><span>▶</span></button>
       </div>
     </section>
 
-    <p class="note">hover / press も確認できます。形状は border-radius とサイズだけ変更し、ガラス材質は共通です。</p>
+    <p class="note">上端・下端のリム、暗い側面、下半分の灰色反射を同じ材質として各形状へ適用しています。</p>
   </main>
 </body>
 </html>
