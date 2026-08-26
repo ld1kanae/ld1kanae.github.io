@@ -13,7 +13,7 @@
   if(!setup||!options||!startButton||!game||!app)return;
 
   const PERFECT_WINDOW=.035,GREAT_WINDOW=.105,GOOD_WINDOW=.160;
-  const MIC_REFRACTORY_MS=72;
+  const MIC_REFRACTORY_MS=72,MIC_RETRIGGER_GUARD_MS=90,MIC_RELEASE_FRAMES=3;
   const MIC_TIMING_OFFSET_SEC=0; // Keep explicit for later device calibration.
 
   const modeRow=document.createElement("label");
@@ -24,7 +24,7 @@
 
   let runMode="normal",micStream=null,micSource=null,micFilter=null,micAnalyser=null,
       micData=null,micRaf=0,micNoiseFloor=.0009,micPrevRms=0,micPrevPeak=0,micLastHit=-Infinity,
-      micCalibration=null,calibrationToken=0,calibrationScreen=null;
+      micArmed=true,micQuietFrames=0,micCalibration=null,calibrationToken=0,calibrationScreen=null;
 
   function selectedMode(){return mobileQuery.matches?(modeSelect?.value||"normal"):"normal"}
   function isPerformanceMode(mode=runMode){return mode==="touch"||mode==="pad"}
@@ -143,7 +143,7 @@
     micAnalyser.smoothingTimeConstant=0;
     micData=new Float32Array(micAnalyser.fftSize);
     micSource.connect(micFilter).connect(micAnalyser);
-    micNoiseFloor=.0009;micPrevRms=0;micPrevPeak=0;micLastHit=-Infinity;
+    micNoiseFloor=.0009;micPrevRms=0;micPrevPeak=0;micLastHit=-Infinity;micArmed=true;micQuietFrames=0;
   }
 
   function readMicLevel(){
@@ -164,7 +164,7 @@
     try{micSource?.disconnect()}catch{}
     try{micFilter?.disconnect()}catch{}
     for(const track of micStream?.getTracks?.()||[])track.stop();
-    micStream=null;micSource=null;micFilter=null;micAnalyser=null;micData=null;
+    micStream=null;micSource=null;micFilter=null;micAnalyser=null;micData=null;micArmed=true;micQuietFrames=0;
   }
 
   function percentile(values,p=.5){
@@ -346,14 +346,31 @@
             riseGate=micCalibration?micCalibration.riseGate:Math.max(.00045,micNoiseFloor*.06),
             peakGate=micCalibration?Math.max(micCalibration.thresholdPeak,micNoiseFloor*1.35):Math.max(.0066,micNoiseFloor*1.55),
             peakRiseGate=micCalibration?micCalibration.peakRiseGate:Math.max(.0012,micNoiseFloor*.18),
+            releaseRms=micCalibration?Math.max(micCalibration.noise.rms*1.30,threshold*.52):Math.max(micNoiseFloor*1.12,threshold*.52),
+            releasePeak=micCalibration?Math.max(micCalibration.noise.peak*1.30,peakGate*.52):Math.max(micNoiseFloor*1.60,peakGate*.52),
             now=performance.now();
       const loudEnough=rms>threshold||peak>peakGate,
             transient=rise>riseGate||peakRise>peakRiseGate,
-            onset=loudEnough&&transient&&now-micLastHit>=MIC_REFRACTORY_MS;
-      if(onset){
+            normalOnset=micArmed&&loudEnough&&transient&&now-micLastHit>=MIC_REFRACTORY_MS,
+            /* The app's own snare feedback reaches the phone mic shortly after a
+               pad hit. Keep the detector latched through that decay. A genuinely
+               new, sharp physical strike can still pass after 90 ms, which keeps
+               fast playing usable without allowing a self-sustaining audio loop. */
+            strongRetrigger=!micArmed&&now-micLastHit>=MIC_RETRIGGER_GUARD_MS&&loudEnough&&
+              (rise>riseGate*2.8||peakRise>peakRiseGate*2.8);
+
+      if(normalOnset||strongRetrigger){
         micLastHit=now;
+        micArmed=false;
+        micQuietFrames=0;
         consumePadMicHit();
-      }else if(rms<threshold*1.35){
+      }else if(!micArmed){
+        if(rms<releaseRms&&peak<releasePeak){
+          if(++micQuietFrames>=MIC_RELEASE_FRAMES){micArmed=true;micQuietFrames=0}
+        }else micQuietFrames=0;
+      }
+
+      if(!loudEnough&&rms<threshold*1.35){
         micNoiseFloor=Math.max(.00005,Math.min(.02,micNoiseFloor*.997+rms*.003));
       }
       micPrevRms=rms;
@@ -363,7 +380,7 @@
   }
   function startMicLoop(){
     stopMicLoop();
-    micLastHit=-Infinity;micPrevRms=0;micPrevPeak=0;
+    micLastHit=-Infinity;micPrevRms=0;micPrevPeak=0;micArmed=true;micQuietFrames=0;
     micRaf=requestAnimationFrame(micFrame);
   }
 
