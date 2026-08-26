@@ -22,8 +22,7 @@
 .kit-stage .kit-art{z-index:1}
 .kit-stage #hitLayer{z-index:4}
 
-/* Bass-drum strike flash shared by normal play and AUTO mode.
-   Motion matches the normal drum strike flash; monochrome intensity is reduced to about 50%. */
+/* Bass-drum strike flash shared by normal play and AUTO mode. */
 #kickFx{
   display:block!important;
   position:absolute!important;
@@ -38,8 +37,8 @@
   transform:translate(-50%,-50%) scale(.7)!important;
   border:0!important;
   border-radius:50%!important;
-  background:radial-gradient(circle,rgba(255,255,255,.50) 0 8%,rgba(215,221,226,.29) 24%,transparent 67%)!important;
-  box-shadow:0 0 28px rgba(207,214,220,.375)!important;
+  background:radial-gradient(circle,rgba(255,255,255,.86) 0 8%,rgba(220,228,235,.53) 24%,rgba(198,211,220,.20) 43%,transparent 69%)!important;
+  box-shadow:0 0 34px rgba(220,232,240,.72),0 0 58px rgba(194,213,226,.32)!important;
   opacity:0;
   pointer-events:none;
   mix-blend-mode:screen;
@@ -47,8 +46,46 @@
 #kickFx.hit,
 #kickFx.auto-hit{animation:kickDrumFlash .24s ease-out!important}
 @keyframes kickDrumFlash{
-  0%{opacity:.5;transform:translate(-50%,-50%) scale(.4)!important}
+  0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)!important}
   100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)!important}
+}
+
+/* Smartphone tap feedback is rendered outside the rotated app using physical
+   pointer coordinates. The flash itself is circular, so it visually matches
+   the bass-drum flash regardless of the forced landscape transform. */
+#mobileTapFxLayer{display:none}
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  #mobileTapFxLayer{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .mobile-tap-hit-fx{
+    position:absolute;
+    width:48px;
+    height:48px;
+    margin:0;
+    border:0;
+    border-radius:50%;
+    transform:translate(-50%,-50%) scale(.4);
+    transform-origin:50% 50%;
+    background:radial-gradient(circle,rgba(255,255,255,.86) 0 8%,rgba(220,228,235,.53) 24%,rgba(198,211,220,.20) 43%,transparent 69%);
+    box-shadow:0 0 34px rgba(220,232,240,.72),0 0 58px rgba(194,213,226,.32);
+    mix-blend-mode:screen;
+    opacity:0;
+    pointer-events:none;
+    animation:mobileTapDrumFlash .24s ease-out forwards;
+  }
+  @keyframes mobileTapDrumFlash{
+    0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}
+  }
+
+  .game .song-hud b{font-size:14px}
+  .game .song-hud small{font-size:9px;margin-top:1px}
 }
 
 /* Desktop-only bass-drum placement adjustment. */
@@ -73,8 +110,3 @@
   overflow:visible;
 }
 .result.autoplay #finalScore{white-space:nowrap}
-
-@media (hover:none) and (pointer:coarse) and (max-width:900px){
-  .game .song-hud b{font-size:14px}
-  .game .song-hud small{font-size:9px;margin-top:1px}
-}
