@@ -6,7 +6,7 @@
       id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,bpm:125,
       chart:{pixelsPerQuarter:80},
       playback:{stemOffsetSec:0},
-      midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz",
+      midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz?v=20260826-midi2",
       stems:{
         base:{path:"songs/nanairo/offvocal.mp3",bytes:6314638,sha256:"4dd43973168efdc730112bec742e3dced51024080d222dbd43f7065ef713a8b1"},
         vocals:{path:"songs/nanairo/vocals.mp3",bytes:6314638,sha256:"73e6ba324ffa608fb74b7a33206c9189e2b885a43c48779bd4b0094729e75c2f"},
@@ -17,7 +17,7 @@
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,bpm:132,
       chart:{pixelsPerQuarter:60,desktopPixelsPerQuarter:80},
       playback:{stemOffsetSec:.0215},
-      midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz",
+      midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz?v=20260826-midi2",
       mix:{base:.70,vocals:.60,drums:.70},
       stems:{
         base:{path:"songs/ray/offvocal.mp3",bytes:12221760,sha256:"b0f8b2b8930e054f7edfc71922a03b119771e54fc14f5dec6f4d94e6ff8e236c"},
