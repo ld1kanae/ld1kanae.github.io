@@ -3,7 +3,7 @@
 (()=>{
   const songs={
     nanairo:{
-      id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,
+      id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,bpm:125,
       chart:{pixelsPerQuarter:80},
       playback:{stemOffsetSec:0},
       midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz",
@@ -14,7 +14,7 @@
       }
     },
     ray:{
-      id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,
+      id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,bpm:132,
       chart:{pixelsPerQuarter:60,desktopPixelsPerQuarter:80},
       playback:{stemOffsetSec:.0215},
       midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz",
@@ -70,11 +70,25 @@
     return nativeFetch(input,init);
   };
 
+  function syncHudBpm(){
+    const hud=document.querySelector(".song-hud");
+    if(!hud)return;
+    let node=hud.querySelector(".hud-bpm");
+    if(!node){
+      node=document.createElement("span");
+      node.className="hud-bpm";
+      hud.appendChild(node);
+    }
+    const tempo=document.querySelector("#tempo"),percent=Number(tempo?.value||100),base=Number(current.bpm)||0;
+    node.textContent=`♪＝${Math.round(base*(Number.isFinite(percent)?percent/100:1))}`;
+  }
+
   function applyLabels(){
     document.querySelector(".song-card h1")?.replaceChildren(document.createTextNode(current.title));
     document.querySelector(".song-card p")?.replaceChildren(document.createTextNode(current.artist));
     document.querySelector(".song-hud b")?.replaceChildren(document.createTextNode(current.title));
     document.querySelector(".song-hud small")?.replaceChildren(document.createTextNode(current.artist));
+    syncHudBpm();
   }
 
   const select=document.querySelector("#songSelect");
@@ -93,6 +107,7 @@
       location.href=url.toString();
     });
   }
+  document.querySelector("#tempo")?.addEventListener("input",syncHudBpm);
   applyLabels();
 
   /* Asset availability is validated by the actual pre-game MIDI/stem loads.
