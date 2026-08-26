@@ -110,3 +110,83 @@
   overflow:visible;
 }
 .result.autoplay #finalScore{white-space:nowrap}
+
+/* Circular DruMaster D badge: drum-head rim, cyan light and oversized D.
+   Deliberately omits the drumstick from the visual reference. */
+.game header .rank{
+  position:relative;
+  isolation:isolate;
+  flex:0 0 auto;
+  width:46px;
+  height:46px;
+  margin:0 15px 0 3px;
+  display:grid;
+  place-items:center;
+  box-sizing:border-box;
+  transform:none;
+  overflow:visible;
+  border:2px solid #d8ecfa;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 5%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    radial-gradient(circle at 95% 50%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    radial-gradient(circle at 50% 95%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    radial-gradient(circle at 5% 50%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    repeating-linear-gradient(90deg,transparent 0 18%,rgba(54,205,255,.11) 18.5% 20%,transparent 20.5% 32%),
+    radial-gradient(circle,#17324a 0 48%,#0c1d2d 49% 63%,#06111c 64% 100%);
+  box-shadow:
+    inset 0 0 0 2px #102b42,
+    inset 0 0 0 4px rgba(94,225,255,.58),
+    inset 0 0 11px rgba(42,205,255,.38),
+    0 0 0 1px #38566b,
+    0 0 10px rgba(60,217,255,.65);
+  color:#f7fbff;
+  font:900 39px/.86 "Arial Black",Impact,system-ui,sans-serif;
+  letter-spacing:-.07em;
+  padding-right:.05em;
+  text-shadow:
+    0 1px 0 #8cb5ce,
+    0 -1px 0 #fff,
+    0 0 3px #fff,
+    0 0 7px #59ddff;
+}
+.game header .rank::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:4px;
+  border:1px solid rgba(151,238,255,.9);
+  border-radius:50%;
+  box-shadow:inset 0 0 8px rgba(49,218,255,.55),0 0 5px rgba(49,218,255,.45);
+  pointer-events:none;
+}
+.game header .rank::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:5px 7px 23px 7px;
+  border-radius:50% 50% 45% 45%;
+  background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0));
+  pointer-events:none;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game header .rank{
+    width:28px;
+    height:28px;
+    margin:0 7px 0 2px;
+    border-width:1px;
+    font-size:24px;
+    background:
+      radial-gradient(circle at 50% 5%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      radial-gradient(circle at 95% 50%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      radial-gradient(circle at 50% 95%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      radial-gradient(circle at 5% 50%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      repeating-linear-gradient(90deg,transparent 0 18%,rgba(54,205,255,.12) 18.5% 20%,transparent 20.5% 32%),
+      radial-gradient(circle,#17324a 0 48%,#0c1d2d 49% 63%,#06111c 64% 100%);
+    box-shadow:inset 0 0 0 1px #102b42,inset 0 0 0 2px rgba(94,225,255,.62),0 0 6px rgba(60,217,255,.65);
+    text-shadow:0 0 2px #fff,0 0 4px #59ddff;
+  }
+  .game header .rank::before{inset:2px;border-width:1px}
+  .game header .rank::after{inset:3px 4px 14px}
+}
