@@ -3,7 +3,7 @@
 globalThis.DruMusterChart=(()=>{
   const PIXELS_PER_QUARTER=80;
   const NOTE_BAR_WIDTH=4;
-  const OPEN_HH_BAR_WIDTH=3;
+  const OPEN_HH_BAR_WIDTH=2;
   const OPEN_HH_GAP=1;
   const MOBILE_JUDGE_OFFSET=80;
   const signatureCache=new WeakMap();
@@ -180,7 +180,7 @@ globalThis.DruMusterChart=(()=>{
         if(visual.kind==="double"){
           const left=x-visual.totalWidth/2;ctx.fillRect(left,barTop,visual.barWidth,barH);ctx.fillRect(left+visual.barWidth+visual.gap,barTop,visual.barWidth,barH);
         }else ctx.fillRect(x-visual.totalWidth/2,barTop,visual.barWidth,barH);
-      }else ctx.fillRect(x-visual.totalWidth/2,mainH+2,visual.barWidth,kickH-4);
+      }else ctx.fillRect(x-visual.totalWidth/2,0,visual.barWidth,h);
     }
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
