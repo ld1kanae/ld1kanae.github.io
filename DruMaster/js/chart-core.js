@@ -89,6 +89,7 @@ globalThis.DruMusterChart=(()=>{
       if(sigDedup.length&&sigDedup[sigDedup.length-1].tick===e.tick)sigDedup[sigDedup.length-1]=e;
       else sigDedup.push(e);
     }
+    if(!sigDedup.length||sigDedup[0].beat>1e-7){}
     if(!sigDedup.length||sigDedup[0].tick>0)sigDedup.unshift({tick:0,numerator:4,denominator:4});
     const signatures=sigDedup.map(e=>({...e,beat:e.tick/division,measureBeats:e.numerator*4/e.denominator}));
     return {division,segments,signatures};
@@ -101,9 +102,6 @@ globalThis.DruMusterChart=(()=>{
     return tick/timing.division;
   }
 
-  /* Measure lines are a chart invariant, not a song-specific feature.
-     Valid MIDI time signatures are respected; missing or malformed data falls
-     back to 4/4 so every song always has one separator per measure. */
   function normalizedSignatures(timing){
     if(timing&&typeof timing==="object"&&signatureCache.has(timing))return signatureCache.get(timing);
     const raw=Array.isArray(timing?.signatures)?timing.signatures:[],out=[];
@@ -180,7 +178,7 @@ globalThis.DruMusterChart=(()=>{
         if(visual.kind==="double"){
           const left=x-visual.totalWidth/2;ctx.fillRect(left,barTop,visual.barWidth,barH);ctx.fillRect(left+visual.barWidth+visual.gap,barTop,visual.barWidth,barH);
         }else ctx.fillRect(x-visual.totalWidth/2,barTop,visual.barWidth,barH);
-      }else ctx.fillRect(x-visual.totalWidth/2,0,visual.barWidth,h);
+      }else ctx.fillRect(x-visual.totalWidth/2,mainH,visual.barWidth,kickH);
     }
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
