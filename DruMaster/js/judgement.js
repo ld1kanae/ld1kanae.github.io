@@ -43,12 +43,17 @@
 
   function nearestNoteForPart(part,t,maxDelta=.16,includeHit=false){
     if(typeof notes==="undefined"||typeof PART==="undefined")return null;
+    const search=globalThis.DruMasterNoteSearch;
+    if(search?.nearest){
+      return search.nearest(notes,t,maxDelta,n=>(includeHit||!n.hit)&&n.type!=="kick"&&PART[n.type]===part)?.note||null;
+    }
     let best=null,bestDelta=maxDelta+.000001;
     for(const n of notes){
+      if(n.time<t-maxDelta)continue;
+      if(n.time>t+maxDelta)break;
       if((!includeHit&&n.hit)||n.type==="kick"||PART[n.type]!==part)continue;
       const d=Math.abs(n.time-t);
       if(d<bestDelta){best=n;bestDelta=d}
-      if(n.time>t+maxDelta)break;
     }
     return best;
   }
@@ -144,18 +149,31 @@
     if(lane<0)return;
     const glow=ensureGlow(lane);
     placeGlow(lane,glow,note);
-    glow.classList.remove("flash");
-    void glow.offsetWidth;
-    glow.classList.add("flash");
+    for(const a of glow.getAnimations())a.cancel();
+    glow.animate([
+      {opacity:0,filter:"brightness(1)",offset:0},
+      {opacity:1,filter:"brightness(1.75)",offset:.12},
+      {opacity:.78,filter:"brightness(1.3)",offset:.42},
+      {opacity:0,filter:"brightness(1)",offset:1}
+    ],{duration:200,easing:"ease-out"});
+  }
+
+  function restartPlayClass(fx){
+    const active=fx.getAnimations({subtree:true});
+    if(active.length){
+      for(const a of active){try{a.currentTime=0;a.play()}catch{}}
+      return;
+    }
+    fx.classList.remove("play");
+    requestAnimationFrame(()=>fx.classList.add("play"));
   }
 
   function playFx(pair,label,grade){
     if(!pair)return;
     pair.text.textContent=String(label).toUpperCase();
     pair.fx.dataset.grade=grade;
-    pair.fx.classList.remove("play");
-    void pair.fx.offsetWidth;
-    pair.fx.classList.add("play");
+    if(!pair.fx.classList.contains("play"))pair.fx.classList.add("play");
+    else restartPlayClass(pair.fx);
   }
 
   function emit(label,lane){
@@ -218,8 +236,9 @@
   }else{
     let kickCursor=0,lastT=-1;
     const resetKickCursor=t=>{
-      kickCursor=0;
-      while(kickCursor<notes.length&&notes[kickCursor].time<t-.03)kickCursor++;
+      const search=globalThis.DruMasterNoteSearch;
+      kickCursor=search?.lowerBoundTime?search.lowerBoundTime(notes,t-.03):0;
+      if(!search?.lowerBoundTime)while(kickCursor<notes.length&&notes[kickCursor].time<t-.03)kickCursor++;
     };
     const watchKick=()=>{
       if(typeof notes!=="undefined"&&typeof current==="function"&&typeof running!=="undefined"&&running&&!paused){
