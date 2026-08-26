@@ -59,6 +59,16 @@
 }
 .lane-judge-fx.play{animation:laneJudgeLife .50s linear}
 
+/* Only on-chart lane judgements are right-aligned. Hidden Mode creates a
+   separate header judgement without data-lane and therefore remains unchanged. */
+.lane-judge-fx[data-lane]{
+  text-align:right;
+  justify-content:flex-end;
+}
+.lane-judge-fx[data-lane] .lane-judge-text{
+  transform-origin:right center;
+}
+
 .lane-judge-text{
   --judge-x:1.04;
   position:relative;
@@ -85,6 +95,7 @@
   transform:scaleX(var(--judge-x));
   transform-origin:center;
 }
+.lane-judge-fx[data-lane] .lane-judge-text{transform-origin:right center}
 
 .lane-judge-text::before{
   content:"";
@@ -182,9 +193,12 @@
     bottom:-7px;
     filter:blur(7px);
   }
-  /* Cumulative desktop correction: 4px + 4px + 2px left. */
+  /* Fixed-width box makes PERFECT/GREAT/GOOD share the same right edge.
+     Desktop cumulative correction is now 12px left. */
   .lane-judge-fx[data-lane]{
-    transform:translate(calc(-50% - 10px),-50%)!important;
+    display:flex;
+    width:88px;
+    transform:translate(calc(-50% - 12px),-50%)!important;
   }
 }
 
@@ -208,8 +222,11 @@
     bottom:-3px;
     filter:blur(4px);
   }
-  /* judgement.js already contributes +2px; add another +2px here. */
+  /* judgement.js contributes +2px and this final correction adds another +2px.
+     A fixed-width box right-aligns all on-chart grade strings. */
   .lane-judge-fx[data-lane]{
+    display:flex;
+    width:44px;
     transform:translate(2px,-50%)!important;
   }
 }
