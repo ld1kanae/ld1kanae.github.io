@@ -95,22 +95,9 @@
   }
   applyLabels();
 
-  async function assetExists(path){
-    try{
-      const r=await nativeFetch(path,{method:"HEAD",cache:"no-store"});
-      return r.ok;
-    }catch{return false}
-  }
-  async function validateSelectedSong(){
-    if(!select)return;
-    const s=current;
-    const ready=(await Promise.all([s.midiGzip,s.stems.base.path,s.stems.vocals.path,s.stems.drums.path].map(assetExists))).every(Boolean);
-    if(!ready){
-      const opt=[...select.options].find(o=>o.value===s.id);
-      if(opt)opt.textContent=`${s.title} — ${s.artist}（assets pending）`;
-    }
-  }
-  validateSelectedSong();
+  /* Asset availability is validated by the actual pre-game MIDI/stem loads.
+     Do not launch separate background HEAD requests: on slower phones those
+     requests can outlive setup and compete with real-time audio playback. */
 
   const start=document.querySelector("#start");
   if(start){
