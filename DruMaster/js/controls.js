@@ -3,6 +3,13 @@
 (()=>{
   const PERFECT_WINDOW=.035;
 
+  /* Scoring rules: drums/toms are emphasized; hi-hat now has the same 1.0
+     base weight as cymbals/ride. Scores are accumulated as raw points rather
+     than normalized to a fixed maximum. */
+  if(typeof weight==="function"){
+    weight=function(t){return ["snare","highTom","midTom","floorTom"].includes(t)?1.5:1};
+  }
+
   /* Keep artwork and hit targets in one transform space. */
   const kit=document.querySelector("#kit");
   if(kit&&!kit.querySelector(":scope > .kit-stage")){
@@ -112,7 +119,7 @@
         mult=.4;label="GOOD";counts.good++;
       }
       score+=weight(best.type)*best.velocity/127*1000*mult;
-      $("#score").textContent=String(Math.round(score/maxScore*1000000)).padStart(6,"0");
+      $("#score").textContent=String(Math.round(score)).padStart(6,"0");
       showJudge(label);
     };
   }
