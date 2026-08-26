@@ -1,0 +1,10 @@
+#acousticCalibrationOverlay{position:absolute;inset:58px 0 0;z-index:80;display:none;place-items:center;background:rgba(3,7,12,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:auto}
+#acousticCalibrationOverlay.show{display:grid}
+#acousticCalibrationOverlay>div{width:min(620px,82vw);padding:24px 28px;border:1px solid rgba(177,207,226,.28);border-radius:22px;background:rgba(8,15,23,.86);box-shadow:0 24px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.05);text-align:center}
+#acousticCalibrationOverlay p{margin:0 0 7px;color:#75889b;font:800 9px/1 system-ui,sans-serif;letter-spacing:.24em}
+#acousticCalibrationOverlay strong{display:block;margin-bottom:10px;color:#f3f8fc;font:900 25px/1.1 system-ui,sans-serif;letter-spacing:.05em}
+#acousticCalibrationOverlay span{display:block;color:#d6e2ec;font:750 13px/1.55 system-ui,sans-serif}
+#acousticCalibrationOverlay small{display:block;min-height:15px;margin-top:10px;color:#7bd6f3;font:800 10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace}
+body.acoustic-calibrating #hitLayer,body.acoustic-calibrating #pause{pointer-events:none!important}
+.mic-cal-steps{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+@media (hover:none) and (pointer:coarse) and (max-width:900px){#acousticCalibrationOverlay{inset:42px 0 0}#acousticCalibrationOverlay>div{width:min(640px,88vw);padding:14px 18px;border-radius:16px}#acousticCalibrationOverlay strong{font-size:19px;margin-bottom:6px}#acousticCalibrationOverlay span{font-size:10.5px}#acousticCalibrationOverlay small{font-size:8px;margin-top:6px}}
