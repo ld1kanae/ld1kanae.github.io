@@ -3,7 +3,8 @@
 (()=>{
   const STORAGE_KEY="drumasterRankingV3",
         PERFORMANCE_STORAGE_KEY="drumasterPerformanceRankingV2",MAX_RECORDS=10,
-        RESET_KEY="drumasterRankingReset20260826RawScore1";
+        RESET_KEY="drumasterRankingReset20260826RawScore1",
+        MIN_SCORE_SECONDS=30;
 
   try{
     if(localStorage.getItem(RESET_KEY)!=="1"){
@@ -19,10 +20,17 @@
 
   const song=()=>globalThis.DruMasterSongs?.current||{id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN"};
 
+  function clearResultState(){
+    resultEl.classList.remove("result-reveal","new-best","new-second","new-third","no-score");
+    const panel=resultEl.querySelector(".ranking-panel");
+    panel?.classList.remove("best-achieved","silver-achieved","bronze-achieved");
+    const note=resultEl.querySelector("#resultScoreNote");
+    if(note){note.textContent="";note.classList.add("hidden")}
+  }
+
   function retryCurrentSong(){
     resultEl.classList.add("hidden");
-    resultEl.classList.remove("result-reveal","new-best");
-    resultEl.querySelector(".ranking-panel")?.classList.remove("best-achieved");
+    clearResultState();
     const start=document.querySelector("#start");
     if(!start){location.reload();return}
     start.disabled=false;
@@ -42,6 +50,7 @@
       <p class="result-song-sub result-step result-step-1">${s.artist}</p>
       <p class="result-score-label result-step result-step-2">SCORE</p>
       <strong id="finalScore" class="result-step result-step-score">0</strong>
+      <p id="resultScoreNote" class="result-score-note hidden"></p>
       <div class="result-summary result-step result-step-3" aria-label="判定内訳">
         <p><span>PERFECT</span><b id="perfectCount">0</b></p>
         <p><span>GREAT</span><b id="greatCount">0</b></p>
@@ -81,6 +90,10 @@
     }catch{return []}
   }
   function writePerformanceAll(rows){try{localStorage.setItem(PERFORMANCE_STORAGE_KEY,JSON.stringify(rows))}catch{}}
+  function readPerformanceRanking(){
+    const id=song().id;
+    return readPerformanceAll().filter(x=>(x.song||"nanairo")===id).sort((a,b)=>b.score-a.score||String(b.id).localeCompare(String(a.id))).slice(0,MAX_RECORDS);
+  }
 
   function localDateString(){
     const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
@@ -134,13 +147,15 @@
 
   function renderRanking(rows,currentId=null){
     const host=document.querySelector("#rankingList"),panel=resultEl.querySelector(".ranking-panel"),meta=resultEl.querySelector(".ranking-title span");
-    if(!host)return false;
-    const currentIndex=currentId?rows.findIndex(row=>row.id===currentId):-1,
-          isBest=currentIndex===0;
+    if(!host)return -1;
+    const currentIndex=currentId?rows.findIndex(row=>row.id===currentId):-1;
 
-    resultEl.classList.remove("new-best");
-    panel?.classList.toggle("best-achieved",isBest);
-    if(meta)meta.textContent=isBest?"NEW BEST":"TOP 10";
+    resultEl.classList.remove("new-best","new-second","new-third");
+    panel?.classList.remove("best-achieved","silver-achieved","bronze-achieved");
+    if(currentIndex===0)panel?.classList.add("best-achieved");
+    else if(currentIndex===1)panel?.classList.add("silver-achieved");
+    else if(currentIndex===2)panel?.classList.add("bronze-achieved");
+    if(meta)meta.textContent=currentIndex===0?"NEW BEST":currentIndex===1?"NEW 2ND":currentIndex===2?"NEW 3RD":"TOP 10";
 
     host.replaceChildren();
     if(!rows.length){
@@ -148,12 +163,20 @@
       empty.className="ranking-empty";
       empty.textContent="記録はまだありません";
       host.appendChild(empty);
-      return false;
+      return currentIndex;
     }
+
+    const podiumNames=["gold","silver","bronze"];
     rows.forEach((row,i)=>{
-      const isCurrent=row.id===currentId;
+      const isCurrent=row.id===currentId,podium=podiumNames[i]||"";
       const item=document.createElement("div");
-      item.className="ranking-row"+(isCurrent?" current":"")+(row.hidden?" hidden-record":"")+(row.input==="mic"?" mic-record":"")+(isCurrent&&i===0?" best-record":"");
+      item.className="ranking-row"+
+        (isCurrent?" current":"")+
+        (podium?` rank-${podium}`:"")+
+        (row.hidden?" hidden-record":"")+
+        (row.input==="mic"?" mic-record":"")+
+        (isCurrent&&i<3?" podium-record":"")+
+        (isCurrent&&i===0?" best-record":"");
       item.style.setProperty("--row-i",String(i));
       const rank=document.createElement("span"),scoreCell=document.createElement("span"),scoreNode=document.createElement("span"),date=document.createElement("span");
       rank.className="rank-no";scoreCell.className="rank-score-cell";scoreNode.className="rank-score";date.className="rank-date";
@@ -163,21 +186,21 @@
       scoreCell.appendChild(scoreNode);
       if(row.hidden)scoreCell.appendChild(createHiddenMark());
       if(row.input==="mic")scoreCell.appendChild(createMicMark());
-      if(isCurrent&&i===0){
+      if(isCurrent&&i<3){
         const badge=document.createElement("span");
-        badge.className="best-badge";
-        badge.textContent="BEST";
+        badge.className=`podium-badge ${podium}`;
+        badge.textContent=i===0?"BEST":i===1?"2ND":"3RD";
         scoreCell.appendChild(badge);
       }
       item.append(rank,scoreCell,date);
       host.appendChild(item);
     });
 
-    if(isBest){
+    if(currentIndex>=0&&currentIndex<3){
       void resultEl.offsetWidth;
-      resultEl.classList.add("new-best");
+      resultEl.classList.add(currentIndex===0?"new-best":currentIndex===1?"new-second":"new-third");
     }
-    return isBest;
+    return currentIndex;
   }
 
   function animateScore(final){
@@ -192,6 +215,14 @@
       else node.textContent=scoreText(final);
     };
     requestAnimationFrame(tick);
+  }
+
+  function showNoScore(performanceRun){
+    resultEl.classList.add("no-score");
+    const scoreNode=document.querySelector("#finalScore"),note=resultEl.querySelector("#resultScoreNote");
+    if(scoreNode)scoreNode.textContent="NO SCORE";
+    if(note){note.textContent=`演奏時間が${MIN_SCORE_SECONDS}秒未満のためランキング対象外です`;note.classList.remove("hidden")}
+    renderRanking(performanceRun?readPerformanceRanking():readRanking());
   }
 
   function reveal(){
@@ -209,9 +240,14 @@
   installMarkup();
 
   finish=function(){
+    /* AudioContext time stops while paused, so this is actual active play time
+       and does not count time spent on the pause screen. It is intentionally
+       independent of the selected tempo percentage. */
+    const playedSeconds=Math.max(0,Number(ac?.currentTime||0)-Number(startedAt||0));
     running=false;
     cancelAnimationFrame(raf);
     game.classList.add("hidden");
+    clearResultState();
 
     const final=Math.max(0,Math.round(score));
     document.querySelector("#perfectCount").textContent=counts.perfect;
@@ -220,7 +256,8 @@
     document.querySelector("#missCount").textContent=counts.miss;
     resultEl.classList.toggle("autoplay",autoplay);
 
-    const performanceMode=globalThis.DruMasterPerformanceMode;
+    const performanceMode=globalThis.DruMasterPerformanceMode,
+          performanceRun=!!performanceMode?.isPerformanceRun?.();
     performanceMode?.stopMic?.();
 
     if(autoplay){
@@ -231,7 +268,14 @@
       return;
     }
 
-    if(performanceMode?.isPerformanceRun?.()){
+    if(playedSeconds<MIN_SCORE_SECONDS){
+      setRankingKind(performanceRun);
+      showNoScore(performanceRun);
+      showResult();
+      return;
+    }
+
+    if(performanceRun){
       setRankingKind(true);
       const input=performanceMode.isPadRun?.()?"mic":"touch",
             {rows,currentId}=addPerformanceRecord(final,input);
