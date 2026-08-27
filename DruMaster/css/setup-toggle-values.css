@@ -30,6 +30,15 @@
 }
 .setup .option input:checked+i::after{transform:translateX(22px)!important}
 
+/* Keep the colored slider fill and the inactive gray track as separate layers.
+   This prevents antialiased cyan/violet pixels from bleeding into the gray side. */
+.setup .tempo-box input[type="range"]::-webkit-slider-runnable-track,
+.setup .volume-box input[type="range"]::-webkit-slider-runnable-track{
+  background:
+    linear-gradient(90deg,var(--setup-seek-cyan) 0%,var(--setup-seek-mid) 52%,var(--setup-seek-violet) 100%) left center / var(--setup-range-progress,56%) 100% no-repeat,
+    rgba(255,255,255,.18)!important;
+}
+
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .setup .option>i{
     width:43px!important;
