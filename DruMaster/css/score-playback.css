@@ -1,28 +1,90 @@
 .performance-mode-option{display:flex!important}
 body[data-score-playback="1"] .score small{font-size:9px;letter-spacing:.12em}
 body[data-score-playback="1"] .score strong{font-size:15px;letter-spacing:.08em;color:#b9c7d7;text-shadow:none}
-#scorePlaybackControls{display:none;align-items:center;gap:5px;margin-left:10px;margin-right:7px}
+
+/* Score-playback transport: all four buttons deliberately share one geometry/style. */
+#scorePlaybackControls{display:none;align-items:center;gap:6px;margin-left:10px;margin-right:6px}
 body[data-score-playback="1"] #scorePlaybackControls{display:flex}
-#scorePlaybackControls button{position:relative;width:42px;height:38px!important;padding:0!important;border:1px solid #6f7d90!important;border-radius:9px!important;background:linear-gradient(#1b2734,#101821)!important;color:#edf5ff!important;box-shadow:0 3px 10px #0007!important;font:900 18px/1 system-ui,sans-serif!important;letter-spacing:0!important;touch-action:manipulation}
-#scorePlaybackControls button:active{transform:translateY(1px);filter:brightness(1.18)}
-#scoreLoop{width:60px!important;font-size:13px!important;white-space:nowrap}
-#scoreLoop[data-loop="all"]{border-color:#72cfff!important;box-shadow:0 0 12px #4cbcff3d!important}
-#scoreLoop[data-loop="one"]{border-color:#b99cff!important;box-shadow:0 0 12px #a36dff3d!important}
+body[data-score-playback="1"] #pause,
+body[data-score-playback="1"] #scorePlaybackControls button{
+  position:relative;
+  width:46px!important;
+  min-width:46px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center;
+  border:2px solid #cfd7e4!important;
+  border-radius:9px!important;
+  background:linear-gradient(#f8f9fd,#cbd2df)!important;
+  color:#424a66!important;
+  box-shadow:0 0 0 4px #ffffff22!important;
+  font:900 20px/1 system-ui,sans-serif!important;
+  letter-spacing:0!important;
+  touch-action:manipulation;
+}
+body[data-score-playback="1"] #scorePlaybackControls button:active,
+body[data-score-playback="1"] #pause:active{transform:translateY(1px);filter:brightness(1.08)}
+
+/* Keep the loop state text for accessibility/state logic, but render only a large loop glyph. */
+body[data-score-playback="1"] #scoreLoop{font-size:0!important;color:transparent!important}
+body[data-score-playback="1"] #scoreLoop::before{
+  content:"↻";
+  display:block;
+  color:#424a66;
+  font:900 29px/1 system-ui,sans-serif;
+  transform:translateY(-1px);
+}
+body[data-score-playback="1"] #scoreLoop[data-loop="all"]{border-color:#8dcfff!important;box-shadow:0 0 0 4px #ffffff22,0 0 13px #55bfff55!important}
+body[data-score-playback="1"] #scoreLoop[data-loop="one"]{border-color:#b8a1ff!important;box-shadow:0 0 0 4px #ffffff22,0 0 13px #9877ff55!important}
+body[data-score-playback="1"] #scoreLoop[data-loop="all"]::before{color:#217cb8}
+body[data-score-playback="1"] #scoreLoop[data-loop="one"]::before{color:#674fa8}
+
 #scorePlaybackBusy{display:none;position:absolute;right:9px;bottom:7px;z-index:12;padding:4px 8px;border-radius:999px;background:#071019d9;border:1px solid #73839766;color:#b9c7d7;font:800 8px/1 system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}
 body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display:block}
-#scoreSeekWrap{display:none;position:absolute;left:8%;right:2.5%;bottom:7px;z-index:15;height:26px;align-items:center;gap:8px;padding:3px 8px;border-radius:999px;background:#06101ac2;border:1px solid #64788b55;backdrop-filter:blur(5px);touch-action:none}
+
+/* The seek bar belongs visually to the drum-kit area, never on top of the chart. */
+#scoreSeekWrap{
+  display:none;
+  position:absolute;
+  left:50%;
+  top:calc(100% + 12px);
+  bottom:auto;
+  z-index:15;
+  width:min(720px,88%);
+  height:28px;
+  transform:translateX(-50%);
+  align-items:center;
+  gap:8px;
+  padding:3px 10px;
+  border-radius:999px;
+  background:#06101ac2;
+  border:1px solid #64788b55;
+  backdrop-filter:blur(5px);
+  touch-action:none;
+}
 body[data-score-playback="1"] #scoreSeekWrap{display:flex}
 #scoreSeek{flex:1;min-width:0;height:18px;margin:0;accent-color:#73cfff;touch-action:none}
 #scoreSeekTime{min-width:72px;text-align:right;color:#b9c7d7;font:800 9px/1 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}
 body[data-score-playback="1"] #judgementFx{display:none!important}
-body[data-score-playback="1"] #chartWrap{cursor:ew-resize;touch-action:none}
+body[data-score-playback="1"] #chartWrap{cursor:ew-resize;touch-action:none;overflow:visible}
 body[data-score-playback="1"] #chart{touch-action:none}
+
 @media (hover:none) and (pointer:coarse){
-  #scorePlaybackControls{gap:3px;margin-left:5px;margin-right:4px}
-  #scorePlaybackControls button{width:36px;height:34px!important;font-size:16px!important;border-radius:8px!important}
-  #scoreLoop{width:50px!important;font-size:11px!important}
-  #scoreSeekWrap{left:9%;right:2%;bottom:5px;height:23px;padding:2px 6px}
-  #scoreSeekTime{min-width:61px;font-size:8px}
+  #scorePlaybackControls{gap:5px;margin-left:6px;margin-right:5px}
+  body[data-score-playback="1"] #pause,
+  body[data-score-playback="1"] #scorePlaybackControls button{
+    width:42px!important;
+    min-width:42px!important;
+    height:40px!important;
+    min-height:40px!important;
+    border-radius:9px!important;
+    font-size:19px!important;
+  }
+  body[data-score-playback="1"] #scoreLoop::before{font-size:27px}
+  #scoreSeekWrap{top:calc(100% + 9px);width:min(500px,86%);height:25px;padding:2px 8px}
+  #scoreSeekTime{min-width:64px;font-size:8px}
   body[data-score-playback="1"] .score{padding-right:6px}
   body[data-score-playback="1"] .score strong{font-size:11px}
   body[data-score-playback="1"] .song-hud{column-gap:5px}
