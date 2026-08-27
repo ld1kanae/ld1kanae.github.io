@@ -11,6 +11,14 @@
       if(node.nodeType===Node.TEXT_NODE)node.remove();
     }
     button.querySelectorAll(":scope > .pause-transport-icon").forEach(node=>node.remove());
+    let icon=button.querySelector(":scope > .pause-css-icon");
+    if(!icon){
+      icon=document.createElement("span");
+      icon.className="pause-css-icon";
+      icon.setAttribute("aria-hidden","true");
+      icon.append(document.createElement("i"),document.createElement("i"));
+      button.appendChild(icon);
+    }
     button.dataset.transportIcon=state;
   }
 
