@@ -36,4 +36,14 @@
   }
   select.addEventListener("change",sync);
   sync();
+
+  /* settings-persistence.js runs after this file. If a phone-only mode was
+     saved previously, normalize it after restore on non-touch desktop. */
+  if(!touchCapable)setTimeout(()=>{
+    if(select.value==="touch"||select.value==="pad"){
+      select.value="normal";
+      select.dispatchEvent(new Event("change",{bubbles:true}));
+      globalThis.DruMasterSettings?.save?.();
+    }
+  },0);
 })();
