@@ -1,0 +1,194 @@
+/* Approved setup-screen visual treatment. Logo and action buttons are intentionally untouched. */
+.setup{
+  --setup-seek-cyan:#66D5FF;
+  --setup-seek-mid:#8C8AFF;
+  --setup-seek-violet:#BAA4FF;
+  --setup-toggle-on:#A99BFF;
+  --setup-glass-alpha:.06;
+  --setup-glass-edge:.5;
+  --setup-chroma:12px;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 25%,rgba(72,129,190,.23),transparent 31%),
+    radial-gradient(circle at 22% 82%,rgba(177,104,255,.14),transparent 36%),
+    radial-gradient(circle at 68% 84%,rgba(72,190,225,.09),transparent 35%),
+    linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%);
+}
+
+.setup>.setup-moving-lights{
+  position:absolute;
+  z-index:0;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+.setup>.setup-moving-lights .setup-light{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(46px);
+  mix-blend-mode:screen;
+  opacity:.74;
+  will-change:transform;
+}
+.setup>.setup-moving-lights .setup-light-cyan{
+  width:44vw;height:44vw;min-width:340px;min-height:340px;max-width:580px;max-height:580px;
+  left:28%;top:14%;
+  background:radial-gradient(circle,rgba(112,228,255,.22) 0%,rgba(112,228,255,.11) 36%,rgba(112,228,255,0) 74%);
+  animation:setupCyanMove 13s ease-in-out infinite alternate;
+}
+.setup>.setup-moving-lights .setup-light-blue{
+  width:37vw;height:37vw;min-width:290px;min-height:290px;max-width:500px;max-height:500px;
+  left:43%;top:25%;
+  background:radial-gradient(circle,rgba(99,156,255,.20) 0%,rgba(99,156,255,.10) 40%,rgba(99,156,255,0) 75%);
+  animation:setupBlueMove 15s ease-in-out infinite alternate;
+}
+.setup>.setup-moving-lights .setup-light-violet{
+  width:42vw;height:42vw;min-width:320px;min-height:320px;max-width:560px;max-height:560px;
+  left:14%;top:41%;
+  background:radial-gradient(circle,rgba(192,135,255,.18) 0%,rgba(192,135,255,.10) 38%,rgba(192,135,255,0) 75%);
+  animation:setupVioletMove 14s ease-in-out infinite alternate;
+}
+@keyframes setupCyanMove{
+  0%{transform:translate(-30px,8px) scale(1)}
+  50%{transform:translate(18px,-16px) scale(1.06)}
+  100%{transform:translate(40px,16px) scale(1.01)}
+}
+@keyframes setupBlueMove{
+  0%{transform:translate(10px,-18px) scale(1)}
+  50%{transform:translate(-24px,10px) scale(1.04)}
+  100%{transform:translate(22px,22px) scale(.99)}
+}
+@keyframes setupVioletMove{
+  0%{transform:translate(-14px,20px) scale(1)}
+  50%{transform:translate(20px,-12px) scale(1.05)}
+  100%{transform:translate(46px,4px) scale(1)}
+}
+
+/* Keep all real setup UI above the decorative light field. */
+.setup>*:not(.setup-moving-lights){position:relative;z-index:2}
+
+/* Prism Glass: approved values glassAlpha .06, saturation 100%, edge .5, chromatic 12px. */
+.setup .song-card,
+.setup .options,
+.setup .tempo-box,
+.setup .volume-box{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  border-color:rgba(180,216,239,.275);
+  background:rgba(220,240,255,var(--setup-glass-alpha));
+  -webkit-backdrop-filter:saturate(100%);
+  backdrop-filter:saturate(100%);
+  box-shadow:
+    inset var(--setup-chroma) 0 8px rgba(91,230,255,.095),
+    inset calc(var(--setup-chroma) * -1) 0 8px rgba(238,115,221,.09),
+    inset 0 1px 0 rgba(255,255,255,.29),
+    0 14px 36px rgba(0,0,0,.25);
+}
+.setup .song-card::before,
+.setup .options::before,
+.setup .tempo-box::before,
+.setup .volume-box::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(112deg,
+    rgba(255,186,222,.06),
+    transparent 22%,
+    rgba(115,233,255,.035) 52%,
+    transparent 72%,
+    rgba(190,139,255,.055));
+  mix-blend-mode:screen;
+}
+.setup .song-card>*,
+.setup .options>*,
+.setup .tempo-box>*,
+.setup .volume-box>*{position:relative;z-index:1}
+
+/* Volume panel mirrors the existing tempo panel geometry. */
+.setup .volume-box{
+  width:min(480px,90vw);
+  margin-top:14px;
+  padding:15px 20px;
+  border:1px solid rgba(180,216,239,.275);
+  border-radius:15px;
+}
+.setup .volume-box>div:first-child{display:flex;justify-content:space-between}
+.setup .volume-box input{width:100%;margin:13px 0 2px}
+
+/* Approved T2 toggle color. */
+.setup .option input:checked+i{
+  background:var(--setup-toggle-on);
+  box-shadow:0 0 12px rgba(169,155,255,.22),inset 0 0 0 1px rgba(255,255,255,.05);
+}
+
+/* CV1 range: Cyan -> mid violet -> soft violet. */
+.setup .tempo-box input[type="range"],
+.setup .volume-box input[type="range"]{
+  appearance:none;
+  -webkit-appearance:none;
+  height:16px;
+  background:transparent;
+  accent-color:var(--setup-seek-mid);
+}
+.setup .tempo-box input[type="range"]::-webkit-slider-runnable-track,
+.setup .volume-box input[type="range"]::-webkit-slider-runnable-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--setup-seek-cyan) 0%,var(--setup-seek-mid) 52%,var(--setup-seek-violet) 100%);
+}
+.setup .tempo-box input[type="range"]::-webkit-slider-thumb,
+.setup .volume-box input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:15px;height:15px;
+  margin-top:-5px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2);
+}
+.setup .tempo-box input[type="range"]::-moz-range-track,
+.setup .volume-box input[type="range"]::-moz-range-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--setup-seek-cyan) 0%,var(--setup-seek-mid) 52%,var(--setup-seek-violet) 100%);
+}
+.setup .tempo-box input[type="range"]::-moz-range-progress,
+.setup .volume-box input[type="range"]::-moz-range-progress{
+  height:7px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--setup-seek-cyan),var(--setup-seek-mid));
+}
+.setup .tempo-box input[type="range"]::-moz-range-thumb,
+.setup .volume-box input[type="range"]::-moz-range-thumb{
+  width:15px;height:15px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2);
+}
+
+/* Smartphone: keep the approved static background; do not animate lights. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .setup>.setup-moving-lights{display:none!important}
+  .setup .volume-box{
+    grid-area:tempo;
+    width:min(430px,44vh);
+    margin:0;
+    padding:9px 16px;
+  }
+  /* Both sliders share the right-side tempo area without changing existing setup geometry. */
+  .setup .tempo-box{align-self:end}
+  .setup .volume-box{align-self:start;transform:translateY(64px)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .setup>.setup-moving-lights .setup-light{animation:none!important}
+}
