@@ -45,8 +45,10 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     else if(m.type==='resetFilter') this.w.fill(0);
     else if(m.type==='freeze') this.freezeSamples=Math.max(this.freezeSamples,Math.round(sampleRate*(+m.ms||0)/1000));
     else if(m.type==='beginCapture'){
-      const n=Math.max(1024,Math.min(Math.round(sampleRate*(+m.seconds||2.6)),Math.round(sampleRate*5)));
+      const n=Math.max(1024,Math.min(Math.round(sampleRate*(+m.seconds||2.6)),Math.round(sampleRate*10)));
       this.capture={mic:new Float32Array(n),ref:new Float32Array(n),at:0};
+    }else if(m.type==='endCapture'){
+      this.finishCapture(true);
     }else if(m.type==='candidateMode'){
       this.candidateMode=(m.mode==='raw'||m.mode==='residual')?m.mode:'off';
       this.candidateNoise=Math.max(1e-6,+m.noiseRms||this.noiseRms||1e-6);
@@ -55,12 +57,18 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
       this.candidateSuppress=Math.max(this.candidateSuppress,Math.round(sampleRate*(+m.ms||0)/1000));
     }
   }
-  maybeFinishCapture(){
+  finishCapture(force=false){
     const c=this.capture;
-    if(!c||c.at<c.mic.length)return;
+    if(!c)return;
+    if(!force&&c.at<c.mic.length)return;
+    const used=Math.max(0,Math.min(c.at,c.mic.length));
+    if(force&&used<512)return;
     this.capture=null;
-    this.port.postMessage({type:'capture',mic:c.mic.buffer,ref:c.ref.buffer,sampleRate},[c.mic.buffer,c.ref.buffer]);
+    const mic=used===c.mic.length?c.mic:c.mic.slice(0,used);
+    const ref=used===c.ref.length?c.ref:c.ref.slice(0,used);
+    this.port.postMessage({type:'capture',mic:mic.buffer,ref:ref.buffer,sampleRate,samples:used},[mic.buffer,ref.buffer]);
   }
+  maybeFinishCapture(){this.finishCapture(false)}
   startCandidate(current){
     const buf=new Float32Array(this.candidateLength),pre=Math.min(this.candidatePre,buf.length-1);
     for(let j=0;j<pre;j++)buf[j]=this.preRing[(this.preWrite-pre+j)&this.preMask];
