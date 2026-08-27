@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070b11">
   <title>Glass Button Preview | DruMaster</title>
   <link rel="stylesheet" href="css/glass-button-lab-editor.css?v=20260827-gloweditor3">
-  <link rel="stylesheet" href="css/glass-angle-editor.css?v=20260827-angle1">
+  <link rel="stylesheet" href="css/glass-angle-editor.css?v=20260827-angle2">
 </head>
 <body>
 <main class="lab">
@@ -43,7 +43,7 @@
 
   <section class="preview-panel" id="editorWrap">
     <div class="preview-label">03 / LIVE GLOW EDITOR — ALWAYS HOVERED</div>
-    <p class="panel-note">現在の本番採用値から開始します。虹グラデ角度は90°が現在の垂直状態で、75°〜105°を0.25°刻みで調整できます。角度は内周・外側グローへ同時に反映されます。「設定値をコピー」で角度も一緒にコピーされます。</p>
+    <p class="panel-note">現在の本番採用値から開始します。虹グラデ角度は90°が現在の垂直状態で、0°〜360°を0.25°刻みで一周調整できます。角度は内周・外側グローへ同時に反映されます。「設定値をコピー」で角度も一緒にコピーされます。</p>
     <div class="editor-grid">
       <div class="editor-preview">
         <div class="halo-wrap" id="editorHalo"><i class="drop-glow"></i><button class="glass-btn size-result" id="editorButton"><span>ホーム</span></button></div>
@@ -51,8 +51,8 @@
       <div>
         <div class="controls">
           <div class="control"><label for="editorSize">ゲーム内サイズ</label><select id="editorSize"><option value="result">結果ボタン 140×34</option><option value="pause">演奏中Pause 46×42</option><option value="score">譜面再生 42×42</option><option value="start">START 本番padding</option></select></div>
-          <div class="control"><label for="spectralAngle">虹グラデ角度</label><output data-output="spectralAngle"></output><input id="spectralAngle" type="range" min="75" max="105" step=".25" value="90" data-var="--spectral-angle" data-unit="deg" data-target="halo"></div>
-          <p class="angle-control-note">90°＝色帯が垂直。90°未満と90°超で傾斜方向が逆になります。</p>
+          <div class="control"><label for="spectralAngle">虹グラデ角度</label><output data-output="spectralAngle"></output><input id="spectralAngle" type="range" min="0" max="360" step=".25" value="90" data-var="--spectral-angle" data-unit="deg" data-target="halo"></div>
+          <p class="angle-control-note">0°〜360°を一周調整できます。90°＝現在の垂直状態です。</p>
           <div class="control"><label for="igWidth">内周グロー幅</label><output data-output="igWidth"></output><input id="igWidth" type="range" min="8" max="36" step="1" value="10" data-var="--ig-width" data-unit="px"></div>
           <div class="control"><label for="igCore">コア濃度</label><output data-output="igCore"></output><input id="igCore" type="range" min="0" max="1" step=".01" value="1" data-var="--ig-core"></div>
           <div class="control"><label for="igShoulder">中間濃度</label><output data-output="igShoulder"></output><input id="igShoulder" type="range" min="0" max=".6" step=".01" value=".21" data-var="--ig-shoulder"></div>
