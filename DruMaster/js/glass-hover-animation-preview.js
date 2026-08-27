@@ -4,7 +4,7 @@
   const replay=document.querySelector("#replayNow");
   if(!demos.length)return;
 
-  const ACTIVE_MS=1150;
+  const ACTIVE_MS=1350;
   const INTERVAL_MS=3000;
   let timer=0;
   const removers=new WeakMap();
