@@ -44,14 +44,11 @@
   Port.prototype.postMessage=function(message,...rest){
     if(message&&typeof message==="object"){
       if(message.type==="beginCapture"&&Number(message.seconds)>=7.5){
-        /* The 8-second room-noise capture marks a new calibration session. */
         waitingForManual=true;
         manualStarted=false;
         registrationPort=this;
         pendingRawMessage=null;
       }else if(message.type==="candidateMode"&&message.mode==="raw"&&waitingForManual&&!manualStarted){
-        /* performance-mode-v5 currently auto-starts sampling here. Block that
-           transition and expose the original manual-start button instead. */
         registrationPort=this;
         pendingRawMessage={...message};
         scheduleManualUi();
@@ -76,18 +73,16 @@
     const ins=instruction();if(ins)ins.textContent="パッドを続けて叩いてください";
     const d=detail();if(d)d.textContent="現在 0 / 8。検出した打音を1打ずつ音色登録します。強弱を少し混ぜてください。";
 
-    /* Clear any proposal state accumulated before the button press, then start
-       from a clean RAW candidate stream. */
+    /* Flush all pre-start proposal state, then start RAW registration using the
+       original one-candidate / 145 ms / refractory detector. */
     if(registrationPort&&pendingRawMessage){
       const noiseRms=Number(pendingRawMessage.noiseRms)||0.0005;
       nativePost.call(registrationPort,{type:"candidateMode",mode:"off",noiseRms});
-      nativePost.call(registrationPort,pendingRawMessage);
+      nativePost.call(registrationPort,{...pendingRawMessage,registration:true});
     }
     pendingRawMessage=null;
   },true);
 
-  /* DOM state changes happen synchronously after the blocked RAW message; the
-     observer/interval only restores the button presentation, never counts hits. */
   const observer=new MutationObserver(()=>{if(waitingForManual&&!manualStarted)scheduleManualUi()});
   observer.observe(document.documentElement,{subtree:true,attributes:true,childList:true,characterData:true});
   setInterval(()=>{if(waitingForManual&&!manualStarted)showManualStart()},120);
