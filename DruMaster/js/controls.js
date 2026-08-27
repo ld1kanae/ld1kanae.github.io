@@ -125,10 +125,22 @@
   }
 
   const heldCodes=new Set();
+  const isDesktop=()=>!!globalThis.matchMedia?.("(hover:hover) and (pointer:fine)")?.matches;
 
   /* Capture phase deliberately supersedes app.js's old one-key map.
-     Spacebar pause/resume remains intentionally disabled. */
+     Escape is the PC pause/resume shortcut; Space remains intentionally unused. */
   addEventListener("keydown",e=>{
+    if(e.code==="Escape"){
+      if(!isDesktop()||e.repeat)return;
+      let isRunning=false;
+      try{isRunning=typeof running!=="undefined"&&running}catch{}
+      if(!isRunning)return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      try{if(typeof togglePause==="function")void togglePause()}catch{}
+      return;
+    }
+
     const binding=KEY_BINDINGS[e.code];
     if(!binding)return;
     e.preventDefault();
