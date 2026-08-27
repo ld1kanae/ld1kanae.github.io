@@ -42,7 +42,11 @@
     lastNotes=list;lastStartedAt=startedAtSafe();lastTime=t;
   }
   function syncAutoplayFlag(){
-    try{if(typeof autoplay!=="undefined")autoplay=autoEnabled()}catch{}
+    /* This module owns the flag only while score playback is active.
+       Normal gameplay sets autoplay in startGame(); overwriting it here every
+       frame used to cancel Auto immediately after START. */
+    if(!scoreActive())return;
+    try{if(typeof autoplay!=="undefined")autoplay=!!autoToggle.checked}catch{}
   }
 
   function beginScrub(){
