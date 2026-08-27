@@ -13,7 +13,7 @@
         const text=String(url||"");
         if(text.includes("js/acoustic-cancel-processor.js")){
           const clean=text.split("?")[0];
-          return nativeAdd(`${clean}?v=20260827-firststrike1`,options);
+          return nativeAdd(`${clean}?v=20260827-firststrike3`,options);
         }
         return nativeAdd(url,options);
       };
