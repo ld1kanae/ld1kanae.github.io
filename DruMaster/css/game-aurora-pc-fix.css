@@ -1,0 +1,31 @@
+/* Desktop gameplay Aurora Curtain correction.
+   Keep the result-derived base background, but make the animated color field
+   cover the full viewport at all times. Smartphone remains static elsewhere. */
+@media (hover:hover) and (pointer:fine){
+  .game::before{
+    inset:-22% -18%!important;
+    background:linear-gradient(
+      112deg,
+      rgba(99,198,255,.10) 0%,
+      rgba(130,132,255,.16) 25%,
+      rgba(192,119,255,.14) 50%,
+      rgba(93,177,255,.12) 75%,
+      rgba(174,125,255,.10) 100%
+    )!important;
+    background-size:140% 140%!important;
+    background-position:center!important;
+    filter:blur(28px)!important;
+    opacity:.88!important;
+    will-change:transform!important;
+    animation:gameAuroraCurtainWide 5s ease-in-out infinite alternate!important;
+  }
+}
+
+@keyframes gameAuroraCurtainWide{
+  0%{transform:translate3d(-6%,0,0) skewX(-3deg) scaleX(1.08)}
+  100%{transform:translate3d(6%,0,0) skewX(3deg) scaleX(1.08)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .game::before{animation:none!important;transform:none!important}
+}
