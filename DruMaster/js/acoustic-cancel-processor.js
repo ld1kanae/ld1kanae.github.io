@@ -34,6 +34,16 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     this.preRing=new Float32Array(preSize);this.preMask=preSize-1;this.preWrite=0;
     this.candidates=[];
 
+    /* The first RAW candidate session after the long environment-noise capture
+       is the pad-registration phase. Keep collecting candidate PCM for a full
+       ten seconds before delivering it to the classifier so registration can
+       never finish before the player has had time to start striking the pad.
+       Later RAW sessions (the test pane) are immediate. */
+    this.registrationGateArmed=false;
+    this.registrationGateSamples=0;
+    this.registrationQueue=[];
+    this.registrationQueueLimit=48;
+
     this.port.onmessage=e=>this.onMessage(e.data||{});
   }
   onMessage(m){
@@ -43,17 +53,30 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     else if(m.type==='resetFilter') this.w.fill(0);
     else if(m.type==='freeze') this.freezeSamples=Math.max(this.freezeSamples,Math.round(sampleRate*(+m.ms||0)/1000));
     else if(m.type==='beginCapture'){
-      const n=Math.max(1024,Math.min(Math.round(sampleRate*(+m.seconds||2.6)),Math.round(sampleRate*10)));
+      const seconds=+m.seconds||2.6;
+      const n=Math.max(1024,Math.min(Math.round(sampleRate*seconds),Math.round(sampleRate*10)));
       this.capture={mic:new Float32Array(n),ref:new Float32Array(n),at:0};
+      /* Environment-noise capture is 8 s. Re-arm the ten-second registration
+         gate here, which also makes "最初からやり直す" behave identically. */
+      if(seconds>=7.5){
+        this.registrationGateArmed=true;
+        this.registrationGateSamples=0;
+        this.registrationQueue=[];
+      }
     }else if(m.type==='endCapture'){
       this.finishCapture(true);
     }else if(m.type==='candidateMode'){
-      this.candidateMode=(m.mode==='raw'||m.mode==='residual')?m.mode:'off';
+      const next=(m.mode==='raw'||m.mode==='residual')?m.mode:'off';
+      this.candidateMode=next;
       this.candidateNoise=Math.max(1e-6,+m.noiseRms||this.noiseRms||1e-6);
       this.candidateFast=this.candidateSlow=0;this.candidateArmed=true;this.candidates=[];
+      if(next==='raw'&&this.registrationGateArmed){
+        this.registrationGateArmed=false;
+        this.registrationGateSamples=Math.round(sampleRate*10);
+        this.registrationQueue=[];
+      }
     }else if(m.type==='suppressCandidates'){
-      /* Kept as a no-op for compatibility. Rapid rolls must never be blocked
-         by a post-hit timer. Re-arming is based only on the signal release. */
+      /* Compatibility no-op. Rapid rolls are re-armed by signal release, not a timer. */
     }
   }
   finishCapture(force=false){
@@ -74,6 +97,21 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     buf[pre]=current;
     this.candidates.push({buf,at:pre+1,peak:Math.abs(current)});
   }
+  emitCandidate(c){
+    if(this.candidateMode==='raw'&&this.registrationGateSamples>0){
+      this.registrationQueue.push(c);
+      if(this.registrationQueue.length>this.registrationQueueLimit)this.registrationQueue.shift();
+      return;
+    }
+    this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:this.candidateMode},[c.buf.buffer]);
+  }
+  flushRegistrationQueue(){
+    if(!this.registrationQueue.length)return;
+    /* Prefer the latter part of the window: it naturally de-emphasizes noises
+       that occur during the transition into the registration screen. */
+    const queued=this.registrationQueue.splice(Math.max(0,this.registrationQueue.length-24));
+    for(const c of queued)this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:'raw'},[c.buf.buffer]);
+  }
   feedCandidate(sample){
     this.preRing[this.preWrite]=sample;this.preWrite=(this.preWrite+1)&this.preMask;
 
@@ -81,9 +119,7 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
       const keep=[];
       for(const c of this.candidates){
         if(c.at<c.buf.length){c.buf[c.at++]=sample;c.peak=Math.max(c.peak,Math.abs(sample));}
-        if(c.at>=c.buf.length){
-          this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:this.candidateMode},[c.buf.buffer]);
-        }else keep.push(c);
+        if(c.at>=c.buf.length)this.emitCandidate(c);else keep.push(c);
       }
       this.candidates=keep;
     }
@@ -137,6 +173,10 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
         if(at<this.capture.mic.length){this.capture.mic[at]=d;this.capture.ref[at]=x;this.capture.at=at+1;}
       }
       this.feedCandidate(this.candidateMode==='raw'?d:cleaned);
+      if(this.candidateMode==='raw'&&this.registrationGateSamples>0){
+        this.registrationGateSamples--;
+        if(this.registrationGateSamples===0)this.flushRegistrationQueue();
+      }
       this.write=(this.write+1)&this.mask;
     }
     this.maybeFinishCapture();
