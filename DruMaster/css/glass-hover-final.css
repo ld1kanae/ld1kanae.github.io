@@ -13,6 +13,7 @@
     --halo-blur:12px;
     --halo-opacity:.51;
     --halo-expand-x:0px;
+    --spectral-angle:335deg;
     position:relative;
     isolation:isolate;
     display:inline-grid;
@@ -52,7 +53,7 @@
     height:var(--halo-height);
     transform:translateY(var(--halo-y));
     border-radius:999px;
-    background:linear-gradient(90deg,
+    background:linear-gradient(var(--spectral-angle),
       rgba(215,89,168,.90) 0%,
       rgba(197,177,83,.74) 27%,
       rgba(71,201,190,.86) 52%,
@@ -84,7 +85,7 @@
     left:-2%;right:-2%;
     display:block;
     pointer-events:none;
-    background:linear-gradient(90deg,#d759a8 0%,#cf6f8b 9%,#bfbc4b 27%,#6bb77e 42%,#47c9be 52%,#4095cf 67%,#4d65be 82%,#c25cc5 100%);
+    background:linear-gradient(var(--spectral-angle),#d759a8 0%,#cf6f8b 9%,#bfbc4b 27%,#6bb77e 42%,#47c9be 52%,#4095cf 67%,#4d65be 82%,#c25cc5 100%);
     background-size:104% 100%;
     background-position:center;
   }
