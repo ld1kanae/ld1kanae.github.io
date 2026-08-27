@@ -15,7 +15,7 @@
 
   const modeRow=document.createElement("label");
   modeRow.className="option performance-mode-option";
-  modeRow.innerHTML='<span>演奏モード</span><select id="performanceModeSelect" aria-label="演奏モード"><option value="normal">通常</option><option value="touch">どこでもタッチ</option><option value="pad">パッド練習</option></select>';
+  modeRow.innerHTML='<span>演奏モード</span><select id="performanceModeSelect" aria-label="演奏モード"><option value="normal">通常</option><option value="touch">どこでもタッチ</option></select>';
   options.appendChild(modeRow);
   const modeSelect=modeRow.querySelector("select");
   if(debugMode)modeSelect.value="pad";
