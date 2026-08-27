@@ -9,6 +9,19 @@
 
   const scoreActive=()=>document.body.dataset.scorePlayback==="1";
   const autoEnabled=()=>scoreActive()&&autoToggle.checked;
+
+  /* Score playback already has a dedicated Guide Drums stem. The legacy score
+     loop also auto-fired kick samples regardless of the Auto toggle, which made
+     the bass drum sound doubled whenever Guide Drums was enabled. Suppress only
+     those game-generated kick samples while score playback is active. */
+  const basePlayDrum=typeof playDrum==="function"?playDrum:null;
+  if(basePlayDrum){
+    playDrum=function(note,type,v){
+      if(scoreActive()&&type==="kick")return;
+      return basePlayDrum(note,type,v);
+    };
+  }
+
   const lowerBound=(list,sec)=>{
     let lo=0,hi=list.length;
     while(lo<hi){const mid=(lo+hi)>>1;if(list[mid].time<sec)lo=mid+1;else hi=mid}
