@@ -3,51 +3,23 @@
 (()=>{
   const MAX_CAPTURE_SEC=8;
   const MIN_EARLY_SEC=1;
-  let observedAecNode=null;
-  let captureActive=false;
-  let captureStartedAt=0;
-  let finishTimer=0;
-  let enableTimer=0;
-
-  /* performance-mode-v4 currently calls beginAECCapture() in its environment
-     sampling path. Provide that bridge here and keep the actual AEC node visible
-     to the bounded-capture controller without exposing it to normal gameplay. */
-  const NativeAudioWorkletNode=globalThis.AudioWorkletNode;
-  if(NativeAudioWorkletNode&&!globalThis.__DruMasterObservedAudioWorkletNode){
-    class ObservedAudioWorkletNode extends NativeAudioWorkletNode{
-      constructor(context,name,options){
-        super(context,name,options);
-        if(name==="drumaster-acoustic-canceller")observedAecNode=this;
-      }
-    }
-    globalThis.AudioWorkletNode=ObservedAudioWorkletNode;
-    globalThis.__DruMasterObservedAudioWorkletNode=true;
-  }
-
-  /* Ensure the updated processor (which accepts endCapture) is fetched even if
-     an older worklet URL is still cached by the mobile browser. */
-  function patchWorkletLoader(){
-    try{
-      if(typeof ac==="undefined"||!ac?.audioWorklet||ac.audioWorklet.__dmNoisePatched)return false;
-      const nativeAdd=ac.audioWorklet.addModule.bind(ac.audioWorklet);
-      ac.audioWorklet.addModule=(url,options)=>{
-        const u=String(url||"");
-        return nativeAdd(u.includes("acoustic-cancel-processor.js")?"js/acoustic-cancel-processor.js?v=20260827-noiseauto1":url,options);
-      };
-      ac.audioWorklet.__dmNoisePatched=true;
-      return true;
-    }catch{return false}
-  }
-  if(!patchWorkletLoader()){
-    const loaderTimer=setInterval(()=>{if(patchWorkletLoader())clearInterval(loaderTimer)},50);
-    setTimeout(()=>clearInterval(loaderTimer),10000);
-  }
+  let captureActive=false,captureStartedAt=0,captureResolve=null,captureReject=null;
+  let sourceNode=null,processorNode=null,muteNode=null,chunks=[],sampleCount=0,maxTimer=0,enableTimer=0;
 
   function actionButton(){return document.querySelector("#micCalibration #micCalAction")}
   function instruction(){return document.querySelector("#micCalibration #micCalInstruction")}
   function detail(){return document.querySelector("#micCalibration #micCalDetail")}
   function noiseState(){return document.querySelector("#micCalibration #fpNoiseState")}
+  function clearTimers(){clearTimeout(maxTimer);clearTimeout(enableTimer);maxTimer=enableTimer=0}
 
+  function cleanupCapture(){
+    clearTimers();
+    try{processorNode&&(processorNode.onaudioprocess=null)}catch{}
+    try{sourceNode?.disconnect()}catch{}
+    try{processorNode?.disconnect()}catch{}
+    try{muteNode?.disconnect()}catch{}
+    sourceNode=processorNode=muteNode=null;
+  }
   function setCapturingUi(){
     const b=actionButton();
     if(noiseState())noiseState().textContent="収録中";
@@ -57,45 +29,52 @@
   }
   function enableEarlyFinish(){
     if(!captureActive)return;
-    const b=actionButton();
-    if(b){b.disabled=false;b.textContent="次に進む"}
+    const b=actionButton();if(b){b.disabled=false;b.textContent="次に進む"}
     if(detail())detail().textContent="必要な環境音は取得できています。今進んでも、最大8秒までそのまま収録しても構いません。";
   }
-  function requestFinish(){
-    if(!captureActive||!observedAecNode)return;
+  function finishCapture(){
+    if(!captureActive)return;
     const elapsed=(performance.now()-captureStartedAt)/1000;
-    if(elapsed<MIN_EARLY_SEC)return;
+    if(elapsed<MIN_EARLY_SEC||sampleCount<256)return;
+    captureActive=false;
+    const sr=(typeof ac!=="undefined"&&ac?.sampleRate)||48000,total=sampleCount,pcm=new Float32Array(total);let at=0;
+    for(const chunk of chunks){pcm.set(chunk,at);at+=chunk.length}
+    chunks=[];sampleCount=0;const resolve=captureResolve;captureResolve=captureReject=null;cleanupCapture();
     const b=actionButton();if(b){b.disabled=true;b.textContent="解析中…"}
-    try{observedAecNode.port.postMessage({type:"endCapture"})}catch{}
+    resolve?.({type:"capture",mic:pcm.buffer,ref:new Float32Array(total).buffer,sampleRate:sr,samples:total});
   }
-  function clearCaptureTimers(){clearTimeout(finishTimer);clearTimeout(enableTimer);finishTimer=enableTimer=0}
+  function failCapture(message){
+    if(!captureActive)return;captureActive=false;const reject=captureReject;captureResolve=captureReject=null;chunks=[];sampleCount=0;cleanupCapture();reject?.(Error(message));
+  }
 
-  globalThis.beginAECCapture=function(_requestedSeconds){
+  /* performance-mode-v4 currently calls this name in the environment-noise
+     branch. It records the raw microphone PCM directly, independent of AEC. */
+  globalThis.beginAECCapture=function(){
     return new Promise((resolve,reject)=>{
-      const node=observedAecNode;
-      if(!node){reject(Error("環境ノイズ収録用のAudioWorkletを取得できません"));return}
-      captureActive=true;captureStartedAt=performance.now();clearCaptureTimers();setCapturingUi();
-      let settled=false;
-      const done=e=>{
-        if(e.data?.type!=="capture"||settled)return;
-        settled=true;captureActive=false;clearCaptureTimers();node.port.removeEventListener("message",done);resolve(e.data);
-      };
-      node.port.addEventListener("message",done);try{node.port.start?.()}catch{}
-      /* Always request at most eight seconds. The updated processor can also be
-         ended early by the user; an older cached processor still self-completes
-         within its own five-second cap. */
-      node.port.postMessage({type:"beginCapture",seconds:MAX_CAPTURE_SEC});
-      enableTimer=setTimeout(enableEarlyFinish,MIN_EARLY_SEC*1000);
-      finishTimer=setTimeout(()=>{requestFinish();setTimeout(()=>{if(!settled){node.port.removeEventListener("message",done);captureActive=false;reject(Error("環境ノイズの収録を8秒で終了できませんでした"))}},900)},MAX_CAPTURE_SEC*1000);
+      try{
+        const stream=globalThis.DruMasterPerformanceMode?.getRawMicStream?.();
+        if(!stream)throw Error("環境ノイズ収録用のマイク入力を取得できません");
+        if(typeof ac==="undefined"||!ac)throw Error("オーディオ機能の準備ができていません");
+        if(typeof ac.createScriptProcessor!=="function")throw Error("このブラウザでは環境ノイズPCM収録を利用できません");
+        captureResolve=resolve;captureReject=reject;captureActive=true;captureStartedAt=performance.now();chunks=[];sampleCount=0;setCapturingUi();
+        sourceNode=ac.createMediaStreamSource(stream);processorNode=ac.createScriptProcessor(1024,1,1);muteNode=ac.createGain();muteNode.gain.value=0;
+        processorNode.onaudioprocess=e=>{
+          if(!captureActive)return;const input=e.inputBuffer.getChannelData(0),copy=new Float32Array(input.length);copy.set(input);chunks.push(copy);sampleCount+=copy.length;
+          const max=Math.round(ac.sampleRate*MAX_CAPTURE_SEC);if(sampleCount>=max)finishCapture();
+        };
+        sourceNode.connect(processorNode);processorNode.connect(muteNode).connect(ac.destination);
+        enableTimer=setTimeout(enableEarlyFinish,MIN_EARLY_SEC*1000);
+        maxTimer=setTimeout(finishCapture,MAX_CAPTURE_SEC*1000+80);
+      }catch(e){captureActive=false;cleanupCapture();reject(e)}
     });
   };
 
-  /* Capture-phase handler turns the existing action button into an early
-     completion control while recording. */
+  /* While environment capture is active, the existing action button becomes
+     an explicit early-completion button. */
   document.addEventListener("click",e=>{
     const b=e.target?.closest?.("#micCalibration #micCalAction");
     if(!b||!captureActive||b.textContent!=="次に進む")return;
-    e.preventDefault();e.stopImmediatePropagation();requestFinish();
+    e.preventDefault();e.stopImmediatePropagation();finishCapture();
   },true);
 
   function normalizeNextButton(){
@@ -110,13 +89,15 @@
     screen.dataset.noiseAutoStarted="1";
     setTimeout(()=>{if(!screen.classList.contains("hidden")&&!captureActive&&/環境ノイズを収録/.test(b.textContent))b.click()},40);
   }
+
   const observer=new MutationObserver(()=>{normalizeNextButton();autoStartNoise()});
   observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class","disabled"]});
 
   document.addEventListener("click",e=>{
     if(!e.target?.closest?.("#micCalibration #micCalRetry"))return;
+    if(captureActive)failCapture("calibration-cancelled");
     const screen=document.querySelector("#micCalibration");if(screen)screen.dataset.noiseAutoStarted="0";
-    setTimeout(autoStartNoise,60);
+    setTimeout(autoStartNoise,80);
   },true);
 
   setTimeout(autoStartNoise,0);
