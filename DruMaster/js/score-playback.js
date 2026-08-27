@@ -15,7 +15,7 @@
         baseFinish=typeof finish==="function"?finish:null;
 
   let active=false,currentSong=initialSong,stemVoices=new Set(),kickCursor=0,ending=false,prefetchFor="",switching=false,
-      scrubbing=false,scrubTarget=0,scrubWasPaused=false,dragPointer=null,dragStartX=0,dragStartSec=0;
+      scrubbing=false,scrubTarget=0,scrubWasPaused=false,dragPointer=null,dragStartX=0,dragStartSec=0,restartGeneration=0;
   let loopMode="off";
   try{const saved=localStorage.getItem("drumasterScorePlaybackLoop");if(["off","all","one"].includes(saved))loopMode=saved}catch{}
 
@@ -139,12 +139,19 @@
   }
 
   async function restartAt(sec,shouldPlay=true){
-    const entry=await ensureSongData(currentSong),target=clamp(sec,0,songDuration(currentSong));
-    cancelAnimationFrame(raf);stopStemVoices();resetKickCursor(target);ending=false;prefetchFor="";
+    const generation=++restartGeneration,song=currentSong,target=clamp(sec,0,songDuration(song));
+    cancelAnimationFrame(raf);stopStemVoices();
+    const entry=await ensureSongData(song);
+    if(generation!==restartGeneration||!active||currentSong!==song)return;
+    resetKickCursor(target);ending=false;prefetchFor="";
     if(shouldPlay){
       try{await ac.resume()}catch{}
+      if(generation!==restartGeneration||!active||currentSong!==song)return;
+      stopStemVoices();
       const when=ac.currentTime+.045;startStemSet(entry,when,target);startedAt=when-target/rate;paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop);
     }else{
+      if(generation!==restartGeneration||!active||currentSong!==song)return;
+      stopStemVoices();
       const when=ac.currentTime;startStemSet(entry,when,target);startedAt=when-target/rate;paused=true;setPauseUi(true);draw?.();updateSeekUi(target);
     }
   }
@@ -153,7 +160,7 @@
     const i=Math.max(0,songList.findIndex(s=>s.id===currentSong.id));return songList[(i+delta+songList.length)%songList.length];
   }
   async function switchSong(delta){
-    if(!active||switching)return;switching=true;setLoading(true,"LOADING SONG");
+    if(!active||switching)return;restartGeneration++;switching=true;setLoading(true,"LOADING SONG");
     try{
       const target=nextSong(delta),wasPaused=paused,entry=await ensureSongData(target);
       cancelAnimationFrame(raf);stopStemVoices();currentSong=target;applySong(target,entry);
@@ -166,7 +173,7 @@
   }
 
   async function handleTrackEnd(){
-    if(!active||ending)return;ending=true;cancelAnimationFrame(raf);stopStemVoices();
+    if(!active||ending)return;restartGeneration++;ending=true;cancelAnimationFrame(raf);stopStemVoices();
     if(loopMode==="one"){
       ending=false;await restartAt(0,true);return;
     }
@@ -196,7 +203,7 @@
 
   function beginScrub(startSec=current()){
     if(!active||scrubbing)return;
-    scrubWasPaused=paused;scrubTarget=clamp(startSec,0,songDuration(currentSong));scrubbing=true;cancelAnimationFrame(raf);stopStemVoices();
+    restartGeneration++;scrubWasPaused=paused;scrubTarget=clamp(startSec,0,songDuration(currentSong));scrubbing=true;cancelAnimationFrame(raf);stopStemVoices();
   }
   function previewScrub(sec){
     if(!active)return;if(!scrubbing)beginScrub(sec);scrubTarget=clamp(sec,0,songDuration(currentSong));
@@ -239,7 +246,7 @@
 
   async function startScorePlayback(){
     if(active||loading)return;
-    active=true;document.body.dataset.scorePlayback="1";document.body.dataset.scoreLoading="0";ending=false;prefetchFor="";
+    restartGeneration++;active=true;document.body.dataset.scorePlayback="1";document.body.dataset.scoreLoading="0";ending=false;prefetchFor="";
     startButton.disabled=true;const load=document.querySelector("#loadState"),oldLoad=load?.textContent||"";if(load)load.textContent="楽譜再生データを準備中…";
     try{
       try{await ac.resume()}catch{}
@@ -258,7 +265,7 @@
   }
 
   function goHome(){
-    if(!active)return;active=false;running=false;paused=false;scrubbing=false;cancelAnimationFrame(raf);stopStemVoices();setPauseUi(false);document.body.dataset.scorePlayback="0";document.body.dataset.scoreLoading="0";
+    if(!active)return;restartGeneration++;active=false;running=false;paused=false;scrubbing=false;cancelAnimationFrame(raf);stopStemVoices();setPauseUi(false);document.body.dataset.scorePlayback="0";document.body.dataset.scoreLoading="0";
     const url=new URL(location.href);url.searchParams.set("song",currentSong.id);url.searchParams.delete("v");url.searchParams.delete("micdebug");location.href=url.toString();
   }
 
