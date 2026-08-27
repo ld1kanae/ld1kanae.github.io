@@ -4,7 +4,7 @@
   const replay=document.querySelector("#replayNow");
   if(!demos.length)return;
 
-  const ACTIVE_MS=1350;
+  const ACTIVE_MS=2950;
   const INTERVAL_MS=3000;
   let timer=0;
   const removers=new WeakMap();
@@ -18,14 +18,8 @@
     removers.set(el,setTimeout(()=>el.classList.remove("demo-active"),ACTIVE_MS));
   }
 
-  function pulseAll(){
-    demos.forEach(pulse);
-  }
-
-  function restartTimer(){
-    clearInterval(timer);
-    timer=setInterval(pulseAll,INTERVAL_MS);
-  }
+  function pulseAll(){demos.forEach(pulse)}
+  function restartTimer(){clearInterval(timer);timer=setInterval(pulseAll,INTERVAL_MS)}
 
   demos.forEach(el=>{
     el.addEventListener("mouseenter",()=>pulse(el));
@@ -33,13 +27,6 @@
     el.querySelector("button")?.addEventListener("click",e=>e.preventDefault());
   });
 
-  replay?.addEventListener("click",()=>{
-    pulseAll();
-    restartTimer();
-  });
-
-  setTimeout(()=>{
-    pulseAll();
-    restartTimer();
-  },500);
+  replay?.addEventListener("click",()=>{pulseAll();restartTimer()});
+  setTimeout(()=>{pulseAll();restartTimer()},500);
 })();
