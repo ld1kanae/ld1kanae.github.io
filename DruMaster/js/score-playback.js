@@ -98,7 +98,7 @@
     if(offset>=buf.duration-.001)return;
     const source=ac.createBufferSource(),gain=ac.createGain(),voice={source,gain};
     source.buffer=buf;source.playbackRate.value=rate;gain.gain.value=gainValue;source.connect(gain).connect(masterBus);
-    stemVoices.add(voice);source.onended=()=>{stemVoices.delete(voice);try{source.disconnect()}catch{}try{gain.disconnect()}{}};
+    stemVoices.add(voice);source.onended=()=>{stemVoices.delete(voice);try{source.disconnect()}catch{}try{gain.disconnect()}catch{}};
     source.start(when,offset);
   }
   function startStemSet(entry,when,logicalOffset){
