@@ -55,10 +55,11 @@
     const {note,delta}=match;note.hit=true;playDrum(note.note,note.type,note.velocity/127);if(typeof flashPart==="function"&&typeof PART!=="undefined")flashPart(PART[note.type]);const label=gradeHit(note,delta);emitGrade(note,label);return true;
   }
   function showPadSnareFeedback(){
-    /* Freeze only the adaptive filter coefficients. Candidate detection itself is
-       never suppressed after a hit, so rapid rolls remain detectable. */
+    /* Mic-detected pad hits must never play a speaker snare here. Doing so feeds
+       the synthetic snare back into the microphone and can self-trigger forever.
+       Keep only visual feedback and AEC-coefficient freeze; there is no candidate
+       dead-time, so rapid rolls remain detectable. */
     try{aecNode?.port.postMessage({type:"freeze",ms:190})}catch{}
-    if(typeof playDrum==="function"&&typeof DEFAULT_NOTE!=="undefined")playDrum(DEFAULT_NOTE.snare,"snare",.90);
     const snare=document.querySelector('#hitLayer [data-part="snare"]:not(.inactive)')||document.querySelector('#hitLayer [data-part="snare"]');
     if(snare&&typeof flashPart==="function")flashPart("snare",snare);globalThis.DruMasterMobileTapEffect?.showElement?.(snare);
   }
@@ -203,7 +204,7 @@
   }
   function testPaneFeedback(score,accepted){
     const pane=ui('[data-fp-step="test"]'),state=ui("#fpTestState"),txt=ui("#fpTestScore");if(!pane||!state||!txt)return;state.textContent=accepted?"HIT":"解析中";txt.textContent=`PAD SIMILARITY ${(score*100).toFixed(0)}% · 基準 ${(padModel.threshold*100).toFixed(0)}%`;
-    if(accepted){pane.classList.remove("hit");void pane.offsetWidth;pane.classList.add("hit");if(typeof playDrum==="function"&&typeof DEFAULT_NOTE!=="undefined")playDrum(DEFAULT_NOTE.snare,"snare",.90)}
+    if(accepted){pane.classList.remove("hit");void pane.offsetWidth;pane.classList.add("hit")}
   }
   function finishCalibration(){const s=ensureCalibrationScreen();if(!micCalibration||!padModel?.samples?.length)return;calibrationToken++;setCandidateMode("off");s.classList.add("hidden");calResolve?.(true);calResolve=null}
   function showCalibration(){
@@ -211,7 +212,10 @@
   }
 
   function handlePadCandidate(m){
-    if(!micCalibration?.noise||!m.pcm)return;const fp=fingerprintFromPCM(new Float32Array(m.pcm),m.sampleRate||ac.sampleRate,micCalibration.noise);updateMeter(fp.peak);
+    if(!micCalibration?.noise||!m.pcm)return;
+    if((calStage==="sample"||calStage==="test")&&m.mode!=="raw")return;
+    if(calStage==="play"&&m.mode!=="residual")return;
+    const fp=fingerprintFromPCM(new Float32Array(m.pcm),m.sampleRate||ac.sampleRate,micCalibration.noise);updateMeter(fp.peak);
     if(calStage==="sample"){
       const clear=fp.peak>micCalibration.noise.peak*1.08||fp.rms>micCalibration.noise.rms*1.15;if(!clear)return;
       addModelSample(fp,PAD_SAMPLE_TARGET);ui("#fpSampleState").textContent=`${padModel.samples.length} / ${PAD_SAMPLE_TARGET}`;setDetail(`登録 ${padModel.samples.length} / ${PAD_SAMPLE_TARGET}。環境音が混ざった状態から音色特徴を抽出しています。`);
