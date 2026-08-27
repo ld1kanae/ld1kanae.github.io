@@ -61,9 +61,13 @@
     return svg;
   }
 
-  function syncRim(wrap){
-    const button=wrap.querySelector(":scope > button");
-    const svg=wrap.querySelector(":scope > .glass-hover-rim-svg");
+  function buttonFor(host){
+    return host.matches?.("button")?host:host.querySelector(":scope > button");
+  }
+
+  function syncRim(host){
+    const button=buttonFor(host);
+    const svg=host.querySelector(":scope > .glass-hover-rim-svg");
     if(!button||!svg)return;
     const box=button.getBoundingClientRect();
     if(box.width<2||box.height<2)return;
@@ -128,12 +132,12 @@
     ]};
   }
 
-  function play(wrap){
-    const button=wrap.querySelector(":scope > button");
+  function play(host){
+    const button=buttonFor(host);
     if(!button||button.disabled)return;
-    syncRim(wrap);
+    syncRim(host);
 
-    const old=activeAnimations.get(wrap)||[];
+    const old=activeAnimations.get(host)||[];
     for(const a of old){try{a.cancel()}catch{}}
     const running=[];
 
@@ -144,18 +148,41 @@
     };
 
     const e=SETTINGS.elements;
-    run(wrap.querySelector(".rim-run-1"),e.rimRun1,strokeSpec(e.rimRun1));
-    run(wrap.querySelector(".rim-run-2"),e.rimRun2,strokeSpec(e.rimRun2));
+    run(host.querySelector(".rim-run-1"),e.rimRun1,strokeSpec(e.rimRun1));
+    run(host.querySelector(".rim-run-2"),e.rimRun2,strokeSpec(e.rimRun2));
     run(button.querySelector(".glass-hover-face-sheen"),e.faceSheen,moveSpec(e.faceSheen,-58,122));
     run(button.querySelector(".glass-hover-face-flash"),e.faceFlash,fadeSpec(e.faceFlash));
 
-    activeAnimations.set(wrap,running);
+    activeAnimations.set(host,running);
   }
 
-  function stopReplay(wrap){
-    const timer=replayTimers.get(wrap);
+  function stopReplay(host){
+    const timer=replayTimers.get(host);
     if(timer)clearInterval(timer);
-    replayTimers.delete(wrap);
+    replayTimers.delete(host);
+  }
+
+  function bindHover(host,button){
+    const beginHover=()=>{
+      play(host);
+      stopReplay(host);
+      if(SETTINGS.autoReplay){
+        const timer=setInterval(()=>{
+          if(button.matches(":hover"))play(host);
+          else stopReplay(host);
+        },SETTINGS.intervalSec*1000);
+        replayTimers.set(host,timer);
+      }
+    };
+    button.addEventListener("mouseenter",beginHover);
+    button.addEventListener("mouseleave",()=>stopReplay(host));
+  }
+
+  function observeSize(host,button){
+    if("ResizeObserver" in window){
+      const ro=new ResizeObserver(()=>syncRim(host));
+      ro.observe(button);
+    }
   }
 
   function enhance(button){
@@ -167,11 +194,24 @@
     button.prepend(makeFace("glass-hover-face-flash"));
     button.prepend(makeFace("glass-hover-face-sheen"));
 
+    /* The pause button stays a direct flex child of the game header. Wrapping
+       it changes the header's layout box and previously displaced both the
+       pointer hit area and the animated rim. Keep every pause layer inside the
+       real button so visual and interactive coordinates are identical. */
+    if(button.id==="pause"){
+      button.classList.add("glass-hover-inline");
+      button.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
+      button.appendChild(makeRim());
+      syncRim(button);
+      bindHover(button,button);
+      observeSize(button,button);
+      return;
+    }
+
     const wrap=document.createElement("span");
     wrap.className="glass-hover-wrap";
     wrap.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
     if(button.id==="start")wrap.classList.add("start-wrap");
-    if(button.id==="pause")wrap.classList.add("pause-wrap");
 
     const glow=document.createElement("i");
     glow.className="glass-hover-drop";
@@ -183,29 +223,8 @@
     wrap.appendChild(button);
     wrap.appendChild(rim);
     syncRim(wrap);
-
-    /* Listen on the actual button. The pause control is placed inside a flex
-       header and its generated wrapper can temporarily have a zero hit area
-       while the game screen is hidden during setup. Direct button listeners
-       make the hover animation reliable after the screen becomes visible. */
-    const beginHover=()=>{
-      play(wrap);
-      stopReplay(wrap);
-      if(SETTINGS.autoReplay){
-        const timer=setInterval(()=>{
-          if(button.matches(":hover"))play(wrap);
-          else stopReplay(wrap);
-        },SETTINGS.intervalSec*1000);
-        replayTimers.set(wrap,timer);
-      }
-    };
-    button.addEventListener("mouseenter",beginHover);
-    button.addEventListener("mouseleave",()=>stopReplay(wrap));
-
-    if("ResizeObserver" in window){
-      const ro=new ResizeObserver(()=>syncRim(wrap));
-      ro.observe(button);
-    }
+    bindHover(wrap,button);
+    observeSize(wrap,button);
   }
 
   function scan(root=document){
