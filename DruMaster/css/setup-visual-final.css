@@ -205,6 +205,121 @@
   box-shadow:0 0 10px rgba(123,220,255,.2)
 }
 
+/* Desktop uses the DOM selector too, because the native Windows/Chromium popup
+   forces the selected row to the system accent blue. */
+@media (hover:hover) and (pointer:fine){
+  .setup #songSelect.mobile-native-select-hidden{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    overflow:hidden!important
+  }
+  .setup .song-custom-select{
+    position:relative;
+    display:block;
+    width:100%;
+    min-width:0;
+    margin-top:9px;
+    isolation:isolate
+  }
+  .setup .mobile-custom-select.open{z-index:1000}
+  .setup .mobile-select-host-open{z-index:1002!important}
+  .setup .mobile-custom-select-trigger{
+    position:relative;
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:34px;
+    padding:9px 30px 9px 11px;
+    border:1px solid #3a5169;
+    border-radius:8px;
+    background:#152639;
+    color:#e7eef7;
+    box-shadow:none;
+    text-align:left;
+    font:700 12px/1.2 system-ui,sans-serif;
+    letter-spacing:.03em;
+    white-space:nowrap;
+    overflow:hidden
+  }
+  .setup .mobile-custom-select-trigger:focus-visible{
+    outline:none;
+    border-color:#5ebdff;
+    box-shadow:0 0 0 2px #38a9ff22
+  }
+  .setup .mobile-custom-select-value{
+    display:block;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap
+  }
+  .setup .mobile-custom-select-arrow{
+    position:absolute;
+    right:12px;
+    top:50%;
+    width:7px;
+    height:7px;
+    border-right:2px solid #aebdca;
+    border-bottom:2px solid #aebdca;
+    transform:translateY(-68%) rotate(45deg)
+  }
+  .setup .mobile-custom-select.open .mobile-custom-select-arrow{
+    transform:translateY(-30%) rotate(225deg)
+  }
+  .setup .mobile-custom-select-menu{
+    position:absolute;
+    left:0;
+    right:0;
+    top:calc(100% + 1px);
+    z-index:1001;
+    max-height:180px;
+    overflow:auto;
+    padding:0;
+    border:1px solid #3a5169;
+    border-radius:0;
+    background:#152639;
+    box-shadow:0 8px 18px rgba(0,0,0,.42);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none
+  }
+  .setup .mobile-custom-select.open-up .mobile-custom-select-menu{
+    top:auto;
+    bottom:calc(100% + 1px)
+  }
+  .setup .mobile-custom-select-menu[hidden]{display:none!important}
+  .setup .mobile-custom-select-option{
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:25px;
+    padding:5px 11px;
+    border:0;
+    border-radius:0;
+    background:#152639;
+    color:#e7eef7;
+    text-align:left;
+    font:700 12px/1.2 system-ui,sans-serif;
+    letter-spacing:.03em;
+    white-space:normal
+  }
+  .setup .mobile-custom-select-option.selected{
+    background:#243d52!important;
+    color:#fff!important;
+    box-shadow:none!important
+  }
+  .setup .mobile-custom-select-option:hover:not(.selected){
+    background:#1c3145;
+    color:#fff
+  }
+  .setup .mobile-custom-select-option:disabled{color:#667382;opacity:.55}
+}
+
 /* Fixed project requirement: PC setup BPM is centered on the combined title + artist two-line block. */
 @media (hover:hover) and (pointer:fine){
   .setup .song-card .setup-bpm{
