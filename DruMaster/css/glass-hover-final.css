@@ -1,11 +1,6 @@
-/* Final approved PC hover glow values from preview editor. */
+/* Approved production PC hover values from the live editor. */
 @media (hover:hover) and (pointer:fine){
-  #start,
-  #pause,
-  #scorePlaybackControls button,
-  #pausePanel button,
-  .result-actions button,
-  .mic-cal-actions button{
+  .glass-hover-wrap{
     --ig-width:10px;
     --ig-core:1;
     --ig-shoulder:.21;
@@ -18,101 +13,90 @@
     --halo-blur:12px;
     --halo-opacity:.51;
     --halo-expand-x:0px;
+    position:relative;
+    isolation:isolate;
+    display:inline-grid;
+    place-items:center;
+    overflow:visible;
   }
-  #start{--halo-height:26px}
+  .glass-hover-wrap.start-wrap{--halo-height:26px;grid-area:start}
 
-  /* The button itself must allow the external bloom to escape. The inner
-     spectral layers are clipped independently with border-radius. */
-  #start,
-  #pause,
-  #scorePlaybackControls button,
-  #pausePanel button,
-  .result-actions button,
-  .mic-cal-actions button{
-    overflow:visible!important;
+  /* Preserve production layout after wrapping. */
+  #scorePlaybackControls>.glass-hover-wrap{
+    width:42px;min-width:42px;max-width:42px;
+    height:42px;min-height:42px;max-height:42px;
   }
-
-  /* Continuous horizontal spectrum; vertical falloff is handled by three
-     stacked blurred bands. */
-  #start::before,
-  #pause::before,
-  #scorePlaybackControls button::before,
-  #pausePanel button::before,
-  .result-actions button::before,
-  .mic-cal-actions button::before{
-    content:""!important;
-    position:absolute!important;
-    z-index:-1!important;
-    pointer-events:none!important;
-    left:0!important;right:0!important;top:0!important;bottom:0!important;
-    inset:0!important;
-    border-radius:inherit!important;
-    opacity:0!important;
-    background:
-      linear-gradient(90deg,
-        rgba(215,89,168,var(--ig-core)) 0%,
-        rgba(207,111,139,var(--ig-core)) 9%,
-        rgba(191,188,75,var(--ig-core)) 27%,
-        rgba(107,183,126,var(--ig-core)) 42%,
-        rgba(71,201,190,var(--ig-core)) 52%,
-        rgba(64,149,207,var(--ig-core)) 67%,
-        rgba(77,101,190,var(--ig-core)) 82%,
-        rgba(194,92,197,var(--ig-core)) 100%) top/100% var(--ig-width) no-repeat,
-      linear-gradient(90deg,
-        rgba(215,89,168,var(--ig-core)) 0%,
-        rgba(207,111,139,var(--ig-core)) 9%,
-        rgba(191,188,75,var(--ig-core)) 27%,
-        rgba(107,183,126,var(--ig-core)) 42%,
-        rgba(71,201,190,var(--ig-core)) 52%,
-        rgba(64,149,207,var(--ig-core)) 67%,
-        rgba(77,101,190,var(--ig-core)) 82%,
-        rgba(194,92,197,var(--ig-core)) 100%) bottom/100% var(--ig-width) no-repeat!important;
-    filter:blur(var(--ig-blur)) saturate(112%)!important;
-    clip-path:inset(0 round inherit);
-    transition:opacity .20s ease!important;
+  #scorePlaybackControls>.glass-hover-wrap>button{
+    width:42px!important;min-width:42px!important;max-width:42px!important;
+    height:42px!important;min-height:42px!important;max-height:42px!important;
   }
+  .result-actions>.glass-hover-wrap{width:140px;min-width:140px;flex:0 0 140px}
+  .result-actions>.glass-hover-wrap>button{width:140px;min-width:140px}
 
-  #start::after,
-  #pause::after,
-  #scorePlaybackControls button::after,
-  #pausePanel button::after,
-  .result-actions button::after,
-  .mic-cal-actions button::after{
-    content:""!important;
-    position:absolute!important;
-    z-index:-2!important;
-    pointer-events:none!important;
-    left:calc(-1 * var(--halo-expand-x))!important;
-    right:calc(-1 * var(--halo-expand-x))!important;
-    top:50%!important;
-    bottom:auto!important;
-    height:var(--halo-height)!important;
-    inset:auto calc(-1 * var(--halo-expand-x)) auto calc(-1 * var(--halo-expand-x))!important;
-    transform:translateY(var(--halo-y))!important;
-    border-radius:999px!important;
+  .glass-hover-drop{
+    position:absolute;
+    z-index:0;
+    pointer-events:none;
+    left:calc(-1 * var(--halo-expand-x));
+    right:calc(-1 * var(--halo-expand-x));
+    top:50%;
+    height:var(--halo-height);
+    transform:translateY(var(--halo-y));
+    border-radius:999px;
     background:linear-gradient(90deg,
       rgba(215,89,168,.90) 0%,
       rgba(197,177,83,.74) 27%,
       rgba(71,201,190,.86) 52%,
       rgba(64,149,207,.88) 70%,
-      rgba(194,92,197,.88) 100%)!important;
-    filter:blur(var(--halo-blur)) saturate(105%)!important;
-    opacity:0!important;
-    box-shadow:none!important;
-    transition:opacity .20s ease!important;
+      rgba(194,92,197,.88) 100%);
+    filter:blur(var(--halo-blur)) saturate(105%);
+    opacity:0;
+    transition:opacity .20s ease;
   }
 
-  #start:hover:not(:disabled)::before,
-  #pause:hover::before,
-  #scorePlaybackControls button:hover::before,
-  #pausePanel button:hover::before,
-  .result-actions button:hover::before,
-  .mic-cal-actions button:hover:not(:disabled)::before{opacity:1!important}
+  .glass-hover-wrap>button{position:relative!important;z-index:1!important;overflow:hidden!important}
+  .glass-hover-wrap>button::before,
+  .glass-hover-wrap>button::after{content:none!important}
 
-  #start:hover:not(:disabled)::after,
-  #pause:hover::after,
-  #scorePlaybackControls button:hover::after,
-  #pausePanel button:hover::after,
-  .result-actions button:hover::after,
-  .mic-cal-actions button:hover:not(:disabled)::after{opacity:var(--halo-opacity)!important}
+  .glass-inner-stack{
+    position:absolute;
+    z-index:1;
+    left:0;right:0;
+    height:var(--ig-width);
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .20s ease;
+    overflow:visible;
+  }
+  .glass-inner-stack.top{top:0}
+  .glass-inner-stack.bottom{bottom:0}
+  .glass-inner-stack>i{
+    position:absolute;
+    left:-2%;right:-2%;
+    display:block;
+    pointer-events:none;
+    background:linear-gradient(90deg,#d759a8 0%,#cf6f8b 9%,#bfbc4b 27%,#6bb77e 42%,#47c9be 52%,#4095cf 67%,#4d65be 82%,#c25cc5 100%);
+    background-size:104% 100%;
+    background-position:center;
+  }
+  .glass-inner-stack.top>i{top:0}
+  .glass-inner-stack.bottom>i{bottom:0}
+  .glass-inner-stack .tail{height:100%;opacity:var(--ig-tail);filter:blur(calc(var(--ig-blur) * 2.35)) saturate(106%)}
+  .glass-inner-stack .shoulder{height:var(--ig-tail-stop);opacity:var(--ig-shoulder);filter:blur(var(--ig-blur)) saturate(110%)}
+  .glass-inner-stack .core{height:var(--ig-shoulder-stop);opacity:var(--ig-core);filter:blur(calc(var(--ig-blur) * .42)) saturate(116%)}
+  .glass-hover-wrap>button>*:not(.glass-inner-stack){position:relative;z-index:5}
+
+  .glass-hover-wrap:hover .glass-hover-drop{opacity:var(--halo-opacity)}
+  .glass-hover-wrap:hover .glass-inner-stack{opacity:1}
+  .glass-hover-wrap:hover>button:not(:disabled){
+    --glass-hover-fade:0;
+    filter:brightness(1.02)!important;
+    box-shadow:
+      inset 0 1px 0 rgba(223,225,227,.90),
+      inset 0 -1px 0 rgba(228,230,232,.95),
+      inset 1px 0 0 rgba(154,161,168,.58),
+      inset -1px 0 0 rgba(154,161,168,.58),
+      0 0 0 1px rgba(128,134,140,.84),
+      0 6px 14px rgba(0,0,0,.18)!important;
+  }
 }
