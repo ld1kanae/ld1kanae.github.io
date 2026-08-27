@@ -21,8 +21,10 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     this.metricFrames=0;
     this.rawPow=0;this.refPow=0;this.resPow=0;this.metricSamples=0;
 
-    /* Candidate extraction is edge-triggered and candidates may overlap.
-       There is deliberately no fixed refractory/dead-time after a hit. */
+    /* Candidate extraction remains edge-triggered and candidates may overlap.
+       There is no fixed post-hit dead-time. Registration itself intentionally
+       has no special first-strike state: every candidate is delivered through
+       the same path, matching the original 8-hit fingerprint implementation. */
     this.candidateMode='off';
     this.candidateNoise=0.0005;
     this.candidateFast=0;
@@ -33,13 +35,6 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     let preSize=1;while(preSize<this.candidatePre+256)preSize<<=1;
     this.preRing=new Float32Array(preSize);this.preMask=preSize-1;this.preWrite=0;
     this.candidates=[];
-
-    /* After the environment-noise capture, the next RAW session is pad
-       registration. Registration remains at 0/8 until an actual transient
-       candidate arrives, but the first strike is not subjected to a special
-       high-amplitude threshold. */
-    this.firstStrikeArmed=false;
-    this.waitingForFirstStrike=false;
 
     this.port.onmessage=e=>this.onMessage(e.data||{});
   }
@@ -53,10 +48,6 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
       const seconds=+m.seconds||2.6;
       const n=Math.max(1024,Math.min(Math.round(sampleRate*seconds),Math.round(sampleRate*10)));
       this.capture={mic:new Float32Array(n),ref:new Float32Array(n),at:0};
-      if(seconds>=7.5){
-        this.firstStrikeArmed=true;
-        this.waitingForFirstStrike=false;
-      }
     }else if(m.type==='endCapture'){
       this.finishCapture(true);
     }else if(m.type==='candidateMode'){
@@ -64,10 +55,6 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
       this.candidateMode=next;
       this.candidateNoise=Math.max(1e-6,+m.noiseRms||this.noiseRms||1e-6);
       this.candidateFast=this.candidateSlow=0;this.candidateArmed=true;this.candidates=[];
-      if(next==='raw'&&this.firstStrikeArmed){
-        this.firstStrikeArmed=false;
-        this.waitingForFirstStrike=true;
-      }
     }else if(m.type==='suppressCandidates'){
       /* Compatibility no-op. Rapid rolls are re-armed by signal release, not a timer. */
     }
@@ -90,27 +77,7 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     buf[pre]=current;
     this.candidates.push({buf,at:pre+1,peak:Math.abs(current)});
   }
-  isClearFirstStrike(c){
-    let sum=0,peak=0;
-    const start=Math.min(c.buf.length-1,this.candidatePre),end=Math.min(c.buf.length,start+Math.round(sampleRate*.055));
-    for(let i=start;i<end;i++){const x=c.buf[i],a=Math.abs(x);sum+=x*x;if(a>peak)peak=a;}
-    const rms=Math.sqrt(sum/Math.max(1,end-start));
-    const noise=Math.max(1e-6,this.candidateNoise);
-    const crest=peak/Math.max(1e-7,rms);
-    /* Candidate extraction already requires a fast rising edge. The first-hit
-       guard therefore only rejects near-floor fluctuations; it must not demand
-       several times the room-noise level, which loses real pad strikes on
-       quieter microphones. Either a modest peak rise or a modest RMS rise is
-       enough when the event has a transient crest. */
-    const levelClear=peak>=Math.max(.00016,noise*1.28) || rms>=Math.max(.00005,noise*1.06);
-    return levelClear && crest>=1.18;
-  }
   emitCandidate(c){
-    if(this.candidateMode==='raw'&&this.waitingForFirstStrike){
-      if(!this.isClearFirstStrike(c))return;
-      this.waitingForFirstStrike=false;
-      this.port.postMessage({type:'registrationFirstStrike'});
-    }
     this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:this.candidateMode},[c.buf.buffer]);
   }
   feedCandidate(sample){
