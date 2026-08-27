@@ -29,7 +29,7 @@ GitHub Pages: <https://ld1kanae.github.io/DruMaster/>
 現在:
 
 - なないろ: 80 px/♩、stem offset 0 ms
-- Ray: 40 px/♩、stem offset 30 ms、offvocal 70% / vocals 60% / Guide Drums 70%
+- Ray: 40 px/♩、stem offset 2 ms、offvocal 70% / vocals 60% / Guide Drums 70%
 
 ### ドラムセット表示
 
