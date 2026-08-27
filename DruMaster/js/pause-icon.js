@@ -44,6 +44,6 @@
 
   /* Load the finalized PC-only hover enhancer after the transport SVG setup. */
   const s=document.createElement("script");
-  s.src="js/glass-hover-final.js?v=20260827-hover120-early150";
+  s.src="js/glass-hover-final.js?v=20260827-pausehover2";
   document.body.appendChild(s);
 })();
