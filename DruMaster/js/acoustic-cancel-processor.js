@@ -21,20 +21,28 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     this.metricFrames=0;
     this.rawPow=0;this.refPow=0;this.resPow=0;this.metricSamples=0;
 
-    /* Candidate extraction remains edge-triggered and candidates may overlap.
-       There is no fixed post-hit dead-time. Registration itself intentionally
-       has no special first-strike state: every candidate is delivered through
-       the same path, matching the original 8-hit fingerprint implementation. */
+    /* Gameplay/test detector: edge-triggered, overlapping candidates, no fixed
+       dead-time so fast rolls remain playable. */
     this.candidateMode='off';
+    this.registrationMode=false;
     this.candidateNoise=0.0005;
     this.candidateFast=0;
     this.candidateSlow=0;
     this.candidateArmed=true;
     this.candidatePre=Math.max(48,Math.round(sampleRate*.010));
     this.candidateLength=Math.max(1536,Math.round(sampleRate*.095));
-    let preSize=1;while(preSize<this.candidatePre+256)preSize<<=1;
+    this.registrationPre=Math.max(64,Math.round(sampleRate*.018));
+    this.registrationLength=Math.max(1024,Math.round(sampleRate*.145));
+    let preSize=1;while(preSize<Math.max(this.candidatePre,this.registrationPre)+256)preSize<<=1;
     this.preRing=new Float32Array(preSize);this.preMask=preSize-1;this.preWrite=0;
     this.candidates=[];
+
+    /* Registration detector: exactly the original 8-hit implementation.
+       One candidate at a time, 145 ms window, 85 ms refractory and the original
+       transient thresholds. This prevents a single strike/noise burst from
+       filling multiple registration slots. */
+    this.registrationCandidate=null;
+    this.registrationRefractory=0;
 
     this.port.onmessage=e=>this.onMessage(e.data||{});
   }
@@ -53,10 +61,15 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     }else if(m.type==='candidateMode'){
       const next=(m.mode==='raw'||m.mode==='residual')?m.mode:'off';
       this.candidateMode=next;
+      this.registrationMode=next==='raw'&&m.registration===true;
       this.candidateNoise=Math.max(1e-6,+m.noiseRms||this.noiseRms||1e-6);
-      this.candidateFast=this.candidateSlow=0;this.candidateArmed=true;this.candidates=[];
+      this.candidateFast=this.candidateSlow=0;
+      this.candidateArmed=true;
+      this.candidates=[];
+      this.registrationCandidate=null;
+      this.registrationRefractory=0;
     }else if(m.type==='suppressCandidates'){
-      /* Compatibility no-op. Rapid rolls are re-armed by signal release, not a timer. */
+      /* Gameplay candidate suppression remains intentionally disabled. */
     }
   }
   finishCapture(force=false){
@@ -71,6 +84,7 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     this.port.postMessage({type:'capture',mic:mic.buffer,ref:ref.buffer,sampleRate,samples:used},[mic.buffer,ref.buffer]);
   }
   maybeFinishCapture(){this.finishCapture(false)}
+
   startCandidate(current){
     const buf=new Float32Array(this.candidateLength),pre=Math.min(this.candidatePre,buf.length-1);
     for(let j=0;j<pre;j++)buf[j]=this.preRing[(this.preWrite-pre+j)&this.preMask];
@@ -80,9 +94,7 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
   emitCandidate(c){
     this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:this.candidateMode},[c.buf.buffer]);
   }
-  feedCandidate(sample){
-    this.preRing[this.preWrite]=sample;this.preWrite=(this.preWrite+1)&this.preMask;
-
+  feedRapidCandidate(sample){
     if(this.candidates.length){
       const keep=[];
       for(const c of this.candidates){
@@ -105,6 +117,42 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
       this.candidateArmed=false;
     }
   }
+
+  startRegistrationCandidate(current){
+    const buf=new Float32Array(this.registrationLength),pre=Math.min(this.registrationPre,buf.length-1);
+    for(let j=0;j<pre;j++)buf[j]=this.preRing[(this.preWrite-pre+j)&this.preMask];
+    buf[pre]=current;
+    this.registrationCandidate={buf,at:pre+1,peak:Math.abs(current)};
+    this.registrationRefractory=Math.round(sampleRate*.085);
+  }
+  feedRegistrationCandidate(sample){
+    if(this.registrationRefractory>0)this.registrationRefractory--;
+    if(this.registrationCandidate){
+      const c=this.registrationCandidate;
+      if(c.at<c.buf.length){c.buf[c.at++]=sample;c.peak=Math.max(c.peak,Math.abs(sample));}
+      if(c.at>=c.buf.length){
+        this.registrationCandidate=null;
+        this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:'raw'},[c.buf.buffer]);
+      }
+      return;
+    }
+
+    const a=Math.abs(sample);
+    this.candidateFast+=.22*(a-this.candidateFast);
+    this.candidateSlow+=.008*(a-this.candidateSlow);
+    const floor=Math.max(.00016,this.candidateNoise*.62);
+    const relative=Math.max(floor,this.candidateSlow*1.72);
+    if(this.candidateMode!=='off'&&this.registrationRefractory<=0&&this.candidateFast>relative&&a>floor*.85){
+      this.startRegistrationCandidate(sample);
+    }
+  }
+
+  feedCandidate(sample){
+    this.preRing[this.preWrite]=sample;this.preWrite=(this.preWrite+1)&this.preMask;
+    if(this.registrationMode)this.feedRegistrationCandidate(sample);
+    else this.feedRapidCandidate(sample);
+  }
+
   process(inputs,outputs){
     const micIn=inputs[0]||[],refIn=inputs[1]||[],out=outputs[0]||[];
     if(!out[0])return true;
