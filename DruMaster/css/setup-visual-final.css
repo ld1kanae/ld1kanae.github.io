@@ -4,7 +4,7 @@
   --setup-seek-mid:#8C8AFF;
   --setup-seek-violet:#BAA4FF;
   --setup-toggle-on:#8C8AFF;
-  --setup-glass-alpha:.06;
+  --setup-glass-alpha:.02;
   --setup-chroma:0px;
   position:relative;
   isolation:isolate;
@@ -39,7 +39,8 @@
 @keyframes setupVioletMove{0%{transform:translate(-14px,20px) scale(1)}50%{transform:translate(20px,-12px) scale(1.05)}100%{transform:translate(46px,4px) scale(1)}}
 .setup>*:not(.setup-moving-lights){position:relative;z-index:2}
 
-/* Prism Glass: glassAlpha .06, blur 0, saturation 100%, edge .5, chromatic 0px. */
+/* Glass panels: alpha .02, blur 0, saturation 100%, chromatic 0px.
+   Edge treatment is outline-only: no internal gradient, sheen or blurred rim. */
 .setup .song-card,
 .setup .options,
 .setup .tempo-box,
@@ -51,21 +52,12 @@
   background:rgba(220,240,255,var(--setup-glass-alpha));
   -webkit-backdrop-filter:saturate(100%);
   backdrop-filter:saturate(100%);
-  box-shadow:
-    inset var(--setup-chroma) 0 8px rgba(91,230,255,.095),
-    inset calc(var(--setup-chroma) * -1) 0 8px rgba(238,115,221,.09),
-    inset 0 1px 0 rgba(255,255,255,.29),
-    0 14px 36px rgba(0,0,0,.25)
+  box-shadow:none
 }
 .setup .song-card::before,
 .setup .options::before,
 .setup .tempo-box::before,
-.setup .volume-box::before{
-  content:"";position:absolute;z-index:0;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(112deg,rgba(255,186,222,.06),transparent 22%,rgba(115,233,255,.035) 52%,transparent 72%,rgba(190,139,255,.055));
-  mix-blend-mode:screen
-}
-.setup .song-card>*,.setup .options>*,.setup .tempo-box>*,.setup .volume-box>*{position:relative;z-index:1}
+.setup .volume-box::before{content:none!important}
 
 /* PC volume geometry remains the existing one; only the approved material changes. */
 .setup .volume-box{border-color:rgba(180,216,239,.275)}
@@ -101,6 +93,17 @@
 .setup .volume-box input[type="range"]::-moz-range-progress{height:7px;border-radius:999px;background:linear-gradient(90deg,var(--setup-seek-cyan),var(--setup-seek-mid) 52%,var(--setup-seek-violet))}
 .setup .tempo-box input[type="range"]::-moz-range-thumb,
 .setup .volume-box input[type="range"]::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:#D7F3FF;box-shadow:0 0 10px rgba(123,220,255,.2)}
+
+/* PC setup BPM: align vertically with the song dropdown and move closer to the card's right edge. */
+@media (hover:hover) and (pointer:fine){
+  .setup .song-card>div:first-child{padding-right:92px}
+  .setup .song-card .setup-bpm{
+    top:auto;
+    bottom:19px;
+    right:12px;
+    transform:none
+  }
+}
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .setup>.setup-moving-lights{display:none!important}
