@@ -1,12 +1,12 @@
 /* Approved setup-screen visual treatment.
-   Scope: setup background, glass material, approved accent colors, and requested BPM alignment only.
-   Existing typography, spacing, control geometry and button styling stay untouched. */
+   Scope: setup background, glass material, approved accent colors, requested BPM alignment,
+   dropdown material, and approved CV1 seekbar styling only. */
 .setup{
   --setup-seek-cyan:#66D5FF;
   --setup-seek-mid:#8C8AFF;
   --setup-seek-violet:#BAA4FF;
   --setup-toggle-on:#8C8AFF;
-  --setup-glass-alpha:.02;
+  --setup-glass-alpha:.08;
   position:relative;
   isolation:isolate;
   overflow:hidden;
@@ -40,7 +40,7 @@
 @keyframes setupVioletMove{0%{transform:translate(-14px,20px) scale(1)}50%{transform:translate(20px,-12px) scale(1.05)}100%{transform:translate(46px,4px) scale(1)}}
 .setup>*:not(.setup-moving-lights){position:relative;z-index:2}
 
-/* Glass material: alpha .02, no chromatic split, outline-only edge. */
+/* Glass material: alpha .08, no chromatic split, outline-only edge. */
 .setup .song-card,
 .setup .options,
 .setup .tempo-box,
@@ -74,11 +74,38 @@
   font-variant-numeric:normal
 }
 
-/* CV1 colors only. Do not replace native control dimensions or thumb geometry. */
+/* Song / mode dropdowns: blue-black navy, not pure black. */
+.setup #songSelect,
+.setup #performanceModeSelect{
+  background:linear-gradient(180deg,rgba(24,39,59,.94),rgba(15,27,43,.94));
+  border-color:#3a5169;
+  color:#e7eef7;
+}
+.setup #songSelect option,
+.setup #performanceModeSelect option{
+  background:#16253a;
+  color:#e7eef7;
+}
+.setup .mobile-custom-select-trigger{
+  background:linear-gradient(180deg,rgba(24,39,59,.94),rgba(15,27,43,.94));
+  border-color:#3a5169;
+}
+.setup .mobile-custom-select-menu{background:rgba(18,31,48,.97)}
+
+/* Approved CV1 seekbar geometry and color. */
 .setup .tempo-box input[type="range"],
-.setup .volume-box input[type="range"]{accent-color:var(--setup-seek-mid)}
+.setup .volume-box input[type="range"]{
+  appearance:none;
+  -webkit-appearance:none;
+  height:16px;
+  background:transparent;
+  accent-color:var(--setup-seek-mid)
+}
 .setup .tempo-box input[type="range"]::-webkit-slider-runnable-track,
 .setup .volume-box input[type="range"]::-webkit-slider-runnable-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
   background:linear-gradient(90deg,
     var(--setup-seek-cyan) 0%,
     var(--setup-seek-mid) var(--setup-range-mid,29%),
@@ -86,18 +113,47 @@
     rgba(255,255,255,.18) var(--setup-range-progress,56%),
     rgba(255,255,255,.18) 100%)
 }
+.setup .tempo-box input[type="range"]::-webkit-slider-thumb,
+.setup .volume-box input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:15px;
+  height:15px;
+  margin-top:-5px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
+.setup .tempo-box input[type="range"]::-moz-range-track,
+.setup .volume-box input[type="range"]::-moz-range-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:rgba(255,255,255,.18)
+}
 .setup .tempo-box input[type="range"]::-moz-range-progress,
 .setup .volume-box input[type="range"]::-moz-range-progress{
+  height:7px;
+  border-radius:999px;
   background:linear-gradient(90deg,var(--setup-seek-cyan),var(--setup-seek-mid) 52%,var(--setup-seek-violet))
 }
+.setup .tempo-box input[type="range"]::-moz-range-thumb,
+.setup .volume-box input[type="range"]::-moz-range-thumb{
+  width:15px;
+  height:15px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
 
-/* Requested PC BPM alignment only. */
+/* Fixed project requirement: PC setup BPM is centered on the combined title + artist two-line block. */
 @media (hover:hover) and (pointer:fine){
   .setup .song-card .setup-bpm{
-    top:auto;
-    bottom:19px;
+    top:45px;
+    bottom:auto;
     right:12px;
-    transform:none
+    transform:translateY(-50%)
   }
 }
 
