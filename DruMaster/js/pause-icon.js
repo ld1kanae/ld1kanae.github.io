@@ -5,20 +5,43 @@
   const panel=document.querySelector("#pausePanel");
   if(!button||!panel)return;
 
+  const SVG_NS="http://www.w3.org/2000/svg";
+
+  function whiteShape(tag,attrs){
+    const node=document.createElementNS(SVG_NS,tag);
+    for(const [name,value] of Object.entries(attrs))node.setAttribute(name,value);
+    node.setAttribute("fill","#fff");
+    node.style.setProperty("fill","#fff","important");
+    return node;
+  }
+
+  function makeIcon(){
+    const svg=document.createElementNS(SVG_NS,"svg");
+    svg.setAttribute("class","pause-white-icon");
+    svg.setAttribute("viewBox","0 0 18 18");
+    svg.setAttribute("aria-hidden","true");
+    svg.setAttribute("focusable","false");
+    svg.setAttribute("fill","#fff");
+    svg.style.setProperty("fill","#fff","important");
+
+    const pause=document.createElementNS(SVG_NS,"g");
+    pause.setAttribute("class","pause-shape");
+    pause.append(
+      whiteShape("rect",{x:"2",y:"1",width:"4",height:"16",rx:"2"}),
+      whiteShape("rect",{x:"12",y:"1",width:"4",height:"16",rx:"2"})
+    );
+
+    const play=whiteShape("path",{class:"play-shape",d:"M4 1.5v15l12-7.5z"});
+    svg.append(pause,play);
+    return svg;
+  }
+
   function render(state){
-    /* Remove every legacy transport source without touching hover layers. */
     for(const node of [...button.childNodes]){
       if(node.nodeType===Node.TEXT_NODE)node.remove();
     }
-    button.querySelectorAll(":scope > .pause-transport-icon").forEach(node=>node.remove());
-    let icon=button.querySelector(":scope > .pause-css-icon");
-    if(!icon){
-      icon=document.createElement("span");
-      icon.className="pause-css-icon";
-      icon.setAttribute("aria-hidden","true");
-      icon.append(document.createElement("i"),document.createElement("i"));
-      button.appendChild(icon);
-    }
+    button.querySelectorAll(":scope > .pause-transport-icon,:scope > .pause-css-icon").forEach(node=>node.remove());
+    if(!button.querySelector(":scope > .pause-white-icon"))button.appendChild(makeIcon());
     button.dataset.transportIcon=state;
   }
 
@@ -27,7 +50,6 @@
   render("pause");
   button.setAttribute("aria-label","一時停止");
 
-  /* Keep pause state changes free of font glyphs and inline SVG. */
   togglePause=async function(forceResume=false){
     if(!running)return;
     if(!paused&&!forceResume){
@@ -47,7 +69,6 @@
     }
   };
 
-  /* Load the finalized PC-only hover enhancer after the transport SVG setup. */
   const s=document.createElement("script");
   s.src="js/glass-hover-final.js?v=20260828-mobiletap2";
   document.body.appendChild(s);
