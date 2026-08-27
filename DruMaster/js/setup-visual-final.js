@@ -104,7 +104,9 @@
     if(!svg)return;
     const box=track.getBoundingClientRect();
     if(box.width<2||box.height<2)return;
-    const inset=1.15;
+    /* A 1px CSS border is centered 0.5px inside the element edge. Match that
+       centerline exactly so the animated rim sits on the toggle outline. */
+    const inset=.5;
     const rx=Math.max(0,(box.height-inset*2)/2);
     svg.setAttribute('viewBox',`0 0 ${box.width} ${box.height}`);
     for(const r of svg.querySelectorAll('rect')){
