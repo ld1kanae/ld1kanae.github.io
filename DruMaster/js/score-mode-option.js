@@ -10,6 +10,13 @@
     select.appendChild(opt);
   }
 
+  const touchCapable=(navigator.maxTouchPoints||0)>0||matchMedia("(any-pointer:coarse)").matches||matchMedia("(pointer:coarse)").matches;
+  if(!touchCapable){
+    for(const value of ["touch","pad"]){
+      const opt=[...select.options].find(o=>o.value===value);if(opt){opt.hidden=true;opt.disabled=true}
+    }
+  }
+
   const hidden=document.querySelector("#hiddenToggle"),auto=document.querySelector("#autoToggle");
   let scoreLocked=false;
   function sync(){
