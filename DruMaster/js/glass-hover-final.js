@@ -4,19 +4,20 @@
 
   const SELECTOR="#start,#pause,#scorePlaybackControls button,#pausePanel button,.result-actions button,.mic-cal-actions button";
 
-  /* Fixed to the user's original approved editor payload. Later editor fields
-     and later timing/width/end-position experiments are intentionally absent. */
+  /* Production settings based on the user's approved original editor payload.
+     Only later explicitly approved changes are applied: faceSheen 120% and
+     a 150ms earlier start where possible (rimRun delays 150ms -> 0ms). */
   const SETTINGS={
     spectralAngle:"337.5deg",
     autoReplay:true,
     intervalSec:5,
     oppositePairOffset:50,
     elements:{
-      rimRun1:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:150,base:1000,start:0,travel:-100,kind:"rim"},
-      rimRun2:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:150,base:1000,start:-50,travel:-100,kind:"rim"},
+      rimRun1:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:0,travel:-100,kind:"rim"},
+      rimRun2:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:-50,travel:-100,kind:"rim"},
       edge1:{enabled:false,opacity:1,speedPercent:100,fadeInMs:150,fadeOutMs:200,delayMs:0,base:850,start:0,travel:-55,kind:"edge"},
       edge2:{enabled:false,opacity:1,speedPercent:100,fadeInMs:150,fadeOutMs:200,delayMs:0,base:850,start:-50,travel:-55,kind:"edge"},
-      faceSheen:{enabled:true,opacity:.7,speedPercent:100,fadeInMs:1000,fadeOutMs:1000,delayMs:0,base:720,kind:"faceSheen"},
+      faceSheen:{enabled:true,opacity:.7,speedPercent:120,fadeInMs:1000,fadeOutMs:1000,delayMs:0,base:720,kind:"faceSheen"},
       faceFlash:{enabled:true,opacity:.25,speedPercent:100,fadeInMs:1000,fadeOutMs:400,delayMs:0,base:660,kind:"flash"},
       faceLine:{enabled:false,opacity:1,speedPercent:20,fadeInMs:200,fadeOutMs:300,delayMs:0,base:520,kind:"faceLine"},
       rimPulse:{enabled:false,opacity:1,speedPercent:100,fadeInMs:100,fadeOutMs:350,delayMs:0,base:520,kind:"pulse"}
