@@ -26,11 +26,10 @@
     input.addEventListener('change',()=>updateRange(input),{passive:true});
   });
 
-  /* Toggle ON animation mirrors the approved PC button-hover animation:
-     two rim runs + face sheen + face flash, replayed every 5 seconds while ON. */
+  /* Toggle ON animation mirrors the approved PC button-hover animation.
+     It runs once when switched ON; production must not replay it on a timer. */
   const reduced=matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   const SETTINGS={
-    intervalSec:5,
     rimRun1:{opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:0,travel:-100},
     rimRun2:{opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:-50,travel:-100},
     faceSheen:{opacity:.7,speedPercent:120,fadeInMs:1000,fadeOutMs:1000,delayMs:-150,base:720},
@@ -38,7 +37,6 @@
   };
 
   const activeAnimations=new WeakMap();
-  const replayTimers=new WeakMap();
 
   function timing(s){
     const duration=Math.max(80,s.base*(100/Math.max(1,s.speedPercent)));
@@ -134,12 +132,6 @@
     if('ResizeObserver' in window)new ResizeObserver(()=>syncRim(track)).observe(track);
   }
 
-  function stopReplay(input){
-    const timer=replayTimers.get(input);
-    if(timer)clearInterval(timer);
-    replayTimers.delete(input);
-  }
-
   function stopAnimations(input){
     for(const a of activeAnimations.get(input)||[]){try{a.cancel()}catch{}}
     activeAnimations.delete(input);
@@ -166,14 +158,9 @@
     const track=input.nextElementSibling;
     if(!track||track.tagName!=='I')return;
     addLayers(track);
-    stopReplay(input);
     stopAnimations(input);
     if(!input.checked||reduced)return;
     play(input,track);
-    replayTimers.set(input,setInterval(()=>{
-      if(input.checked)play(input,track);
-      else stopReplay(input);
-    },SETTINGS.intervalSec*1000));
   }
 
   setup.querySelectorAll('.option input[type="checkbox"]').forEach(input=>{
