@@ -29,10 +29,11 @@
   -webkit-backdrop-filter:blur(12px) saturate(101%);
   text-shadow:0 1px 2px rgba(0,0,0,.76)!important;
   transition:
-    transform .11s ease,
-    filter .28s ease,
-    box-shadow .28s ease,
-    color .28s ease!important;
+    transform .20s ease,
+    filter .30s ease,
+    box-shadow .34s ease,
+    color .30s ease,
+    text-shadow .30s ease!important;
 }
 
 /* Keep the in-game pause control compact rather than pill-shaped. */
@@ -76,28 +77,45 @@
     inset 5px -5px 10px -11px rgba(182,216,228,.07),
     inset -5px -5px 10px -11px rgba(182,216,228,.07)!important;
   filter:blur(1.4px);
+  opacity:1;
+  transition:box-shadow .34s ease,filter .34s ease,opacity .34s ease;
 }
 
-/* Desktop only: let the glass softly bloom white under the pointer. */
+/* Desktop only: make the material softly bloom white under the pointer. */
 @media (hover:hover) and (pointer:fine){
   #start:hover:not(:disabled),
   #pause:hover,
   #pausePanel button:hover,
   .result-actions button:hover,
   .mic-cal-actions button:hover:not(:disabled){
-    color:#ffffff!important;
-    filter:brightness(1.14) saturate(.82);
+    color:#fff!important;
+    transform:translateY(-1px);
+    filter:brightness(1.22) saturate(.78);
+    text-shadow:0 0 8px rgba(255,255,255,.22),0 1px 2px rgba(0,0,0,.62)!important;
     box-shadow:
-      inset 0 1px 0 rgba(242,250,255,.99),
-      inset 0 -1px 0 rgba(220,235,244,.96),
-      inset 0 0 18px rgba(255,255,255,.085),
-      inset 0 0 34px rgba(235,247,255,.035),
-      inset 1px 0 0 rgba(24,35,42,.42),
-      inset -1px 0 0 rgba(24,35,42,.42),
-      0 0 0 1px rgba(30,46,56,.86),
-      0 0 0 2px rgba(167,213,232,.075),
-      0 0 14px rgba(230,245,255,.11),
-      0 10px 24px rgba(0,0,0,.35)!important;
+      inset 0 1px 0 rgba(252,255,255,1),
+      inset 0 -1px 0 rgba(232,244,250,.98),
+      inset 0 0 20px rgba(255,255,255,.16),
+      inset 0 0 38px rgba(240,249,255,.075),
+      inset 1px 0 0 rgba(42,54,61,.40),
+      inset -1px 0 0 rgba(42,54,61,.40),
+      0 0 0 1px rgba(78,101,114,.82),
+      0 0 0 2px rgba(200,232,245,.12),
+      0 0 18px rgba(235,248,255,.19),
+      0 12px 26px rgba(0,0,0,.34)!important;
+  }
+  #start:hover:not(:disabled)::after,
+  #pause:hover::after,
+  #pausePanel button:hover::after,
+  .result-actions button:hover::after,
+  .mic-cal-actions button:hover:not(:disabled)::after{
+    opacity:1;
+    filter:blur(1.8px);
+    box-shadow:
+      inset 0 -9px 12px -9px rgba(235,248,255,.18),
+      inset 0 0 18px rgba(255,255,255,.075),
+      inset 6px -5px 11px -11px rgba(214,238,247,.11),
+      inset -6px -5px 11px -11px rgba(214,238,247,.11)!important;
   }
 }
 
