@@ -40,7 +40,7 @@
     for(const node of [...button.childNodes]){
       if(node.nodeType===Node.TEXT_NODE)node.remove();
     }
-    button.querySelectorAll(":scope > .pause-transport-icon,:scope > .pause-css-icon").forEach(node=>node.remove());
+    button.querySelectorAll(":scope > .transport-icon,:scope > .pause-transport-icon,:scope > .pause-css-icon").forEach(node=>node.remove());
     if(!button.querySelector(":scope > .pause-white-icon"))button.appendChild(makeIcon());
     button.dataset.transportIcon=state;
   }
