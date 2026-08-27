@@ -2,23 +2,31 @@
 body[data-score-playback="1"] .score small{font-size:9px;letter-spacing:.12em}
 body[data-score-playback="1"] .score strong{font-size:15px;letter-spacing:.08em;color:#b9c7d7;text-shadow:none}
 
-/* Material comes entirely from glass-buttons.css, exactly like #pause. */
+/* The transport uses the exact same glass material as #pause via glass-buttons.css.
+   This file only makes all four controls the same rounded-square geometry. */
 #scorePlaybackControls{display:none;align-items:center;gap:6px;margin-left:10px;margin-right:6px}
 body[data-score-playback="1"] #scorePlaybackControls{display:flex}
+body[data-score-playback="1"] #pause,
 body[data-score-playback="1"] #scorePlaybackControls button{
-  width:46px!important;
-  min-width:46px!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
   height:42px!important;
   min-height:42px!important;
+  max-height:42px!important;
   padding:0!important;
+  margin:0!important;
   display:grid!important;
   place-items:center!important;
+  border-radius:12px!important;
   font-size:20px!important;
   font-weight:900!important;
   line-height:1!important;
   letter-spacing:0!important;
+  white-space:nowrap!important;
 }
-body[data-score-playback="1"] #scoreLoop{font-size:27px!important}
+
+/* Loop state changes only the glyph color; button material/geometry never changes. */
 body[data-score-playback="1"] #scoreLoop[data-loop="all"]{color:#91ddff!important}
 body[data-score-playback="1"] #scoreLoop[data-loop="one"]{color:#c1acff!important}
 
@@ -53,7 +61,18 @@ body[data-score-playback="1"] #chartWrap{cursor:ew-resize;touch-action:none;over
 body[data-score-playback="1"] #chart{touch-action:none}
 
 @media (hover:none) and (pointer:coarse){
-  #scorePlaybackControls{gap:5px;margin-left:6px;margin-right:5px}
+  #scorePlaybackControls{gap:4px;margin-left:5px;margin-right:4px}
+  body[data-score-playback="1"] #pause,
+  body[data-score-playback="1"] #scorePlaybackControls button{
+    width:26px!important;
+    min-width:26px!important;
+    max-width:26px!important;
+    height:26px!important;
+    min-height:26px!important;
+    max-height:26px!important;
+    border-radius:6px!important;
+    font-size:14px!important;
+  }
   #scoreSeekWrap{top:calc(100% + 9px);width:min(500px,86%);height:25px;padding:2px 8px}
   #scoreSeekTime{min-width:64px;font-size:8px}
   body[data-score-playback="1"] .score{padding-right:6px}
