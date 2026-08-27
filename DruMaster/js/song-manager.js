@@ -16,7 +16,7 @@
     ray:{
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,bpm:132,
       chart:{pixelsPerQuarter:60,desktopPixelsPerQuarter:80},
-      playback:{stemOffsetSec:0},
+      playback:{stemOffsetSec:0.002},
       midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz?v=20260826-midi2",
       mix:{base:.70,vocals:.60,drums:.70},
       stems:{
