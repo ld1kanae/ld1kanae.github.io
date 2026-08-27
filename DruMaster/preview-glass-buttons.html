@@ -5,70 +5,39 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070b11">
   <title>Glass Button Preview | DruMaster</title>
-  <link rel="stylesheet" href="css/glass-button-lab.css?v=20260827-tonecurve2">
+  <link rel="stylesheet" href="css/glass-button-lab-explicit.css?v=20260827-explicitglow1">
 </head>
 <body>
-  <main class="lab">
-    <header class="lab-head">
-      <p>DRUMASTER / UI MATERIAL LAB</p>
-      <h1>Glass Button Preview</h1>
-      <small>本番UIには未適用。PCで各案にホバーして比較してください。</small>
-    </header>
+<main class="lab">
+  <header class="lab-head">
+    <p>DRUMASTER / UI MATERIAL LAB</p>
+    <h1>Glass Button Preview</h1>
+    <small>本番UIには未適用。PCでホバーして比較してください。</small>
+  </header>
 
-    <section class="preview-panel variant-panel">
-      <div class="preview-label">01 / INNER SPECTRAL FALLOFF — 外周影は無効</div>
-      <p class="panel-note">縁では強く、その直後に透明度を大きく落とし、中心方向にはごく薄い尾だけ残す減衰です。</p>
-      <div class="variant-grid">
-        <article class="variant-card">
-          <div class="variant-meta"><b>A</b><span>CLIFF</span><small>最も急。縁の直後で一気に暗くなる</small></div>
-          <button class="glass-btn inner-a variant-demo"><span>ホーム</span></button>
-        </article>
-        <article class="variant-card">
-          <div class="variant-meta"><b>B</b><span>COMPRESSED</span><small>中間調を強く潰し、薄い尾だけ残す</small></div>
-          <button class="glass-btn inner-b variant-demo"><span>ホーム</span></button>
-        </article>
-        <article class="variant-card">
-          <div class="variant-meta"><b>C</b><span>LONG TAIL</span><small>中間は低いまま、弱い光だけ少し長く残す</small></div>
-          <button class="glass-btn inner-c variant-demo"><span>ホーム</span></button>
-        </article>
-        <article class="variant-card">
-          <div class="variant-meta"><b>D</b><span>HOT RIM</span><small>輪郭だけ強め。内側は最も低密度</small></div>
-          <button class="glass-btn inner-d variant-demo"><span>ホーム</span></button>
-        </article>
-      </div>
-    </section>
+  <section class="preview-panel">
+    <div class="preview-label">01 / INNER GLOW FALLOFF</div>
+    <p class="panel-note">虹色レイヤーは縁から数pxの帯だけです。強い縁→急減衰→ごく薄い尾、の比率を4案で比較します。</p>
+    <div class="variant-grid">
+      <article class="variant-card"><div class="variant-meta"><b>A</b><span>CLIFF</span><small>最も急。ほぼ輪郭だけ</small></div><button class="glass-btn inner-a"><span>ホーム</span></button></article>
+      <article class="variant-card"><div class="variant-meta"><b>B</b><span>COMPRESSED</span><small>中間調を強く落とした標準案</small></div><button class="glass-btn inner-b"><span>ホーム</span></button></article>
+      <article class="variant-card"><div class="variant-meta"><b>C</b><span>SOFT TAIL</span><small>弱い尾だけ少し長め</small></div><button class="glass-btn inner-c"><span>ホーム</span></button></article>
+      <article class="variant-card"><div class="variant-meta"><b>D</b><span>HOT RIM</span><small>縁ピーク強め、内側ほぼ消失</small></div><button class="glass-btn inner-d"><span>ホーム</span></button></article>
+    </div>
+  </section>
 
-    <section class="preview-panel variant-panel secondary-panel">
-      <div class="preview-label">02 / RAINBOW DROP-GLOW — 内周はBで固定</div>
-      <p class="panel-note">通常の黒い落ち影をホバー時だけ弱め、同じ虹グラデーションをボタン下へぼかして発光させています。</p>
-      <div class="variant-grid">
-        <article class="variant-card">
-          <div class="variant-meta"><b>1</b><span>TIGHT</span><small>近距離・弱め。ボタン直下だけ光る</small></div>
-          <div class="halo-wrap halo-1"><button class="glass-btn inner-b variant-demo shadow-demo"><span>ホーム</span></button></div>
-        </article>
-        <article class="variant-card">
-          <div class="variant-meta"><b>2</b><span>BALANCED</span><small>中程度の広がりと明るさ</small></div>
-          <div class="halo-wrap halo-2"><button class="glass-btn inner-b variant-demo shadow-demo"><span>ホーム</span></button></div>
-        </article>
-        <article class="variant-card">
-          <div class="variant-meta"><b>3</b><span>AIRY</span><small>広く淡い。長い減衰で空気感を出す</small></div>
-          <div class="halo-wrap halo-3"><button class="glass-btn inner-b variant-demo shadow-demo"><span>ホーム</span></button></div>
-        </article>
-        <article class="variant-card">
-          <div class="variant-meta"><b>4</b><span>LOW BLOOM</span><small>下方向に強め。足元でふわっと咲く</small></div>
-          <div class="halo-wrap halo-4"><button class="glass-btn inner-b variant-demo shadow-demo"><span>ホーム</span></button></div>
-        </article>
-      </div>
-    </section>
+  <section class="preview-panel">
+    <div class="preview-label">02 / RAINBOW DROP-GLOW</div>
+    <p class="panel-note">外側光はボタンと別レイヤーです。内周はB固定。ホバー時だけ黒い落ち影を弱め、虹色の光を下側に出します。</p>
+    <div class="variant-grid">
+      <article class="variant-card"><div class="variant-meta"><b>1</b><span>TIGHT</span><small>狭く弱い。直下だけ</small></div><div class="halo-wrap halo-1"><i class="drop-glow"></i><button class="glass-btn inner-b"><span>ホーム</span></button></div></article>
+      <article class="variant-card"><div class="variant-meta"><b>2</b><span>BALANCED</span><small>標準的な広がり</small></div><div class="halo-wrap halo-2"><i class="drop-glow"></i><button class="glass-btn inner-b"><span>ホーム</span></button></div></article>
+      <article class="variant-card"><div class="variant-meta"><b>3</b><span>AIRY</span><small>広く淡い。遠くまで弱く残る</small></div><div class="halo-wrap halo-3"><i class="drop-glow"></i><button class="glass-btn inner-b"><span>ホーム</span></button></div></article>
+      <article class="variant-card"><div class="variant-meta"><b>4</b><span>LOW BLOOM</span><small>下方向の発光を強めた案</small></div><div class="halo-wrap halo-4"><i class="drop-glow"></i><button class="glass-btn inner-b"><span>ホーム</span></button></div></article>
+    </div>
+  </section>
 
-    <section class="preview-panel secondary-panel">
-      <div class="preview-row"><div class="preview-label">REFERENCE SHAPES / INNER B + SHADOW 2</div><div class="halo-wrap halo-2"><button class="glass-btn inner-b reference-circle"><span>GLASS</span></button></div></div>
-      <div class="preview-row"><div class="halo-wrap halo-2"><button class="glass-btn inner-b"><span>ホーム</span></button></div><div class="halo-wrap halo-2"><button class="glass-btn inner-b primary"><span>リトライ</span></button></div><div class="halo-wrap halo-2"><button class="glass-btn inner-b violet"><span>終了</span></button></div></div>
-      <div class="preview-row"><div class="halo-wrap halo-2"><button class="glass-btn inner-b compact"><span>やり直す</span></button></div><div class="halo-wrap halo-2"><button class="glass-btn inner-b wide primary"><span>演奏を開始</span></button></div></div>
-      <div class="preview-row"><div class="halo-wrap halo-2"><button class="glass-btn inner-b rounded"><span>設定</span></button></div><div class="halo-wrap halo-2"><button class="glass-btn inner-b square primary" aria-label="一時停止"><svg class="preview-pause-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="4" width="4" height="16" rx="1.3"/><rect x="15" y="4" width="4" height="16" rx="1.3"/></svg></button></div><div class="halo-wrap halo-2"><button class="glass-btn inner-b circle" aria-label="再生"><svg class="preview-pause-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.2c0-.9 1-1.45 1.78-.98l8.35 5.03a3.2 3.2 0 0 1 0 5.5l-8.35 5.03A1.15 1.15 0 0 1 8 18.8V5.2Z"/></svg></button></div></div>
-    </section>
-
-    <p class="note">内周は A〜D、外側影は 1〜4 を別々に選べます。本番PCボタンにはまだ反映していません。</p>
-  </main>
+  <p class="note">本番PCボタンにはまだ反映していません。</p>
+</main>
 </body>
 </html>
