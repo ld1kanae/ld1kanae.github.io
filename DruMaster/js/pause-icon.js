@@ -15,6 +15,8 @@
     button.dataset.transportIcon=state;
   }
 
+  globalThis.DruMasterPauseIcon={render};
+
   render("pause");
   button.setAttribute("aria-label","一時停止");
 
