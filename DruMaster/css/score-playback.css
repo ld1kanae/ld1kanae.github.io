@@ -17,6 +17,22 @@ body[data-score-playback="1"] .transport-icon .fill{fill:currentColor;stroke:non
 body[data-score-playback="1"] #scoreLoop[data-loop="all"],
 body[data-score-playback="1"] #scoreLoop[data-loop="one"]{color:#73cfff!important}
 
+#scoreHeaderLoading{
+  display:none;
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  z-index:20;
+  pointer-events:none;
+  white-space:nowrap;
+  color:#8996a5;
+  font:700 10px/1 system-ui,sans-serif;
+  letter-spacing:.06em;
+  opacity:.72;
+  text-shadow:0 1px 3px #000b;
+}
+body[data-score-playback="1"] #scoreHeaderLoading.show{display:block}
+
 #scorePlaybackBusy{display:none;position:absolute;right:9px;bottom:7px;z-index:12;padding:4px 8px;border-radius:999px;background:#071019d9;border:1px solid #73839766;color:#b9c7d7;font:800 8px/1 system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}
 body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display:block}
 
@@ -36,6 +52,7 @@ body[data-score-playback="1"] #chart{touch-action:none}
     height:26px!important;min-height:26px!important;max-height:26px!important;border-radius:6px!important;
   }
   body[data-score-playback="1"] .transport-icon{width:14px;height:14px;stroke-width:2.25}
+  #scoreHeaderLoading{font-size:8px;letter-spacing:.04em;opacity:.68}
   #scoreSeekWrap{top:calc(100% + 9px);width:min(500px,86%);height:25px;padding:2px 8px}
   #scoreSeekTime{min-width:64px;font-size:8px}
   body[data-score-playback="1"] .song-hud{column-gap:5px}
