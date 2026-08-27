@@ -1,6 +1,6 @@
 "use strict";
 (()=>{
-  if(!matchMedia?.("(hover:hover) and (pointer:fine)")?.matches)return;
+  const desktop=!!matchMedia?.("(hover:hover) and (pointer:fine)")?.matches;\n  const mobile=!!matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;\n  if(!desktop&&!mobile)return;
 
   const SELECTOR="#start,#pause,#scorePlaybackControls button,#pausePanel button,.result-actions button,.mic-cal-actions button";
 
@@ -178,6 +178,21 @@
     button.addEventListener("mouseleave",()=>stopReplay(host));
   }
 
+  const tapTimers=new WeakMap();
+  function bindTap(host,button){
+    button.addEventListener("pointerdown",()=>{
+      if(button.disabled)return;
+      play(host);
+      host.classList.add("glass-tap-active");
+      const old=tapTimers.get(host);
+      if(old)clearTimeout(old);
+      tapTimers.set(host,setTimeout(()=>{
+        host.classList.remove("glass-tap-active");
+        tapTimers.delete(host);
+      },720));
+    },{passive:true});
+  }
+
   function observeSize(host,button){
     if("ResizeObserver" in window){
       const ro=new ResizeObserver(()=>syncRim(host));
@@ -203,7 +218,7 @@
       button.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
       button.appendChild(makeRim());
       syncRim(button);
-      bindHover(button,button);
+      desktop?bindHover(button,button):bindTap(button,button);
       observeSize(button,button);
       return;
     }
@@ -223,7 +238,7 @@
     wrap.appendChild(button);
     wrap.appendChild(rim);
     syncRim(wrap);
-    bindHover(wrap,button);
+    desktop?bindHover(wrap,button):bindTap(wrap,button);
     observeSize(wrap,button);
   }
 
