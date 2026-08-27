@@ -62,8 +62,11 @@
     $("#pausePanel")?.classList.toggle("hidden",!isPaused);
     const pauseButton=$("#pause");
     if(pauseButton){
-      pauseButton.textContent=isPaused?"▶":"Ⅱ";
-      pauseButton.setAttribute("aria-label",isPaused?"再生を再開":"再生を停止");
+      /* Keep the font-free SVG installed by pause-icon.js. Replacing
+         textContent here removed that SVG and restored the dark, baseline-
+         shifted legacy glyph at every START/restart. */
+      globalThis.DruMasterPauseIcon?.render?.(isPaused?"play":"pause");
+      pauseButton.setAttribute("aria-label",isPaused?"再生を再開":"一時停止");
     }
   }
   async function restartFromBeginning(){
