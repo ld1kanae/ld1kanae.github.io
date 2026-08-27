@@ -241,7 +241,10 @@
       if(!search?.lowerBoundTime)while(kickCursor<notes.length&&notes[kickCursor].time<t-.03)kickCursor++;
     };
     const watchKick=()=>{
-      if(typeof notes!=="undefined"&&typeof current==="function"&&typeof running!=="undefined"&&running&&!paused){
+      /* Score playback owns all note-synchronised visuals itself, including
+         kick, so the normal-play kick watcher must not duplicate that glow. */
+      const scorePlayback=document.body.dataset.scorePlayback==="1";
+      if(!scorePlayback&&typeof notes!=="undefined"&&typeof current==="function"&&typeof running!=="undefined"&&running&&!paused){
         const t=current();
         if(lastT<0||t<lastT-.08)resetKickCursor(t);
         while(kickCursor<notes.length&&notes[kickCursor].time<=t){
