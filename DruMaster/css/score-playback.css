@@ -2,57 +2,27 @@
 body[data-score-playback="1"] .score small{font-size:9px;letter-spacing:.12em}
 body[data-score-playback="1"] .score strong{font-size:15px;letter-spacing:.08em;color:#b9c7d7;text-shadow:none}
 
-/* The transport uses the exact same glass material as #pause via glass-buttons.css.
-   This file only makes all four controls the same rounded-square geometry. */
 #scorePlaybackControls{display:none;align-items:center;gap:6px;margin-left:10px;margin-right:6px}
 body[data-score-playback="1"] #scorePlaybackControls{display:flex}
 body[data-score-playback="1"] #pause,
 body[data-score-playback="1"] #scorePlaybackControls button{
-  width:42px!important;
-  min-width:42px!important;
-  max-width:42px!important;
-  height:42px!important;
-  min-height:42px!important;
-  max-height:42px!important;
-  padding:0!important;
-  margin:0!important;
-  display:grid!important;
-  place-items:center!important;
+  width:42px!important;min-width:42px!important;max-width:42px!important;
+  height:42px!important;min-height:42px!important;max-height:42px!important;
+  padding:0!important;margin:0!important;display:grid!important;place-items:center!important;
   border-radius:12px!important;
-  font-size:20px!important;
-  font-weight:900!important;
-  line-height:1!important;
-  letter-spacing:0!important;
-  white-space:nowrap!important;
 }
-
-/* Loop state changes only the glyph color; button material/geometry never changes. */
+body[data-score-playback="1"] .transport-icon{
+  width:20px;height:20px;display:block;overflow:visible;pointer-events:none;
+  fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;
+}
+body[data-score-playback="1"] .transport-icon .fill{fill:currentColor;stroke:none}
 body[data-score-playback="1"] #scoreLoop[data-loop="all"]{color:#91ddff!important}
 body[data-score-playback="1"] #scoreLoop[data-loop="one"]{color:#c1acff!important}
 
 #scorePlaybackBusy{display:none;position:absolute;right:9px;bottom:7px;z-index:12;padding:4px 8px;border-radius:999px;background:#071019d9;border:1px solid #73839766;color:#b9c7d7;font:800 8px/1 system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}
 body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display:block}
 
-/* Keep the seek control below the chart, on the drum-kit side. */
-#scoreSeekWrap{
-  display:none;
-  position:absolute;
-  left:50%;
-  top:calc(100% + 12px);
-  bottom:auto;
-  z-index:15;
-  width:min(720px,88%);
-  height:28px;
-  transform:translateX(-50%);
-  align-items:center;
-  gap:8px;
-  padding:3px 10px;
-  border-radius:999px;
-  background:#06101ac2;
-  border:1px solid #64788b55;
-  backdrop-filter:blur(5px);
-  touch-action:none;
-}
+#scoreSeekWrap{display:none;position:absolute;left:50%;top:calc(100% + 12px);bottom:auto;z-index:15;width:min(720px,88%);height:28px;transform:translateX(-50%);align-items:center;gap:8px;padding:3px 10px;border-radius:999px;background:#06101ac2;border:1px solid #64788b55;backdrop-filter:blur(5px);touch-action:none}
 body[data-score-playback="1"] #scoreSeekWrap{display:flex}
 #scoreSeek{flex:1;min-width:0;height:18px;margin:0;accent-color:#73cfff;touch-action:none}
 #scoreSeekTime{min-width:72px;text-align:right;color:#b9c7d7;font:800 9px/1 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}
@@ -64,15 +34,10 @@ body[data-score-playback="1"] #chart{touch-action:none}
   #scorePlaybackControls{gap:4px;margin-left:5px;margin-right:4px}
   body[data-score-playback="1"] #pause,
   body[data-score-playback="1"] #scorePlaybackControls button{
-    width:26px!important;
-    min-width:26px!important;
-    max-width:26px!important;
-    height:26px!important;
-    min-height:26px!important;
-    max-height:26px!important;
-    border-radius:6px!important;
-    font-size:14px!important;
+    width:26px!important;min-width:26px!important;max-width:26px!important;
+    height:26px!important;min-height:26px!important;max-height:26px!important;border-radius:6px!important;
   }
+  body[data-score-playback="1"] .transport-icon{width:14px;height:14px;stroke-width:2.25}
   #scoreSeekWrap{top:calc(100% + 9px);width:min(500px,86%);height:25px;padding:2px 8px}
   #scoreSeekTime{min-width:64px;font-size:8px}
   body[data-score-playback="1"] .score{padding-right:6px}
