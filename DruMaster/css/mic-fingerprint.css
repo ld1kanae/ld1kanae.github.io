@@ -1,0 +1,24 @@
+.mic-fingerprint-cal .mic-calibration-card{width:min(920px,97%)}
+.mic-fingerprint-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:4px auto 12px}
+.mic-fingerprint-pane{position:relative;min-height:126px;padding:14px 12px 12px;border:1px solid #2b3a49;border-radius:14px;background:#0b141e;overflow:hidden;transition:.15s ease}
+.mic-fingerprint-pane>span{display:grid;place-items:center;width:24px;height:24px;margin:0 auto 6px;border:1px solid #46596e;border-radius:50%;color:#9aa9ba;font:900 10px/1 system-ui,sans-serif}
+.mic-fingerprint-pane>b{display:block;color:#eef5fb;font:900 13px/1.15 system-ui,sans-serif;letter-spacing:.02em}
+.mic-fingerprint-pane>em{display:block;margin-top:7px;color:#78a7c4;font:850 10px/1 system-ui,sans-serif;font-style:normal}
+.mic-fingerprint-pane>small{display:block;margin:8px auto 0;max-width:230px;color:#748292;font:650 9px/1.45 system-ui,sans-serif}
+.mic-fingerprint-pane[data-state="active"]{border-color:#5ec7ff;background:linear-gradient(180deg,rgba(57,165,222,.14),rgba(9,19,29,.96));box-shadow:0 0 20px rgba(69,186,245,.11),inset 0 1px 0 rgba(255,255,255,.025)}
+.mic-fingerprint-pane[data-state="active"]>span{border-color:#78d6ff;color:#e2f8ff}
+.mic-fingerprint-test{isolation:isolate}
+.mic-fingerprint-test .fp-hit-ring{position:absolute;z-index:0;left:50%;top:54%;width:70px;height:70px;transform:translate(-50%,-50%) scale(.42);border:2px solid rgba(126,243,192,.92);border-radius:50%;opacity:0;pointer-events:none;box-shadow:0 0 16px rgba(93,245,183,.45),inset 0 0 18px rgba(105,248,190,.18)}
+.mic-fingerprint-test>*:not(.fp-hit-ring){position:relative;z-index:1}
+.mic-fingerprint-test.hit{border-color:#70e8bc;box-shadow:0 0 26px rgba(81,236,177,.18),inset 0 0 20px rgba(82,226,173,.07)}
+.mic-fingerprint-test.hit .fp-hit-ring{animation:fpTestHit .42s ease-out}
+@keyframes fpTestHit{0%{opacity:.95;transform:translate(-50%,-50%) scale(.35)}55%{opacity:.72}100%{opacity:0;transform:translate(-50%,-50%) scale(1.55)}}
+.mic-fingerprint-cal .mic-cal-meter{margin-bottom:9px}
+.mic-fingerprint-cal .mic-cal-actions button{min-width:154px}
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .mic-fingerprint-cal{padding:4px 10px}.mic-fingerprint-cal .mic-calibration-card{width:min(900px,99%);padding:7px 10px 6px}
+  .mic-fingerprint-cal .mic-calibration-card h2{font-size:17px}.mic-fingerprint-cal .mic-cal-instruction{font-size:11px;margin-bottom:4px;min-height:16px}
+  .mic-fingerprint-grid{gap:5px;margin:2px auto 5px}.mic-fingerprint-pane{min-height:88px;padding:6px 5px 5px;border-radius:10px}
+  .mic-fingerprint-pane>span{width:16px;height:16px;margin-bottom:3px;font-size:7px}.mic-fingerprint-pane>b{font-size:9px}.mic-fingerprint-pane>em{font-size:7.6px;margin-top:3px}.mic-fingerprint-pane>small{font-size:6.7px;line-height:1.28;margin-top:4px;max-width:180px}
+  .mic-fingerprint-test .fp-hit-ring{width:46px;height:46px}.mic-fingerprint-cal .mic-cal-detail{font-size:7.7px;min-height:18px;margin-bottom:3px}.mic-fingerprint-cal .mic-cal-meter{height:7px;margin-bottom:4px}.mic-fingerprint-cal .mic-cal-actions{gap:5px}.mic-fingerprint-cal .mic-cal-actions button{height:29px;min-width:126px;width:auto;font-size:9px;padding:0 10px}
+}
