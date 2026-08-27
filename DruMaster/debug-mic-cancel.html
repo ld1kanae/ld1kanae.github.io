@@ -8,11 +8,26 @@
   <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b11}iframe{display:block;width:100%;height:100%;border:0;background:#070b11}</style>
 </head>
 <body>
-  <iframe id="gameFrame" src="./?micdebug=1&v=20260827-padloopfix1" allow="microphone; autoplay"></iframe>
+  <iframe id="gameFrame" src="./?micdebug=1&v=20260827-micdebugauto1" allow="microphone; autoplay"></iframe>
   <script>
   (()=>{
-    const frame=document.querySelector('#gameFrame');let recorder=null,chunks=[],recordUrl=null,controls=null,timer=0;
+    const frame=document.querySelector('#gameFrame');let recorder=null,chunks=[],recordUrl=null,controls=null,timer=0,autoTimer=0,autoEntered=false;
     const db=v=>Number.isFinite(v)?(20*Math.log10(Math.max(1e-7,v))).toFixed(1):'--';
+    function autoEnterPad(){
+      if(autoEntered)return true;
+      const w=frame.contentWindow,d=w?.document;if(!d)return false;
+      const mode=d.querySelector('#performanceModeSelect'),start=d.querySelector('#start'),setup=d.querySelector('#setup');
+      if(mode&&mode.value!=='pad'){mode.value='pad';mode.dispatchEvent(new Event('change',{bubbles:true}))}
+      if(setup)setup.style.visibility='hidden';
+      if(!start||start.disabled||typeof start.onclick!=='function')return false;
+      autoEntered=true;clearInterval(autoTimer);start.click();
+      const reveal=setInterval(()=>{
+        const cal=d.querySelector('#micCalibration');
+        if(cal&&!cal.classList.contains('hidden')){clearInterval(reveal);if(setup)setup.style.visibility=''}
+      },30);
+      setTimeout(()=>{clearInterval(reveal);if(setup)setup.style.visibility=''},4000);
+      return true;
+    }
     function ensureControls(){
       const w=frame.contentWindow,d=w?.document;if(!d)return false;const kit=d.querySelector('#kit');if(!kit)return false;
       if(d.querySelector('.mic-debug-controls')){controls=d.querySelector('.mic-debug-controls');return true}
@@ -35,7 +50,7 @@
       const delay=c?.aec?.delayMs??lat?.measuredEchoDelayMs??0,judge=lat?.judgeOffsetMs??0,out=lat?.outputLatencyMs??0,padScore=(pad?.lastScore??0)*100,padTh=(pad?.threshold??0)*100;
       n.textContent=`AEC ${Number(delay).toFixed(1)} ms · OUTPUT ${Number(out).toFixed(1)} ms · JUDGE -${Number(judge).toFixed(1)} ms · PAD ${padScore.toFixed(0)}%/${padTh.toFixed(0)}% · raw ${db(m.rawRms)} dBFS · residual ${db(m.residualRms)} dBFS · ERLE ${Number(m.erleDb||0).toFixed(1)} dB`;
     }
-    frame.addEventListener('load',()=>{clearInterval(timer);timer=setInterval(tick,120)});
+    frame.addEventListener('load',()=>{autoEntered=false;clearInterval(autoTimer);autoTimer=setInterval(autoEnterPad,40);setTimeout(()=>clearInterval(autoTimer),15000);clearInterval(timer);timer=setInterval(tick,120)});
   })();
   </script>
 </body>
