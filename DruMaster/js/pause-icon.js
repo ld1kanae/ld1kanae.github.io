@@ -49,6 +49,6 @@
 
   /* Load the finalized PC-only hover enhancer after the transport SVG setup. */
   const s=document.createElement("script");
-  s.src="js/glass-hover-final.js?v=20260828-mobiletap1";
+  s.src="js/glass-hover-final.js?v=20260828-mobiletap2";
   document.body.appendChild(s);
 })();
