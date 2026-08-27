@@ -16,25 +16,25 @@ body{overflow:auto}
 .stage{position:relative;isolation:isolate;overflow:hidden;width:min(1180px,96vw);aspect-ratio:16/9;background:linear-gradient(180deg,#0d1723 0%,#070b11 70%,#05080d 100%);box-shadow:0 20px 54px rgba(0,0,0,.35)}
 .bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .bg::before,.bg::after,.aura{content:"";position:absolute;pointer-events:none}
-/* Result-derived static base */
-.bg::before{inset:0;background:radial-gradient(circle at 50% 28%,rgba(72,129,190,.22),transparent 34%),radial-gradient(circle at 25% 75%,rgba(177,104,255,.12),transparent 38%)}
+/* TEST BOOST: roughly 5x stronger than the normal preview */
+.bg::before{inset:0;background:radial-gradient(circle at 50% 28%,rgba(72,129,190,.88),transparent 34%),radial-gradient(circle at 25% 75%,rgba(177,104,255,.60),transparent 38%)}
 /* STATIC */
-.stage.static .bg::after{inset:0;background:radial-gradient(ellipse at 62% 72%,rgba(91,206,255,.055),transparent 40%)}
+.stage.static .bg::after{inset:0;background:radial-gradient(ellipse at 62% 72%,rgba(91,206,255,.275),transparent 40%)}
 /* A: wide horizontal drift */
-.stage.drift .bg::after{width:74%;height:70%;left:8%;top:12%;border-radius:50%;filter:blur(34px);background:radial-gradient(ellipse,rgba(101,218,255,.105),rgba(113,139,255,.065) 35%,rgba(188,119,255,.055) 58%,transparent 76%);animation:drift 14s ease-in-out infinite alternate}
+.stage.drift .bg::after{width:74%;height:70%;left:8%;top:12%;border-radius:50%;filter:blur(34px);background:radial-gradient(ellipse,rgba(101,218,255,.525),rgba(113,139,255,.325) 35%,rgba(188,119,255,.275) 58%,transparent 76%);animation:drift 14s ease-in-out infinite alternate}
 @keyframes drift{0%{transform:translate3d(-5%,2%,0) scale(1)}50%{transform:translate3d(10%,-3%,0) scale(1.07)}100%{transform:translate3d(18%,3%,0) scale(.99)}}
 /* B: breathing aurora */
-.stage.breathe .bg::after{inset:-8%;filter:blur(42px);background:radial-gradient(ellipse at 46% 28%,rgba(87,185,255,.12),transparent 42%),radial-gradient(ellipse at 34% 78%,rgba(178,111,255,.10),transparent 44%),radial-gradient(ellipse at 72% 62%,rgba(79,222,255,.07),transparent 38%);animation:breathe 8.8s ease-in-out infinite}
+.stage.breathe .bg::after{inset:-8%;filter:blur(42px);background:radial-gradient(ellipse at 46% 28%,rgba(87,185,255,.60),transparent 42%),radial-gradient(ellipse at 34% 78%,rgba(178,111,255,.50),transparent 44%),radial-gradient(ellipse at 72% 62%,rgba(79,222,255,.35),transparent 38%);animation:breathe 8.8s ease-in-out infinite}
 @keyframes breathe{0%,100%{opacity:.58;transform:scale(.98)}50%{opacity:1;transform:scale(1.055)}}
 /* C: independent lights */
 .stage.lights .aura{display:block;inset:0}
 .light{display:none;position:absolute;border-radius:50%;filter:blur(44px);mix-blend-mode:screen}.stage.lights .light{display:block}
-.light.cyan{width:47%;aspect-ratio:1;left:21%;top:6%;background:radial-gradient(circle,rgba(106,226,255,.15),rgba(106,226,255,.06) 42%,transparent 72%);animation:l1 13s ease-in-out infinite alternate}
-.light.blue{width:41%;aspect-ratio:1;left:46%;top:23%;background:radial-gradient(circle,rgba(90,147,255,.13),rgba(90,147,255,.05) 42%,transparent 73%);animation:l2 15s ease-in-out infinite alternate}
-.light.violet{width:44%;aspect-ratio:1;left:6%;top:43%;background:radial-gradient(circle,rgba(188,124,255,.12),rgba(188,124,255,.05) 41%,transparent 73%);animation:l3 14s ease-in-out infinite alternate}
+.light.cyan{width:47%;aspect-ratio:1;left:21%;top:6%;background:radial-gradient(circle,rgba(106,226,255,.75),rgba(106,226,255,.30) 42%,transparent 72%);animation:l1 13s ease-in-out infinite alternate}
+.light.blue{width:41%;aspect-ratio:1;left:46%;top:23%;background:radial-gradient(circle,rgba(90,147,255,.65),rgba(90,147,255,.25) 42%,transparent 73%);animation:l2 15s ease-in-out infinite alternate}
+.light.violet{width:44%;aspect-ratio:1;left:6%;top:43%;background:radial-gradient(circle,rgba(188,124,255,.60),rgba(188,124,255,.25) 41%,transparent 73%);animation:l3 14s ease-in-out infinite alternate}
 @keyframes l1{0%{transform:translate(-5%,2%) scale(1)}100%{transform:translate(12%,-5%) scale(1.08)}}@keyframes l2{0%{transform:translate(3%,-5%) scale(1)}100%{transform:translate(-10%,7%) scale(1.05)}}@keyframes l3{0%{transform:translate(-4%,6%) scale(1)}100%{transform:translate(15%,-4%) scale(1.07)}}
 /* D: soft curtain */
-.stage.curtain .bg::after{inset:-18% -8%;filter:blur(28px);opacity:.8;background:linear-gradient(112deg,transparent 9%,rgba(99,198,255,.05) 24%,rgba(130,132,255,.075) 39%,rgba(192,119,255,.05) 52%,transparent 67%);animation:curtain 12s ease-in-out infinite alternate}
+.stage.curtain .bg::after{inset:-18% -8%;filter:blur(28px);opacity:.9;background:linear-gradient(112deg,transparent 9%,rgba(99,198,255,.25) 24%,rgba(130,132,255,.375) 39%,rgba(192,119,255,.25) 52%,transparent 67%);animation:curtain 12s ease-in-out infinite alternate}
 @keyframes curtain{0%{transform:translateX(-11%) skewX(-5deg)}100%{transform:translateX(13%) skewX(5deg)}}
 /* Gameplay mock */
 .game-ui{position:absolute;inset:0;z-index:5;display:grid;grid-template-rows:52px 34% 1fr}
@@ -47,7 +47,7 @@ header{display:flex;align-items:center;padding:7px 15px;background:rgba(6,10,16,
 </style>
 </head>
 <body>
-<div class="toolbar"><b>GAME BACKGROUND</b><button class="mode active" data-mode="static">1 静止</button><button class="mode" data-mode="drift">2 Wide Drift</button><button class="mode" data-mode="breathe">3 Breathing Aurora</button><button class="mode" data-mode="lights">4 Moving Lights</button><button class="mode" data-mode="curtain">5 Aurora Curtain</button><div class="note">リザルト背景の青＋紫＋暗い縦グラデを共通ベースにしています。回転・放射線・conic-gradientのアニメーションは使用していません。</div></div>
+<div class="toolbar"><b>GAME BACKGROUND ×5 TEST</b><button class="mode active" data-mode="static">1 静止</button><button class="mode" data-mode="drift">2 Wide Drift</button><button class="mode" data-mode="breathe">3 Breathing Aurora</button><button class="mode" data-mode="lights">4 Moving Lights</button><button class="mode" data-mode="curtain">5 Aurora Curtain</button><div class="note">比較しやすいよう、背景の青・紫・オーロラ成分を通常プレビューのおよそ5倍まで強調しています。本番値ではありません。</div></div>
 <div class="stage-wrap">
 <div id="stage" class="stage static">
   <div class="bg"><i class="aura"></i><i class="light cyan"></i><i class="light blue"></i><i class="light violet"></i></div>
@@ -57,11 +57,11 @@ header{display:flex;align-items:center;padding:7px 15px;background:rgba(6,10,16,
     <div class="kit"><img src="assets/drum-kit.webp" alt=""><div class="fade"></div></div>
   </div>
 </div>
-<div id="caption" class="caption"><b>1 / 静止：</b>リザルトの回転オーラだけ抜いた基本形。青い上部光＋左下の紫をそのまま演奏画面へ移した案です。</div>
+<div id="caption" class="caption"><b>1 / 静止：</b>リザルトの回転オーラだけ抜いた基本形。現在はテスト用に約5倍濃く表示しています。</div>
 </div>
 <script>
 const stage=document.getElementById('stage'),caption=document.getElementById('caption');
-const desc={static:'<b>1 / 静止：</b>リザルトの回転オーラだけ抜いた基本形。青い上部光＋左下の紫をそのまま演奏画面へ移した案です。',drift:'<b>2 / Wide Drift：</b>大きな青紫の光の塊が、横方向中心にゆっくり漂う案。動きは分かるが主張は弱めです。',breathe:'<b>3 / Breathing Aurora：</b>位置移動を抑え、光の面積と濃度が呼吸するように膨らむ案。最も静かです。',lights:'<b>4 / Moving Lights：</b>Cyan / Blue / Violet の大きい光源がそれぞれ別方向へゆっくり移動。事前設定画面のMoving Lightsに近い系統です。',curtain:'<b>5 / Aurora Curtain：</b>薄い青紫のカーテン状の光が左右へ流れる案。オーロラ感が最も分かりやすいですが、演奏の邪魔にならない濃度に抑えています。'};
+const desc={static:'<b>1 / 静止：</b>リザルトの回転オーラだけ抜いた基本形。現在はテスト用に約5倍濃く表示しています。',drift:'<b>2 / Wide Drift：</b>大きな青紫の光の塊が横方向中心にゆっくり漂う案。現在は約5倍強調。',breathe:'<b>3 / Breathing Aurora：</b>位置移動を抑え、光の面積と濃度が呼吸するように膨らむ案。現在は約5倍強調。',lights:'<b>4 / Moving Lights：</b>Cyan / Blue / Violet の大きい光源が別々に移動。現在は約5倍強調。',curtain:'<b>5 / Aurora Curtain：</b>青紫のカーテン状の光が左右へ流れる案。現在は約5倍強調。'};
 document.querySelectorAll('[data-mode]').forEach(btn=>btn.onclick=()=>{const m=btn.dataset.mode;stage.className='stage '+m;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b===btn));caption.innerHTML=desc[m]});
 </script>
 </body></html>
