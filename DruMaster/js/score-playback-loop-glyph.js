@@ -1,19 +1,23 @@
 "use strict";
 
 (()=>{
-  const button=document.querySelector("#scoreLoop");
-  if(!button)return;
+  const prev=document.querySelector("#scorePrev"),next=document.querySelector("#scoreNext"),loop=document.querySelector("#scoreLoop");
+  if(!prev||!next||!loop)return;
 
   let syncing=false;
   const sync=()=>{
-    if(syncing||button.textContent==="↻")return;
+    if(syncing)return;
     syncing=true;
-    button.textContent="↻";
+    if(prev.textContent!=="◀")prev.textContent="◀";
+    if(next.textContent!=="▶")next.textContent="▶";
+    if(loop.textContent!=="↻")loop.textContent="↻";
     syncing=false;
   };
 
   const observer=new MutationObserver(sync);
-  observer.observe(button,{childList:true,characterData:true,subtree:true});
-  button.addEventListener("click",()=>queueMicrotask(sync));
+  observer.observe(prev,{childList:true,characterData:true,subtree:true});
+  observer.observe(next,{childList:true,characterData:true,subtree:true});
+  observer.observe(loop,{childList:true,characterData:true,subtree:true});
+  loop.addEventListener("click",()=>queueMicrotask(sync));
   sync();
 })();
