@@ -98,7 +98,7 @@
     if(offset>=buf.duration-.001)return;
     const source=ac.createBufferSource(),gain=ac.createGain(),voice={source,gain};
     source.buffer=buf;source.playbackRate.value=rate;gain.gain.value=gainValue;source.connect(gain).connect(masterBus);
-    stemVoices.add(voice);source.onended=()=>{stemVoices.delete(voice);try{source.disconnect()}catch{}try{gain.disconnect()}catch{}};
+    stemVoices.add(voice);source.onended=()=>{stemVoices.delete(voice);try{source.disconnect()}catch{}try{gain.disconnect()}{}};
     source.start(when,offset);
   }
   function startStemSet(entry,when,logicalOffset){
@@ -160,16 +160,40 @@
     const i=Math.max(0,songList.findIndex(s=>s.id===currentSong.id));return songList[(i+delta+songList.length)%songList.length];
   }
   async function switchSong(delta){
-    if(!active||switching)return;restartGeneration++;switching=true;setLoading(true,"LOADING SONG");
+    if(!active||switching)return;
+    const generation=++restartGeneration,target=nextSong(delta),wasPaused=paused;
+    switching=true;setLoading(true,"LOADING SONG");
+    let failed=false;
     try{
-      const target=nextSong(delta),wasPaused=paused,entry=await ensureSongData(target);
+      /* Resume while this function is still directly handling the button gesture.
+         Waiting for MP3 decode first can lose the user-activation window on
+         Chrome-family browsers when the context happens to be suspended. */
+      if(!wasPaused&&ac.state!=="running"){
+        try{await ac.resume()}catch{}
+      }
+      const entry=await ensureSongData(target);
+      if(generation!==restartGeneration||!active)return;
       cancelAnimationFrame(raf);stopStemVoices();currentSong=target;applySong(target,entry);
-      rate=+document.querySelector("#tempo")?.value/100||1;
-      if(wasPaused){const when=ac.currentTime;startStemSet(entry,when,0);startedAt=when;paused=true;setPauseUi(true);draw?.()}
-      else{try{await ac.resume()}catch{}const when=ac.currentTime+.045;startStemSet(entry,when,0);startedAt=when;paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop)}
+      rate=+document.querySelector("#tempo")?.value/100||1;running=true;scrubbing=false;
+      if(wasPaused){
+        const when=ac.currentTime;startStemSet(entry,when,0);startedAt=when;paused=true;setPauseUi(true);draw?.();
+      }else{
+        if(ac.state!=="running"){
+          try{await ac.resume()}catch{}
+        }
+        if(generation!==restartGeneration||!active||currentSong!==target)return;
+        if(ac.state==="suspended")throw Error("音声再生を再開できませんでした");
+        const when=ac.currentTime+.045;startStemSet(entry,when,0);startedAt=when;paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop);
+      }
       prefetchFor="";ending=false;
-    }catch(e){console.error(e);const load=document.querySelector("#loadState");if(load)load.textContent=e?.message||"曲の切り替えに失敗しました"}
-    finally{switching=false;setLoading(false)}
+    }catch(e){
+      failed=true;console.error(e);
+      if(active)setLoading(true,"SONG SWITCH FAILED");
+    }finally{
+      switching=false;
+      if(!failed)setLoading(false);
+      else setTimeout(()=>{if(active&&document.body.dataset.scoreLoading==="1"&&busy.textContent==="SONG SWITCH FAILED")setLoading(false)},1800);
+    }
   }
 
   async function handleTrackEnd(){
