@@ -1,6 +1,8 @@
 "use strict";
 (()=>{
-  const desktop=!!matchMedia?.("(hover:hover) and (pointer:fine)")?.matches;\n  const mobile=!!matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;\n  if(!desktop&&!mobile)return;
+  const desktop=!!matchMedia?.("(hover:hover) and (pointer:fine)")?.matches;
+  const mobile=!!matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;
+  if(!desktop&&!mobile)return;
 
   const SELECTOR="#start,#pause,#scorePlaybackControls button,#pausePanel button,.result-actions button,.mic-cal-actions button";
 
