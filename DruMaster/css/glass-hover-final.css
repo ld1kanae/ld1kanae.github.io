@@ -33,6 +33,7 @@
     --ig-blur:3px;
     --spectral-angle:337.5deg;
     position:relative!important;
+    z-index:1!important;
     isolation:isolate!important;
     overflow:hidden!important;
   }
@@ -75,6 +76,25 @@
     opacity:0;
     transition:opacity .20s ease;
   }
+
+  .game header>.pause-inline-glow{
+    position:absolute;
+    z-index:0;
+    pointer-events:none;
+    height:22px;
+    transform:translateY(-50%);
+    border-radius:999px;
+    background:linear-gradient(337.5deg,
+      rgba(215,89,168,.90) 0%,
+      rgba(197,177,83,.74) 27%,
+      rgba(71,201,190,.86) 52%,
+      rgba(64,149,207,.88) 70%,
+      rgba(194,92,197,.88) 100%);
+    filter:blur(12px) saturate(105%);
+    opacity:0;
+    transition:opacity .20s ease;
+  }
+  .game header>.pause-inline-glow.is-hovered{opacity:.51}
 
   .glass-hover-wrap>button{position:relative!important;z-index:1!important;overflow:hidden!important}
   .glass-hover-wrap>button::before,
