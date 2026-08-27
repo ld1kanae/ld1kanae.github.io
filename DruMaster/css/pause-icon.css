@@ -19,3 +19,26 @@
 }
 #game header #pause .pause-transport-icon rect,
 #game header #pause .pause-transport-icon path{fill:currentColor}
+
+/* Desktop glass controls wrap the pause button after load. Pin the SVG to the
+   button's own centre and use an explicit light fill so inherited/default SVG
+   colour and wrapper layout can never shift or darken the transport mark. */
+@media (hover:hover) and (pointer:fine){
+  #game header #pause .pause-transport-icon{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:20px!important;
+    height:20px!important;
+    margin:0!important;
+    color:#eef3f7!important;
+    fill:#eef3f7!important;
+    transform:translate(-50%,-50%)!important;
+    z-index:6!important;
+  }
+  #game header #pause .pause-transport-icon rect,
+  #game header #pause .pause-transport-icon path{
+    fill:#eef3f7!important;
+    color:#eef3f7!important;
+  }
+}
