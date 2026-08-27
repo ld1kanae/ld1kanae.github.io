@@ -245,6 +245,23 @@
 .game>#kickFx{z-index:7}
 .game>#pausePanel{z-index:30}
 
+/* Smartphone gameplay uses exactly the same static background as the setup
+   screen. The desktop Aurora Curtain stays enabled. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game{
+    background:
+      radial-gradient(circle at 50% 25%,rgba(72,129,190,.23),transparent 31%),
+      radial-gradient(circle at 22% 82%,rgba(177,104,255,.14),transparent 36%),
+      radial-gradient(circle at 68% 84%,rgba(72,190,225,.09),transparent 35%),
+      linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%)!important;
+  }
+  .game::before{
+    content:none!important;
+    display:none!important;
+    animation:none!important;
+  }
+}
+
 @media (prefers-reduced-motion:reduce){
   .game::before{animation:none;transform:none}
 }
