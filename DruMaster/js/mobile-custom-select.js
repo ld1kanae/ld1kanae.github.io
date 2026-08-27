@@ -1,9 +1,8 @@
 "use strict";
 
 (()=>{
-  const mobileQuery=matchMedia("(hover:none) and (pointer:coarse) and (max-width:900px)");
-  if(!mobileQuery.matches)return;
-
+  /* Use the same DOM-based selector on desktop as well. Native Windows/Chromium
+     dropdowns keep the OS accent color for the selected row and ignore CSS. */
   const enhanced=new WeakMap();
   let opened=null;
 
