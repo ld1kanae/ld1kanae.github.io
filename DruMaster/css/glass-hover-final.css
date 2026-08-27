@@ -1,0 +1,118 @@
+/* Final approved PC hover glow values from preview editor. */
+@media (hover:hover) and (pointer:fine){
+  #start,
+  #pause,
+  #scorePlaybackControls button,
+  #pausePanel button,
+  .result-actions button,
+  .mic-cal-actions button{
+    --ig-width:10px;
+    --ig-core:1;
+    --ig-shoulder:.21;
+    --ig-tail:.04;
+    --ig-shoulder-stop:18%;
+    --ig-tail-stop:64%;
+    --ig-blur:3px;
+    --halo-y:0px;
+    --halo-height:22px;
+    --halo-blur:12px;
+    --halo-opacity:.51;
+    --halo-expand-x:0px;
+  }
+  #start{--halo-height:26px}
+
+  /* The button itself must allow the external bloom to escape. The inner
+     spectral layers are clipped independently with border-radius. */
+  #start,
+  #pause,
+  #scorePlaybackControls button,
+  #pausePanel button,
+  .result-actions button,
+  .mic-cal-actions button{
+    overflow:visible!important;
+  }
+
+  /* Continuous horizontal spectrum; vertical falloff is handled by three
+     stacked blurred bands. */
+  #start::before,
+  #pause::before,
+  #scorePlaybackControls button::before,
+  #pausePanel button::before,
+  .result-actions button::before,
+  .mic-cal-actions button::before{
+    content:""!important;
+    position:absolute!important;
+    z-index:-1!important;
+    pointer-events:none!important;
+    left:0!important;right:0!important;top:0!important;bottom:0!important;
+    inset:0!important;
+    border-radius:inherit!important;
+    opacity:0!important;
+    background:
+      linear-gradient(90deg,
+        rgba(215,89,168,var(--ig-core)) 0%,
+        rgba(207,111,139,var(--ig-core)) 9%,
+        rgba(191,188,75,var(--ig-core)) 27%,
+        rgba(107,183,126,var(--ig-core)) 42%,
+        rgba(71,201,190,var(--ig-core)) 52%,
+        rgba(64,149,207,var(--ig-core)) 67%,
+        rgba(77,101,190,var(--ig-core)) 82%,
+        rgba(194,92,197,var(--ig-core)) 100%) top/100% var(--ig-width) no-repeat,
+      linear-gradient(90deg,
+        rgba(215,89,168,var(--ig-core)) 0%,
+        rgba(207,111,139,var(--ig-core)) 9%,
+        rgba(191,188,75,var(--ig-core)) 27%,
+        rgba(107,183,126,var(--ig-core)) 42%,
+        rgba(71,201,190,var(--ig-core)) 52%,
+        rgba(64,149,207,var(--ig-core)) 67%,
+        rgba(77,101,190,var(--ig-core)) 82%,
+        rgba(194,92,197,var(--ig-core)) 100%) bottom/100% var(--ig-width) no-repeat!important;
+    filter:blur(var(--ig-blur)) saturate(112%)!important;
+    clip-path:inset(0 round inherit);
+    transition:opacity .20s ease!important;
+  }
+
+  #start::after,
+  #pause::after,
+  #scorePlaybackControls button::after,
+  #pausePanel button::after,
+  .result-actions button::after,
+  .mic-cal-actions button::after{
+    content:""!important;
+    position:absolute!important;
+    z-index:-2!important;
+    pointer-events:none!important;
+    left:calc(-1 * var(--halo-expand-x))!important;
+    right:calc(-1 * var(--halo-expand-x))!important;
+    top:50%!important;
+    bottom:auto!important;
+    height:var(--halo-height)!important;
+    inset:auto calc(-1 * var(--halo-expand-x)) auto calc(-1 * var(--halo-expand-x))!important;
+    transform:translateY(var(--halo-y))!important;
+    border-radius:999px!important;
+    background:linear-gradient(90deg,
+      rgba(215,89,168,.90) 0%,
+      rgba(197,177,83,.74) 27%,
+      rgba(71,201,190,.86) 52%,
+      rgba(64,149,207,.88) 70%,
+      rgba(194,92,197,.88) 100%)!important;
+    filter:blur(var(--halo-blur)) saturate(105%)!important;
+    opacity:0!important;
+    box-shadow:none!important;
+    transition:opacity .20s ease!important;
+  }
+
+  #start:hover:not(:disabled)::before,
+  #pause:hover::before,
+  #scorePlaybackControls button:hover::before,
+  #pausePanel button:hover::before,
+  .result-actions button:hover::before,
+  .mic-cal-actions button:hover:not(:disabled)::before{opacity:1!important}
+
+  #start:hover:not(:disabled)::after,
+  #pause:hover::after,
+  #scorePlaybackControls button:hover::after,
+  #pausePanel button:hover::after,
+  .result-actions button:hover::after,
+  .mic-cal-actions button:hover:not(:disabled)::after{opacity:var(--halo-opacity)!important}
+}
