@@ -4,6 +4,28 @@
 
   const SELECTOR="#start,#pause,#scorePlaybackControls button,#pausePanel button,.result-actions button,.mic-cal-actions button";
 
+  /* Fixed to the user's original approved editor payload. Later editor fields
+     and later timing/width/end-position experiments are intentionally absent. */
+  const SETTINGS={
+    spectralAngle:"337.5deg",
+    autoReplay:true,
+    intervalSec:5,
+    oppositePairOffset:50,
+    elements:{
+      rimRun1:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:150,base:1000,start:0,travel:-100,kind:"rim"},
+      rimRun2:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:150,base:1000,start:-50,travel:-100,kind:"rim"},
+      edge1:{enabled:false,opacity:1,speedPercent:100,fadeInMs:150,fadeOutMs:200,delayMs:0,base:850,start:0,travel:-55,kind:"edge"},
+      edge2:{enabled:false,opacity:1,speedPercent:100,fadeInMs:150,fadeOutMs:200,delayMs:0,base:850,start:-50,travel:-55,kind:"edge"},
+      faceSheen:{enabled:true,opacity:.7,speedPercent:100,fadeInMs:1000,fadeOutMs:1000,delayMs:0,base:720,kind:"faceSheen"},
+      faceFlash:{enabled:true,opacity:.25,speedPercent:100,fadeInMs:1000,fadeOutMs:400,delayMs:0,base:660,kind:"flash"},
+      faceLine:{enabled:false,opacity:1,speedPercent:20,fadeInMs:200,fadeOutMs:300,delayMs:0,base:520,kind:"faceLine"},
+      rimPulse:{enabled:false,opacity:1,speedPercent:100,fadeInMs:100,fadeOutMs:350,delayMs:0,base:520,kind:"pulse"}
+    }
+  };
+
+  const activeAnimations=new WeakMap();
+  const replayTimers=new WeakMap();
+
   function stack(pos){
     const s=document.createElement("span");
     s.className=`glass-inner-stack ${pos}`;
@@ -15,24 +37,167 @@
     return s;
   }
 
+  function makeFace(className){
+    const i=document.createElement("i");
+    i.className=className;
+    i.setAttribute("aria-hidden","true");
+    return i;
+  }
+
+  function makeRim(){
+    const ns="http://www.w3.org/2000/svg";
+    const svg=document.createElementNS(ns,"svg");
+    svg.classList.add("glass-hover-rim-svg");
+    svg.setAttribute("preserveAspectRatio","none");
+    svg.setAttribute("aria-hidden","true");
+    for(const cls of ["glass-hover-rim-run rim-run-1","glass-hover-rim-run rim-run-2"]){
+      const r=document.createElementNS(ns,"rect");
+      r.setAttribute("pathLength","100");
+      r.setAttribute("class",cls);
+      svg.appendChild(r);
+    }
+    return svg;
+  }
+
+  function syncRim(wrap){
+    const button=wrap.querySelector(":scope > button");
+    const svg=wrap.querySelector(":scope > .glass-hover-rim-svg");
+    if(!button||!svg)return;
+    const box=button.getBoundingClientRect();
+    if(box.width<2||box.height<2)return;
+    const inset=1.25;
+    const style=getComputedStyle(button);
+    const cssRadius=parseFloat(style.borderTopLeftRadius)||0;
+    const rx=Math.max(0,Math.min(cssRadius,(box.height-inset*2)/2));
+    svg.setAttribute("viewBox",`0 0 ${box.width} ${box.height}`);
+    for(const r of svg.querySelectorAll("rect")){
+      r.setAttribute("x",String(inset));
+      r.setAttribute("y",String(inset));
+      r.setAttribute("width",String(Math.max(0,box.width-inset*2)));
+      r.setAttribute("height",String(Math.max(0,box.height-inset*2)));
+      r.setAttribute("rx",String(rx));
+    }
+  }
+
+  /* This is the timing function used by the original editor when the supplied
+     settings were captured. Large fade values are proportionally fitted into
+     90% of the element's speed-derived duration. */
+  function timing(s){
+    const duration=Math.max(80,s.base*(100/Math.max(1,s.speedPercent)));
+    let fi=Math.max(0,s.fadeInMs),fo=Math.max(0,s.fadeOutMs);
+    const maxFade=duration*.9;
+    if(fi+fo>maxFade){
+      const k=maxFade/(fi+fo||1);
+      fi*=k;
+      fo*=k;
+    }
+    return {duration,inOff:fi/duration,outOff:1-fo/duration};
+  }
+
+  function strokeSpec(s){
+    const t=timing(s),start=s.start,end=s.start+s.travel,max=s.opacity;
+    const at=p=>start+(end-start)*p;
+    return {duration:t.duration,frames:[
+      {opacity:0,strokeDashoffset:start,offset:0},
+      {opacity:max,strokeDashoffset:at(t.inOff),offset:t.inOff},
+      {opacity:max,strokeDashoffset:at(t.outOff),offset:t.outOff},
+      {opacity:0,strokeDashoffset:end,offset:1}
+    ]};
+  }
+
+  function moveSpec(s,from,to){
+    const t=timing(s),max=s.opacity;
+    const at=p=>from+(to-from)*p;
+    return {duration:t.duration,frames:[
+      {opacity:0,left:`${from}%`,offset:0},
+      {opacity:max,left:`${at(t.inOff)}%`,offset:t.inOff},
+      {opacity:max,left:`${at(t.outOff)}%`,offset:t.outOff},
+      {opacity:0,left:`${to}%`,offset:1}
+    ]};
+  }
+
+  function fadeSpec(s){
+    const t=timing(s),max=s.opacity;
+    return {duration:t.duration,frames:[
+      {opacity:0,offset:0},
+      {opacity:max,offset:t.inOff},
+      {opacity:max,offset:t.outOff},
+      {opacity:0,offset:1}
+    ]};
+  }
+
+  function play(wrap){
+    const button=wrap.querySelector(":scope > button");
+    if(!button||button.disabled)return;
+    syncRim(wrap);
+
+    const old=activeAnimations.get(wrap)||[];
+    for(const a of old){try{a.cancel()}catch{}}
+    const running=[];
+
+    const run=(el,s,spec)=>{
+      if(!el||!s.enabled)return;
+      const a=el.animate(spec.frames,{duration:spec.duration,delay:s.delayMs,easing:"linear",fill:"both"});
+      running.push(a);
+    };
+
+    const e=SETTINGS.elements;
+    run(wrap.querySelector(".rim-run-1"),e.rimRun1,strokeSpec(e.rimRun1));
+    run(wrap.querySelector(".rim-run-2"),e.rimRun2,strokeSpec(e.rimRun2));
+    run(button.querySelector(".glass-hover-face-sheen"),e.faceSheen,moveSpec(e.faceSheen,-58,122));
+    run(button.querySelector(".glass-hover-face-flash"),e.faceFlash,fadeSpec(e.faceFlash));
+
+    activeAnimations.set(wrap,running);
+  }
+
+  function stopReplay(wrap){
+    const timer=replayTimers.get(wrap);
+    if(timer)clearInterval(timer);
+    replayTimers.delete(wrap);
+  }
+
   function enhance(button){
     if(!button||button.dataset.glassHoverFinal==="1")return;
     button.dataset.glassHoverFinal="1";
 
     button.prepend(stack("bottom"));
     button.prepend(stack("top"));
+    button.prepend(makeFace("glass-hover-face-flash"));
+    button.prepend(makeFace("glass-hover-face-sheen"));
 
     const wrap=document.createElement("span");
     wrap.className="glass-hover-wrap";
+    wrap.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
     if(button.id==="start")wrap.classList.add("start-wrap");
 
     const glow=document.createElement("i");
     glow.className="glass-hover-drop";
+    const rim=makeRim();
 
     const parent=button.parentNode;
     parent.insertBefore(wrap,button);
     wrap.appendChild(glow);
     wrap.appendChild(button);
+    wrap.appendChild(rim);
+    syncRim(wrap);
+
+    wrap.addEventListener("mouseenter",()=>{
+      play(wrap);
+      stopReplay(wrap);
+      if(SETTINGS.autoReplay){
+        const timer=setInterval(()=>{
+          if(wrap.matches(":hover"))play(wrap);
+          else stopReplay(wrap);
+        },SETTINGS.intervalSec*1000);
+        replayTimers.set(wrap,timer);
+      }
+    });
+    wrap.addEventListener("mouseleave",()=>stopReplay(wrap));
+
+    if("ResizeObserver" in window){
+      const ro=new ResizeObserver(()=>syncRim(wrap));
+      ro.observe(button);
+    }
   }
 
   function scan(root=document){
@@ -42,6 +207,10 @@
 
   scan();
   new MutationObserver(records=>{
-    for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1)scan(node);
+    for(const record of records){
+      for(const node of record.addedNodes){
+        if(node.nodeType===1)scan(node);
+      }
+    }
   }).observe(document.documentElement,{childList:true,subtree:true});
 })();
