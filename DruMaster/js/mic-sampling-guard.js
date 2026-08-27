@@ -11,7 +11,7 @@
         const text=String(url||"");
         if(text.includes("js/acoustic-cancel-processor.js")){
           const clean=text.split("?")[0];
-          return nativeAdd(`${clean}?v=20260827-8hitrestore1`,options);
+          return nativeAdd(`${clean}?v=20260827-registerrestore2`,options);
         }
         return nativeAdd(url,options);
       };
@@ -25,8 +25,7 @@
   const screen=()=>document.querySelector("#micCalibration");
   const noisePane=()=>screen()?.querySelector('[data-fp-step="noise"]');
 
-  /* Environment-noise capture must run for its full 8 seconds. This guard no
-     longer touches pad-registration counters or first-strike detection. */
+  /* Environment-noise capture must run for its full 8 seconds. */
   document.addEventListener("click",e=>{
     const b=e.target?.closest?.("#micCalibration #micCalAction");
     if(!b)return;
