@@ -66,3 +66,27 @@
   52%{opacity:.94}
   100%{opacity:0;stroke-dashoffset:-98}
 }
+
+/* "25% speed" means quarter of the original travel velocity, not 25% slower.
+   Original face sweep 0.72s -> 2.88s; crisp sweep 0.52s -> 2.08s. */
+.anim-c.demo-active .face-sheen,.anim-c:hover .face-sheen,.anim-c:focus-visible .face-sheen{
+  animation:faceSweepQuarter 2.88s linear .04s both!important;
+}
+.anim-e.demo-active .face-sheen,.anim-e:hover .face-sheen,.anim-e:focus-visible .face-sheen{
+  animation:faceSweepQuarter 2.88s linear .04s both!important;
+}
+@keyframes faceSweepQuarter{
+  0%{opacity:0;left:-58%}
+  9%{opacity:.90}
+  78%{opacity:.72}
+  100%{opacity:0;left:122%}
+}
+.anim-f.demo-active .face-line,.anim-f:hover .face-line,.anim-f:focus-visible .face-line{
+  animation:crispSweepQuarter 2.08s linear .06s both!important;
+}
+@keyframes crispSweepQuarter{
+  0%{opacity:0;left:-32%}
+  10%{opacity:1}
+  78%{opacity:.75}
+  100%{opacity:0;left:116%}
+}
