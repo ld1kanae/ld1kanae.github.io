@@ -10,7 +10,8 @@
     : '<svg class="pause-transport-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="4" width="4" height="16" rx="1.3"/><rect x="15" y="4" width="4" height="16" rx="1.3"/></svg>';
 
   function render(state){
-    button.innerHTML=iconMarkup(state);
+    button.querySelector(":scope > .pause-transport-icon")?.remove();
+    button.insertAdjacentHTML("beforeend",iconMarkup(state));
     button.dataset.transportIcon=state;
   }
 
@@ -38,4 +39,9 @@
       loop();
     }
   };
+
+  /* Load the finalized PC-only hover enhancer after the transport SVG setup. */
+  const s=document.createElement("script");
+  s.src="js/glass-hover-final.js?v=20260827-approved1";
+  document.body.appendChild(s);
 })();
