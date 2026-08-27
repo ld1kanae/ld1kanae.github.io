@@ -34,7 +34,7 @@
   const detail=()=>screen()?.querySelector("#micCalDetail");
 
   /* The 8-second environment capture must finish in full. Block the older
-     early-completion button path even if performance-mode-v5 briefly exposes it. */
+     early-completion path even if performance-mode-v5 briefly exposes it. */
   document.addEventListener("click",e=>{
     const b=e.target?.closest?.("#micCalibration #micCalAction");
     if(!b)return;
@@ -46,13 +46,18 @@
   },true);
 
   function tickNoise(){
-    const s=screen(),b=action(),state=s?.querySelector("#fpNoiseState")?.textContent||"";
+    const s=screen(),b=action(),state=s?.querySelector("#fpNoiseState")?.textContent||"",d=detail();
     if(!s||s.classList.contains("hidden")||!b)return;
     if(noisePane()?.dataset.state==="active"&&/^収録中/.test(state)){
       b.disabled=true;
       b.textContent="収録中…";
+      b.style.pointerEvents="none";
       b.setAttribute("aria-disabled","true");
-    }else b.removeAttribute("aria-disabled");
+      if(d)d.textContent="環境ノイズを8秒間取得しています。取得と解析が完了するまで次の工程には進みません。";
+    }else{
+      b.style.pointerEvents="";
+      b.removeAttribute("aria-disabled");
+    }
   }
 
   function tickSampling(){
