@@ -28,11 +28,29 @@
 
   function positionMenu(entry){
     entry.root.classList.remove("open-up");
-    const setup=entry.root.closest(".setup"),card=entry.root.closest(".song-card");
+    const setup=entry.root.closest(".setup");
     if(!setup)return;
-    const rootBottom=(card||entry.root).offsetTop+(card||entry.root).offsetHeight,
-          approxMenuHeight=Math.min(180,Math.max(48,entry.select.options.length*46+8));
-    if(rootBottom+approxMenuHeight+10>setup.clientHeight)entry.root.classList.add("open-up");
+
+    /* offsetTop is measured in the app's unrotated layout space, which is what
+       matters here. The phone stage itself is rotated with CSS afterwards. */
+    const rootTop=entry.root.offsetTop,
+          rootBottom=rootTop+entry.root.offsetHeight,
+          spaceAbove=Math.max(0,rootTop-8),
+          spaceBelow=Math.max(0,setup.clientHeight-rootBottom-8),
+          naturalHeight=Math.min(180,Math.max(48,entry.menu.scrollHeight||0));
+
+    /* Open upward only when it actually gives us more usable room. The old
+       logic chose upward whenever the full menu did not fit below, even when
+       the top side was smaller and therefore clipped the first option. */
+    const openUp=spaceBelow<naturalHeight&&spaceAbove>spaceBelow;
+    if(openUp)entry.root.classList.add("open-up");
+
+    const available=openUp?spaceAbove:spaceBelow;
+    entry.menu.style.maxHeight=`${Math.max(48,Math.min(180,available||180))}px`;
+
+    /* Performance mode's first item is "通常". Always open at the top so it
+       remains immediately selectable even when the menu has to scroll. */
+    if(entry.select.id==="performanceModeSelect")entry.menu.scrollTop=0;
   }
 
   function open(entry){
