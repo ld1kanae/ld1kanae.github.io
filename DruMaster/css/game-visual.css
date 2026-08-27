@@ -190,3 +190,50 @@
   .game header .rank::before{inset:2px;border-width:1px}
   .game header .rank::after{inset:3px 4px 14px}
 }
+
+/* Gameplay background: result-inspired static base + soft Aurora Curtain.
+   No radial rays, conic-gradient, or rotation. One compositor-friendly layer
+   drifts horizontally so the rhythm UI stays readable. */
+.game{
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 50% 28%,rgba(72,129,190,.22),transparent 34%),
+    radial-gradient(circle at 25% 75%,rgba(177,104,255,.12),transparent 38%),
+    linear-gradient(180deg,#0d1723 0%,#070b11 70%,#05080d 100%)!important;
+}
+.game::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:-18% -10%;
+  pointer-events:none;
+  opacity:.74;
+  background:linear-gradient(
+    112deg,
+    transparent 8%,
+    rgba(99,198,255,.10) 24%,
+    rgba(130,132,255,.14) 39%,
+    rgba(192,119,255,.10) 52%,
+    transparent 68%
+  );
+  filter:blur(24px);
+  will-change:transform,opacity;
+  animation:gameAuroraCurtain 7s ease-in-out infinite alternate;
+}
+@keyframes gameAuroraCurtain{
+  0%{transform:translate3d(-12%,0,0) skewX(-4deg);opacity:.62}
+  100%{transform:translate3d(12%,0,0) skewX(4deg);opacity:.84}
+}
+
+/* Let the shared game background remain visible through the existing dark
+   gameplay surfaces without reducing note / drum contrast too much. */
+.game #chartWrap{
+  background:linear-gradient(90deg,rgba(9,14,22,.88),rgba(21,23,42,.82) 48%,rgba(9,14,22,.88))!important;
+}
+.game #kit{
+  background:radial-gradient(ellipse at 50% 10%,rgba(49,52,58,.78),rgba(8,11,16,.72) 78%)!important;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .game::before{animation:none;transform:none;opacity:.72}
+}
