@@ -171,6 +171,7 @@
     wrap.className="glass-hover-wrap";
     wrap.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
     if(button.id==="start")wrap.classList.add("start-wrap");
+    if(button.id==="pause")wrap.classList.add("pause-wrap");
 
     const glow=document.createElement("i");
     glow.className="glass-hover-drop";
@@ -183,18 +184,23 @@
     wrap.appendChild(rim);
     syncRim(wrap);
 
-    wrap.addEventListener("mouseenter",()=>{
+    /* Listen on the actual button. The pause control is placed inside a flex
+       header and its generated wrapper can temporarily have a zero hit area
+       while the game screen is hidden during setup. Direct button listeners
+       make the hover animation reliable after the screen becomes visible. */
+    const beginHover=()=>{
       play(wrap);
       stopReplay(wrap);
       if(SETTINGS.autoReplay){
         const timer=setInterval(()=>{
-          if(wrap.matches(":hover"))play(wrap);
+          if(button.matches(":hover"))play(wrap);
           else stopReplay(wrap);
         },SETTINGS.intervalSec*1000);
         replayTimers.set(wrap,timer);
       }
-    });
-    wrap.addEventListener("mouseleave",()=>stopReplay(wrap));
+    };
+    button.addEventListener("mouseenter",beginHover);
+    button.addEventListener("mouseleave",()=>stopReplay(wrap));
 
     if("ResizeObserver" in window){
       const ro=new ResizeObserver(()=>syncRim(wrap));
