@@ -21,6 +21,21 @@
     overflow:visible;
   }
   .glass-hover-wrap.start-wrap{--halo-height:26px;grid-area:start}
+  /* Pause remains the header's real flex item; all hover layers use its exact
+     box instead of a generated wrapper with a different coordinate space. */
+  #pause.glass-hover-inline{
+    --ig-width:10px;
+    --ig-core:1;
+    --ig-shoulder:.21;
+    --ig-tail:.04;
+    --ig-shoulder-stop:18%;
+    --ig-tail-stop:64%;
+    --ig-blur:3px;
+    --spectral-angle:337.5deg;
+    position:relative!important;
+    isolation:isolate!important;
+    overflow:hidden!important;
+  }
 
   #start:hover:not(:disabled),
   #pause:hover,
@@ -63,7 +78,9 @@
 
   .glass-hover-wrap>button{position:relative!important;z-index:1!important;overflow:hidden!important}
   .glass-hover-wrap>button::before,
-  .glass-hover-wrap>button::after{content:none!important}
+  .glass-hover-wrap>button::after,
+  #pause.glass-hover-inline::before,
+  #pause.glass-hover-inline::after{content:none!important}
 
   .glass-inner-stack{
     position:absolute;
@@ -135,11 +152,14 @@
     filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(144,226,255,.88));
   }
 
-  .glass-hover-wrap>button>*:not(.glass-inner-stack):not(.glass-hover-face-sheen):not(.glass-hover-face-flash){position:relative;z-index:5}
+  .glass-hover-wrap>button>*:not(.glass-inner-stack):not(.glass-hover-face-sheen):not(.glass-hover-face-flash),
+  #pause.glass-hover-inline>*:not(.glass-inner-stack):not(.glass-hover-face-sheen):not(.glass-hover-face-flash):not(.glass-hover-rim-svg){position:relative;z-index:5}
 
   .glass-hover-wrap:hover .glass-hover-drop{opacity:var(--halo-opacity)}
-  .glass-hover-wrap:hover .glass-inner-stack{opacity:1}
-  .glass-hover-wrap:hover>button:not(:disabled){
+  .glass-hover-wrap:hover .glass-inner-stack,
+  #pause.glass-hover-inline:hover .glass-inner-stack{opacity:1}
+  .glass-hover-wrap:hover>button:not(:disabled),
+  #pause.glass-hover-inline:hover:not(:disabled){
     filter:brightness(1.02)!important;
     box-shadow:
       inset 0 1px 0 rgba(223,225,227,.90),
