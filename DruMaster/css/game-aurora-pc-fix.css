@@ -1,29 +1,40 @@
 /* Desktop gameplay Aurora Curtain correction.
-   Keep the result-derived base background, but make the animated color field
-   cover the full viewport at all times. Smartphone remains static elsewhere. */
-@media (hover:hover) and (pointer:fine){
+   Desktop is determined by viewport width, not pointer/hover capability, so
+   touch-capable PCs cannot fall back to the old narrow aurora. Smartphone
+   remains static via the max-width rule in game-visual.css. */
+@media (min-width:901px){
   .game::before{
-    inset:-22% -18%!important;
+    content:""!important;
+    display:block!important;
+    position:absolute!important;
+    z-index:0!important;
+    top:-24%!important;
+    bottom:-24%!important;
+    left:-35%!important;
+    right:-35%!important;
+    pointer-events:none!important;
     background:linear-gradient(
       112deg,
-      rgba(99,198,255,.10) 0%,
-      rgba(130,132,255,.16) 25%,
-      rgba(192,119,255,.14) 50%,
-      rgba(93,177,255,.12) 75%,
-      rgba(174,125,255,.10) 100%
+      rgba(99,198,255,.13) 0%,
+      rgba(105,171,255,.15) 18%,
+      rgba(130,132,255,.18) 38%,
+      rgba(192,119,255,.16) 58%,
+      rgba(120,154,255,.14) 78%,
+      rgba(99,198,255,.12) 100%
     )!important;
-    background-size:140% 140%!important;
+    background-size:100% 100%!important;
     background-position:center!important;
-    filter:blur(28px)!important;
-    opacity:.88!important;
+    background-repeat:no-repeat!important;
+    filter:blur(26px)!important;
+    opacity:.92!important;
     will-change:transform!important;
     animation:gameAuroraCurtainWide 5s ease-in-out infinite alternate!important;
   }
 }
 
 @keyframes gameAuroraCurtainWide{
-  0%{transform:translate3d(-6%,0,0) skewX(-3deg) scaleX(1.08)}
-  100%{transform:translate3d(6%,0,0) skewX(3deg) scaleX(1.08)}
+  0%{transform:translate3d(-4%,0,0) skewX(-2deg) scaleX(1.04)}
+  100%{transform:translate3d(4%,0,0) skewX(2deg) scaleX(1.04)}
 }
 
 @media (prefers-reduced-motion:reduce){
