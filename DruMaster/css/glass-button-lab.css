@@ -7,8 +7,9 @@ body{min-height:100vh;display:grid;place-items:center;padding:38px 26px;backgrou
 .preview-panel{padding:30px 28px 34px;border:1px solid rgba(125,145,160,.14);border-radius:24px;background:rgba(3,7,11,.40);box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 24px 70px rgba(0,0,0,.38)}
 .preview-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;margin:0 0 28px}.preview-row:last-child{margin-bottom:0}.preview-label{width:100%;text-align:center;color:#637181;font:800 9px/1 system-ui,sans-serif;letter-spacing:.20em;margin-bottom:-9px}
 
-/* The rim below is intentionally the previously approved version.
-   Only the interior material layers are changed from here on. */
+/* Base material remains the approved dark glass. The attached reference is
+   reproduced only on desktop hover: a neutral silver rim, a soft segmented
+   spectral glow hugging the inside edge, and a stronger milky lower caustic. */
 .glass-btn{
   --glass-radius:999px;
   position:relative;isolation:isolate;display:inline-grid;place-items:center;
@@ -16,11 +17,9 @@ body{min-height:100vh;display:grid;place-items:center;padding:38px 26px;backgrou
   border:1px solid rgba(22,39,48,.88);border-radius:var(--glass-radius);overflow:hidden;cursor:pointer;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
   color:#eef3f7;
-  /* Interior layer 1: one full-height black -> white overlay at 10%. */
   background:
     linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(255,255,255,.10) 100%),
     rgba(7,17,24,.27);
-  /* Approved rim: bright top/bottom, dark sides, very faint outer fringe. */
   box-shadow:
     inset 0 1px 0 rgba(203,230,245,.92),
     inset 0 -1px 0 rgba(184,209,225,.88),
@@ -32,36 +31,79 @@ body{min-height:100vh;display:grid;place-items:center;padding:38px 26px;backgrou
     0 8px 20px rgba(0,0,0,.34);
   backdrop-filter:blur(12px) saturate(101%);-webkit-backdrop-filter:blur(12px) saturate(101%);
   font:900 15px/1 system-ui,sans-serif;letter-spacing:.08em;text-shadow:0 1px 2px rgba(0,0,0,.76);
-  transition:transform .11s ease,filter .11s ease,box-shadow .11s ease;
+  transition:transform .14s ease,filter .18s ease,box-shadow .18s ease,background .18s ease;
 }
-.glass-btn>span{position:relative;z-index:4}
+.glass-btn>span,.glass-btn>svg{position:relative;z-index:4}
 
-/* Interior layer 2: dark optical shadow, blurred and shifted slightly down.
-   Kept away from the rim so the approved outline is untouched. */
+/* Spectral edge light. It is deliberately masked to the top and bottom bands,
+   rather than washing colour across the whole face. */
 .glass-btn::before{
   content:"";position:absolute;z-index:1;pointer-events:none;
-  inset:4px 5px 3px;border-radius:inherit;
-  background:rgba(0,8,13,.20);
-  filter:blur(9px);
-  transform:translateY(7%);
+  inset:-3px;border-radius:inherit;
+  opacity:0;
+  background:linear-gradient(90deg,
+    rgba(215,89,168,.92) 0%,
+    rgba(207,111,139,.78) 9%,
+    rgba(191,188,75,.82) 27%,
+    rgba(107,183,126,.72) 42%,
+    rgba(71,201,190,.88) 52%,
+    rgba(64,149,207,.90) 67%,
+    rgba(77,101,190,.88) 82%,
+    rgba(194,92,197,.90) 100%);
+  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.84) 8%,transparent 30%,transparent 61%,rgba(0,0,0,.58) 78%,#000 100%);
+  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.84) 8%,transparent 30%,transparent 61%,rgba(0,0,0,.58) 78%,#000 100%);
+  filter:blur(7px) saturate(112%);
+  transition:opacity .18s ease;
 }
 
-/* Interior layer 3: caustic follows the lower inner contour only.
-   No radial/elliptical fill; the glow is an inset, blurred edge light. */
+/* Lower optical caustic. The reference becomes progressively brighter toward
+   the bottom edge while the centre remains charcoal. */
 .glass-btn::after{
   content:"";position:absolute;z-index:2;pointer-events:none;
-  inset:2px;border-radius:inherit;
-  background:transparent;
+  inset:1px;border-radius:inherit;
+  opacity:.34;
+  background:
+    linear-gradient(180deg,transparent 0 48%,rgba(178,201,207,.035) 62%,rgba(191,215,219,.10) 78%,rgba(218,228,231,.20) 100%);
   box-shadow:
     inset 0 -8px 10px -9px rgba(210,232,240,.10),
     inset 5px -5px 10px -11px rgba(182,216,228,.07),
     inset -5px -5px 10px -11px rgba(182,216,228,.07);
   filter:blur(1.4px);
+  transition:opacity .18s ease,box-shadow .18s ease,background .18s ease;
 }
-.glass-btn:hover{filter:brightness(1.04);box-shadow:inset 0 1px 0 rgba(209,235,247,.96),inset 0 -1px 0 rgba(190,216,231,.92),inset 1px 0 0 rgba(8,20,27,.54),inset -1px 0 0 rgba(8,20,27,.54),0 0 0 1px rgba(0,8,13,.88),0 0 0 2px rgba(0,49,57,.12),0 0 0 3px rgba(8,16,62,.075),0 9px 22px rgba(0,0,0,.37)}
+
+@media (hover:hover) and (pointer:fine){
+  .glass-btn:hover{
+    filter:brightness(1.02) saturate(1.03);
+    background:
+      linear-gradient(180deg,rgba(0,0,0,.04) 0%,rgba(0,4,8,.16) 28%,rgba(27,34,40,.19) 58%,rgba(186,199,204,.20) 100%),
+      rgba(8,18,25,.38);
+    box-shadow:
+      inset 0 1px 0 rgba(223,225,227,.90),
+      inset 0 -1px 0 rgba(228,230,232,.95),
+      inset 1px 0 0 rgba(154,161,168,.58),
+      inset -1px 0 0 rgba(154,161,168,.58),
+      0 0 0 1px rgba(128,134,140,.84),
+      0 0 0 2px rgba(226,230,233,.13),
+      0 8px 22px rgba(0,0,0,.38);
+  }
+  .glass-btn:hover::before{opacity:.86}
+  .glass-btn:hover::after{
+    opacity:1;
+    background:
+      linear-gradient(180deg,rgba(190,210,213,.045) 0%,transparent 23%,transparent 45%,rgba(145,167,173,.07) 60%,rgba(177,202,206,.22) 75%,rgba(214,224,227,.54) 100%);
+    box-shadow:
+      inset 0 10px 15px -13px rgba(207,224,225,.20),
+      inset 0 -15px 18px -10px rgba(225,233,235,.54),
+      inset 10px -5px 17px -16px rgba(234,188,179,.26),
+      inset -10px -5px 17px -16px rgba(190,191,232,.28);
+  }
+}
+
 .glass-btn:active{transform:translateY(1px) scale(.988);filter:brightness(.95)}.glass-btn:focus-visible{outline:2px solid rgba(205,232,244,.72);outline-offset:4px}
 .glass-btn.primary,.glass-btn.violet{color:#f1f5f8}
 .glass-btn.reference-circle{--glass-radius:50%;min-width:0;width:260px;height:260px;padding:0;font-size:16px}
-.glass-btn.wide{min-width:330px}.glass-btn.compact{min-width:128px;height:46px;padding:0 24px;font-size:12px}.glass-btn.rounded{--glass-radius:18px;min-width:180px}.glass-btn.square{--glass-radius:18px;min-width:0;width:74px;height:74px;padding:0;font-size:20px}.glass-btn.circle{--glass-radius:50%;min-width:0;width:74px;height:74px;padding:0;font-size:20px}
+.glass-btn.wide{min-width:330px}.glass-btn.compact{min-width:128px;height:46px;padding:0 24px;font-size:12px}.glass-btn.rounded{--glass-radius:18px;min-width:180px}.glass-btn.square{--glass-radius:18px;min-width:0;width:74px;height:74px;padding:0}.glass-btn.circle{--glass-radius:50%;min-width:0;width:74px;height:74px;padding:0;font-size:20px}
+.glass-btn .preview-pause-icon{width:20px;height:20px;display:block;fill:#eef3f7;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
 .note{text-align:center;margin-top:22px;color:#63707e;font-size:10px}
 @media(max-width:650px){body{padding:24px 14px}.preview-panel{padding:24px 14px}.glass-btn.wide{min-width:min(330px,84vw)}.glass-btn.reference-circle{width:190px;height:190px}}
