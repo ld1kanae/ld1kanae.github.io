@@ -5,22 +5,45 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070b11">
   <title>Glass Button Preview | DruMaster</title>
-  <link rel="stylesheet" href="css/glass-button-lab.css?v=20260827-spectralhover1">
+  <link rel="stylesheet" href="css/glass-button-lab.css?v=20260827-spectralvariants1">
 </head>
 <body>
   <main class="lab">
     <header class="lab-head">
       <p>DRUMASTER / UI MATERIAL LAB</p>
       <h1>Glass Button Preview</h1>
-      <small>本番UIには未適用。PCで各ボタンにホバーして確認してください。</small>
+      <small>本番UIには未適用。PCで各案にホバーして比較してください。</small>
     </header>
-    <section class="preview-panel">
-      <div class="preview-row"><div class="preview-label">REFERENCE SCALE / CIRCLE</div><button class="glass-btn reference-circle"><span>GLASS</span></button></div>
-      <div class="preview-row"><div class="preview-label">PILL / STANDARD</div><button class="glass-btn"><span>ホーム</span></button><button class="glass-btn primary"><span>リトライ</span></button><button class="glass-btn violet"><span>終了</span></button></div>
-      <div class="preview-row"><div class="preview-label">PILL / SIZE VARIATION</div><button class="glass-btn compact"><span>やり直す</span></button><button class="glass-btn wide primary"><span>演奏を開始</span></button></div>
-      <div class="preview-row"><div class="preview-label">OTHER SHAPES — SAME MATERIAL</div><button class="glass-btn rounded"><span>設定</span></button><button class="glass-btn square primary" aria-label="一時停止"><svg class="preview-pause-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="4" width="4" height="16" rx="1.3"/><rect x="15" y="4" width="4" height="16" rx="1.3"/></svg></button><button class="glass-btn circle" aria-label="再生"><svg class="preview-pause-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.2c0-.9 1-1.45 1.78-.98l8.35 5.03a3.2 3.2 0 0 1 0 5.5l-8.35 5.03A1.15 1.15 0 0 1 8 18.8V5.2Z"/></svg></button></div>
+
+    <section class="preview-panel variant-panel">
+      <div class="preview-label">HOVER GLOW VARIANTS</div>
+      <div class="variant-grid">
+        <article class="variant-card">
+          <div class="variant-meta"><b>A</b><span>NARROW / SHARP</span><small>最も細い。輪郭近くで急速に減衰</small></div>
+          <button class="glass-btn variant-a variant-demo"><span>ホーム</span></button>
+        </article>
+        <article class="variant-card">
+          <div class="variant-meta"><b>B</b><span>NATURAL / BALANCED</span><small>狭め＋自然なグロー減衰</small></div>
+          <button class="glass-btn variant-b variant-demo"><span>ホーム</span></button>
+        </article>
+        <article class="variant-card">
+          <div class="variant-meta"><b>C</b><span>SOFT / DIFFUSED</span><small>少し広いが中心までは届かない</small></div>
+          <button class="glass-btn variant-c variant-demo"><span>ホーム</span></button>
+        </article>
+        <article class="variant-card">
+          <div class="variant-meta"><b>D</b><span>LOWER CAUSTIC</span><small>Bを基準に下辺の乳白反射を強調</small></div>
+          <button class="glass-btn variant-d variant-demo"><span>ホーム</span></button>
+        </article>
+      </div>
     </section>
-    <p class="note">添付画像のPCホバー表現をテスト中。本番ボタンにはまだ反映していません。</p>
+
+    <section class="preview-panel secondary-panel">
+      <div class="preview-row"><div class="preview-label">REFERENCE SHAPES / VARIANT B</div><button class="glass-btn variant-b reference-circle"><span>GLASS</span></button></div>
+      <div class="preview-row"><button class="glass-btn variant-b"><span>ホーム</span></button><button class="glass-btn variant-b primary"><span>リトライ</span></button><button class="glass-btn variant-b violet"><span>終了</span></button></div>
+      <div class="preview-row"><button class="glass-btn variant-b compact"><span>やり直す</span></button><button class="glass-btn variant-b wide primary"><span>演奏を開始</span></button></div>
+      <div class="preview-row"><button class="glass-btn variant-b rounded"><span>設定</span></button><button class="glass-btn variant-b square primary" aria-label="一時停止"><svg class="preview-pause-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="4" width="4" height="16" rx="1.3"/><rect x="15" y="4" width="4" height="16" rx="1.3"/></svg></button><button class="glass-btn variant-b circle" aria-label="再生"><svg class="preview-pause-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.2c0-.9 1-1.45 1.78-.98l8.35 5.03a3.2 3.2 0 0 1 0 5.5l-8.35 5.03A1.15 1.15 0 0 1 8 18.8V5.2Z"/></svg></button></div>
+    </section>
+    <p class="note">A〜Dのどれかを選んでもらってから本番PCボタンへ反映します。</p>
   </main>
 </body>
 </html>
