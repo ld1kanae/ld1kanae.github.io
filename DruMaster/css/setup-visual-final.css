@@ -213,14 +213,29 @@
 
   /* Keep the smartphone custom dropdown on the exact same navy palette as
      the PC native select, including the expanded list and selected row. */
+  /* The setup cards are sibling stacking contexts. Raise the card that owns
+     an open dropdown so later cards (for example TEMPO) cannot paint over it. */
+  .setup .mobile-select-host-open{
+    z-index:1002!important;
+  }
+  .setup .mobile-custom-select{
+    isolation:isolate;
+  }
   .setup .mobile-custom-select-trigger,
   .setup .mobile-custom-select-menu,
   .setup .mobile-custom-select-option{
-    background:#16253a!important;
-    color:#e7eef7!important
+    background-color:#16253a!important;
+    background-image:none!important;
+    color:#e7eef7!important;
+    opacity:1!important
   }
-  .setup .mobile-custom-select-trigger,
-  .setup .mobile-custom-select-menu{border-color:#3a5169!important}
+  .setup .mobile-custom-select-menu{
+    border-color:#3a5169!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    filter:none!important
+  }
+  .setup .mobile-custom-select-trigger{border-color:#3a5169!important}
   .setup .mobile-custom-select-option.selected{
     background:#2a4458!important;
     color:#fff!important
