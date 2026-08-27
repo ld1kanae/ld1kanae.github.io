@@ -30,13 +30,11 @@
   text-shadow:0 1px 2px rgba(0,0,0,.76)!important;
   transition:
     transform .20s ease,
-    filter .30s ease,
-    box-shadow .34s ease,
+    background .30s ease,
     color .30s ease,
     text-shadow .30s ease!important;
 }
 
-/* Keep the in-game pause control compact rather than pill-shaped. */
 #pause{
   border-radius:12px!important;
   color:#eef3f7!important;
@@ -77,11 +75,10 @@
     inset 5px -5px 10px -11px rgba(182,216,228,.07),
     inset -5px -5px 10px -11px rgba(182,216,228,.07)!important;
   filter:blur(1.4px);
-  opacity:1;
-  transition:box-shadow .34s ease,filter .34s ease,opacity .34s ease;
 }
 
-/* Desktop only: make the material softly bloom white under the pointer. */
+/* Desktop hover: only a horizontal white gradient rising from the bottom.
+   The rim/outline itself does not brighten or glow on hover. */
 @media (hover:hover) and (pointer:fine){
   #start:hover:not(:disabled),
   #pause:hover,
@@ -89,33 +86,15 @@
   .result-actions button:hover,
   .mic-cal-actions button:hover:not(:disabled){
     color:#fff!important;
-    transform:translateY(-1px);
-    filter:brightness(1.22) saturate(.78);
-    text-shadow:0 0 8px rgba(255,255,255,.22),0 1px 2px rgba(0,0,0,.62)!important;
-    box-shadow:
-      inset 0 1px 0 rgba(252,255,255,1),
-      inset 0 -1px 0 rgba(232,244,250,.98),
-      inset 0 0 20px rgba(255,255,255,.16),
-      inset 0 0 38px rgba(240,249,255,.075),
-      inset 1px 0 0 rgba(42,54,61,.40),
-      inset -1px 0 0 rgba(42,54,61,.40),
-      0 0 0 1px rgba(78,101,114,.82),
-      0 0 0 2px rgba(200,232,245,.12),
-      0 0 18px rgba(235,248,255,.19),
-      0 12px 26px rgba(0,0,0,.34)!important;
-  }
-  #start:hover:not(:disabled)::after,
-  #pause:hover::after,
-  #pausePanel button:hover::after,
-  .result-actions button:hover::after,
-  .mic-cal-actions button:hover:not(:disabled)::after{
-    opacity:1;
-    filter:blur(1.8px);
-    box-shadow:
-      inset 0 -9px 12px -9px rgba(235,248,255,.18),
-      inset 0 0 18px rgba(255,255,255,.075),
-      inset 6px -5px 11px -11px rgba(214,238,247,.11),
-      inset -6px -5px 11px -11px rgba(214,238,247,.11)!important;
+    background:
+      linear-gradient(0deg,
+        rgba(255,255,255,.18) 0%,
+        rgba(255,255,255,.105) 24%,
+        rgba(255,255,255,.045) 48%,
+        rgba(255,255,255,0) 76%),
+      linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(255,255,255,.10) 100%),
+      rgba(7,17,24,.27)!important;
+    text-shadow:0 1px 2px rgba(0,0,0,.62)!important;
   }
 }
 
@@ -125,10 +104,8 @@
 .result-actions button:active,
 .mic-cal-actions button:active:not(:disabled){
   transform:translateY(1px) scale(.988)!important;
-  filter:brightness(.95);
 }
 
-/* Remove Android/WebKit rectangular tap flashes; focus remains visible for keyboard users. */
 #start:focus,
 #pause:focus,
 #pausePanel button:focus,
@@ -165,5 +142,16 @@
     -webkit-tap-highlight-color:rgba(0,0,0,0)!important;
     user-select:none;
     -webkit-user-select:none;
+    /* Slightly finer rim on phone screens; material/brightness stays the same. */
+    border-width:.75px!important;
+    box-shadow:
+      inset 0 .75px 0 rgba(203,230,245,.92),
+      inset 0 -.75px 0 rgba(184,209,225,.88),
+      inset .75px 0 0 rgba(8,20,27,.54),
+      inset -.75px 0 0 rgba(8,20,27,.54),
+      0 0 0 .75px rgba(0,8,13,.88),
+      0 0 0 1.6px rgba(0,49,57,.09),
+      0 0 0 2.4px rgba(8,16,62,.055),
+      0 8px 20px rgba(0,0,0,.34)!important;
   }
 }
