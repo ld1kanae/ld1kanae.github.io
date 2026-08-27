@@ -77,30 +77,9 @@
     transition:opacity .20s ease;
   }
 
-  .game header>.pause-inline-glow{
-    position:absolute;
-    z-index:0;
-    pointer-events:none;
-    height:22px;
-    transform:translateY(-50%);
-    border-radius:999px;
-    background:linear-gradient(337.5deg,
-      rgba(215,89,168,.90) 0%,
-      rgba(197,177,83,.74) 27%,
-      rgba(71,201,190,.86) 52%,
-      rgba(64,149,207,.88) 70%,
-      rgba(194,92,197,.88) 100%);
-    filter:blur(12px) saturate(105%);
-    opacity:0;
-    transition:opacity .20s ease;
-  }
-  .game header>.pause-inline-glow.is-hovered{opacity:.51}
-
   .glass-hover-wrap>button{position:relative!important;z-index:1!important;overflow:hidden!important}
   .glass-hover-wrap>button::before,
-  .glass-hover-wrap>button::after,
-  #pause.glass-hover-inline::before,
-  #pause.glass-hover-inline::after{content:none!important}
+  .glass-hover-wrap>button::after{content:none!important}
 
   .glass-inner-stack{
     position:absolute;
@@ -188,5 +167,21 @@
       inset -1px 0 0 rgba(154,161,168,.58),
       0 0 0 1px rgba(128,134,140,.84),
       0 6px 14px rgba(0,0,0,.18)!important;
+  }
+
+  /* Pause has no layout wrapper. Build the complete external material on the
+     button itself so the glow cannot be hidden behind the header or displaced. */
+  #pause.glass-hover-inline:hover:not(:disabled){
+    --glass-hover-fade:1!important;
+    box-shadow:
+      inset 0 1px 0 rgba(223,225,227,.96),
+      inset 0 -1px 0 rgba(228,230,232,.98),
+      inset 1px 0 0 rgba(154,161,168,.66),
+      inset -1px 0 0 rgba(154,161,168,.66),
+      0 0 0 1px rgba(175,205,222,.92),
+      -9px 0 17px rgba(215,89,168,.42),
+      9px 0 17px rgba(64,149,207,.48),
+      0 7px 18px rgba(71,201,190,.28),
+      0 6px 14px rgba(0,0,0,.20)!important;
   }
 }
