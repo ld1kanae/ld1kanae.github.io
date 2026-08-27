@@ -237,14 +237,12 @@
   background:transparent!important;
 }
 
-/* Keep the game content above the background/aurora layer. */
-.game>header,
-.game>#chartWrap,
-.game>#kit,
-.game>#kickFx,
-.game>#pausePanel{position:relative;z-index:1}
+/* All gameplay elements already have their required positioning; only lift
+   them above the shared background layer. */
 .game>header{z-index:12}
 .game>#chartWrap{z-index:8}
+.game>#kit{z-index:1}
+.game>#kickFx{z-index:7}
 .game>#pausePanel{z-index:30}
 
 @media (prefers-reduced-motion:reduce){
