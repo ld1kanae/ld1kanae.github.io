@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070b11">
   <title>Glass Button Preview | DruMaster</title>
-  <link rel="stylesheet" href="css/glass-button-lab-editor.css?v=20260827-gloweditor1">
+  <link rel="stylesheet" href="css/glass-button-lab-editor.css?v=20260827-gloweditor2">
 </head>
 <body>
 <main class="lab">
   <header class="lab-head">
     <p>DRUMASTER / UI MATERIAL LAB</p>
     <h1>Glass Button Preview</h1>
-    <small>本番UIには未適用。PCでホバーして比較してください。</small>
+    <small>本番UIには未適用。01・02はPCでホバー、03エディタは常時ホバー表示です。</small>
   </header>
 
   <section class="preview-panel">
     <div class="preview-label">01 / INNER GLOW — WIDTH × NON-LINEAR FALLOFF</div>
-    <p class="panel-note">一般的なグロー同様、近距離の強いコア・圧縮した中間光・薄い長い尾を重ねた構成です。幅も以前の案に近い領域まで戻しています。すべてゲーム内の結果ボタンと同じ140px幅で表示しています。</p>
+    <p class="panel-note">横方向は一本の連続した虹グラデーションです。近距離の強いコア・圧縮した中間光・薄い長い尾を別レイヤーで重ね、色の切り替わり位置だけが局所的に明るくならない構成に変更しました。すべてゲーム内の結果ボタンと同じ140px幅です。</p>
     <div class="variant-grid">
       <article class="variant-card"><div class="variant-meta"><b>A</b><span>16px / CORE</span><small>狭め。コア強め＋尾は70%まで</small></div><button class="glass-btn size-result preset-a"><span>ホーム</span></button></article>
       <article class="variant-card"><div class="variant-meta"><b>B</b><span>20px / BALANCED</span><small>やや狭め。自然な三段減衰</small></div><button class="glass-btn size-result preset-b"><span>ホーム</span></button></article>
@@ -30,7 +30,7 @@
 
   <section class="preview-panel">
     <div class="preview-label">02 / AIRY DROP-GLOW — VERTICAL POSITION</div>
-    <p class="panel-note">前回のAiryの広がり・濃度・blurは維持し、Y位置だけ上げています。左から旧位置に近い +5px → +3px → +1px → −1px → −3px です。内周はCで固定。</p>
+    <p class="panel-note">Airyの広がり・濃度・blurは維持し、Y位置だけ上げています。左から +5px → +3px → +1px → −1px → −3px です。内周はCで固定。</p>
     <div class="variant-grid">
       <article class="variant-card"><div class="variant-meta"><b>1</b><span>Y +5px</span><small>旧Airyに最も近い</small></div><div class="halo-wrap airy airy-1"><i class="drop-glow"></i><button class="glass-btn size-result preset-c"><span>ホーム</span></button></div></article>
       <article class="variant-card"><div class="variant-meta"><b>2</b><span>Y +3px</span><small>2px上</small></div><div class="halo-wrap airy airy-2"><i class="drop-glow"></i><button class="glass-btn size-result preset-c"><span>ホーム</span></button></div></article>
@@ -41,8 +41,8 @@
   </section>
 
   <section class="preview-panel" id="editorWrap">
-    <div class="preview-label">03 / LIVE GLOW EDITOR</div>
-    <p class="panel-note">ここで直接調整できます。「設定値をコピー」を押すと、そのままチャットに貼れるJSON形式でコピーされます。</p>
+    <div class="preview-label">03 / LIVE GLOW EDITOR — ALWAYS HOVERED</div>
+    <p class="panel-note">エディタのプレビューは常にホバー状態を表示します。マウスを合わせる必要はありません。「設定値をコピー」を押すと、そのままチャットに貼れるJSON形式でコピーされます。</p>
     <div class="editor-grid">
       <div class="editor-preview">
         <div class="halo-wrap airy" id="editorHalo"><i class="drop-glow"></i><button class="glass-btn preset-c size-result" id="editorButton"><span>ホーム</span></button></div>
@@ -54,8 +54,8 @@
           <div class="control"><label for="igCore">コア濃度</label><output data-output="igCore"></output><input id="igCore" type="range" min="0" max="1" step=".01" value=".90" data-var="--ig-core"></div>
           <div class="control"><label for="igShoulder">中間濃度</label><output data-output="igShoulder"></output><input id="igShoulder" type="range" min="0" max=".6" step=".01" value=".22" data-var="--ig-shoulder"></div>
           <div class="control"><label for="igTail">尾の濃度</label><output data-output="igTail"></output><input id="igTail" type="range" min="0" max=".2" step=".005" value=".055" data-var="--ig-tail"></div>
-          <div class="control"><label for="igShoulderStop">中間位置</label><output data-output="igShoulderStop"></output><input id="igShoulderStop" type="range" min="8" max="55" step="1" value="23" data-var="--ig-shoulder-stop" data-unit="%"></div>
-          <div class="control"><label for="igTailStop">尾の位置</label><output data-output="igTailStop"></output><input id="igTailStop" type="range" min="35" max="95" step="1" value="76" data-var="--ig-tail-stop" data-unit="%"></div>
+          <div class="control"><label for="igShoulderStop">コア幅比</label><output data-output="igShoulderStop"></output><input id="igShoulderStop" type="range" min="8" max="55" step="1" value="23" data-var="--ig-shoulder-stop" data-unit="%"></div>
+          <div class="control"><label for="igTailStop">中間幅比</label><output data-output="igTailStop"></output><input id="igTailStop" type="range" min="35" max="95" step="1" value="76" data-var="--ig-tail-stop" data-unit="%"></div>
           <div class="control"><label for="igBlur">内周blur</label><output data-output="igBlur"></output><input id="igBlur" type="range" min="0" max="8" step=".1" value="2.3" data-var="--ig-blur" data-unit="px"></div>
           <div class="control"><label for="haloY">外側光 Y位置</label><output data-output="haloY"></output><input id="haloY" type="range" min="-10" max="14" step="1" value="1" data-var="--halo-y" data-unit="px" data-target="halo"></div>
           <div class="control"><label for="haloHeight">外側光 高さ</label><output data-output="haloHeight"></output><input id="haloHeight" type="range" min="6" max="40" step="1" value="18" data-var="--halo-height" data-unit="px" data-target="halo"></div>
@@ -81,6 +81,6 @@
 
   <p class="note">本番PCボタンにはまだ反映していません。</p>
 </main>
-<script src="js/glass-button-lab-editor.js?v=20260827-gloweditor1"></script>
+<script src="js/glass-button-lab-editor.js?v=20260827-gloweditor2"></script>
 </body>
 </html>
