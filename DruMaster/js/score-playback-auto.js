@@ -10,10 +10,8 @@
   const scoreActive=()=>document.body.dataset.scorePlayback==="1";
   const autoEnabled=()=>scoreActive()&&autoToggle.checked;
 
-  /* Score playback already has a dedicated Guide Drums stem. The legacy score
-     loop also auto-fired kick samples regardless of the Auto toggle, which made
-     the bass drum sound doubled whenever Guide Drums was enabled. Suppress only
-     those game-generated kick samples while score playback is active. */
+  /* Score playback uses backing stems for the bass drum. Never synthesize a
+     second kick sample in this mode; its visual is driven independently below. */
   const basePlayDrum=typeof playDrum==="function"?playDrum:null;
   if(basePlayDrum){
     playDrum=function(note,type,v){
@@ -74,38 +72,68 @@
   });
   observer.observe(document.body,{attributes:true,attributeFilter:["data-score-playback"]});
 
-  function autoFrame(){
+  function flashKitPart(note){
+    if(!note)return;
+    if(note.type==="kick"){
+      try{globalThis.DruMasterKickEffect?.flash?.()}catch{}
+      return;
+    }
+    if(typeof PART==="undefined")return;
+    const part=PART[note.type];if(!part)return;
+    const el=document.querySelector(`#hitLayer [data-part="${part}"]:not(.inactive)`);
+    if(!el)return;
+    el.classList.remove("struck");
+    void el.offsetWidth;
+    el.classList.add("struck");
+  }
+
+  function flashScoreNote(note){
+    /* Goal-line glow is note-specific and includes the bass-drum lane. */
+    try{globalThis.DruMasterJudgement?.flashNote?.(note)}catch{}
+    /* Drum/cymbal body hit flash is visual-only and never calls playDrum(). */
+    flashKitPart(note);
+  }
+
+  function scoreFrame(){
     syncAutoplayFlag();
-    if(!autoEnabled()){
+    if(!scoreActive()){
       lastNotes=null;
-      requestAnimationFrame(autoFrame);
+      requestAnimationFrame(scoreFrame);
       return;
     }
 
     const list=notesSafe(),start=startedAtSafe(),t=currentTimeSafe();
-    if(!list){requestAnimationFrame(autoFrame);return}
+    if(!list){requestAnimationFrame(scoreFrame);return}
 
     if(waitingCommit&&start!==scrubStartedAt){
       scrubbing=false;waitingCommit=false;resetCursor();
     }
-    if(scrubbing){requestAnimationFrame(autoFrame);return}
+    if(scrubbing){requestAnimationFrame(scoreFrame);return}
 
     let canPlay=false;
     try{canPlay=typeof running!=="undefined"&&running&&typeof paused!=="undefined"&&!paused}catch{}
-    if(!canPlay){requestAnimationFrame(autoFrame);return}
+    if(!canPlay){requestAnimationFrame(scoreFrame);return}
 
     if(list!==lastNotes||start!==lastStartedAt||t<lastTime-.05)resetCursor();
 
     while(cursor<list.length&&list[cursor].time<=t+.012){
       const n=list[cursor++];
-      if(n.type==="kick"||n.time<t-.05)continue;
-      try{playDrum(n.note,n.type,n.velocity/127)}catch{}
-      try{if(typeof flashPart==="function"&&typeof PART!=="undefined")flashPart(PART[n.type])}catch{}
+      if(n.time<t-.05)continue;
+
+      /* In score playback every chart note produces both visual effects,
+         regardless of the Auto toggle. */
+      flashScoreNote(n);
+
+      /* Auto controls audio only. Kick stays silent here because the backing
+         Guide Drums stem already contains it. */
+      if(autoEnabled()&&n.type!=="kick"){
+        try{playDrum(n.note,n.type,n.velocity/127)}catch{}
+      }
     }
     lastNotes=list;lastStartedAt=start;lastTime=t;
-    requestAnimationFrame(autoFrame);
+    requestAnimationFrame(scoreFrame);
   }
-  requestAnimationFrame(autoFrame);
+  requestAnimationFrame(scoreFrame);
 
   globalThis.DruMasterScoreAuto={
     isEnabled:autoEnabled,
