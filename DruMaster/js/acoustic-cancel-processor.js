@@ -21,20 +21,18 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     this.metricFrames=0;
     this.rawPow=0;this.refPow=0;this.resPow=0;this.metricSamples=0;
 
-    /* Loose transient detector used only to cut short PCM candidates. Final
-       pad/not-pad classification is performed on the main thread from timbre
-       features, not from this amplitude gate. */
+    /* Candidate extraction is edge-triggered and candidates may overlap.
+       There is deliberately no fixed refractory/dead-time after a hit. */
     this.candidateMode='off';
     this.candidateNoise=0.0005;
     this.candidateFast=0;
     this.candidateSlow=0;
-    this.candidateSuppress=0;
-    this.candidateRefractory=0;
-    this.candidatePre=Math.max(64,Math.round(sampleRate*.018));
-    this.candidateLength=Math.max(1024,Math.round(sampleRate*.145));
+    this.candidateArmed=true;
+    this.candidatePre=Math.max(48,Math.round(sampleRate*.010));
+    this.candidateLength=Math.max(1536,Math.round(sampleRate*.095));
     let preSize=1;while(preSize<this.candidatePre+256)preSize<<=1;
     this.preRing=new Float32Array(preSize);this.preMask=preSize-1;this.preWrite=0;
-    this.candidate=null;
+    this.candidates=[];
 
     this.port.onmessage=e=>this.onMessage(e.data||{});
   }
@@ -52,9 +50,10 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     }else if(m.type==='candidateMode'){
       this.candidateMode=(m.mode==='raw'||m.mode==='residual')?m.mode:'off';
       this.candidateNoise=Math.max(1e-6,+m.noiseRms||this.noiseRms||1e-6);
-      this.candidateFast=this.candidateSlow=0;this.candidate=null;
+      this.candidateFast=this.candidateSlow=0;this.candidateArmed=true;this.candidates=[];
     }else if(m.type==='suppressCandidates'){
-      this.candidateSuppress=Math.max(this.candidateSuppress,Math.round(sampleRate*(+m.ms||0)/1000));
+      /* Kept as a no-op for compatibility. Rapid rolls must never be blocked
+         by a post-hit timer. Re-arming is based only on the signal release. */
     }
   }
   finishCapture(force=false){
@@ -73,27 +72,34 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     const buf=new Float32Array(this.candidateLength),pre=Math.min(this.candidatePre,buf.length-1);
     for(let j=0;j<pre;j++)buf[j]=this.preRing[(this.preWrite-pre+j)&this.preMask];
     buf[pre]=current;
-    this.candidate={buf,at:pre+1,peak:Math.abs(current)};
-    this.candidateRefractory=Math.round(sampleRate*.085);
+    this.candidates.push({buf,at:pre+1,peak:Math.abs(current)});
   }
   feedCandidate(sample){
     this.preRing[this.preWrite]=sample;this.preWrite=(this.preWrite+1)&this.preMask;
-    if(this.candidateSuppress>0){this.candidateSuppress--;return}
-    if(this.candidateRefractory>0)this.candidateRefractory--;
-    if(this.candidate){
-      const c=this.candidate;if(c.at<c.buf.length){c.buf[c.at++]=sample;c.peak=Math.max(c.peak,Math.abs(sample));}
-      if(c.at>=c.buf.length){
-        this.candidate=null;
-        this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:this.candidateMode},[c.buf.buffer]);
+
+    if(this.candidates.length){
+      const keep=[];
+      for(const c of this.candidates){
+        if(c.at<c.buf.length){c.buf[c.at++]=sample;c.peak=Math.max(c.peak,Math.abs(sample));}
+        if(c.at>=c.buf.length){
+          this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:this.candidateMode},[c.buf.buffer]);
+        }else keep.push(c);
       }
-      return;
+      this.candidates=keep;
     }
+
     const a=Math.abs(sample);
-    this.candidateFast+=.22*(a-this.candidateFast);
-    this.candidateSlow+=.008*(a-this.candidateSlow);
-    const floor=Math.max(.00016,this.candidateNoise*.62);
-    const relative=Math.max(floor,this.candidateSlow*1.72);
-    if(this.candidateMode!=='off'&&this.candidateRefractory<=0&&this.candidateFast>relative&&a>floor*.85)this.startCandidate(sample);
+    this.candidateFast+=.28*(a-this.candidateFast);
+    this.candidateSlow+=.006*(a-this.candidateSlow);
+    const floor=Math.max(.00014,this.candidateNoise*.56);
+    const trigger=Math.max(floor,this.candidateSlow*1.58);
+    const release=Math.max(floor*.56,this.candidateSlow*1.10);
+
+    if(!this.candidateArmed&&this.candidateFast<release)this.candidateArmed=true;
+    if(this.candidateMode!=='off'&&this.candidateArmed&&this.candidateFast>trigger&&a>floor*.78){
+      this.startCandidate(sample);
+      this.candidateArmed=false;
+    }
   }
   process(inputs,outputs){
     const micIn=inputs[0]||[],refIn=inputs[1]||[],out=outputs[0]||[];
