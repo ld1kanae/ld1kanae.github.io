@@ -27,6 +27,12 @@
     toggle.closest("label")?.classList.add("mode-locked");
   }
 
+  function unlockForScoreAuto(){
+    if(!auto)return;
+    auto.disabled=false;
+    auto.closest("label")?.classList.remove("mode-locked");
+  }
+
   function unlockAfterScore(toggle){
     if(!toggle)return;
     /* touch/pad modes manage these same controls in performance-mode-v5.js.
@@ -42,10 +48,11 @@
     document.body.dataset.scoreModeSelected=score?"1":"0";
     if(score){
       scoreLocked=true;
-      for(const t of [hidden,auto])lockForScore(t);
+      lockForScore(hidden);
+      unlockForScoreAuto();
     }else if(scoreLocked){
       scoreLocked=false;
-      for(const t of [hidden,auto])unlockAfterScore(t);
+      unlockAfterScore(hidden);
     }
   }
   select.addEventListener("change",sync);
