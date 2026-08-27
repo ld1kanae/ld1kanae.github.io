@@ -1,7 +1,7 @@
 .performance-mode-option{display:flex!important}
 body[data-score-playback="1"] .score{display:none!important}
 
-#scorePlaybackControls{display:none;align-items:center;gap:6px;margin-left:10px;margin-right:6px}
+#scorePlaybackControls{display:none;align-items:center;gap:0;margin-left:10px;margin-right:0}
 body[data-score-playback="1"] #scorePlaybackControls{display:flex;margin-left:auto}
 body[data-score-playback="1"] #pause,
 body[data-score-playback="1"] #scorePlaybackControls button{
@@ -10,6 +10,10 @@ body[data-score-playback="1"] #scorePlaybackControls button{
   padding:0!important;margin:0!important;display:grid!important;place-items:center!important;
   border-radius:12px!important;
 }
+/* All four transport buttons use one spacing rule. The first three live in
+   #scorePlaybackControls while pause is its next sibling. */
+body[data-score-playback="1"] #scorePlaybackControls button+button{margin-left:6px!important}
+body[data-score-playback="1"] #scorePlaybackControls+#pause{margin-left:6px!important}
 body[data-score-playback="1"] .transport-icon{
   width:20px;height:20px;display:block;overflow:visible;pointer-events:none;
   fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;
@@ -26,17 +30,22 @@ body[data-score-playback="1"] #scoreSeekWrap{display:flex}
 #scoreSeek{flex:1;min-width:0;height:18px;margin:0;accent-color:#73cfff;touch-action:none}
 #scoreSeekTime{min-width:72px;text-align:right;color:#b9c7d7;font:800 9px/1 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}
 body[data-score-playback="1"] #judgementFx{display:none!important}
+/* Score playback does not synthesize the automatic bass-drum hit, so its
+   lane-local goal-line hit flash must not fire either. */
+body[data-score-playback="1"] .lane-hit-glow[data-lane="3"]{display:none!important}
 body[data-score-playback="1"] #chartWrap{cursor:ew-resize;touch-action:none;overflow:visible}
 body[data-score-playback="1"] #chart{touch-action:none}
 
 @media (hover:none) and (pointer:coarse){
-  #scorePlaybackControls{gap:4px;margin-left:5px;margin-right:4px}
+  #scorePlaybackControls{gap:0;margin-left:5px;margin-right:0}
   body[data-score-playback="1"] #scorePlaybackControls{margin-left:auto}
   body[data-score-playback="1"] #pause,
   body[data-score-playback="1"] #scorePlaybackControls button{
     width:26px!important;min-width:26px!important;max-width:26px!important;
     height:26px!important;min-height:26px!important;max-height:26px!important;border-radius:6px!important;
   }
+  body[data-score-playback="1"] #scorePlaybackControls button+button{margin-left:4px!important}
+  body[data-score-playback="1"] #scorePlaybackControls+#pause{margin-left:4px!important}
   body[data-score-playback="1"] .transport-icon{width:14px;height:14px;stroke-width:2.25}
   #scoreSeekWrap{top:calc(100% + 9px);width:min(500px,86%);height:25px;padding:2px 8px}
   #scoreSeekTime{min-width:64px;font-size:8px}
