@@ -5,12 +5,14 @@ body{min-height:100vh;display:grid;place-items:center;padding:38px 26px;backgrou
 .lab{width:min(1100px,96vw)}
 .lab-head{text-align:center;margin-bottom:28px}.lab-head p{margin:0 0 7px;color:#7c8b9a;font:800 10px/1 system-ui,sans-serif;letter-spacing:.26em}.lab-head h1{margin:0;font-size:28px;letter-spacing:.04em}.lab-head small{display:block;margin-top:8px;color:var(--muted);font-size:11px}
 .preview-panel{padding:30px 28px 34px;border:1px solid rgba(125,145,160,.14);border-radius:24px;background:rgba(3,7,11,.40);box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 24px 70px rgba(0,0,0,.38)}
-.secondary-panel{margin-top:22px}.preview-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;margin:0 0 28px}.preview-row:last-child{margin-bottom:0}.preview-label{width:100%;text-align:center;color:#637181;font:800 9px/1 system-ui,sans-serif;letter-spacing:.20em;margin-bottom:15px}
-.variant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.variant-card{min-width:0;padding:18px;border:1px solid rgba(122,141,157,.12);border-radius:17px;background:rgba(1,5,9,.34);display:grid;gap:14px}.variant-meta{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:9px;align-items:center}.variant-meta b{grid-row:1/span 2;font:900 22px/1 system-ui,sans-serif;color:#dfe8ef}.variant-meta span{font:800 9px/1.2 system-ui,sans-serif;letter-spacing:.13em;color:#8a9aa8}.variant-meta small{font-size:10px;color:#667584;margin-top:3px}.variant-demo{width:100%;min-width:0;height:70px;border-radius:7px!important}
+.secondary-panel{margin-top:22px}.preview-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;margin:0 0 28px}.preview-row:last-child{margin-bottom:0}.preview-label{width:100%;text-align:center;color:#637181;font:800 9px/1 system-ui,sans-serif;letter-spacing:.20em;margin-bottom:10px}.panel-note{margin:0 auto 20px;max-width:720px;text-align:center;color:#697887;font-size:10px;line-height:1.65}
+.variant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.variant-card{min-width:0;padding:18px;border:1px solid rgba(122,141,157,.12);border-radius:17px;background:rgba(1,5,9,.34);display:grid;gap:14px;overflow:visible}.variant-meta{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:9px;align-items:center}.variant-meta b{grid-row:1/span 2;font:900 22px/1 system-ui,sans-serif;color:#dfe8ef}.variant-meta span{font:800 9px/1.2 system-ui,sans-serif;letter-spacing:.13em;color:#8a9aa8}.variant-meta small{font-size:10px;color:#667584;margin-top:3px}.variant-demo{width:100%;min-width:0;height:70px;border-radius:7px!important}
 
+/* Shared dark glass base. */
 .glass-btn{
   --glass-radius:999px;
-  position:relative;isolation:isolate;display:inline-grid;place-items:center;
+  --spectral-opacity:.90;
+  position:relative;z-index:1;isolation:isolate;display:inline-grid;place-items:center;
   min-width:172px;height:60px;padding:0 34px;
   border:1px solid rgba(22,39,48,.88);border-radius:var(--glass-radius);overflow:hidden;cursor:pointer;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;color:#eef3f7;
@@ -22,61 +24,117 @@ body{min-height:100vh;display:grid;place-items:center;padding:38px 26px;backgrou
 }
 .glass-btn>span,.glass-btn>svg{position:relative;z-index:4}
 
-/* Shared spectral source. Variants change only the optical falloff. */
+/* Same horizontal spectral source for every inner-glow proposal. The mask below
+   is the opacity curve: high at the rim, midpoint crushed hard, then a very
+   faint tail. This is intentionally not a linear fade. */
 .glass-btn::before{
   content:"";position:absolute;z-index:1;pointer-events:none;inset:-2px;border-radius:inherit;opacity:0;
-  background:linear-gradient(90deg,rgba(215,89,168,.92) 0%,rgba(207,111,139,.78) 9%,rgba(191,188,75,.82) 27%,rgba(107,183,126,.72) 42%,rgba(71,201,190,.88) 52%,rgba(64,149,207,.90) 67%,rgba(77,101,190,.88) 82%,rgba(194,92,197,.90) 100%);
+  background:linear-gradient(90deg,rgba(215,89,168,.94) 0%,rgba(207,111,139,.82) 9%,rgba(191,188,75,.84) 27%,rgba(107,183,126,.76) 42%,rgba(71,201,190,.91) 52%,rgba(64,149,207,.93) 67%,rgba(77,101,190,.91) 82%,rgba(194,92,197,.93) 100%);
   transition:opacity .18s ease;
 }
+
+/* Neutral lower glass reflection, kept narrow so it does not read as another
+   vertical gradient. */
 .glass-btn::after{
-  content:"";position:absolute;z-index:2;pointer-events:none;inset:1px;border-radius:inherit;opacity:.28;
-  background:linear-gradient(180deg,transparent 0 72%,rgba(183,204,209,.025) 82%,rgba(205,219,222,.08) 92%,rgba(225,232,234,.16) 100%);
-  box-shadow:inset 0 -7px 10px -9px rgba(210,232,240,.10),inset 5px -5px 10px -11px rgba(182,216,228,.07),inset -5px -5px 10px -11px rgba(182,216,228,.07);
-  filter:blur(1.15px);transition:opacity .18s ease,box-shadow .18s ease,background .18s ease;
+  content:"";position:absolute;z-index:2;pointer-events:none;inset:1px;border-radius:inherit;opacity:.24;
+  background:linear-gradient(180deg,transparent 0 84%,rgba(189,207,211,.018) 90%,rgba(211,224,226,.065) 96%,rgba(231,236,237,.15) 100%);
+  box-shadow:inset 0 -7px 10px -9px rgba(210,232,240,.10),inset 5px -5px 10px -11px rgba(182,216,228,.06),inset -5px -5px 10px -11px rgba(182,216,228,.06);
+  filter:blur(1.05px);transition:opacity .18s ease,box-shadow .18s ease,background .18s ease;
 }
 
-/* A — narrowest. Fast falloff, almost rim-only. */
-.variant-a::before{
-  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.82) 3%,rgba(0,0,0,.46) 6%,rgba(0,0,0,.18) 9%,rgba(0,0,0,.05) 12%,transparent 16%,transparent 86%,rgba(0,0,0,.04) 89%,rgba(0,0,0,.14) 92%,rgba(0,0,0,.42) 95%,rgba(0,0,0,.82) 98%,#000 100%);
-  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.82) 3%,rgba(0,0,0,.46) 6%,rgba(0,0,0,.18) 9%,rgba(0,0,0,.05) 12%,transparent 16%,transparent 86%,rgba(0,0,0,.04) 89%,rgba(0,0,0,.14) 92%,rgba(0,0,0,.42) 95%,rgba(0,0,0,.82) 98%,#000 100%);
-  filter:blur(3.2px) saturate(114%);
+/* A — cliff: very fast shoulder, then almost nothing. */
+.inner-a{--spectral-opacity:.90}
+.inner-a::before{
+  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.96) 1%,rgba(0,0,0,.62) 2.4%,rgba(0,0,0,.22) 4.2%,rgba(0,0,0,.060) 6.2%,rgba(0,0,0,.014) 9.2%,rgba(0,0,0,.003) 13%,transparent 19%,transparent 81%,rgba(0,0,0,.003) 87%,rgba(0,0,0,.014) 90.8%,rgba(0,0,0,.060) 93.8%,rgba(0,0,0,.22) 95.8%,rgba(0,0,0,.62) 97.6%,rgba(0,0,0,.96) 99%,#000 100%);
+  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.96) 1%,rgba(0,0,0,.62) 2.4%,rgba(0,0,0,.22) 4.2%,rgba(0,0,0,.060) 6.2%,rgba(0,0,0,.014) 9.2%,rgba(0,0,0,.003) 13%,transparent 19%,transparent 81%,rgba(0,0,0,.003) 87%,rgba(0,0,0,.014) 90.8%,rgba(0,0,0,.060) 93.8%,rgba(0,0,0,.22) 95.8%,rgba(0,0,0,.62) 97.6%,rgba(0,0,0,.96) 99%,#000 100%);
+  filter:blur(2.2px) saturate(116%);
 }
-.variant-a::after{background:linear-gradient(180deg,transparent 0 82%,rgba(190,210,214,.03) 89%,rgba(218,229,231,.13) 96%,rgba(235,239,240,.24) 100%)}
 
-/* B — balanced natural glow. Recommended midpoint. */
-.variant-b::before{
-  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.90) 3%,rgba(0,0,0,.63) 6%,rgba(0,0,0,.34) 9%,rgba(0,0,0,.15) 12%,rgba(0,0,0,.055) 15%,transparent 20%,transparent 82%,rgba(0,0,0,.045) 86%,rgba(0,0,0,.13) 89%,rgba(0,0,0,.31) 92%,rgba(0,0,0,.61) 95%,rgba(0,0,0,.88) 98%,#000 100%);
-  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.90) 3%,rgba(0,0,0,.63) 6%,rgba(0,0,0,.34) 9%,rgba(0,0,0,.15) 12%,rgba(0,0,0,.055) 15%,transparent 20%,transparent 82%,rgba(0,0,0,.045) 86%,rgba(0,0,0,.13) 89%,rgba(0,0,0,.31) 92%,rgba(0,0,0,.61) 95%,rgba(0,0,0,.88) 98%,#000 100%);
-  filter:blur(4.5px) saturate(112%);
+/* B — compressed midpoint: strong rim, sharply lowered middle, faint tail. */
+.inner-b{--spectral-opacity:.91}
+.inner-b::before{
+  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.94) 1.2%,rgba(0,0,0,.70) 2.8%,rgba(0,0,0,.34) 4.7%,rgba(0,0,0,.115) 6.8%,rgba(0,0,0,.034) 9.5%,rgba(0,0,0,.010) 13%,rgba(0,0,0,.003) 18%,transparent 26%,transparent 74%,rgba(0,0,0,.003) 82%,rgba(0,0,0,.010) 87%,rgba(0,0,0,.034) 90.5%,rgba(0,0,0,.115) 93.2%,rgba(0,0,0,.34) 95.3%,rgba(0,0,0,.70) 97.2%,rgba(0,0,0,.94) 98.8%,#000 100%);
+  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.94) 1.2%,rgba(0,0,0,.70) 2.8%,rgba(0,0,0,.34) 4.7%,rgba(0,0,0,.115) 6.8%,rgba(0,0,0,.034) 9.5%,rgba(0,0,0,.010) 13%,rgba(0,0,0,.003) 18%,transparent 26%,transparent 74%,rgba(0,0,0,.003) 82%,rgba(0,0,0,.010) 87%,rgba(0,0,0,.034) 90.5%,rgba(0,0,0,.115) 93.2%,rgba(0,0,0,.34) 95.3%,rgba(0,0,0,.70) 97.2%,rgba(0,0,0,.94) 98.8%,#000 100%);
+  filter:blur(3px) saturate(114%);
 }
-.variant-b::after{background:linear-gradient(180deg,transparent 0 76%,rgba(181,204,209,.025) 84%,rgba(204,220,223,.09) 93%,rgba(229,235,236,.24) 100%)}
 
-/* C — softer halo but still stops well before the centre. */
-.variant-c::before{
-  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.92) 4%,rgba(0,0,0,.69) 8%,rgba(0,0,0,.43) 12%,rgba(0,0,0,.22) 16%,rgba(0,0,0,.085) 20%,rgba(0,0,0,.025) 24%,transparent 29%,transparent 75%,rgba(0,0,0,.025) 80%,rgba(0,0,0,.08) 84%,rgba(0,0,0,.20) 88%,rgba(0,0,0,.43) 92%,rgba(0,0,0,.72) 96%,#000 100%);
-  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.92) 4%,rgba(0,0,0,.69) 8%,rgba(0,0,0,.43) 12%,rgba(0,0,0,.22) 16%,rgba(0,0,0,.085) 20%,rgba(0,0,0,.025) 24%,transparent 29%,transparent 75%,rgba(0,0,0,.025) 80%,rgba(0,0,0,.08) 84%,rgba(0,0,0,.20) 88%,rgba(0,0,0,.43) 92%,rgba(0,0,0,.72) 96%,#000 100%);
-  filter:blur(6px) saturate(108%);
+/* C — long tail: midpoint is still crushed, but the last 1–3% opacity survives
+   farther inward. */
+.inner-c{--spectral-opacity:.90}
+.inner-c::before{
+  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.91) 1.4%,rgba(0,0,0,.62) 3.1%,rgba(0,0,0,.28) 5.2%,rgba(0,0,0,.090) 7.8%,rgba(0,0,0,.028) 11%,rgba(0,0,0,.011) 16%,rgba(0,0,0,.004) 23%,rgba(0,0,0,.001) 32%,transparent 41%,transparent 59%,rgba(0,0,0,.001) 68%,rgba(0,0,0,.004) 77%,rgba(0,0,0,.011) 84%,rgba(0,0,0,.028) 89%,rgba(0,0,0,.090) 92.2%,rgba(0,0,0,.28) 94.8%,rgba(0,0,0,.62) 96.9%,rgba(0,0,0,.91) 98.6%,#000 100%);
+  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.91) 1.4%,rgba(0,0,0,.62) 3.1%,rgba(0,0,0,.28) 5.2%,rgba(0,0,0,.090) 7.8%,rgba(0,0,0,.028) 11%,rgba(0,0,0,.011) 16%,rgba(0,0,0,.004) 23%,rgba(0,0,0,.001) 32%,transparent 41%,transparent 59%,rgba(0,0,0,.001) 68%,rgba(0,0,0,.004) 77%,rgba(0,0,0,.011) 84%,rgba(0,0,0,.028) 89%,rgba(0,0,0,.090) 92.2%,rgba(0,0,0,.28) 94.8%,rgba(0,0,0,.62) 96.9%,rgba(0,0,0,.91) 98.6%,#000 100%);
+  filter:blur(4.1px) saturate(111%);
 }
-.variant-c::after{background:linear-gradient(180deg,transparent 0 73%,rgba(181,203,208,.025) 82%,rgba(203,219,222,.08) 91%,rgba(226,234,235,.22) 100%)}
 
-/* D — B's spectral width, stronger lower glass reflection. */
-.variant-d::before{
-  -webkit-mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.90) 3%,rgba(0,0,0,.63) 6%,rgba(0,0,0,.34) 9%,rgba(0,0,0,.15) 12%,rgba(0,0,0,.055) 15%,transparent 20%,transparent 82%,rgba(0,0,0,.045) 86%,rgba(0,0,0,.13) 89%,rgba(0,0,0,.31) 92%,rgba(0,0,0,.61) 95%,rgba(0,0,0,.88) 98%,#000 100%);
-  mask:linear-gradient(180deg,#000 0%,rgba(0,0,0,.90) 3%,rgba(0,0,0,.63) 6%,rgba(0,0,0,.34) 9%,rgba(0,0,0,.15) 12%,rgba(0,0,0,.055) 15%,transparent 20%,transparent 82%,rgba(0,0,0,.045) 86%,rgba(0,0,0,.13) 89%,rgba(0,0,0,.31) 92%,rgba(0,0,0,.61) 95%,rgba(0,0,0,.88) 98%,#000 100%);
-  filter:blur(4.5px) saturate(112%);
+/* D — hot rim: highest edge energy, lowest inner density. */
+.inner-d{--spectral-opacity:.96}
+.inner-d::before{
+  -webkit-mask:linear-gradient(180deg,#000 0%,#000 1%,rgba(0,0,0,.76) 1.9%,rgba(0,0,0,.27) 3.2%,rgba(0,0,0,.055) 5%,rgba(0,0,0,.010) 7.2%,rgba(0,0,0,.002) 10%,transparent 15%,transparent 85%,rgba(0,0,0,.002) 90%,rgba(0,0,0,.010) 92.8%,rgba(0,0,0,.055) 95%,rgba(0,0,0,.27) 96.8%,rgba(0,0,0,.76) 98.1%,#000 99%,#000 100%);
+  mask:linear-gradient(180deg,#000 0%,#000 1%,rgba(0,0,0,.76) 1.9%,rgba(0,0,0,.27) 3.2%,rgba(0,0,0,.055) 5%,rgba(0,0,0,.010) 7.2%,rgba(0,0,0,.002) 10%,transparent 15%,transparent 85%,rgba(0,0,0,.002) 90%,rgba(0,0,0,.010) 92.8%,rgba(0,0,0,.055) 95%,rgba(0,0,0,.27) 96.8%,rgba(0,0,0,.76) 98.1%,#000 99%,#000 100%);
+  filter:blur(2.5px) saturate(120%);
 }
-.variant-d::after{background:linear-gradient(180deg,transparent 0 72%,rgba(170,196,202,.035) 80%,rgba(198,217,221,.13) 89%,rgba(224,233,235,.34) 97%,rgba(242,244,244,.48) 100%)}
+
+/* Rainbow drop-glow lives outside the clipped button, so it can replace the
+   ordinary black drop shadow without contaminating the button face. */
+.halo-wrap{position:relative;isolation:isolate;display:inline-grid;place-items:center;border-radius:14px;overflow:visible}
+.variant-card .halo-wrap{width:100%}
+.halo-wrap::before{
+  content:"";position:absolute;z-index:0;pointer-events:none;border-radius:inherit;opacity:0;
+  background:linear-gradient(90deg,rgba(215,89,168,.92) 0%,rgba(207,111,139,.76) 9%,rgba(191,188,75,.80) 27%,rgba(107,183,126,.70) 42%,rgba(71,201,190,.88) 52%,rgba(64,149,207,.90) 67%,rgba(77,101,190,.87) 82%,rgba(194,92,197,.90) 100%);
+  transition:opacity .20s ease,filter .20s ease;
+}
+.halo-wrap>.glass-btn{z-index:1}
+
+/* 1 — tight: compact halo directly under the button. */
+.halo-1::before{
+  inset:18px 12px -9px;
+  transform:translateY(5px);
+  filter:blur(5.5px) saturate(112%);
+  -webkit-mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.025) 24%,rgba(0,0,0,.10) 42%,rgba(0,0,0,.34) 62%,rgba(0,0,0,.72) 80%,#000 100%);
+  mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.025) 24%,rgba(0,0,0,.10) 42%,rgba(0,0,0,.34) 62%,rgba(0,0,0,.72) 80%,#000 100%);
+}
+
+/* 2 — balanced: medium spread with a Gaussian-looking tail. */
+.halo-2::before{
+  inset:14px 3px -16px;
+  transform:translateY(6px);
+  filter:blur(9px) saturate(108%);
+  -webkit-mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.018) 18%,rgba(0,0,0,.065) 34%,rgba(0,0,0,.20) 52%,rgba(0,0,0,.48) 70%,rgba(0,0,0,.78) 86%,#000 100%);
+  mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.018) 18%,rgba(0,0,0,.065) 34%,rgba(0,0,0,.20) 52%,rgba(0,0,0,.48) 70%,rgba(0,0,0,.78) 86%,#000 100%);
+}
+
+/* 3 — airy: broad, low-energy bloom. Blur itself supplies most of the decay. */
+.halo-3::before{
+  inset:11px -11px -25px;
+  transform:translateY(7px);
+  filter:blur(15px) saturate(103%);
+  -webkit-mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.012) 15%,rgba(0,0,0,.042) 29%,rgba(0,0,0,.12) 46%,rgba(0,0,0,.28) 63%,rgba(0,0,0,.54) 79%,rgba(0,0,0,.82) 92%,#000 100%);
+  mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.012) 15%,rgba(0,0,0,.042) 29%,rgba(0,0,0,.12) 46%,rgba(0,0,0,.28) 63%,rgba(0,0,0,.54) 79%,rgba(0,0,0,.82) 92%,#000 100%);
+}
+
+/* 4 — low bloom: stronger energy pushed downward, with a soft long footer. */
+.halo-4::before{
+  inset:20px -6px -31px;
+  transform:translateY(8px);
+  filter:blur(12px) saturate(114%);
+  -webkit-mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.006) 22%,rgba(0,0,0,.030) 38%,rgba(0,0,0,.11) 53%,rgba(0,0,0,.32) 68%,rgba(0,0,0,.67) 84%,#000 100%);
+  mask:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.006) 22%,rgba(0,0,0,.030) 38%,rgba(0,0,0,.11) 53%,rgba(0,0,0,.32) 68%,rgba(0,0,0,.67) 84%,#000 100%);
+}
 
 @media (hover:hover) and (pointer:fine){
-  .glass-btn:hover{filter:brightness(1.02) saturate(1.03);background:linear-gradient(180deg,rgba(0,0,0,.035),rgba(255,255,255,.045)),rgba(8,18,25,.38);box-shadow:inset 0 1px 0 rgba(223,225,227,.90),inset 0 -1px 0 rgba(228,230,232,.95),inset 1px 0 0 rgba(154,161,168,.58),inset -1px 0 0 rgba(154,161,168,.58),0 0 0 1px rgba(128,134,140,.84),0 0 0 2px rgba(226,230,233,.13),0 8px 22px rgba(0,0,0,.38)}
-  .glass-btn:hover::before{opacity:.86}
-  .glass-btn:hover::after{opacity:1}
-  .variant-a:hover::after{box-shadow:inset 0 -8px 11px -9px rgba(226,235,237,.34)}
-  .variant-b:hover::after{box-shadow:inset 0 -10px 14px -9px rgba(226,235,237,.42),inset 8px -4px 15px -16px rgba(234,188,179,.17),inset -8px -4px 15px -16px rgba(190,191,232,.18)}
-  .variant-c:hover::after{box-shadow:inset 0 -11px 16px -9px rgba(226,235,237,.39)}
-  .variant-d:hover::after{box-shadow:inset 0 -13px 17px -9px rgba(234,240,241,.58),inset 9px -4px 16px -16px rgba(234,188,179,.22),inset -9px -4px 16px -16px rgba(190,191,232,.23)}
+  .glass-btn:hover{filter:brightness(1.02) saturate(1.03);background:linear-gradient(180deg,rgba(0,0,0,.035),rgba(255,255,255,.042)),rgba(8,18,25,.38);box-shadow:inset 0 1px 0 rgba(223,225,227,.90),inset 0 -1px 0 rgba(228,230,232,.95),inset 1px 0 0 rgba(154,161,168,.58),inset -1px 0 0 rgba(154,161,168,.58),0 0 0 1px rgba(128,134,140,.84),0 0 0 2px rgba(226,230,233,.13),0 8px 22px rgba(0,0,0,.34)}
+  .glass-btn:hover::before{opacity:var(--spectral-opacity)}
+  .glass-btn:hover::after{opacity:.70;box-shadow:inset 0 -8px 11px -9px rgba(226,235,237,.26)}
+  .halo-wrap:hover::before{opacity:.68}
+  .halo-1:hover::before{opacity:.56}
+  .halo-2:hover::before{opacity:.64}
+  .halo-3:hover::before{opacity:.42}
+  .halo-4:hover::before{opacity:.72}
+  .halo-wrap:hover>.glass-btn{box-shadow:inset 0 1px 0 rgba(223,225,227,.90),inset 0 -1px 0 rgba(228,230,232,.95),inset 1px 0 0 rgba(154,161,168,.58),inset -1px 0 0 rgba(154,161,168,.58),0 0 0 1px rgba(128,134,140,.84),0 0 0 2px rgba(226,230,233,.13),0 5px 13px rgba(0,0,0,.16)}
 }
 
 .glass-btn:active{transform:translateY(1px) scale(.988);filter:brightness(.95)}.glass-btn:focus-visible{outline:2px solid rgba(205,232,244,.72);outline-offset:4px}
 .glass-btn.primary,.glass-btn.violet{color:#f1f5f8}.glass-btn.reference-circle{--glass-radius:50%;min-width:0;width:260px;height:260px;padding:0;font-size:16px}.glass-btn.wide{min-width:330px}.glass-btn.compact{min-width:128px;height:46px;padding:0 24px;font-size:12px}.glass-btn.rounded{--glass-radius:18px;min-width:180px}.glass-btn.square{--glass-radius:18px;min-width:0;width:74px;height:74px;padding:0}.glass-btn.circle{--glass-radius:50%;min-width:0;width:74px;height:74px;padding:0;font-size:20px}.glass-btn .preview-pause-icon{width:20px;height:20px;display:block;fill:#eef3f7;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}.note{text-align:center;margin-top:22px;color:#63707e;font-size:10px}
+.halo-wrap:has(.reference-circle),.halo-wrap:has(.circle){border-radius:50%}.halo-wrap:has(.square),.halo-wrap:has(.rounded){border-radius:18px}
 @media(max-width:760px){body{padding:24px 14px}.preview-panel{padding:24px 14px}.variant-grid{grid-template-columns:1fr}.glass-btn.wide{min-width:min(330px,84vw)}.glass-btn.reference-circle{width:190px;height:190px}}
