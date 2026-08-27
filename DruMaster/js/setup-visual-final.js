@@ -2,6 +2,32 @@
   const setup=document.querySelector('#setup');
   if(!setup)return;
 
+  /* Render the exact user-provided main logo as a real <img> element.
+     The same PNG is already embedded in setup-main-logo-test.css as a data URI;
+     converting that background to an img avoids background/layout collapsing. */
+  const brand=setup.querySelector('.brand');
+  if(brand){
+    const bg=getComputedStyle(brand).backgroundImage||'';
+    const m=bg.match(/^url\(["']?(data:image\/png;base64,[^"')]+)["']?\)$/);
+    if(m){
+      const img=document.createElement('img');
+      img.src=m[1];
+      img.alt='DruMaster';
+      img.draggable=false;
+      brand.replaceChildren(img);
+      brand.style.setProperty('background-image','none','important');
+      brand.style.setProperty('display','flex','important');
+      brand.style.setProperty('align-items','center','important');
+      brand.style.setProperty('justify-content','center','important');
+      img.style.setProperty('display','block','important');
+      img.style.setProperty('width','100%','important');
+      img.style.setProperty('height','100%','important');
+      img.style.setProperty('object-fit','contain','important');
+      img.style.setProperty('object-position','center','important');
+      img.style.setProperty('pointer-events','none','important');
+    }
+  }
+
   if(!setup.querySelector('.setup-moving-lights')){
     const field=document.createElement('div');
     field.className='setup-moving-lights';
