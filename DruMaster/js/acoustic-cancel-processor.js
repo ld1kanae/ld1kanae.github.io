@@ -35,8 +35,9 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     this.candidates=[];
 
     /* After the environment-noise capture, the next RAW session is pad
-       registration. Do not time-delay or queue valid strikes. Only hold the
-       registration at 0/8 until a clear first strike is actually heard. */
+       registration. Registration remains at 0/8 until an actual transient
+       candidate arrives, but the first strike is not subjected to a special
+       high-amplitude threshold. */
     this.firstStrikeArmed=false;
     this.waitingForFirstStrike=false;
 
@@ -95,10 +96,14 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     for(let i=start;i<end;i++){const x=c.buf[i],a=Math.abs(x);sum+=x*x;if(a>peak)peak=a;}
     const rms=Math.sqrt(sum/Math.max(1,end-start));
     const noise=Math.max(1e-6,this.candidateNoise);
-    /* The first event must stand clearly above the measured room-noise RMS.
-       Once this first strike is accepted, registration immediately returns to
-       normal 1/8 ... 8/8 counting without any ten-second delay. */
-    return peak>=Math.max(.0007,noise*3.5) && rms>=Math.max(.00018,noise*1.55);
+    const crest=peak/Math.max(1e-7,rms);
+    /* Candidate extraction already requires a fast rising edge. The first-hit
+       guard therefore only rejects near-floor fluctuations; it must not demand
+       several times the room-noise level, which loses real pad strikes on
+       quieter microphones. Either a modest peak rise or a modest RMS rise is
+       enough when the event has a transient crest. */
+    const levelClear=peak>=Math.max(.00016,noise*1.28) || rms>=Math.max(.00005,noise*1.06);
+    return levelClear && crest>=1.18;
   }
   emitCandidate(c){
     if(this.candidateMode==='raw'&&this.waitingForFirstStrike){
@@ -123,12 +128,12 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     const a=Math.abs(sample);
     this.candidateFast+=.28*(a-this.candidateFast);
     this.candidateSlow+=.006*(a-this.candidateSlow);
-    const floor=Math.max(.00014,this.candidateNoise*.56);
-    const trigger=Math.max(floor,this.candidateSlow*1.58);
-    const release=Math.max(floor*.56,this.candidateSlow*1.10);
+    const floor=Math.max(.00010,this.candidateNoise*.42);
+    const trigger=Math.max(floor,this.candidateSlow*1.42);
+    const release=Math.max(floor*.52,this.candidateSlow*1.06);
 
     if(!this.candidateArmed&&this.candidateFast<release)this.candidateArmed=true;
-    if(this.candidateMode!=='off'&&this.candidateArmed&&this.candidateFast>trigger&&a>floor*.78){
+    if(this.candidateMode!=='off'&&this.candidateArmed&&this.candidateFast>trigger&&a>floor*.72){
       this.startCandidate(sample);
       this.candidateArmed=false;
     }
