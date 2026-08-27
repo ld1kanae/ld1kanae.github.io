@@ -1,6 +1,6 @@
 /* Approved setup-screen visual treatment.
    Scope: setup background, glass material, approved accent colors, requested BPM alignment,
-   dropdown material, and approved CV1 seekbar styling only. */
+   dropdown material, approved CV1 seekbar styling, and approved toggle glass values only. */
 .setup{
   --setup-seek-cyan:#66D5FF;
   --setup-seek-mid:#8C8AFF;
@@ -55,11 +55,14 @@
 .setup .tempo-box::before,
 .setup .volume-box::before{content:none!important}
 
-/* Toggle states.
+/* Toggle values approved in preview-toggle-glass-editor.html.
    OFF: transparent outline only.
-   ON: static version of the approved button-hover spectral glass, with the white thumb preserved. */
+   ON: static spectral glass with preserved white thumb. */
 .setup .option i{
-  border:1px solid rgba(180,216,239,.275);
+  width:48px;
+  height:27px;
+  border:1px solid rgba(180,216,239,.28);
+  border-radius:999px;
   background:transparent;
   box-shadow:none;
   overflow:hidden
@@ -72,30 +75,43 @@
   pointer-events:none;
   opacity:0;
   background:
-    linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.015) 46%,rgba(255,255,255,.07)),
-    linear-gradient(337.5deg,
-      rgba(215,89,168,.30) 0%,
-      rgba(207,111,139,.24) 9%,
-      rgba(191,188,75,.22) 27%,
-      rgba(107,183,126,.20) 42%,
-      rgba(71,201,190,.26) 52%,
-      rgba(64,149,207,.27) 67%,
-      rgba(77,101,190,.25) 82%,
-      rgba(194,92,197,.28) 100%);
+    linear-gradient(180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.095) 46%,
+      rgba(255,255,255,.28) 100%),
+    linear-gradient(297.5deg,
+      rgba(215,89,168,.90) 0%,
+      rgba(207,111,139,.72) 9%,
+      rgba(191,188,75,.66) 27%,
+      rgba(107,183,126,.60) 42%,
+      rgba(71,201,190,.78) 52%,
+      rgba(64,149,207,.81) 67%,
+      rgba(77,101,190,.75) 82%,
+      rgba(194,92,197,.84) 100%);
+  background-size:100% 100%,115% 100%;
+  background-position:center,50% center;
+  background-repeat:no-repeat;
   transition:opacity .2s ease
 }
 .setup .option input:checked+i{
-  border-color:rgba(220,231,241,.72);
-  background:rgba(18,27,39,.34);
+  border-color:rgba(220,231,241,.60);
+  background:transparent;
   box-shadow:
     inset 0 1px 0 rgba(223,225,227,.76),
     inset 0 -1px 0 rgba(228,230,232,.78),
     inset 1px 0 0 rgba(154,161,168,.42),
     inset -1px 0 0 rgba(154,161,168,.42),
-    0 0 9px rgba(105,194,238,.18)
+    0 2px 7px rgba(105,194,238,.52)
 }
 .setup .option input:checked+i::before{opacity:1}
-.setup .option i::after{z-index:2}
+.setup .option i::after{
+  z-index:2;
+  width:20px;
+  height:20px;
+  left:3px;
+  top:3px
+}
+.setup .option input:checked+i::after{transform:translateX(22px)}
 
 /* Match VOLUME typography to the existing TEMPO typography. */
 .setup .volume-box>div:first-child>span{
@@ -194,5 +210,17 @@
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .setup>.setup-moving-lights{display:none!important}
+  .setup .option>i{
+    width:42px!important;
+    height:23px!important;
+    border-radius:999px!important
+  }
+  .setup .option>i::after{
+    width:16px!important;
+    height:16px!important;
+    left:3px!important;
+    top:3px!important
+  }
+  .setup .option input:checked+i::after{transform:translateX(20px)!important}
 }
 @media (prefers-reduced-motion:reduce){.setup>.setup-moving-lights .setup-light{animation:none!important}}
