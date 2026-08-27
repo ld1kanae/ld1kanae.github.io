@@ -2,30 +2,28 @@
   const setup=document.querySelector('#setup');
   if(!setup)return;
 
-  /* Render the exact user-provided main logo as a real <img> element.
-     The same PNG is already embedded in setup-main-logo-test.css as a data URI;
-     converting that background to an img avoids background/layout collapsing. */
+  /* Load the approved SVG asset as text and insert it directly into the DOM.
+     This avoids the external-SVG <img> rendering issue while preserving the
+     user's finished SVG exactly, including its mask/slit edits. */
   const brand=setup.querySelector('.brand');
   if(brand){
-    const bg=getComputedStyle(brand).backgroundImage||'';
-    const m=bg.match(/^url\(["']?(data:image\/png;base64,[^"')]+)["']?\)$/);
-    if(m){
-      const img=document.createElement('img');
-      img.src=m[1];
-      img.alt='DruMaster';
-      img.draggable=false;
-      brand.replaceChildren(img);
-      brand.style.setProperty('background-image','none','important');
-      brand.style.setProperty('display','flex','important');
-      brand.style.setProperty('align-items','center','important');
-      brand.style.setProperty('justify-content','center','important');
-      img.style.setProperty('display','block','important');
-      img.style.setProperty('width','100%','important');
-      img.style.setProperty('height','100%','important');
-      img.style.setProperty('object-fit','contain','important');
-      img.style.setProperty('object-position','center','important');
-      img.style.setProperty('pointer-events','none','important');
-    }
+    fetch('assets/DruMaster.svg?v=20260828-mainlogoinline1',{cache:'no-store'})
+      .then(res=>{
+        if(!res.ok)throw new Error(`logo ${res.status}`);
+        return res.text();
+      })
+      .then(svgText=>{
+        const doc=new DOMParser().parseFromString(svgText,'image/svg+xml');
+        const svg=doc.documentElement;
+        if(!svg||svg.nodeName.toLowerCase()!=='svg'||doc.querySelector('parsererror'))throw new Error('invalid logo svg');
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        svg.setAttribute('role','img');
+        svg.setAttribute('aria-label','DruMaster');
+        svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+        brand.replaceChildren(document.importNode(svg,true));
+      })
+      .catch(err=>console.error('DruMaster logo load failed',err));
   }
 
   if(!setup.querySelector('.setup-moving-lights')){
@@ -128,8 +126,6 @@
     if(!svg)return;
     const box=track.getBoundingClientRect();
     if(box.width<2||box.height<2)return;
-    /* A 1px CSS border is centered 0.5px inside the element edge. Match that
-       centerline exactly so the animated rim sits on the toggle outline. */
     const inset=.5;
     const rx=Math.max(0,(box.height-inset*2)/2);
     svg.setAttribute('viewBox',`0 0 ${box.width} ${box.height}`);
