@@ -1,11 +1,12 @@
-/* Approved setup-screen visual treatment. Logo and action buttons are intentionally untouched. */
+/* Approved setup-screen visual treatment.
+   Scope: setup background, glass material, approved accent colors, and requested BPM alignment only.
+   Existing typography, spacing, control geometry and button styling stay untouched. */
 .setup{
   --setup-seek-cyan:#66D5FF;
   --setup-seek-mid:#8C8AFF;
   --setup-seek-violet:#BAA4FF;
   --setup-toggle-on:#8C8AFF;
   --setup-glass-alpha:.02;
-  --setup-chroma:0px;
   position:relative;
   isolation:isolate;
   overflow:hidden;
@@ -16,7 +17,7 @@
     linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%);
 }
 
-/* PC Moving Lights. Smartphone hides this layer and keeps the static background above. */
+/* PC Moving Lights. Smartphone keeps the same background static. */
 .setup>.setup-moving-lights{position:absolute;z-index:0;inset:0;overflow:hidden;pointer-events:none}
 .setup>.setup-moving-lights .setup-light{position:absolute;border-radius:50%;filter:blur(46px);mix-blend-mode:screen;opacity:.74;will-change:transform}
 .setup>.setup-moving-lights .setup-light-cyan{
@@ -39,15 +40,11 @@
 @keyframes setupVioletMove{0%{transform:translate(-14px,20px) scale(1)}50%{transform:translate(20px,-12px) scale(1.05)}100%{transform:translate(46px,4px) scale(1)}}
 .setup>*:not(.setup-moving-lights){position:relative;z-index:2}
 
-/* Glass panels: alpha .02, blur 0, saturation 100%, chromatic 0px.
-   Edge treatment is outline-only: no internal gradient, sheen or blurred rim. */
+/* Glass material: alpha .02, no chromatic split, outline-only edge. */
 .setup .song-card,
 .setup .options,
 .setup .tempo-box,
 .setup .volume-box{
-  position:relative;
-  isolation:isolate;
-  overflow:visible;
   border-color:rgba(180,216,239,.275);
   background:rgba(220,240,255,var(--setup-glass-alpha));
   -webkit-backdrop-filter:saturate(100%);
@@ -59,23 +56,29 @@
 .setup .tempo-box::before,
 .setup .volume-box::before{content:none!important}
 
-/* PC volume geometry remains the existing one; only the approved material changes. */
-.setup .volume-box{border-color:rgba(180,216,239,.275)}
-
-/* Toggle matches the CV1 seek-mid violet. */
+/* Approved toggle color only; preserve the existing switch size and motion. */
 .setup .option input:checked+i{
   background:var(--setup-toggle-on);
   box-shadow:0 0 12px rgba(140,138,255,.22),inset 0 0 0 1px rgba(255,255,255,.05)
 }
 
-/* CV1 active range: Cyan -> mid violet -> soft violet, then neutral track. */
-.setup .tempo-box input[type="range"],
-.setup .volume-box input[type="range"]{
-  appearance:none;-webkit-appearance:none;height:16px;background:transparent;accent-color:var(--setup-seek-mid)
+/* Match VOLUME typography to the existing TEMPO typography. */
+.setup .volume-box>div:first-child>span{
+  font-size:inherit;
+  font-weight:inherit;
+  letter-spacing:normal
 }
+.setup .volume-box>div:first-child>strong{
+  font-size:inherit;
+  color:inherit;
+  font-variant-numeric:normal
+}
+
+/* CV1 colors only. Do not replace native control dimensions or thumb geometry. */
+.setup .tempo-box input[type="range"],
+.setup .volume-box input[type="range"]{accent-color:var(--setup-seek-mid)}
 .setup .tempo-box input[type="range"]::-webkit-slider-runnable-track,
 .setup .volume-box input[type="range"]::-webkit-slider-runnable-track{
-  height:7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;
   background:linear-gradient(90deg,
     var(--setup-seek-cyan) 0%,
     var(--setup-seek-mid) var(--setup-range-mid,29%),
@@ -83,20 +86,13 @@
     rgba(255,255,255,.18) var(--setup-range-progress,56%),
     rgba(255,255,255,.18) 100%)
 }
-.setup .tempo-box input[type="range"]::-webkit-slider-thumb,
-.setup .volume-box input[type="range"]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:15px;height:15px;margin-top:-5px;border:0;border-radius:50%;background:#D7F3FF;box-shadow:0 0 10px rgba(123,220,255,.2)
-}
-.setup .tempo-box input[type="range"]::-moz-range-track,
-.setup .volume-box input[type="range"]::-moz-range-track{height:7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.18)}
 .setup .tempo-box input[type="range"]::-moz-range-progress,
-.setup .volume-box input[type="range"]::-moz-range-progress{height:7px;border-radius:999px;background:linear-gradient(90deg,var(--setup-seek-cyan),var(--setup-seek-mid) 52%,var(--setup-seek-violet))}
-.setup .tempo-box input[type="range"]::-moz-range-thumb,
-.setup .volume-box input[type="range"]::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:#D7F3FF;box-shadow:0 0 10px rgba(123,220,255,.2)}
+.setup .volume-box input[type="range"]::-moz-range-progress{
+  background:linear-gradient(90deg,var(--setup-seek-cyan),var(--setup-seek-mid) 52%,var(--setup-seek-violet))
+}
 
-/* PC setup BPM: align vertically with the song dropdown and move closer to the card's right edge. */
+/* Requested PC BPM alignment only. */
 @media (hover:hover) and (pointer:fine){
-  .setup .song-card>div:first-child{padding-right:92px}
   .setup .song-card .setup-bpm{
     top:auto;
     bottom:19px;
@@ -107,7 +103,5 @@
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
   .setup>.setup-moving-lights{display:none!important}
-  /* Preserve existing smartphone layout and custom-select overflow behavior. */
-  .setup .song-card,.setup .options,.setup .tempo-box{overflow:visible}
 }
 @media (prefers-reduced-motion:reduce){.setup>.setup-moving-lights .setup-light{animation:none!important}}
