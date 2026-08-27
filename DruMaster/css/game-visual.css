@@ -191,49 +191,62 @@
   .game header .rank::after{inset:3px 4px 14px}
 }
 
-/* Gameplay background: result-inspired static base + soft Aurora Curtain.
-   No radial rays, conic-gradient, or rotation. One compositor-friendly layer
-   drifts horizontally so the rhythm UI stays readable. */
+/* Gameplay background = result background, full replacement.
+   The only intentional difference from the result screen is that its rotating
+   conic aura is replaced by a soft horizontal Aurora Curtain. */
 .game{
   isolation:isolate;
+  overflow:hidden;
   background:
     radial-gradient(circle at 50% 28%,rgba(72,129,190,.22),transparent 34%),
     radial-gradient(circle at 25% 75%,rgba(177,104,255,.12),transparent 38%),
-    linear-gradient(180deg,#0d1723 0%,#070b11 70%,#05080d 100%)!important;
+    linear-gradient(180deg,#0d1723 0%,#070b11 70%)!important;
 }
 .game::before{
   content:"";
   position:absolute;
   z-index:0;
-  inset:-18% -10%;
+  inset:-18% -8%;
   pointer-events:none;
-  opacity:.74;
   background:linear-gradient(
     112deg,
     transparent 8%,
-    rgba(99,198,255,.10) 24%,
-    rgba(130,132,255,.14) 39%,
-    rgba(192,119,255,.10) 52%,
+    rgba(99,198,255,.13) 24%,
+    rgba(130,132,255,.18) 39%,
+    rgba(192,119,255,.13) 52%,
     transparent 68%
   );
   filter:blur(24px);
-  will-change:transform,opacity;
+  opacity:.88;
+  will-change:transform;
   animation:gameAuroraCurtain 7s ease-in-out infinite alternate;
 }
 @keyframes gameAuroraCurtain{
-  0%{transform:translate3d(-12%,0,0) skewX(-4deg);opacity:.62}
-  100%{transform:translate3d(12%,0,0) skewX(4deg);opacity:.84}
+  0%{transform:translate3d(-15%,0,0) skewX(-5deg)}
+  100%{transform:translate3d(15%,0,0) skewX(5deg)}
 }
 
-/* Let the shared game background remain visible through the existing dark
-   gameplay surfaces without reducing note / drum contrast too much. */
+/* The previous gameplay-specific dark backgrounds obscured the shared result
+   background. Remove them so the same background spans chart + kit continuously.
+   Chart gets only a light translucent veil for note readability. */
 .game #chartWrap{
-  background:linear-gradient(90deg,rgba(9,14,22,.88),rgba(21,23,42,.82) 48%,rgba(9,14,22,.88))!important;
+  background:rgba(5,10,17,.30)!important;
+  box-shadow:0 7px 20px rgba(0,0,0,.38)!important;
 }
 .game #kit{
-  background:radial-gradient(ellipse at 50% 10%,rgba(49,52,58,.78),rgba(8,11,16,.72) 78%)!important;
+  background:transparent!important;
 }
 
+/* Keep the game content above the background/aurora layer. */
+.game>header,
+.game>#chartWrap,
+.game>#kit,
+.game>#kickFx,
+.game>#pausePanel{position:relative;z-index:1}
+.game>header{z-index:12}
+.game>#chartWrap{z-index:8}
+.game>#pausePanel{z-index:30}
+
 @media (prefers-reduced-motion:reduce){
-  .game::before{animation:none;transform:none;opacity:.72}
+  .game::before{animation:none;transform:none}
 }
