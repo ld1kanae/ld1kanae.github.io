@@ -21,6 +21,15 @@
   }
   .glass-hover-wrap.start-wrap{--halo-height:26px;grid-area:start}
 
+  /* Disable the previous white hover-overlay variable so only the approved
+     spectral editor values are rendered on desktop. */
+  #start:hover:not(:disabled),
+  #pause:hover,
+  #scorePlaybackControls button:hover,
+  #pausePanel button:hover,
+  .result-actions button:hover,
+  .mic-cal-actions button:hover:not(:disabled){--glass-hover-fade:0!important}
+
   /* Preserve production layout after wrapping. */
   #scorePlaybackControls>.glass-hover-wrap{
     width:42px;min-width:42px;max-width:42px;
@@ -89,7 +98,6 @@
   .glass-hover-wrap:hover .glass-hover-drop{opacity:var(--halo-opacity)}
   .glass-hover-wrap:hover .glass-inner-stack{opacity:1}
   .glass-hover-wrap:hover>button:not(:disabled){
-    --glass-hover-fade:0;
     filter:brightness(1.02)!important;
     box-shadow:
       inset 0 1px 0 rgba(223,225,227,.90),
