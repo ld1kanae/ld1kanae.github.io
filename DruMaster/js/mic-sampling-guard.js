@@ -2,23 +2,28 @@
 
 (()=>{
   const MIN_SAMPLE_SEC=10;
+  let workletPatched=false;
 
-  /* performance-mode-v5 was already deployed with a fixed worklet query.
-     Rewrite only this module request so the updated processor is fetched
-     immediately instead of waiting for the previous browser/CDN cache entry. */
-  try{
-    if(typeof ac!=="undefined"&&ac?.audioWorklet){
+  function patchWorklet(){
+    if(workletPatched)return true;
+    try{
+      if(typeof ac==="undefined"||!ac?.audioWorklet)return false;
       const worklet=ac.audioWorklet,nativeAdd=worklet.addModule.bind(worklet);
       worklet.addModule=(url,options)=>{
         const text=String(url||"");
         if(text.includes("js/acoustic-cancel-processor.js")){
           const clean=text.split("?")[0];
-          return nativeAdd(`${clean}?v=20260827-min10`,options);
+          return nativeAdd(`${clean}?v=20260827-min10fade1`,options);
         }
         return nativeAdd(url,options);
       };
-    }
-  }catch(e){console.warn("DruMaster worklet cache guard unavailable",e)}
+      workletPatched=true;
+      return true;
+    }catch(e){console.warn("DruMaster worklet cache guard unavailable",e);return false}
+  }
+
+  const patchTimer=setInterval(()=>{if(patchWorklet())clearInterval(patchTimer)},100);
+  setTimeout(()=>{if(patchWorklet())clearInterval(patchTimer)},0);
 
   let samplingStartedAt=0,lastPane=null;
   function tick(){
