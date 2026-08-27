@@ -10,6 +10,7 @@
   function close(entry=opened){
     if(!entry)return;
     entry.root.classList.remove("open","open-up");
+    entry.host?.classList.remove("mobile-select-host-open");
     entry.trigger.setAttribute("aria-expanded","false");
     entry.menu.hidden=true;
     if(opened===entry)opened=null;
@@ -58,6 +59,7 @@
     sync(entry);
     entry.menu.hidden=false;
     entry.root.classList.add("open");
+    entry.host?.classList.add("mobile-select-host-open");
     entry.trigger.setAttribute("aria-expanded","true");
     positionMenu(entry);
     opened=entry;
@@ -124,7 +126,7 @@
     select.insertAdjacentElement("afterend",root);
     root.append(trigger,menu);
 
-    const entry={select,root,trigger,value,menu};
+    const entry={select,root,trigger,value,menu,host:root.closest(".song-card,.options")};
     enhanced.set(select,entry);
     sync(entry);
 
