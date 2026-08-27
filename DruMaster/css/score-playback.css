@@ -2,49 +2,30 @@
 body[data-score-playback="1"] .score small{font-size:9px;letter-spacing:.12em}
 body[data-score-playback="1"] .score strong{font-size:15px;letter-spacing:.08em;color:#b9c7d7;text-shadow:none}
 
-/* Score-playback transport: all four buttons deliberately share one geometry/style. */
+/* Material comes entirely from glass-buttons.css, exactly like #pause. */
 #scorePlaybackControls{display:none;align-items:center;gap:6px;margin-left:10px;margin-right:6px}
 body[data-score-playback="1"] #scorePlaybackControls{display:flex}
-body[data-score-playback="1"] #pause,
 body[data-score-playback="1"] #scorePlaybackControls button{
-  position:relative;
   width:46px!important;
   min-width:46px!important;
   height:42px!important;
   min-height:42px!important;
   padding:0!important;
   display:grid!important;
-  place-items:center;
-  border:2px solid #cfd7e4!important;
-  border-radius:9px!important;
-  background:linear-gradient(#f8f9fd,#cbd2df)!important;
-  color:#424a66!important;
-  box-shadow:0 0 0 4px #ffffff22!important;
-  font:900 20px/1 system-ui,sans-serif!important;
+  place-items:center!important;
+  font-size:20px!important;
+  font-weight:900!important;
+  line-height:1!important;
   letter-spacing:0!important;
-  touch-action:manipulation;
 }
-body[data-score-playback="1"] #scorePlaybackControls button:active,
-body[data-score-playback="1"] #pause:active{transform:translateY(1px);filter:brightness(1.08)}
-
-/* Keep the loop state text for accessibility/state logic, but render only a large loop glyph. */
-body[data-score-playback="1"] #scoreLoop{font-size:0!important;color:transparent!important}
-body[data-score-playback="1"] #scoreLoop::before{
-  content:"↻";
-  display:block;
-  color:#424a66;
-  font:900 29px/1 system-ui,sans-serif;
-  transform:translateY(-1px);
-}
-body[data-score-playback="1"] #scoreLoop[data-loop="all"]{border-color:#8dcfff!important;box-shadow:0 0 0 4px #ffffff22,0 0 13px #55bfff55!important}
-body[data-score-playback="1"] #scoreLoop[data-loop="one"]{border-color:#b8a1ff!important;box-shadow:0 0 0 4px #ffffff22,0 0 13px #9877ff55!important}
-body[data-score-playback="1"] #scoreLoop[data-loop="all"]::before{color:#217cb8}
-body[data-score-playback="1"] #scoreLoop[data-loop="one"]::before{color:#674fa8}
+body[data-score-playback="1"] #scoreLoop{font-size:27px!important}
+body[data-score-playback="1"] #scoreLoop[data-loop="all"]{color:#91ddff!important}
+body[data-score-playback="1"] #scoreLoop[data-loop="one"]{color:#c1acff!important}
 
 #scorePlaybackBusy{display:none;position:absolute;right:9px;bottom:7px;z-index:12;padding:4px 8px;border-radius:999px;background:#071019d9;border:1px solid #73839766;color:#b9c7d7;font:800 8px/1 system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}
 body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display:block}
 
-/* The seek bar belongs visually to the drum-kit area, never on top of the chart. */
+/* Keep the seek control below the chart, on the drum-kit side. */
 #scoreSeekWrap{
   display:none;
   position:absolute;
@@ -73,16 +54,6 @@ body[data-score-playback="1"] #chart{touch-action:none}
 
 @media (hover:none) and (pointer:coarse){
   #scorePlaybackControls{gap:5px;margin-left:6px;margin-right:5px}
-  body[data-score-playback="1"] #pause,
-  body[data-score-playback="1"] #scorePlaybackControls button{
-    width:42px!important;
-    min-width:42px!important;
-    height:40px!important;
-    min-height:40px!important;
-    border-radius:9px!important;
-    font-size:19px!important;
-  }
-  body[data-score-playback="1"] #scoreLoop::before{font-size:27px}
   #scoreSeekWrap{top:calc(100% + 9px);width:min(500px,86%);height:25px;padding:2px 8px}
   #scoreSeekTime{min-width:64px;font-size:8px}
   body[data-score-playback="1"] .score{padding-right:6px}
