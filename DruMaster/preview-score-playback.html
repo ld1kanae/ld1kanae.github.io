@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <iframe id="preview" src="./?v=20260827-transport3" allow="autoplay; microphone"></iframe>
+  <iframe id="preview" src="./?v=20260827-scoreoffline1" allow="autoplay; microphone"></iframe>
   <script>
   (()=>{
     const frame=document.querySelector('#preview');
@@ -37,14 +37,14 @@
           if(setup)setup.style.visibility='';
         }
       },25);
-      setTimeout(()=>{clearInterval(reveal);if(setup)setup.style.visibility=''},5000);
+      setTimeout(()=>{clearInterval(reveal);if(setup)setup.style.visibility=''},15000);
       return true;
     }
     frame.addEventListener('load',()=>{
       entered=false;
       clearInterval(timer);
       timer=setInterval(enter,35);
-      setTimeout(()=>clearInterval(timer),15000);
+      setTimeout(()=>clearInterval(timer),20000);
     });
   })();
   </script>
