@@ -1,0 +1,74 @@
+/* Smartphone setup-screen proportions tuned from the forced-landscape layout. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .setup{
+    grid-template-columns:minmax(250px,.92fr) minmax(300px,1.08fr)!important;
+    grid-template-areas:
+      "identity options"
+      "song tempo"
+      "hint state"
+      "hint start"!important;
+    column-gap:20px!important;
+    row-gap:4px!important;
+  }
+
+  /* Keep the logo and its eyebrow as one visual unit. The previous two-row
+     layout let the right-side options panel stretch the gap between them. */
+  .brand,
+  .setup>.eyebrow{
+    grid-area:identity!important;
+    justify-self:center!important;
+    align-self:center!important;
+  }
+  .brand{
+    font-size:clamp(60px,10vw,76px)!important;
+    line-height:.88!important;
+    transform:translateY(-18px);
+  }
+  .setup>.eyebrow{
+    margin:0!important;
+    transform:translateY(34px);
+    font-size:9px!important;
+    line-height:1!important;
+    letter-spacing:.24em!important;
+  }
+
+  /* Compact song card: title, BPM and selector all scale down together. */
+  .song-card{
+    width:330px!important;
+    max-width:100%!important;
+    min-height:0!important;
+    gap:10px!important;
+    padding:6px 11px!important;
+    border-radius:13px!important;
+  }
+  .song-card h1{
+    font-size:18px!important;
+    line-height:1.08!important;
+  }
+  .song-card p{
+    margin:2px 0 0!important;
+    font-size:11px!important;
+    line-height:1.15!important;
+  }
+  .song-card .setup-bpm{
+    right:11px!important;
+    top:13px!important;
+    font-size:18px!important;
+    line-height:1!important;
+  }
+  .song-custom-select{
+    margin-top:2px!important;
+  }
+  .song-custom-select .mobile-custom-select-trigger{
+    min-height:31px!important;
+    padding:5px 30px 5px 9px!important;
+    border-radius:7px!important;
+    font-size:12px!important;
+    line-height:1.15!important;
+  }
+  .song-custom-select .mobile-custom-select-arrow{
+    right:10px!important;
+    width:8px!important;
+    height:8px!important;
+  }
+}
