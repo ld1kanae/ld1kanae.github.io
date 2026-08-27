@@ -10,8 +10,7 @@
       worklet.addModule=(url,options)=>{
         const text=String(url||"");
         if(text.includes("js/acoustic-cancel-processor.js")){
-          const clean=text.split("?")[0];
-          return nativeAdd(`${clean}?v=20260827-registerrestore2`,options);
+          return nativeAdd("js/acoustic-cancel-processor-v2.js?v=20260827-residualfix1",options);
         }
         return nativeAdd(url,options);
       };
