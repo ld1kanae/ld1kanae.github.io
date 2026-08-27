@@ -46,6 +46,24 @@
     return i;
   }
 
+  function makePauseGlow(){
+    const i=document.createElement("i");
+    i.className="pause-inline-glow";
+    i.setAttribute("aria-hidden","true");
+    return i;
+  }
+
+  function syncPauseGlow(button,glow){
+    const header=button.parentElement;
+    if(!header||!glow)return;
+    const buttonBox=button.getBoundingClientRect();
+    const headerBox=header.getBoundingClientRect();
+    if(buttonBox.width<2||buttonBox.height<2)return;
+    glow.style.left=`${buttonBox.left-headerBox.left}px`;
+    glow.style.top=`${buttonBox.top-headerBox.top+buttonBox.height/2}px`;
+    glow.style.width=`${buttonBox.width}px`;
+  }
+
   function makeRim(){
     const ns="http://www.w3.org/2000/svg";
     const svg=document.createElementNS(ns,"svg");
@@ -202,9 +220,24 @@
       button.classList.add("glass-hover-inline");
       button.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
       button.appendChild(makeRim());
-      syncRim(button);
+
+      const glow=makePauseGlow();
+      button.parentElement.insertBefore(glow,button);
+      const syncPauseLayers=()=>{
+        syncRim(button);
+        syncPauseGlow(button,glow);
+      };
+      syncPauseLayers();
+      button.addEventListener("mouseenter",()=>glow.classList.add("is-hovered"));
+      button.addEventListener("mouseleave",()=>glow.classList.remove("is-hovered"));
       bindHover(button,button);
-      observeSize(button,button);
+
+      if("ResizeObserver" in window){
+        const ro=new ResizeObserver(syncPauseLayers);
+        ro.observe(button);
+        ro.observe(button.parentElement);
+      }
+      addEventListener("resize",syncPauseLayers,{passive:true});
       return;
     }
 
