@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#070b11">
   <title>Glass Hover Animation Preview | DruMaster</title>
   <link rel="stylesheet" href="css/glass-hover-animation-preview.css?v=20260827-shimmer2">
+  <link rel="stylesheet" href="css/glass-hover-opposite-fix.css?v=20260827-opposite1">
 </head>
 <body>
 <main class="lab">
@@ -17,37 +18,37 @@
 
   <section class="preview-panel">
     <div class="preview-label">APPROVED BASE GLOW + SHIMMER VARIANTS</div>
-    <p class="panel-note">基礎グローは採用値（inner 10px / core 1 / shoulder .21 / tail .04 / blur 3px、outer 22px / blur 12px / opacity .51）で固定。A/Bは輪郭上の対向2点が同時に発光し、C/E/Fの面スイープは前版より約25%ゆっくりにしています。</p>
+    <p class="panel-note">基礎グローは採用値（inner 10px / core 1 / shoulder .21 / tail .04 / blur 3px、outer 22px / blur 12px / opacity .51）で固定。A/B/Eの2本の縁光はSVG周長を100に正規化し、常に50＝ちょうど半周ずれた正反対位置を維持します。</p>
 
     <div class="variant-grid">
       <article class="variant-card">
-        <div class="variant-meta"><b>A</b><span>DUAL RIM CHASE</span><small>半周ずれた2点が対角位置を保って輪郭を走る</small></div>
+        <div class="variant-meta"><b>A</b><span>DUAL RIM CHASE</span><small>一方が左上ならもう一方は右下。常に正反対の2点が輪郭を走る</small></div>
         <div class="hover-demo anim-a" tabindex="0">
           <i class="drop-glow"></i>
           <button class="glass-btn" type="button"><span>ホーム</span></button>
           <svg class="rim-svg" viewBox="0 0 140 34" preserveAspectRatio="none" aria-hidden="true">
             <rect class="rim-base" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
-            <rect class="rim-spark rim-spark-a" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
-            <rect class="rim-spark rim-spark-b" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+            <rect class="rim-spark rim-spark-a" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+            <rect class="rim-spark rim-spark-b" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
           </svg>
         </div>
       </article>
 
       <article class="variant-card">
-        <div class="variant-meta"><b>B</b><span>DUAL EDGE GLINT</span><small>上下・左右で対向する2本の短い縁光が同時に流れる</small></div>
+        <div class="variant-meta"><b>B</b><span>DUAL EDGE GLINT</span><small>一方が真上ならもう一方は真下。短い縁光が常に正反対で移動</small></div>
         <div class="hover-demo anim-b" tabindex="0">
           <i class="drop-glow"></i>
           <button class="glass-btn" type="button"><span>ホーム</span></button>
           <svg class="rim-svg" viewBox="0 0 140 34" preserveAspectRatio="none" aria-hidden="true">
             <rect class="rim-base" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
-            <rect class="rim-glint rim-glint-a" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
-            <rect class="rim-glint rim-glint-b" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+            <rect class="rim-glint rim-glint-a" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+            <rect class="rim-glint rim-glint-b" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
           </svg>
         </div>
       </article>
 
       <article class="variant-card">
-        <div class="variant-meta"><b>C</b><span>FACE SWEEP / SLOW</span><small>細い斜めの光帯が約25%ゆっくり面を横切る</small></div>
+        <div class="variant-meta"><b>C</b><span>FACE SWEEP / SLOW</span><small>細い斜めの光帯が面を横切る</small></div>
         <div class="hover-demo anim-c" tabindex="0">
           <i class="drop-glow"></i>
           <button class="glass-btn" type="button"><i class="face-sheen"></i><span>ホーム</span></button>
@@ -63,20 +64,20 @@
       </article>
 
       <article class="variant-card">
-        <div class="variant-meta"><b>E</b><span>DUAL RIM → SLOW FACE</span><small>対向する縁光の直後に、遅めの面反射が横切る</small></div>
+        <div class="variant-meta"><b>E</b><span>DUAL RIM → SLOW FACE</span><small>正反対の縁光の直後に、遅めの面反射が横切る</small></div>
         <div class="hover-demo anim-e" tabindex="0">
           <i class="drop-glow"></i>
           <button class="glass-btn" type="button"><i class="face-sheen"></i><span>ホーム</span></button>
           <svg class="rim-svg" viewBox="0 0 140 34" preserveAspectRatio="none" aria-hidden="true">
             <rect class="rim-base" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
-            <rect class="rim-glint rim-glint-a" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
-            <rect class="rim-glint rim-glint-b" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+            <rect class="rim-glint rim-glint-a" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+            <rect class="rim-glint rim-glint-b" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
           </svg>
         </div>
       </article>
 
       <article class="variant-card">
-        <div class="variant-meta"><b>F</b><span>CRISP GLASS / SLOW</span><small>細い面反射を約25%遅くし、輪郭全体も一瞬だけ白く光る</small></div>
+        <div class="variant-meta"><b>F</b><span>CRISP GLASS / SLOW</span><small>細い面反射＋輪郭全体が一瞬だけ白く光る</small></div>
         <div class="hover-demo anim-f" tabindex="0">
           <i class="drop-glow"></i>
           <button class="glass-btn" type="button"><i class="face-line"></i><span>ホーム</span></button>
