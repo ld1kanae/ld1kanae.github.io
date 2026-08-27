@@ -16,6 +16,10 @@
     ],{duration:240,easing:"ease-out"});
   }
 
+  /* Expose the visual independently from audio. Score playback uses this to
+     show the bass-drum hit without synthesizing a second kick sound. */
+  globalThis.DruMasterKickEffect={flash:flashKick};
+
   /* Kick playback is automatic in both normal play and AUTO mode. Trigger the
      visual from the common audio path so every actually-played bass-drum note
      produces the same effect. Queue it after app.js's legacy same-frame class
