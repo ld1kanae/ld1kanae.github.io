@@ -2,6 +2,24 @@
 (()=>{
   const root=document.querySelector("#editorWrap"),btn=document.querySelector("#editorButton"),halo=document.querySelector("#editorHalo"),sizeSel=document.querySelector("#editorSize"),copy=document.querySelector("#copyGlowSettings"),status=document.querySelector("#copyStatus");
   if(!root||!btn||!halo)return;
+
+  function glowStack(position){
+    const stack=document.createElement("i");
+    stack.className=`inner-stack ${position}`;
+    stack.setAttribute("aria-hidden","true");
+    for(const cls of ["tail","shoulder","core"]){
+      const layer=document.createElement("i");
+      layer.className=cls;
+      stack.appendChild(layer);
+    }
+    return stack;
+  }
+  function enhanceButton(button){
+    if(button.querySelector(":scope > .inner-stack"))return;
+    button.append(glowStack("top"),glowStack("bottom"));
+  }
+  document.querySelectorAll(".glass-btn").forEach(enhanceButton);
+
   const controls=[...root.querySelectorAll("[data-var]")];
   const fmt=(el,v)=>`${v}${el.dataset.unit||""}`;
   function apply(){
@@ -21,6 +39,7 @@
     btn.classList.remove("size-result","size-pause","size-score","size-start");
     btn.classList.add(`size-${sizeSel.value}`);
     btn.innerHTML=icon(sizeSel.value);
+    enhanceButton(btn);
   }
   function payload(){
     const data={size:sizeSel.value,inner:{},outer:{}};
