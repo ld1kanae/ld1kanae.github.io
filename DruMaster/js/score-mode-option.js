@@ -19,19 +19,33 @@
 
   const hidden=document.querySelector("#hiddenToggle"),auto=document.querySelector("#autoToggle");
   let scoreLocked=false;
+
+  function lockForScore(toggle){
+    if(!toggle)return;
+    if(toggle.checked){toggle.checked=false;toggle.dispatchEvent(new Event("change",{bubbles:true}))}
+    toggle.disabled=true;
+    toggle.closest("label")?.classList.add("mode-locked");
+  }
+
+  function unlockAfterScore(toggle){
+    if(!toggle)return;
+    /* touch/pad modes manage these same controls in performance-mode-v5.js.
+       Only normal mode should explicitly unlock them here. */
+    if(select.value==="normal"){
+      toggle.disabled=false;
+      toggle.closest("label")?.classList.remove("mode-locked");
+    }
+  }
+
   function sync(){
     const score=select.value==="score";
     document.body.dataset.scoreModeSelected=score?"1":"0";
     if(score){
       scoreLocked=true;
-      for(const t of [hidden,auto]){
-        if(!t)continue;
-        if(t.checked){t.checked=false;t.dispatchEvent(new Event("change",{bubbles:true}))}
-        t.disabled=true;
-      }
+      for(const t of [hidden,auto])lockForScore(t);
     }else if(scoreLocked){
       scoreLocked=false;
-      if(select.value==="normal")for(const t of [hidden,auto])if(t)t.disabled=false;
+      for(const t of [hidden,auto])unlockAfterScore(t);
     }
   }
   select.addEventListener("change",sync);
