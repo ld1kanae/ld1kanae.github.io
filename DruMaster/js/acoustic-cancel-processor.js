@@ -20,6 +20,22 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     this.capture=null;
     this.metricFrames=0;
     this.rawPow=0;this.refPow=0;this.resPow=0;this.metricSamples=0;
+
+    /* Loose transient detector used only to cut short PCM candidates. Final
+       pad/not-pad classification is performed on the main thread from timbre
+       features, not from this amplitude gate. */
+    this.candidateMode='off';
+    this.candidateNoise=0.0005;
+    this.candidateFast=0;
+    this.candidateSlow=0;
+    this.candidateSuppress=0;
+    this.candidateRefractory=0;
+    this.candidatePre=Math.max(64,Math.round(sampleRate*.018));
+    this.candidateLength=Math.max(1024,Math.round(sampleRate*.145));
+    let preSize=1;while(preSize<this.candidatePre+256)preSize<<=1;
+    this.preRing=new Float32Array(preSize);this.preMask=preSize-1;this.preWrite=0;
+    this.candidate=null;
+
     this.port.onmessage=e=>this.onMessage(e.data||{});
   }
   onMessage(m){
@@ -31,6 +47,12 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     else if(m.type==='beginCapture'){
       const n=Math.max(1024,Math.min(Math.round(sampleRate*(+m.seconds||2.6)),Math.round(sampleRate*5)));
       this.capture={mic:new Float32Array(n),ref:new Float32Array(n),at:0};
+    }else if(m.type==='candidateMode'){
+      this.candidateMode=(m.mode==='raw'||m.mode==='residual')?m.mode:'off';
+      this.candidateNoise=Math.max(1e-6,+m.noiseRms||this.noiseRms||1e-6);
+      this.candidateFast=this.candidateSlow=0;this.candidate=null;
+    }else if(m.type==='suppressCandidates'){
+      this.candidateSuppress=Math.max(this.candidateSuppress,Math.round(sampleRate*(+m.ms||0)/1000));
     }
   }
   maybeFinishCapture(){
@@ -38,6 +60,32 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
     if(!c||c.at<c.mic.length)return;
     this.capture=null;
     this.port.postMessage({type:'capture',mic:c.mic.buffer,ref:c.ref.buffer,sampleRate},[c.mic.buffer,c.ref.buffer]);
+  }
+  startCandidate(current){
+    const buf=new Float32Array(this.candidateLength),pre=Math.min(this.candidatePre,buf.length-1);
+    for(let j=0;j<pre;j++)buf[j]=this.preRing[(this.preWrite-pre+j)&this.preMask];
+    buf[pre]=current;
+    this.candidate={buf,at:pre+1,peak:Math.abs(current)};
+    this.candidateRefractory=Math.round(sampleRate*.085);
+  }
+  feedCandidate(sample){
+    this.preRing[this.preWrite]=sample;this.preWrite=(this.preWrite+1)&this.preMask;
+    if(this.candidateSuppress>0){this.candidateSuppress--;return}
+    if(this.candidateRefractory>0)this.candidateRefractory--;
+    if(this.candidate){
+      const c=this.candidate;if(c.at<c.buf.length){c.buf[c.at++]=sample;c.peak=Math.max(c.peak,Math.abs(sample));}
+      if(c.at>=c.buf.length){
+        this.candidate=null;
+        this.port.postMessage({type:'padCandidate',pcm:c.buf.buffer,peak:c.peak,sampleRate,mode:this.candidateMode},[c.buf.buffer]);
+      }
+      return;
+    }
+    const a=Math.abs(sample);
+    this.candidateFast+=.22*(a-this.candidateFast);
+    this.candidateSlow+=.008*(a-this.candidateSlow);
+    const floor=Math.max(.00016,this.candidateNoise*.62);
+    const relative=Math.max(floor,this.candidateSlow*1.72);
+    if(this.candidateMode!=='off'&&this.candidateRefractory<=0&&this.candidateFast>relative&&a>floor*.85)this.startCandidate(sample);
   }
   process(inputs,outputs){
     const micIn=inputs[0]||[],refIn=inputs[1]||[],out=outputs[0]||[];
@@ -63,7 +111,7 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
       }
       if(this.freezeSamples>0)this.freezeSamples--;
       const level=Math.abs(err),lo=this.noiseRms*1.15,hi=this.noiseRms*4.5;
-      let target=level<=lo?.08:level>=hi?1:.08+.92*(level-lo)/(hi-lo);
+      const target=level<=lo?.08:level>=hi?1:.08+.92*(level-lo)/(hi-lo);
       const coeff=target<this.gate?.18:.055;
       this.gate+=coeff*(target-this.gate);
       const cleaned=err*this.gate;
@@ -74,6 +122,7 @@ class DruMasterAcousticCanceller extends AudioWorkletProcessor {
         const at=this.capture.at;
         if(at<this.capture.mic.length){this.capture.mic[at]=d;this.capture.ref[at]=x;this.capture.at=at+1;}
       }
+      this.feedCandidate(this.candidateMode==='raw'?d:cleaned);
       this.write=(this.write+1)&this.mask;
     }
     this.maybeFinishCapture();
