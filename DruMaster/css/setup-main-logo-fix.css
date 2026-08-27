@@ -1,0 +1,23 @@
+/* Force a real box for the temporary user-provided main logo image. */
+.setup .brand{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:clamp(320px,35vw,430px)!important;
+  height:76px!important;
+  min-height:76px!important;
+  max-height:76px!important;
+  background-size:contain!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+}
+.setup .brand>span,
+.setup .brand>b{display:none!important}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .setup .brand{
+    width:300px!important;
+    height:53px!important;
+    min-height:53px!important;
+    max-height:53px!important;
+  }
+}
