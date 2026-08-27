@@ -8,7 +8,7 @@
   <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b11}iframe{display:block;width:100%;height:100%;border:0;background:#070b11}</style>
 </head>
 <body>
-  <iframe id="gameFrame" src="./?micdebug=1&v=20260827-aec2" allow="microphone; autoplay"></iframe>
+  <iframe id="gameFrame" src="./?micdebug=1&v=20260827-fingerprint1" allow="microphone; autoplay"></iframe>
   <script>
   (()=>{
     const frame=document.querySelector('#gameFrame');let recorder=null,chunks=[],recordUrl=null,controls=null,timer=0;
@@ -16,24 +16,24 @@
     function ensureControls(){
       const w=frame.contentWindow,d=w?.document;if(!d)return false;const kit=d.querySelector('#kit');if(!kit)return false;
       if(d.querySelector('.mic-debug-controls')){controls=d.querySelector('.mic-debug-controls');return true}
-      controls=d.createElement('div');controls.className='mic-debug-controls';controls.innerHTML=`<div class="mic-debug-title">AEC DEBUG</div><button data-act="pause">一時停止</button><button data-act="record">録音</button><button data-act="play" disabled>録音再生</button><div class="mic-debug-meter">AEC待機中</div><audio class="mic-debug-audio" preload="metadata"></audio>`;kit.appendChild(controls);
+      controls=d.createElement('div');controls.className='mic-debug-controls';controls.innerHTML=`<div class="mic-debug-title">AEC / PAD DEBUG</div><button data-act="pause">一時停止</button><button data-act="record">録音</button><button data-act="play" disabled>録音再生</button><div class="mic-debug-meter">AEC待機中</div><audio class="mic-debug-audio" preload="metadata"></audio>`;kit.appendChild(controls);
       controls.addEventListener('pointerdown',e=>e.stopPropagation());
       controls.querySelector('[data-act="pause"]').onclick=()=>d.querySelector('#pause')?.click();
       controls.querySelector('[data-act="record"]').onclick=()=>toggleRecord();
       controls.querySelector('[data-act="play"]').onclick=()=>{if(!recordUrl)return;const audio=controls.querySelector('.mic-debug-audio');audio.src=recordUrl;audio.currentTime=0;void audio.play()};
-      const style=d.createElement('style');style.textContent=`.mic-debug-controls{position:absolute;z-index:60;left:50%;bottom:3.5%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid #45566588;border-radius:14px;background:#071019dd;box-shadow:0 8px 28px #0009;backdrop-filter:blur(8px);pointer-events:auto}.mic-debug-title{color:#73d8ff;font:900 8px/1 system-ui,sans-serif;letter-spacing:.14em;white-space:nowrap}.mic-debug-controls button{height:30px;padding:0 13px;border:1px solid #71849588;border-radius:999px;background:#14202bd9;color:#eef7ff;font:800 9px/1 system-ui,sans-serif;-webkit-tap-highlight-color:transparent}.mic-debug-controls button[data-act=record].on{border-color:#ff7997;color:#ffdce5;box-shadow:0 0 12px #ff557744}.mic-debug-controls button:disabled{opacity:.35}.mic-debug-meter{min-width:360px;color:#a8b6c4;font:700 8px/1.35 ui-monospace,Consolas,monospace;white-space:nowrap}.mic-debug-audio{display:none}@media(max-width:900px){.mic-debug-controls{bottom:2%;gap:4px;padding:5px 6px}.mic-debug-controls button{height:26px;padding:0 9px;font-size:8px}.mic-debug-title{display:none}.mic-debug-meter{min-width:280px;font-size:7px}}`;d.head.appendChild(style);return true;
+      const style=d.createElement('style');style.textContent=`.mic-debug-controls{position:absolute;z-index:60;left:50%;bottom:3.5%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid #45566588;border-radius:14px;background:#071019dd;box-shadow:0 8px 28px #0009;backdrop-filter:blur(8px);pointer-events:auto}.mic-debug-title{color:#73d8ff;font:900 8px/1 system-ui,sans-serif;letter-spacing:.14em;white-space:nowrap}.mic-debug-controls button{height:30px;padding:0 13px;border:1px solid #71849588;border-radius:999px;background:#14202bd9;color:#eef7ff;font:800 9px/1 system-ui,sans-serif;-webkit-tap-highlight-color:transparent}.mic-debug-controls button[data-act=record].on{border-color:#ff7997;color:#ffdce5;box-shadow:0 0 12px #ff557744}.mic-debug-controls button:disabled{opacity:.35}.mic-debug-meter{min-width:470px;color:#a8b6c4;font:700 8px/1.35 ui-monospace,Consolas,monospace;white-space:nowrap}.mic-debug-audio{display:none}@media(max-width:900px){.mic-debug-controls{bottom:2%;gap:4px;padding:5px 6px}.mic-debug-controls button{height:26px;padding:0 9px;font-size:8px}.mic-debug-title{display:none}.mic-debug-meter{min-width:350px;font-size:7px}}`;d.head.appendChild(style);return true;
     }
     function toggleRecord(){
       const w=frame.contentWindow,api=w?.DruMasterPerformanceMode,button=controls?.querySelector('[data-act="record"]');if(!api||!button)return;
       if(recorder&&recorder.state==='recording'){recorder.stop();button.textContent='録音';button.classList.remove('on');return}
-      const stream=api.getResidualStream?.();if(!stream){alert('相殺済みマイク出力がまだ準備できていません。感度調整と音響調整を完了してください。');return}
+      const stream=api.getResidualStream?.();if(!stream){alert('相殺済みマイク出力がまだ準備できていません。音色登録と音響調整を完了してください。');return}
       chunks=[];const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(x=>MediaRecorder.isTypeSupported?.(x));recorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};recorder.onstop=()=>{if(recordUrl)URL.revokeObjectURL(recordUrl);const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});recordUrl=URL.createObjectURL(blob);controls.querySelector('[data-act="play"]').disabled=false};recorder.start(100);button.textContent='録音停止';button.classList.add('on');
     }
     function tick(){
-      if(!ensureControls())return;const w=frame.contentWindow,api=w?.DruMasterPerformanceMode,m=api?.getAECMetrics?.(),c=api?.getMicCalibration?.(),lat=w?.DruMasterMicJudgeLatency?.get?.(),n=controls.querySelector('.mic-debug-meter');if(!n)return;
+      if(!ensureControls())return;const w=frame.contentWindow,api=w?.DruMasterPerformanceMode,m=api?.getAECMetrics?.(),c=api?.getMicCalibration?.(),lat=w?.DruMasterMicJudgeLatency?.get?.(),pad=api?.getPadClassifier?.(),n=controls.querySelector('.mic-debug-meter');if(!n)return;
       if(!m){n.textContent='AEC待機中';return}
-      const delay=c?.aec?.delayMs??lat?.measuredEchoDelayMs??0,judge=lat?.judgeOffsetMs??0,out=lat?.outputLatencyMs??0;
-      n.textContent=`AEC ${Number(delay).toFixed(1)} ms · OUTPUT ${Number(out).toFixed(1)} ms · JUDGE -${Number(judge).toFixed(1)} ms · raw ${db(m.rawRms)} dBFS · residual ${db(m.residualRms)} dBFS · ERLE ${Number(m.erleDb||0).toFixed(1)} dB`;
+      const delay=c?.aec?.delayMs??lat?.measuredEchoDelayMs??0,judge=lat?.judgeOffsetMs??0,out=lat?.outputLatencyMs??0,padScore=(pad?.lastScore??0)*100,padTh=(pad?.threshold??0)*100;
+      n.textContent=`AEC ${Number(delay).toFixed(1)} ms · OUTPUT ${Number(out).toFixed(1)} ms · JUDGE -${Number(judge).toFixed(1)} ms · PAD ${padScore.toFixed(0)}%/${padTh.toFixed(0)}% · raw ${db(m.rawRms)} dBFS · residual ${db(m.residualRms)} dBFS · ERLE ${Number(m.erleDb||0).toFixed(1)} dB`;
     }
     frame.addEventListener('load',()=>{clearInterval(timer);timer=setInterval(tick,120)});
   })();
