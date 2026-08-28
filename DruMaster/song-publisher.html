@@ -67,7 +67,7 @@ function tuneRegisterForm(){
     .publish button{min-width:190px!important;height:46px!important;font-size:14px!important}
     .progress-shell{width:100%!important;min-width:0!important}
     #log{text-align:center!important;min-height:44px!important}
-    .token-actions{display:flex;justify-content:center;margin-top:14px}
+    .token-actions{display:flex;justify-content:center;margin:0 0 14px}
     .token-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 16px;border:1px solid #406784;border-radius:8px;background:#0b1c29;color:#dff4ff;text-decoration:none;font-weight:750;font-size:11px}
     .token-link:hover{border-color:#63c3ff;background:#10283a}
     .token-howto{margin-top:12px;border-top:1px solid #263746;padding-top:10px;color:#8fa1b4;font-size:10px}
@@ -79,9 +79,13 @@ function tuneRegisterForm(){
   doc.querySelectorAll(".file-row small").forEach(n=>n.remove());
   doc.querySelectorAll("p.help").forEach(p=>{const t=p.textContent.trim();if(t.startsWith("内部IDは")||t.startsWith("原曲またはオフボーカル"))p.remove()});
   if(github){
-    let help=github.querySelector("p.help");if(help)help.remove();
-    if(!github.querySelector(".token-actions")){
-      const box=doc.createElement("div");box.innerHTML='<div class="token-actions"><a class="token-link" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHubでTokenを作成</a></div><details class="token-howto"><summary>Fine-grained Personal Access Tokenの作成方法</summary><ol><li>Token nameと有効期限を設定します。</li><li>Repository accessで「Only select repositories」を選び、ld1kanae.github.ioを指定します。</li><li>Repository permissions → Contents を「Read and write」にします。</li><li>Generate token後に表示される github_pat_… を上の入力欄へ貼り付けます。</li></ol></details>';github.appendChild(box);
+    const help=github.querySelector("p.help");if(help)help.remove();
+    const fields=github.querySelector(".fields");
+    if(fields&&!github.querySelector(".token-actions")){
+      const actions=doc.createElement("div");actions.className="token-actions";actions.innerHTML='<a class="token-link" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHubでTokenを作成</a>';
+      github.insertBefore(actions,fields);
+      const details=doc.createElement("details");details.className="token-howto";details.innerHTML='<summary>Fine-grained Personal Access Tokenの作成方法</summary><ol><li>Token nameと有効期限を設定します。</li><li>Repository accessで「Only select repositories」を選び、ld1kanae.github.ioを指定します。</li><li>Permissions欄の右上にある「＋ Add permissions」を押します。</li><li>「Repository permissions」から「Contents」を選んで追加します。</li><li>追加されたContentsの権限を「Read and write」に変更します。</li><li>画面下の「Generate token」を押し、表示された github_pat_… を上の入力欄へ貼り付けます。</li></ol>';
+      fields.insertAdjacentElement("afterend",details);
     }
   }
   const publish=doc.getElementById("publish"),log=doc.getElementById("log");if(publish)publish.textContent="PUBLISH";if(log&&log.textContent.includes("一次PUBLISH"))log.textContent="タイミングエディタに移動します。";
