@@ -1,0 +1,61 @@
+/* Final score-playback control geometry. Keep every transport control and its
+   hover material as the same rounded square; never allow circular/pill button
+   silhouettes to leak in from shared glass styles. */
+body[data-score-playback="1"] #scorePlaybackControls{
+  align-items:center!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls>button,
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap,
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>button,
+body[data-score-playback="1"] #scorePlaybackControls #pause{
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  flex:0 0 42px!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:12px!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap{
+  display:inline-grid!important;
+  place-items:center!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>.glass-hover-drop{
+  inset:0!important;
+  width:42px!important;
+  height:42px!important;
+  transform:none!important;
+  border-radius:12px!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls .glass-hover-rim-svg,
+body[data-score-playback="1"] #scorePlaybackControls button{
+  border-radius:12px!important;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  body[data-score-playback="1"] #scorePlaybackControls>button,
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap,
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>button,
+  body[data-score-playback="1"] #scorePlaybackControls #pause{
+    width:26px!important;
+    min-width:26px!important;
+    max-width:26px!important;
+    height:26px!important;
+    min-height:26px!important;
+    max-height:26px!important;
+    flex:0 0 26px!important;
+    border-radius:6px!important;
+  }
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>.glass-hover-drop{
+    width:26px!important;
+    height:26px!important;
+    border-radius:6px!important;
+  }
+  body[data-score-playback="1"] #scorePlaybackControls .glass-hover-rim-svg,
+  body[data-score-playback="1"] #scorePlaybackControls button{
+    border-radius:6px!important;
+  }
+}
