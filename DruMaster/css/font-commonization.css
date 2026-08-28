@@ -1,0 +1,200 @@
+/* Approved font/font-size commonization layer.
+   Only groups explicitly selected in preview-font-source-audit are unified here.
+   Weight, line-height, letter-spacing, color, spacing and geometry remain owned
+   by their existing component rules. */
+:root{
+  --dm-font-inherited:Inter,"Noto Sans JP",system-ui,sans-serif;
+  --dm-font-system:system-ui,sans-serif;
+  --dm-font-mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+
+  --dm-pc-song-card-main-size:26px;
+  --dm-pc-meta-size:11px;
+  --dm-pc-state-size:12px;
+  --dm-pc-helper-size:10px;
+  --dm-pc-ranking-meta-size:9px;
+  --dm-pc-system-control-size:12px;
+  --dm-pc-system-label-size:11px;
+  --dm-pc-system-detail-size:10px;
+  --dm-pc-system-micro-size:9px;
+  --dm-pc-system-badge-size:8px;
+  --dm-pc-mono-measure-size:10px;
+
+  --dm-mobile-meta-size:12px;
+  --dm-mobile-setup-meta-size:11px;
+  --dm-mobile-helper-size:10px;
+  --dm-mobile-number-size:16px;
+  --dm-mobile-system-control-size:12px;
+  --dm-mobile-dropdown-option-size:13px;
+  --dm-mobile-system-detail-size:8px;
+  --dm-mobile-system-step-size:7px;
+  --dm-mobile-mono-measure-size:8px;
+}
+
+/* PC groups. */
+@media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
+  /* 曲カード：曲名 ↔ BPM */
+  .song-card h1,
+  .song-card .setup-bpm{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-pc-song-card-main-size)!important;
+  }
+
+  /* 11px UIメタ情報 */
+  .option b,
+  .game .song-hud small,
+  .result .eyebrow,
+  .result-song-sub{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-pc-meta-size)!important;
+  }
+
+  /* 12px 状態・数値・ランキング */
+  #loadState,
+  .volume-box span,
+  .volume-box strong,
+  .ranking-row{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-pc-state-size)!important;
+  }
+
+  /* 10px 補助情報 */
+  .scale,
+  .hint,
+  .ranking-empty{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-pc-helper-size)!important;
+  }
+
+  /* ランキング：9px メタ情報 */
+  .ranking-title span,
+  .ranking-head{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-pc-ranking-meta-size)!important;
+  }
+
+  /* system-ui 12px：操作・HUD */
+  .setup #songSelect,
+  .setup .song-custom-select>.mobile-custom-select-trigger,
+  .song-hud .hud-bpm,
+  #result .result-actions #retry,
+  #result .result-actions #home{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-pc-system-control-size)!important;
+  }
+
+  /* system-ui 11px：ラベル・操作 */
+  .result-score-label,
+  .mic-cal-steps b,
+  .mic-cal-actions button{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-pc-system-label-size)!important;
+  }
+
+  /* system-ui 10px：詳細・注記 */
+  .result-score-note,
+  .mic-cal-detail,
+  .mic-fingerprint-pane>span,
+  .mic-fingerprint-pane>em,
+  #hitLayer .key-badges kbd{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-pc-system-detail-size)!important;
+  }
+
+  /* system-ui 9px：小見出し */
+  .mic-cal-eyebrow,
+  .mic-cal-steps span,
+  #acousticCalibrationOverlay p,
+  .mic-fingerprint-pane>small{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-pc-system-micro-size)!important;
+  }
+
+  /* system-ui 8px：バッジ・補助 */
+  .mic-cal-steps em,
+  .best-badge,
+  .podium-badge{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-pc-system-badge-size)!important;
+  }
+
+  /* monospace 10px：計測値 */
+  .mic-cal-candidate,
+  #acousticCalibrationOverlay small{
+    font-family:var(--dm-font-mono)!important;
+    font-size:var(--dm-pc-mono-measure-size)!important;
+  }
+}
+
+/* Smartphone groups. The two groups explicitly left OFF in the audit
+   (9px small meta and 9px feedback/calibration) are intentionally absent. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  /* 12px UIメタ情報 */
+  .performance-mode-option>span,
+  #loadState,
+  .result .eyebrow,
+  .result-song-sub{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-mobile-meta-size)!important;
+  }
+
+  /* 11px セットアップ補助 */
+  .song-card p,
+  .option b{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-mobile-setup-meta-size)!important;
+  }
+
+  /* 10px セットアップ補助情報 */
+  .scale,
+  .hint{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-mobile-helper-size)!important;
+  }
+
+  /* 16px セットアップ数値 ↔ ゲームSCORE */
+  #tempoValue,
+  .song-card .setup-bpm,
+  .score strong{
+    font-family:var(--dm-font-inherited)!important;
+    font-size:var(--dm-mobile-number-size)!important;
+  }
+
+  /* system-ui 12px：操作・状態 */
+  .setup .song-custom-select>.mobile-custom-select-trigger,
+  .result-score-label,
+  #result .result-actions #retry,
+  #result .result-actions #home,
+  .mic-cal-instruction{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-mobile-system-control-size)!important;
+  }
+
+  /* プルダウン項目：曲名 ↔ 演奏モード */
+  .song-custom-select .mobile-custom-select-option,
+  .mode-custom-select .mobile-custom-select-option{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-mobile-dropdown-option-size)!important;
+  }
+
+  /* system-ui 8px：状態・詳細 */
+  #scoreHeaderLoading,
+  .mic-cal-detail{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-mobile-system-detail-size)!important;
+  }
+
+  /* system-ui 7px：ステップ番号 */
+  .mic-cal-steps span,
+  .mic-fingerprint-pane>span{
+    font-family:var(--dm-font-system)!important;
+    font-size:var(--dm-mobile-system-step-size)!important;
+  }
+
+  /* monospace 8px：計測・時間 */
+  .mic-cal-candidate,
+  #acousticCalibrationOverlay small,
+  #scoreSeekTime{
+    font-family:var(--dm-font-mono)!important;
+    font-size:var(--dm-mobile-mono-measure-size)!important;
+  }
+}
