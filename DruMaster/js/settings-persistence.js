@@ -23,7 +23,7 @@
     const out={};
     for(const [key,id] of Object.entries(ids)){
       const el=document.getElementById(id);
-      if(!el)continue;
+      if(!el||el.disabled)continue;
       out[key]=el.type==="checkbox"?!!el.checked:String(el.value);
     }
     return out;
@@ -41,7 +41,7 @@
     for(const [key,id] of Object.entries(ids)){
       if(!(key in saved))continue;
       const el=document.getElementById(id);
-      if(!el)continue;
+      if(!el||el.disabled)continue;
       if(el.type==="checkbox"){
         el.checked=!!saved[key];
         el.dispatchEvent(new Event("change",{bubbles:true}));
@@ -52,6 +52,7 @@
         el.dispatchEvent(new Event(el.type==="range"?"input":"change",{bubbles:true}));
       }
     }
+    globalThis.DruMasterSongSource?.applySourceAvailability?.();
   }
 
   restore();
