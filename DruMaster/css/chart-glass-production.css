@@ -18,7 +18,7 @@
     0 7px 20px rgba(0,0,0,.38)!important;
 }
 
-/* Alternating lane tone (.020).
+/* Alternating lane tone (.020), inverted so lanes 2 and 4 are bright.
    Canvas geometry is 3 equal main lanes within the top 88%, plus a 12% KICK
    lane. Match those real boundaries instead of dividing the chart into 25% bands. */
 .game #chartWrap::before{
@@ -29,10 +29,10 @@
   pointer-events:none;
   background:linear-gradient(
     to bottom,
-    rgba(255,255,255,.020) 0 29.3333%,
-    transparent 29.3333% 58.6667%,
-    rgba(255,255,255,.020) 58.6667% 88%,
-    transparent 88% 100%
+    transparent 0 29.3333%,
+    rgba(255,255,255,.020) 29.3333% 58.6667%,
+    transparent 58.6667% 88%,
+    rgba(255,255,255,.020) 88% 100%
   );
 }
 
