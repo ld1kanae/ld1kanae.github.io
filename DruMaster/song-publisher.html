@@ -6,49 +6,94 @@
 <meta name="theme-color" content="#070b11">
 <title>DruMaster Content Tool</title>
 <style>
-:root{color-scheme:dark;--bg:#070b11;--line:#263747;--text:#eaf2f9;--muted:#7e91a4;--accent:#63c3ff;--panel:#0d141d}
+:root{color-scheme:dark;--bg:#070b11;--line:#263747;--text:#eaf2f9;--muted:#7e91a4;--accent:#63c3ff}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:var(--bg);color:var(--text);font:13px/1.4 Inter,"Noto Sans JP",system-ui,sans-serif;overflow:hidden}
-.toolbar{height:52px;display:flex;align-items:stretch;border-bottom:1px solid var(--line);background:#090f16;padding:0 14px;gap:4px}
-.tab{position:relative;min-width:150px;border:0;background:transparent;color:#91a2b4;font:700 12px/52px Inter,"Noto Sans JP",system-ui,sans-serif;letter-spacing:.04em;padding:0 18px;cursor:pointer;text-align:left}
-.tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;background:transparent}
-.tab.active{color:#eef7ff}.tab.active::after{background:var(--accent)}
-.tab:disabled{color:#4d5a67;cursor:not-allowed}.tab-state{margin-left:8px;font-size:9px;font-weight:800;letter-spacing:.08em;color:#6f8295}.tab.active .tab-state{color:#86d7ff}.tab.ready .tab-state{color:#70d6a7}
-.spacer{flex:1}.status{display:flex;align-items:center;color:#6f8295;font-size:10px;white-space:nowrap;padding:0 8px}
-.views{position:relative;width:100%;height:calc(100% - 52px)}.view{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg);display:none}.view.active{display:block}
-@media(max-width:560px){.toolbar{padding:0 6px}.tab{min-width:0;flex:1;padding:0 10px}.tab::after{left:8px;right:8px}.status{display:none}}
+.toolbar{height:60px;width:100%;display:flex;align-items:stretch;border-bottom:1px solid var(--line);background:#090f16;padding:0;gap:0}
+.tab{position:relative;flex:1 1 0;min-width:0;border:0;border-right:1px solid rgba(57,76,92,.45);background:transparent;color:#91a2b4;font:750 14px/60px Inter,"Noto Sans JP",system-ui,sans-serif;letter-spacing:.035em;padding:0 10px;cursor:pointer;text-align:center;transition:color .18s ease,background .18s ease,filter .18s ease}
+.tab:last-child{border-right:0}.tab::after{content:"";position:absolute;left:8%;right:8%;bottom:0;height:2px;background:transparent;opacity:.9}
+.tab.active{color:#f4fbff;background:linear-gradient(337.5deg,rgba(215,89,168,.23) 0%,rgba(191,188,75,.18) 27%,rgba(71,201,190,.20) 52%,rgba(64,149,207,.23) 70%,rgba(194,92,197,.22) 100%);background-size:170% 170%;animation:dmTabSpectrum 8s ease-in-out infinite;box-shadow:inset 0 1px 0 rgba(220,239,250,.10),inset 0 -12px 30px rgba(68,164,212,.07)}
+.tab.active::after{background:linear-gradient(90deg,#d759a8,#bfbc4b,#47c9be,#4095cf,#c25cc5)}
+.tab:not(:disabled):not(.active):hover{color:#e5f1f8;background:linear-gradient(337.5deg,rgba(215,89,168,.09),rgba(71,201,190,.08),rgba(64,149,207,.10),rgba(194,92,197,.09))}
+.tab:disabled{color:#465361;cursor:not-allowed;background:rgba(255,255,255,.012)}
+.tab-state{margin-left:10px;font-size:9px;font-weight:850;letter-spacing:.09em;color:#657789;vertical-align:1px}.tab.active .tab-state{color:#d6f3ff}.tab.ready .tab-state{color:#77dbac}
+.views{position:relative;width:100%;height:calc(100% - 60px)}.view{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg);display:none}.view.active{display:block}
+@keyframes dmTabSpectrum{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@media(max-width:620px){.toolbar{height:56px}.tab{font-size:12px;line-height:56px;padding:0 4px}.tab-state{display:none}.views{height:calc(100% - 56px)}}
 </style>
 </head>
 <body>
 <nav class="toolbar" role="tablist" aria-label="楽曲制作ツール">
 <button id="registerTab" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="registerView">楽曲登録 <span class="tab-state">INPUT</span></button>
 <button id="editorTab" class="tab" type="button" role="tab" aria-selected="false" aria-controls="editorView" disabled>タイミング編集 <span class="tab-state">LOCKED</span></button>
-<div class="spacer"></div><div id="shellStatus" class="status">素材を登録すると編集タブが有効になります</div>
+<button id="volumeTab" class="tab" type="button" role="tab" aria-selected="false" aria-controls="volumeView" disabled>音量バランス <span class="tab-state">LOCKED</span></button>
 </nav>
 <div class="views">
-<iframe id="registerView" class="view active" title="楽曲登録" src="song-publisher-form.html?v=20260828-tabs1"></iframe>
+<iframe id="registerView" class="view active" title="楽曲登録" src="song-publisher-form.html?v=20260828-tabs2"></iframe>
 <iframe id="editorView" class="view" title="タイミング編集" src="about:blank"></iframe>
+<iframe id="volumeView" class="view" title="音量バランス調整" src="about:blank"></iframe>
 </div>
 <script>
 (()=>{
 "use strict";
-const registerTab=document.getElementById("registerTab"),editorTab=document.getElementById("editorTab"),registerView=document.getElementById("registerView"),editorView=document.getElementById("editorView"),status=document.getElementById("shellStatus");
+const $=id=>document.getElementById(id),registerTab=$("registerTab"),editorTab=$("editorTab"),volumeTab=$("volumeTab"),registerView=$("registerView"),editorView=$("editorView"),volumeView=$("volumeView");
 let editorReady=false,currentSession=null;
+const tabs={register:registerTab,editor:editorTab,volume:volumeTab},views={register:registerView,editor:editorView,volume:volumeView};
 function show(which){
-  if(which==="editor"&&!editorReady)return;
-  const editor=which==="editor";
-  registerTab.classList.toggle("active",!editor);editorTab.classList.toggle("active",editor);
-  registerTab.setAttribute("aria-selected",String(!editor));editorTab.setAttribute("aria-selected",String(editor));
-  registerView.classList.toggle("active",!editor);editorView.classList.toggle("active",editor);
+  if(which!=="register"&&!editorReady)return;
+  for(const [key,tab] of Object.entries(tabs)){const active=key===which;tab.classList.toggle("active",active);tab.setAttribute("aria-selected",String(active));views[key].classList.toggle("active",active)}
 }
-registerTab.addEventListener("click",()=>show("register"));
-editorTab.addEventListener("click",()=>show("editor"));
+registerTab.addEventListener("click",()=>show("register"));editorTab.addEventListener("click",()=>show("editor"));volumeTab.addEventListener("click",()=>show("volume"));
+function tuneRegisterForm(){
+  let doc;try{doc=registerView.contentDocument}catch{return}if(!doc?.head||doc.getElementById("dmRegisterShellTune"))return;
+  const style=doc.createElement("style");style.id="dmRegisterShellTune";style.textContent=`
+    main{width:min(600px,calc(100% - 28px))!important;margin:30px auto 64px!important}
+    header{display:block!important;text-align:center!important;margin-bottom:22px!important}
+    header .badge{display:inline-block!important;margin-top:12px!important}
+    h1{font-size:32px!important;text-align:center!important}
+    .sub{text-align:center!important}
+    .grid{display:flex!important;flex-direction:column!important;gap:16px!important}
+    .panel,.panel.full{width:100%!important;grid-column:auto!important}
+    .panel h2{text-align:center!important;font-size:16px!important;letter-spacing:.12em!important;margin-bottom:16px!important}
+    .fields{grid-template-columns:1fr!important}
+    .field.full{grid-column:auto!important}
+    .req,.optional{font-size:8px!important;font-weight:700!important;letter-spacing:.02em!important}
+    .file-row{grid-template-columns:150px minmax(0,1fr)!important;gap:14px!important}
+    .file-row small{display:none!important}
+    input[type=file]{direction:rtl!important;text-align:right!important}
+    input[type=file]::file-selector-button{margin-left:10px!important;margin-right:0!important}
+    .publish{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:12px!important;margin-top:22px!important}
+    .publish button{min-width:190px!important;height:46px!important;font-size:14px!important}
+    .progress-shell{width:100%!important;min-width:0!important}
+    #log{text-align:center!important;min-height:44px!important}
+    .token-actions{display:flex;justify-content:center;margin-top:14px}
+    .token-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 16px;border:1px solid #406784;border-radius:8px;background:#0b1c29;color:#dff4ff;text-decoration:none;font-weight:750;font-size:11px}
+    .token-link:hover{border-color:#63c3ff;background:#10283a}
+    .token-howto{margin-top:12px;border-top:1px solid #263746;padding-top:10px;color:#8fa1b4;font-size:10px}
+    .token-howto summary{cursor:pointer;text-align:center;color:#aabacd;font-weight:700}
+    .token-howto ol{margin:10px 0 0;padding-left:20px;line-height:1.7}
+    @media(max-width:640px){main{width:min(100% - 18px,600px)!important}.file-row{grid-template-columns:1fr!important}input[type=file]{width:100%!important}}
+  `;doc.head.appendChild(style);
+  const grid=doc.querySelector(".grid"),panels=[...doc.querySelectorAll(".panel")],github=panels.find(p=>p.querySelector("h2")?.textContent.trim()==="GITHUB");if(grid&&github)grid.appendChild(github);
+  doc.querySelectorAll(".file-row small").forEach(n=>n.remove());
+  doc.querySelectorAll("p.help").forEach(p=>{const t=p.textContent.trim();if(t.startsWith("内部IDは")||t.startsWith("原曲またはオフボーカル"))p.remove()});
+  if(github){
+    let help=github.querySelector("p.help");if(help)help.remove();
+    if(!github.querySelector(".token-actions")){
+      const box=doc.createElement("div");box.innerHTML='<div class="token-actions"><a class="token-link" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHubでTokenを作成</a></div><details class="token-howto"><summary>Fine-grained Personal Access Tokenの作成方法</summary><ol><li>Token nameと有効期限を設定します。</li><li>Repository accessで「Only select repositories」を選び、ld1kanae.github.ioを指定します。</li><li>Repository permissions → Contents を「Read and write」にします。</li><li>Generate token後に表示される github_pat_… を上の入力欄へ貼り付けます。</li></ol></details>';github.appendChild(box);
+    }
+  }
+  const publish=doc.getElementById("publish"),log=doc.getElementById("log");if(publish)publish.textContent="PUBLISH";if(log&&log.textContent.includes("一次PUBLISH"))log.textContent="タイミングエディタに移動します。";
+}
+registerView.addEventListener("load",tuneRegisterForm);setTimeout(tuneRegisterForm,250);
 addEventListener("message",e=>{
   if(e.origin!==location.origin||e.source!==registerView.contentWindow)return;
   const d=e.data;if(!d||d.type!=="dm-song-editor-ready"||!d.id||!d.sessionId)return;
-  currentSession=d;editorReady=true;editorTab.disabled=false;editorTab.classList.add("ready");editorTab.querySelector(".tab-state").textContent="READY";
-  status.textContent=`${d.id} · 編集可能 / 素材アップロードはバックグラウンドで継続`;
-  try{editorView.contentWindow.name=JSON.stringify({dmSongPublisher:{token:d.token,repo:d.repo,branch:d.branch,id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}})}catch{}
+  currentSession=d;editorReady=true;
+  for(const tab of [editorTab,volumeTab]){tab.disabled=false;tab.classList.add("ready");tab.querySelector(".tab-state").textContent="READY"}
+  const inherited={dmSongPublisher:{token:d.token,repo:d.repo,branch:d.branch,id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
+  try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
   editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1`;
+  volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1`;
   show("editor");
 });
 })();
