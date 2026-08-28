@@ -13,7 +13,7 @@
     if(!r.ok)throw Error(`Editor load failed: HTTP ${r.status}`);
     let html=await r.text();
     const theme='<link rel="stylesheet" href="css/song-tool-cyan-violet-theme.css?v=20260829-theme3">';
-    const local='<scr'+'ipt src="js/song-sync-local-session.js?v=20260828-volume1"></scr'+'ipt>';
+    const local='<scr'+'ipt src="js/song-sync-local-session.js?v=20260829-update1"></scr'+'ipt>';
     const history='<scr'+'ipt src="js/song-sync-history.js?v=20260828-mswheel1"></scr'+'ipt>';
     const audioOffsetUi='<scr'+'ipt src="js/song-sync-audio-offset-ui.js?v=20260829-audiooffset1"></scr'+'ipt>';
     const heading='<scr'+'ipt>(()=>{const fix=()=>{const h=document.getElementById("heading");if(h&&h.textContent!=="Timing Correction")h.textContent="Timing Correction"};new MutationObserver(fix).observe(document.documentElement,{subtree:true,childList:true,characterData:true});addEventListener("DOMContentLoaded",fix);setTimeout(fix,0);setTimeout(fix,500)})();</scr'+'ipt>';
