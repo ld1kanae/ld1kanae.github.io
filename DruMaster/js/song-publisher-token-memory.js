@@ -10,7 +10,57 @@
     try{return frame.contentDocument?.getElementById("token")||null}catch{return null}
   }
 
+  function applyDruMasterTheme(){
+    let doc;try{doc=frame.contentDocument}catch{return}
+    if(!doc?.head)return;
+    if(doc.getElementById("dmPublisherDruMasterTheme"))return;
+    const style=doc.createElement("style");
+    style.id="dmPublisherDruMasterTheme";
+    style.textContent=`
+      :root{--dm-publisher-cyan:#52dfcf;--dm-publisher-cyan2:#49c7dc;--dm-publisher-blue:#5e9ee8;--dm-publisher-violet:#8875ff;--dm-publisher-violet2:#a36cff}
+      .req{color:var(--dm-publisher-cyan)!important}
+      input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,select:focus{
+        border-color:var(--dm-publisher-cyan)!important;
+        box-shadow:0 0 0 1px rgba(82,223,207,.22),0 0 0 3px rgba(136,117,255,.10)!important
+      }
+      input[type=file]::file-selector-button{
+        border:1px solid rgba(93,183,216,.55)!important;
+        border-radius:7px!important;
+        background:linear-gradient(115deg,rgba(38,183,190,.22),rgba(104,91,211,.25))!important;
+        color:#eafcff!important;
+        min-height:30px!important;
+        padding:0 12px!important;
+        cursor:pointer!important
+      }
+      input[type=file]::file-selector-button:hover{
+        border-color:rgba(105,229,216,.78)!important;
+        background:linear-gradient(115deg,rgba(42,206,202,.30),rgba(126,103,238,.34))!important
+      }
+      .publish button{
+        border-color:rgba(100,199,218,.72)!important;
+        background:linear-gradient(115deg,rgba(31,165,177,.34) 0%,rgba(72,132,211,.34) 52%,rgba(113,83,218,.38) 100%)!important;
+        box-shadow:inset 0 1px 0 rgba(205,249,246,.09),0 0 18px rgba(99,108,228,.08)!important
+      }
+      .publish button:not(:disabled):hover{
+        border-color:rgba(111,231,218,.92)!important;
+        background:linear-gradient(115deg,rgba(35,196,194,.42) 0%,rgba(80,145,225,.43) 52%,rgba(132,96,239,.46) 100%)!important
+      }
+      .progress-bar{background:linear-gradient(90deg,var(--dm-publisher-cyan) 0%,var(--dm-publisher-blue) 52%,var(--dm-publisher-violet) 100%)!important}
+      .token-link{
+        border-color:rgba(90,186,213,.58)!important;
+        background:linear-gradient(115deg,rgba(32,157,170,.22),rgba(101,78,202,.25))!important
+      }
+      .token-link:hover{
+        border-color:rgba(103,226,215,.82)!important;
+        background:linear-gradient(115deg,rgba(37,189,187,.31),rgba(126,95,230,.34))!important
+      }
+      .advanced summary:hover{color:#d9d4ff!important}
+    `;
+    doc.head.appendChild(style);
+  }
+
   async function preparePasswordManager(){
+    applyDruMasterTheme();
     const input=tokenInput();
     if(!input)return;
     const doc=input.ownerDocument;
