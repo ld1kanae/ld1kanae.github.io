@@ -48,4 +48,16 @@
     left:auto!important;
     translate:var(--dm-mobile-center-correction-x) var(--dm-mobile-center-correction-y)!important;
   }
+
+  /* Keep the two second-row panels on one shared ceiling. Their vertical
+     placement is controlled as a pair so later size changes cannot split
+     the top edges. */
+  html.dm-layout-centered .setup>.song-card,
+  html.dm-layout-centered .setup>.tempo-box{
+    align-self:start!important;
+    margin-top:0!important;
+    translate:
+      var(--dm-mobile-center-correction-x)
+      var(--dm-mobile-center-correction-y)!important;
+  }
 }
