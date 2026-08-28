@@ -51,8 +51,8 @@ body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display
 #scoreSeekWrap{display:none;position:absolute;left:50%;top:calc(100% + 12px);bottom:auto;z-index:15;width:min(720px,88%);height:28px;transform:translateX(-50%);align-items:center;gap:8px;padding:3px 10px;border-radius:999px;background:#06101ac2;border:1px solid #64788b55;backdrop-filter:blur(5px);touch-action:none}
 body[data-score-playback="1"] #scoreSeekWrap{display:flex}
 
-/* Keep the setup-screen seekbar geometry, but use the approved button-hover
-   spectrum for the elapsed range. The unreached range stays neutral gray. */
+/* Keep the spectrum spatially fixed across the full seekbar.
+   Only the unreached section is covered by neutral gray. */
 #scoreSeek{
   --score-range-progress:0%;
   --score-spectrum:linear-gradient(90deg,
@@ -79,8 +79,14 @@ body[data-score-playback="1"] #scoreSeekWrap{display:flex}
   border:1px solid rgba(255,255,255,.14);
   border-radius:999px;
   background:
-    var(--score-spectrum) 0 0 / var(--score-range-progress) 100% no-repeat,
-    rgba(255,255,255,.18)
+    linear-gradient(90deg,
+      transparent 0%,
+      transparent var(--score-range-progress),
+      rgba(255,255,255,.18) var(--score-range-progress),
+      rgba(255,255,255,.18) 100%),
+    var(--score-spectrum);
+  background-size:100% 100%,100% 100%;
+  background-repeat:no-repeat
 }
 #scoreSeek::-webkit-slider-thumb{
   -webkit-appearance:none;
@@ -96,20 +102,21 @@ body[data-score-playback="1"] #scoreSeekWrap{display:flex}
   height:7px;
   border:1px solid rgba(255,255,255,.14);
   border-radius:999px;
-  background:rgba(255,255,255,.18)
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      transparent var(--score-range-progress),
+      rgba(255,255,255,.18) var(--score-range-progress),
+      rgba(255,255,255,.18) 100%),
+    var(--score-spectrum);
+  background-size:100% 100%,100% 100%;
+  background-repeat:no-repeat
 }
 #scoreSeek::-moz-range-progress{
   height:7px;
+  border:0;
   border-radius:999px;
-  background:linear-gradient(90deg,
-    #d759a8 0%,
-    #cf6f8b 14%,
-    #bfbc4b 29%,
-    #6bb77e 43%,
-    #47c9be 57%,
-    #4095cf 71%,
-    #4d65be 86%,
-    #c25cc5 100%)
+  background:transparent
 }
 #scoreSeek::-moz-range-thumb{
   width:15px;
