@@ -1,11 +1,11 @@
 "use strict";
 
 (()=>{
-  const songs={
+  const builtInSongs={
     nanairo:{
       id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,bpm:125,
       chart:{pixelsPerQuarter:80},
-      playback:{stemOffsetSec:0},
+      playback:{stemOffsetSec:0,midiOffsetSec:0},
       midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz?v=20260826-midi2",
       stems:{
         base:{path:"songs/nanairo/offvocal.mp3",bytes:6314638,sha256:"4dd43973168efdc730112bec742e3dced51024080d222dbd43f7065ef713a8b1"},
@@ -16,7 +16,7 @@
     ray:{
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,bpm:132,
       chart:{pixelsPerQuarter:75,desktopPixelsPerQuarter:100},
-      playback:{stemOffsetSec:0.002},
+      playback:{stemOffsetSec:0.002,midiOffsetSec:0},
       midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz?v=20260826-midi2",
       mix:{base:.70,vocals:.60,drums:.70},
       stems:{
@@ -27,6 +27,8 @@
     }
   };
 
+  const registry=globalThis.DruMasterSongRegistry&&typeof globalThis.DruMasterSongRegistry==="object"?globalThis.DruMasterSongRegistry:{};
+  const songs={...builtInSongs,...registry};
   const params=new URLSearchParams(location.search),requested=params.get("song"),current=songs[requested]||songs.nanairo;
   const nativeFetch=globalThis.fetch.bind(globalThis),midiCache=new Map();
   globalThis.DruMasterSongs={songs,current,nativeFetch};
@@ -37,18 +39,29 @@
   }
   function requestedMidiSong(input){
     const url=cleanUrl(input);
+    /* app.js still asks for nanairo as its timing placeholder. Redirect that
+       request to the selected song, then also recognise every registered song's
+       own MIDI path for preview/game-chart requests. */
     if(url.endsWith("songs/nanairo/chart.mid"))return current;
-    if(url.endsWith("songs/ray/chart.mid"))return songs.ray;
+    for(const song of Object.values(songs)){
+      if(cleanUrl(song.midi)===url)return song;
+    }
     return null;
   }
   async function loadMidi(song){
     if(midiCache.has(song.id))return (await midiCache.get(song.id)).slice(0);
     const task=(async()=>{
-      const r=await nativeFetch(song.midiGzip,{cache:"force-cache"});
+      if(song.midiGzip&&typeof DecompressionStream==="function"){
+        const r=await nativeFetch(song.midiGzip,{cache:"force-cache"});
+        if(r.ok){
+          const stream=r.body.pipeThrough(new DecompressionStream("gzip"));
+          const ab=await new Response(stream).arrayBuffer();
+          if(ab.byteLength>=14&&String.fromCharCode(...new Uint8Array(ab.slice(0,4)))==="MThd")return ab;
+        }
+      }
+      const r=await nativeFetch(song.midi,{cache:"force-cache"});
       if(!r.ok)throw Error(`${song.title} MIDIを取得できません（HTTP ${r.status}）`);
-      if(typeof DecompressionStream!=="function")throw Error("このブラウザではMIDI展開機能を利用できません");
-      const stream=r.body.pipeThrough(new DecompressionStream("gzip"));
-      const ab=await new Response(stream).arrayBuffer();
+      const ab=await r.arrayBuffer();
       if(ab.byteLength<14||String.fromCharCode(...new Uint8Array(ab.slice(0,4)))!=="MThd")throw Error(`${song.title} MIDIが破損しています`);
       return ab;
     })();
@@ -61,7 +74,8 @@
     if(song){
       const method=String(init?.method||"GET").toUpperCase();
       if(method==="HEAD"){
-        const r=await nativeFetch(song.midiGzip,{method:"HEAD",cache:"no-store"});
+        const target=song.midiGzip||song.midi;
+        const r=await nativeFetch(target,{method:"HEAD",cache:"no-store"});
         return new Response(null,{status:r.status,statusText:r.statusText,headers:{"Content-Type":"audio/midi"}});
       }
       const ab=await loadMidi(song);
@@ -69,6 +83,27 @@
     }
     return nativeFetch(input,init);
   };
+
+  function isFullMixOnly(song){
+    if(song?.fullMixOnly===true)return true;
+    const s=song?.stems||{};
+    return !!s.fullmix&&!(s.base&&s.vocals&&s.drums);
+  }
+  function applySourceAvailability(){
+    const locked=isFullMixOnly(current);
+    for(const id of ["vocalToggle","guideToggle"]){
+      const input=document.getElementById(id);
+      if(!input)continue;
+      const row=input.closest(".option");
+      input.disabled=locked;
+      if(locked)input.checked=true;
+      row?.classList.toggle("source-locked",locked);
+      row?.setAttribute("aria-disabled",locked?"true":"false");
+      const value=row?.querySelector("b");
+      if(locked&&value)value.textContent="ON";
+    }
+    document.documentElement.classList.toggle("dm-fullmix-only",locked);
+  }
 
   function bpmText(){
     const tempo=document.querySelector("#tempo"),percent=Number(tempo?.value||100),base=Number(current.bpm)||0;
@@ -88,19 +123,14 @@
   function positionSetupBpm(){
     const card=document.querySelector(".song-card"),title=card?.querySelector("h1"),artist=card?.querySelector("p"),node=card?.querySelector(".setup-bpm");
     if(!card||!title||!artist||!node)return;
-    const top=title.offsetTop,
-          bottom=artist.offsetTop+artist.offsetHeight;
+    const top=title.offsetTop,bottom=artist.offsetTop+artist.offsetHeight;
     node.style.top=`${(top+bottom)/2}px`;
   }
   function syncBpmLabels(){
     const hud=document.querySelector(".song-hud");
     if(hud){
       let node=hud.querySelector(".hud-bpm");
-      if(!node){
-        node=document.createElement("span");
-        node.className="hud-bpm";
-        hud.appendChild(node);
-      }
+      if(!node){node=document.createElement("span");node.className="hud-bpm";hud.appendChild(node)}
       node.textContent=bpmText();
     }
     const setupBpm=ensureSetupBpm();
@@ -119,7 +149,8 @@
   const select=document.querySelector("#songSelect");
   if(select){
     select.replaceChildren();
-    for(const song of Object.values(songs)){
+    const ordered=Object.values(songs).sort((a,b)=>(Number(a.order)??999)-(Number(b.order)??999));
+    for(const song of ordered){
       const opt=document.createElement("option");
       opt.value=song.id;
       opt.textContent=`${song.title} — ${song.artist}`;
@@ -135,18 +166,18 @@
   document.querySelector("#tempo")?.addEventListener("input",syncBpmLabels);
   addEventListener("resize",()=>requestAnimationFrame(positionSetupBpm));
   applyLabels();
-
-  /* Asset availability is validated by the actual pre-game MIDI/stem loads.
-     Do not launch separate background HEAD requests: on slower phones those
-     requests can outlive setup and compete with real-time audio playback. */
+  applySourceAvailability();
 
   const start=document.querySelector("#start");
   if(start){
     const syncDuration=()=>{
       if(start.disabled)return;
       try{duration=current.duration}catch{}
+      applySourceAvailability();
     };
     new MutationObserver(syncDuration).observe(start,{attributes:true,attributeFilter:["disabled"]});
     setTimeout(syncDuration,0);
   }
+
+  globalThis.DruMasterSongSource={isFullMixOnly:()=>isFullMixOnly(current),applySourceAvailability};
 })();
