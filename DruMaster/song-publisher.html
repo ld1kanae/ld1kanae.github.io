@@ -4,78 +4,53 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#070b11">
-<title>DruMaster Song Publisher</title>
-<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<title>DruMaster Content Tool</title>
 <style>
-:root{color-scheme:dark;--bg:#070b11;--panel:#101720;--panel2:#0b1119;--line:#2d3d4e;--text:#edf4fb;--muted:#8d9bad;--accent:#63c3ff;--ok:#72d6a6;--warn:#ffd17a;--bad:#ff7d8d}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 Inter,"Noto Sans JP",system-ui,sans-serif}main{width:min(1040px,calc(100% - 32px));margin:36px auto 72px}header{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:22px}h1{margin:0;font-size:30px;letter-spacing:.01em}.eyebrow{margin:0 0 5px;color:#7f91a6;font-size:10px;font-weight:800;letter-spacing:.2em}.sub{margin:7px 0 0;color:var(--muted)}.badge{padding:7px 11px;border:1px solid var(--line);border-radius:999px;color:#a8b7c8;font-size:11px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}.panel.full{grid-column:1/-1}.panel h2{margin:0 0 14px;font-size:13px;letter-spacing:.1em;color:#b8c7d8}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}label>span,.field>span{font-size:11px;color:#9fadc0;font-weight:700}input,select,button{font:inherit}input[type=text],input[type=password],input[type=number],select{width:100%;height:40px;border:1px solid #34485d;border-radius:8px;background:#080e15;color:var(--text);padding:0 11px;outline:none}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(99,195,255,.14)}.file-row{display:grid;grid-template-columns:160px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #202d3a}.file-row:last-child{border-bottom:0}.file-row b{font-size:12px}.file-row small{color:var(--muted)}input[type=file]{min-width:0;width:100%;color:#b8c4d2}.req{color:#83d7ff}.optional{color:#8e9bac}.help{margin:12px 0 0;color:#7f8d9e;font-size:11px}.advanced summary{cursor:pointer;color:#aebfd2;font-weight:700}.advanced .fields{margin-top:14px}.publish{display:flex;gap:14px;align-items:center;margin-top:18px}.publish button{height:44px;padding:0 28px;border:1px solid #4b8cb8;border-radius:9px;background:#12314a;color:#eafdff;font-weight:800;letter-spacing:.08em;cursor:pointer}.publish button:disabled{opacity:.35;cursor:not-allowed}.progress-shell{flex:1;min-width:180px}.progress-track{height:10px;background:#05090e;border:1px solid #253646;border-radius:999px;overflow:hidden}.progress-bar{width:0;height:100%;background:linear-gradient(90deg,#4bb6ff,#8edfff);transition:width .16s linear}.progress-meta{display:flex;justify-content:space-between;margin-top:6px;color:#91a1b3;font-size:11px}#log{margin-top:14px;min-height:52px;padding:12px;border-radius:8px;background:#05090e;border:1px solid #22303d;color:#9fb0c2;font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap}.ok{color:var(--ok)!important}.bad{color:var(--bad)!important}.warn{color:var(--warn)!important}@media(max-width:760px){main{width:min(100% - 20px,1040px);margin-top:20px}.grid,.fields{grid-template-columns:1fr}.panel.full,.field.full{grid-column:auto}.file-row{grid-template-columns:1fr}.publish{align-items:stretch;flex-direction:column}header{align-items:flex-start;flex-direction:column}}
+:root{color-scheme:dark;--bg:#070b11;--line:#263747;--text:#eaf2f9;--muted:#7e91a4;--accent:#63c3ff;--panel:#0d141d}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:var(--bg);color:var(--text);font:13px/1.4 Inter,"Noto Sans JP",system-ui,sans-serif;overflow:hidden}
+.toolbar{height:52px;display:flex;align-items:stretch;border-bottom:1px solid var(--line);background:#090f16;padding:0 14px;gap:4px}
+.tab{position:relative;min-width:150px;border:0;background:transparent;color:#91a2b4;font:700 12px/52px Inter,"Noto Sans JP",system-ui,sans-serif;letter-spacing:.04em;padding:0 18px;cursor:pointer;text-align:left}
+.tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;background:transparent}
+.tab.active{color:#eef7ff}.tab.active::after{background:var(--accent)}
+.tab:disabled{color:#4d5a67;cursor:not-allowed}.tab-state{margin-left:8px;font-size:9px;font-weight:800;letter-spacing:.08em;color:#6f8295}.tab.active .tab-state{color:#86d7ff}.tab.ready .tab-state{color:#70d6a7}
+.spacer{flex:1}.status{display:flex;align-items:center;color:#6f8295;font-size:10px;white-space:nowrap;padding:0 8px}
+.views{position:relative;width:100%;height:calc(100% - 52px)}.view{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg);display:none}.view.active{display:block}
+@media(max-width:560px){.toolbar{padding:0 6px}.tab{min-width:0;flex:1;padding:0 10px}.tab::after{left:8px;right:8px}.status{display:none}}
 </style>
 </head>
 <body>
-<main>
-<header><div><p class="eyebrow">DRUMASTER / CONTENT TOOL</p><h1>楽曲データ登録</h1><p class="sub">入力 → 音源変換 → タイミング補正とGitHub登録を並行して進めます。</p></div><div class="badge">TARGET: DruMaster/songs/&lt;id&gt;/</div></header>
-<div class="grid">
-<section class="panel"><h2>SONG INFO</h2><div class="fields">
-<label class="field full"><span>曲名 <i class="req">必須</i></span><input id="title" type="text" autocomplete="off" placeholder="例：ray"></label>
-<label class="field full"><span>アーティスト名 <i class="req">必須</i></span><input id="artist" type="text" autocomplete="off" placeholder="例：BUMP OF CHICKEN"></label>
-<label class="field"><span>内部ID / フォルダ名 <i class="req">必須</i></span><input id="songId" type="text" inputmode="latin" autocomplete="off" placeholder="lowercase-romaji"></label>
-<label class="field"><span>表示順 <i class="optional">任意</i></span><input id="order" type="number" step="1" min="0" placeholder="未指定は末尾"></label>
-</div><p class="help">内部IDは小文字英数字とハイフンのみ。新曲は <code>songs/nanairo/</code>・<code>songs/ray/</code> と横並びに作成します。</p></section>
-<section class="panel"><h2>GITHUB</h2><div class="fields">
-<label class="field full"><span>Fine-grained Personal Access Token <i class="req">必須</i></span><input id="token" type="password" autocomplete="off" placeholder="github_pat_…"></label>
-</div><p class="help">対象リポジトリの Contents: Read and write のみで十分です。トークンはLocalStorageには保存しません。</p></section>
-<section class="panel full"><h2>AUDIO SOURCES</h2>
-<div class="file-row"><b>原曲 <i class="optional">任意</i></b><input id="fullmix" type="file" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg"><small>ボーカル＋ドラムを含む完成音源</small></div>
-<div class="file-row"><b>オフボーカル <i class="optional">任意</i></b><input id="offvocal" type="file" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg"><small>ボーカルなし</small></div>
-<div class="file-row"><b>ドラムのみ <i class="optional">任意</i></b><input id="drums" type="file" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg"><small>Guide Drums用</small></div>
-<div class="file-row"><b>ボーカルのみ <i class="optional">任意</i></b><input id="vocals" type="file" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg"><small>Vocal切替用</small></div>
-<p class="help">原曲またはオフボーカルのどちらか1つ以上が必須です。ドラムのみ・ボーカルのみは任意です。選択した音源は44.1kHz・stereo・MP3 192kbpsへ変換します。</p>
-</section>
-<section class="panel full"><h2>MIDI</h2><div class="file-row"><b>ドラムMIDI <i class="req">必須</i></b><input id="midi" type="file" accept=".mid,.midi,audio/midi,audio/x-midi"><small>BPM / 拍子 / PPQ / ノート数を自動解析</small></div></section>
-<section class="panel full advanced"><details><summary>詳細設定</summary><div class="fields">
-<label class="field"><span>チャート速度 / px per quarter</span><input id="ppqVisual" type="number" min="30" max="200" step="1" value="80"></label>
-<label class="field"><span>PC専用チャート速度 <i class="optional">任意</i></span><input id="desktopPpqVisual" type="number" min="30" max="200" step="1" placeholder="未指定"></label>
-</div></details></section>
+<nav class="toolbar" role="tablist" aria-label="楽曲制作ツール">
+<button id="registerTab" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="registerView">楽曲登録 <span class="tab-state">INPUT</span></button>
+<button id="editorTab" class="tab" type="button" role="tab" aria-selected="false" aria-controls="editorView" disabled>タイミング編集 <span class="tab-state">LOCKED</span></button>
+<div class="spacer"></div><div id="shellStatus" class="status">素材を登録すると編集タブが有効になります</div>
+</nav>
+<div class="views">
+<iframe id="registerView" class="view active" title="楽曲登録" src="song-publisher-form.html?v=20260828-tabs1"></iframe>
+<iframe id="editorView" class="view" title="タイミング編集" src="about:blank"></iframe>
 </div>
-<div class="publish"><button id="publish">一次 PUBLISH</button><div class="progress-shell"><div class="progress-track"><div id="bar" class="progress-bar"></div></div><div class="progress-meta"><span id="stage">待機中</span><b id="percent">0%</b></div></div></div>
-<div id="log">ファイルを選択して一次PUBLISHしてください。</div>
-</main>
 <script>
 (()=>{
 "use strict";
-const REPO="ld1kanae/ld1kanae.github.io",ROOT="DruMaster/songs",BRANCH="main",DB_NAME="drumasterSongPublishV1",STORE="sessions",DB_VERSION=1;
-const $=id=>document.getElementById(id),log=$("log"),bar=$("bar"),stage=$("stage"),percent=$("percent"),btn=$("publish");
-let audioContext=null;
-function setProgress(v,text){v=Math.max(0,Math.min(100,v));bar.style.width=v.toFixed(1)+"%";percent.textContent=Math.round(v)+"%";if(text)stage.textContent=text}
-function say(s,cls=""){log.textContent=s;log.className=cls}
-function token(){return $("token").value.trim()}
-function headers(t){return {"Accept":"application/vnd.github+json","Authorization":`Bearer ${t}`,"X-GitHub-Api-Version":"2022-11-28"}}
-function validId(v){return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v)}
-async function apiGet(path,t){const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,{headers:headers(t),cache:"no-store"});if(r.status===404)return null;if(!r.ok)throw Error(`GitHub API ${r.status}: ${await r.text()}`);return r.json()}
-function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:"sessionId"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||Error("ローカルセッションDBを開けませんでした"))})}
-async function storeSession(value){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(value);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||Error("ローカル素材を保存できませんでした"))}})}
-async function sha256(ab){const h=await crypto.subtle.digest("SHA-256",ab);return [...new Uint8Array(h)].map(v=>v.toString(16).padStart(2,"0")).join("")}
-function parseMidi(ab){const d=new DataView(ab);let p=0;const need=n=>{if(p+n>d.byteLength)throw Error("MIDIが途中で切れています")},str=n=>{need(n);let s="";while(n--)s+=String.fromCharCode(d.getUint8(p++));return s},u32=()=>{need(4);const v=d.getUint32(p);p+=4;return v},u16=()=>{need(2);const v=d.getUint16(p);p+=2;return v},vlq=end=>{let v=0,b,c=0;do{if(p>=end)throw Error("MIDI VLQ error");b=d.getUint8(p++);v=(v<<7)|(b&127);if(++c>4)throw Error("MIDI VLQ error")}while(b&128);return v};if(str(4)!=="MThd")throw Error("MIDIヘッダーが不正です");const header=u32();u16();const tracks=u16(),division=u16();if(division&0x8000)throw Error("SMPTE MIDIには未対応です");p=8+header;let notes=0;const tempos=[],sigs=[];for(let tr=0;tr<tracks;tr++){if(str(4)!=="MTrk")throw Error("MIDIトラックが不正です");const len=u32(),end=p+len;let tick=0,run=0;while(p<end){tick+=vlq(end);let first=d.getUint8(p++),status;if(first<128){if(!run)throw Error("MIDI running status error");status=run;p--}else{status=first;if(status<240)run=status}if(status===255){const type=d.getUint8(p++),n=vlq(end);if(type===81&&n===3)tempos.push({tick,us:(d.getUint8(p)<<16)|(d.getUint8(p+1)<<8)|d.getUint8(p+2)});if(type===88&&n>=2)sigs.push({tick,numerator:d.getUint8(p),denominator:2**d.getUint8(p+1)});p+=n;continue}if(status===240||status===247){run=0;p+=vlq(end);continue}const hi=status&240,ch=status&15,bytes=(hi===192||hi===208)?1:2;need(bytes);d.getUint8(p++);const b=bytes===2?d.getUint8(p++):0;if(hi===144&&b>0&&ch===9)notes++}p=end}tempos.sort((a,b)=>a.tick-b.tick);sigs.sort((a,b)=>a.tick-b.tick);const tempo=tempos.find(x=>x.tick===0)||tempos[0]||{us:500000},sig=sigs.find(x=>x.tick===0)||sigs[0]||{numerator:4,denominator:4};return {division,noteCount:notes,bpm:60000000/tempo.us,numerator:sig.numerator,denominator:sig.denominator}}
-async function gzip(ab){if(typeof CompressionStream!=="function")return null;const stream=new Blob([ab]).stream().pipeThrough(new CompressionStream("gzip"));return new Uint8Array(await new Response(stream).arrayBuffer())}
-function getAC(){return audioContext||(audioContext=new (window.AudioContext||window.webkitAudioContext)())}
-async function resample(buffer,targetDuration){const sr=44100,length=Math.max(1,Math.round(targetDuration*sr)),ctx=new OfflineAudioContext(2,length,sr),src=ctx.createBufferSource();src.buffer=buffer;src.connect(ctx.destination);src.start();return ctx.startRendering()}
-function floatTo16(src,start,count){const out=new Int16Array(count);for(let i=0;i<count;i++){const v=Math.max(-1,Math.min(1,src[start+i]||0));out[i]=v<0?v*32768:v*32767}return out}
-async function encodeMp3(file,targetDuration,progress){if(!globalThis.lamejs?.Mp3Encoder)throw Error("MP3変換ライブラリを読み込めませんでした");const ab=await file.arrayBuffer(),decoded=await getAC().decodeAudioData(ab.slice(0)),duration=targetDuration||decoded.duration,rendered=await resample(decoded,duration),left=rendered.getChannelData(0),right=rendered.numberOfChannels>1?rendered.getChannelData(1):left,enc=new lamejs.Mp3Encoder(2,44100,192),blocks=[],step=1152,total=Math.ceil(rendered.length/step);for(let at=0,i=0;at<rendered.length;at+=step,i++){const n=Math.min(step,rendered.length-at),l=floatTo16(left,at,n),r=floatTo16(right,at,n),buf=enc.encodeBuffer(l,r);if(buf.length)blocks.push(new Uint8Array(buf));if(i%96===0){progress?.(i/total);await new Promise(res=>setTimeout(res,0))}}const end=enc.flush();if(end.length)blocks.push(new Uint8Array(end));progress?.(1);return {blob:new Blob(blocks,{type:"audio/mpeg"}),duration:rendered.duration}}
-async function main(){btn.disabled=true;setProgress(0,"検証中");say("入力内容を検証しています…");try{
-const t=token(),id=$("songId").value.trim(),title=$("title").value.trim(),artist=$("artist").value.trim(),full=$("fullmix").files[0],baseFile=$("offvocal").files[0],drumsFile=$("drums").files[0],vocalsFile=$("vocals").files[0],midi=$("midi").files[0];
-if(!t)throw Error("GitHub tokenを入力してください");if(!title)throw Error("曲名を入力してください");if(!artist)throw Error("アーティスト名を入力してください");if(!validId(id))throw Error("内部IDは小文字英数字とハイフンのみで入力してください");if(!full&&!baseFile)throw Error("原曲またはOff Vocalのどちらかを選択してください");if(!midi)throw Error("MIDIを選択してください");if(await apiGet(`${ROOT}/${id}`,t))throw Error(`songs/${id}/ はすでに存在します。別の内部IDを使用してください`);
-const midiAb=await midi.arrayBuffer(),midiInfo=parseMidi(midiAb),midiHash=await sha256(midiAb),gz=await gzip(midiAb);setProgress(5,"音源変換");say(`MIDI: ${midiInfo.bpm.toFixed(3)} BPM / ${midiInfo.numerator}/${midiInfo.denominator} / PPQ ${midiInfo.division} / ${midiInfo.noteCount} notes\n音源をMP3へ変換しています…`);
-const sources={},jobs=[];if(full)jobs.push({key:"fullmix",file:full,name:"fullmix.mp3"});if(baseFile)jobs.push({key:"base",file:baseFile,name:"offvocal.mp3"});if(drumsFile)jobs.push({key:"drums",file:drumsFile,name:"drums.mp3"});if(vocalsFile)jobs.push({key:"vocals",file:vocalsFile,name:"vocals.mp3"});
-let duration=0;for(let i=0;i<jobs.length;i++){const job=jobs[i],base=5+(i/jobs.length)*90,span=90/jobs.length;const out=await encodeMp3(job.file,duration||null,p=>setProgress(base+p*span,`変換: ${job.name}`));if(!duration)duration=out.duration;const bytes=new Uint8Array(await out.blob.arrayBuffer()),hash=await sha256(bytes.buffer);sources[job.key]={path:`songs/${id}/${job.name}`,bytes:bytes.byteLength,sha256:hash,_blob:out.blob}}
-const uploadItems=[];for(const s of Object.values(sources))uploadItems.push({path:`${ROOT}/${id}/${s.path.split("/").pop()}`,blob:s._blob,label:s.path.split("/").pop()});uploadItems.push({path:`${ROOT}/${id}/chart.mid`,blob:new Blob([midiAb],{type:"audio/midi"}),label:"chart.mid"});if(gz)uploadItems.push({path:`${ROOT}/${id}/chart.mid.gz`,blob:new Blob([gz],{type:"application/gzip"}),label:"chart.mid.gz"});for(const s of Object.values(sources))delete s._blob;
-const orderRaw=$("order").value.trim(),chart={pixelsPerQuarter:Number($("ppqVisual").value)||80},desktopRaw=$("desktopPpqVisual").value.trim();if(desktopRaw)chart.desktopPixelsPerQuarter=Number(desktopRaw);const fullMixOnly=!!sources.fullmix&&!sources.base;const sourceMode=fullMixOnly?"fullmix":"base";
-const draft={schemaVersion:3,state:"uploading",id,title,artist,order:orderRaw===""?null:Number(orderRaw),duration:Number(duration.toFixed(6)),bpm:Number(midiInfo.bpm.toFixed(6)),timeSignature:{numerator:midiInfo.numerator,denominator:midiInfo.denominator},division:midiInfo.division,noteCount:midiInfo.noteCount,chart,sourceMode,fullMixOnly,playback:{stemOffsetSec:0,midiMeasureOffset:0,midiOffsetSec:0},midi:`songs/${id}/chart.mid`,midiGzip:gz?`songs/${id}/chart.mid.gz`:null,midiBytes:midiAb.byteLength,midiSha256:midiHash,stems:sources};
-uploadItems.push({path:`${ROOT}/${id}/song-draft.json`,blob:new Blob([JSON.stringify(draft,null,2)+"\n"],{type:"application/json"}),label:"song-draft.json"});
-const sessionId=`${id}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,originals={};if(full)originals.fullmix=full;if(baseFile)originals.base=baseFile;if(drumsFile)originals.drums=drumsFile;if(vocalsFile)originals.vocals=vocalsFile;
-setProgress(97,"編集準備");say("変換完了。変換前素材と変換済みデータを編集セッションへ引き継いでいます…");
-try{await storeSession({sessionId,id,createdAt:Date.now(),draft,originals,midiBlob:new Blob([midiAb],{type:"audio/midi"}),uploadItems})}catch(e){throw Error(`編集セッションを保存できませんでした。ブラウザの空き容量を確認してください。${e?.message?` (${e.message})`:""}`)}
-setProgress(100,"変換完了");say("変換完了。エディタへ移動します。GitHubへの素材登録はエディタと並行して続行します。","ok");window.name=JSON.stringify({dmSongPublisher:{token:t,repo:REPO,branch:BRANCH,id,sessionId,at:Date.now()}});location.href=`song-sync-editor.html?song=${encodeURIComponent(id)}&session=${encodeURIComponent(sessionId)}`;
-}catch(e){console.error(e);say(e.message||String(e),"bad");stage.textContent="エラー"}finally{btn.disabled=false}}
-btn.addEventListener("click",main);
+const registerTab=document.getElementById("registerTab"),editorTab=document.getElementById("editorTab"),registerView=document.getElementById("registerView"),editorView=document.getElementById("editorView"),status=document.getElementById("shellStatus");
+let editorReady=false,currentSession=null;
+function show(which){
+  if(which==="editor"&&!editorReady)return;
+  const editor=which==="editor";
+  registerTab.classList.toggle("active",!editor);editorTab.classList.toggle("active",editor);
+  registerTab.setAttribute("aria-selected",String(!editor));editorTab.setAttribute("aria-selected",String(editor));
+  registerView.classList.toggle("active",!editor);editorView.classList.toggle("active",editor);
+}
+registerTab.addEventListener("click",()=>show("register"));
+editorTab.addEventListener("click",()=>show("editor"));
+addEventListener("message",e=>{
+  if(e.origin!==location.origin||e.source!==registerView.contentWindow)return;
+  const d=e.data;if(!d||d.type!=="dm-song-editor-ready"||!d.id||!d.sessionId)return;
+  currentSession=d;editorReady=true;editorTab.disabled=false;editorTab.classList.add("ready");editorTab.querySelector(".tab-state").textContent="READY";
+  status.textContent=`${d.id} · 編集可能 / 素材アップロードはバックグラウンドで継続`;
+  try{editorView.contentWindow.name=JSON.stringify({dmSongPublisher:{token:d.token,repo:d.repo,branch:d.branch,id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}})}catch{}
+  editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1`;
+  show("editor");
+});
 })();
 </script>
 </body>
