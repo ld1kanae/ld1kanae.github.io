@@ -1,8 +1,8 @@
 @import url("game-aurora-pc-fix.css?v=20260828-aurora-wide-speed1");
 
-/* The transport mark is a dedicated SVG with an explicit white fill.
-   It does not share pseudo-elements, masks, gradients, filters or <i> layers
-   with the glass hover material. */
+/* The transport mark is a dedicated empty span. Its white geometry is drawn
+   only by this element's background, so inherited text/SVG shadows cannot
+   create a second black transport mark during the glass hover animation. */
 #game header #pause{
   display:grid!important;
   place-items:center!important;
@@ -37,34 +37,30 @@
   height:18px!important;
   margin:0!important;
   display:block!important;
-  overflow:visible!important;
+  overflow:hidden!important;
   pointer-events:none!important;
   transform:translate(-50%,-50%)!important;
   opacity:1!important;
   visibility:visible!important;
-  color:#fff!important;
-  fill:#fff!important;
-  stroke:none!important;
+  color:transparent!important;
+  background:
+    linear-gradient(#fff,#fff) 2px 1px / 4px 16px no-repeat,
+    linear-gradient(#fff,#fff) 12px 1px / 4px 16px no-repeat!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
   filter:none!important;
   mix-blend-mode:normal!important;
+  clip-path:none!important;
 }
-#game header #pause>.pause-white-icon .pause-shape,
-#game header #pause>.pause-white-icon .play-shape,
-#game header #pause>.pause-white-icon rect,
-#game header #pause>.pause-white-icon path{
-  fill:#fff!important;
-  stroke:none!important;
-  opacity:1!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-}
-#game header #pause>.pause-white-icon .play-shape{display:none!important}
 
-#game header #pause[data-transport-icon="play"]>.pause-white-icon .pause-shape,
-#game header #pause[aria-label="再生を再開"]>.pause-white-icon .pause-shape{
-  display:none!important;
-}
 #game header #pause[data-transport-icon="play"]>.pause-white-icon .play-shape,
 #game header #pause[aria-label="再生を再開"]>.pause-white-icon .play-shape{
-  display:block!important;
+  display:none!important;
+}
+#game header #pause[data-transport-icon="play"]>.pause-white-icon,
+#game header #pause[aria-label="再生を再開"]>.pause-white-icon{
+  background:#fff!important;
+  clip-path:polygon(22% 8%,88% 50%,22% 92%)!important;
 }
