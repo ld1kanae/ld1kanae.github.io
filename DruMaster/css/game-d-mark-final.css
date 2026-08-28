@@ -1,5 +1,14 @@
 /* Final gameplay D mark treatment.
-   Keep the header slot stable while scaling only the white vector. */
+   Keep the header slot stable and center the smaller white vector exactly. */
+.game header .rank{
+  align-self:center!important;
+  display:grid!important;
+  place-items:center!important;
+  top:auto!important;
+  bottom:auto!important;
+  translate:none!important;
+}
+
 .game header .rank::before,
 .game header .rank::after{
   content:none!important;
@@ -9,8 +18,13 @@
 }
 
 .game header .rank>.game-d-mark{
-  width:90%!important;
-  height:90%!important;
+  display:block!important;
+  width:80%!important;
+  height:80%!important;
+  margin:auto!important;
+  align-self:center!important;
+  justify-self:center!important;
   transform:none!important;
+  translate:none!important;
   filter:drop-shadow(0 0 12px #6b8fff)!important;
 }
