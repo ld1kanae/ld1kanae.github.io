@@ -1,0 +1,155 @@
+/* Approved near-size typography commonization.
+   Only font-size sources selected by the user are unified here.
+   Existing weight, line-height, letter-spacing, color and geometry remain unchanged.
+   The two audit items left OFF are intentionally absent. */
+:root{
+  /* Desktop */
+  --dm-pc-hud-secondary-size:11px;
+  --dm-pc-setup-state-value-size:11px;
+  --dm-pc-result-small-label-size:9.5px;
+  --dm-pc-result-support-size:11px;
+  --dm-pc-calibration-copy-size:11px;
+  --dm-pc-action-button-size:12px;
+  --dm-pc-mono-readout-size:10px;
+  --dm-pc-ranking-support-size:9px;
+  --dm-pc-dropdown-size:14px;
+
+  /* Smartphone */
+  --dm-mobile-song-main-size:15.5px;
+  --dm-mobile-setup-secondary-size:12px;
+  --dm-mobile-dropdown-size:12px;
+  --dm-mobile-calibration-instruction-size:12px;
+  --dm-mobile-calibration-action-size:9.5px;
+  --dm-mobile-result-small-label-size:10px;
+  --dm-mobile-result-support-size:12px;
+  --dm-mobile-calibration-detail-size:8px;
+}
+
+/* Desktop */
+@media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
+  /* HUD artist -> BPM: target A (11px). */
+  .game .song-hud small,
+  .game .song-hud .hud-bpm{
+    font-size:var(--dm-pc-hud-secondary-size)!important;
+  }
+
+  /* Setup ON/OFF state <-> VOLUME label/value: auto -> 11px. */
+  .setup .option b,
+  .setup .volume-box span,
+  .setup .volume-box strong{
+    font-size:var(--dm-pc-setup-state-value-size)!important;
+  }
+
+  /* Result judgement-summary labels -> ranking column headings: target A (9.5px). */
+  .result-summary span,
+  .ranking-head{
+    font-size:var(--dm-pc-result-small-label-size)!important;
+  }
+
+  /* Result score note -> song sub information: target B (11px). */
+  .result-score-note,
+  .result-song-sub{
+    font-size:var(--dm-pc-result-support-size)!important;
+  }
+
+  /* Calibration step title <-> detail: auto -> 11px for readability. */
+  .mic-cal-steps b,
+  .mic-cal-detail{
+    font-size:var(--dm-pc-calibration-copy-size)!important;
+  }
+
+  /* Calibration actions <-> result actions: auto -> 12px. */
+  .mic-cal-actions button,
+  #result .result-actions #retry,
+  #result .result-actions #home{
+    font-size:var(--dm-pc-action-button-size)!important;
+  }
+
+  /* Monospace calibration values <-> score playback time: auto -> 10px. */
+  .mic-cal-candidate,
+  #acousticCalibrationOverlay small,
+  #scoreSeekTime{
+    font-size:var(--dm-pc-mono-readout-size)!important;
+  }
+
+  /* Ranking badges -> ranking meta: target B (9px). */
+  .best-badge,
+  .podium-badge,
+  .ranking-title span{
+    font-size:var(--dm-pc-ranking-support-size)!important;
+  }
+
+  /* All dropdown typography on the setup page shares one desktop size.
+     Keep the already-improved performance-mode readability and bring song selection to it. */
+  .setup #songSelect,
+  .setup #performanceModeSelect,
+  .setup .song-custom-select>.mobile-custom-select-trigger,
+  .setup .mode-custom-select>.mobile-custom-select-trigger,
+  .setup .song-custom-select .mobile-custom-select-option,
+  .setup .mode-custom-select .mobile-custom-select-option{
+    font-family:var(--dm-font-system,system-ui,sans-serif)!important;
+    font-size:var(--dm-pc-dropdown-size)!important;
+  }
+}
+
+/* Smartphone */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  /* Song title -> BPM/TEMPO: target A (15.5px).
+     SCORE remains joined to the earlier approved shared-number source. */
+  .setup .song-card h1,
+  .setup #tempoValue,
+  .setup .song-card .setup-bpm,
+  .game .score strong{
+    font-size:var(--dm-mobile-song-main-size)!important;
+  }
+
+  /* Artist -> performance-mode label: target B (12px).
+     The existing setup state text remains joined to the earlier shared meta source. */
+  .setup .song-card p,
+  .setup .performance-mode-option>span,
+  .setup .option b{
+    font-size:var(--dm-mobile-setup-secondary-size)!important;
+  }
+
+  /* All setup-page dropdown text is one smartphone size: song/mode,
+     selected value/expanded option/native fallback. */
+  .setup #songSelect,
+  .setup #performanceModeSelect,
+  .setup .song-custom-select>.mobile-custom-select-trigger,
+  .setup .mode-custom-select>.mobile-custom-select-trigger,
+  .setup .song-custom-select .mobile-custom-select-option,
+  .setup .mode-custom-select .mobile-custom-select-option{
+    font-family:var(--dm-font-system,system-ui,sans-serif)!important;
+    font-size:var(--dm-mobile-dropdown-size)!important;
+  }
+
+  /* Normal calibration instruction <-> fingerprint instruction: auto -> 12px. */
+  .mic-cal-instruction,
+  .mic-fingerprint-cal .mic-cal-instruction{
+    font-size:var(--dm-mobile-calibration-instruction-size)!important;
+  }
+
+  /* Normal calibration actions <-> fingerprint actions: auto -> 9.5px. */
+  .mic-cal-actions button,
+  .mic-fingerprint-cal .mic-cal-actions button{
+    font-size:var(--dm-mobile-calibration-action-size)!important;
+  }
+
+  /* Result summary labels <-> ranking headings: auto -> 10px. */
+  .result-summary span,
+  .ranking-head{
+    font-size:var(--dm-mobile-result-small-label-size)!important;
+  }
+
+  /* Result score note <-> song sub information: auto -> 12px. */
+  .result-score-note,
+  .result-song-sub{
+    font-size:var(--dm-mobile-result-support-size)!important;
+  }
+
+  /* Normal calibration detail <-> fingerprint detail: auto -> 8px. */
+  .mic-cal-detail,
+  .mic-fingerprint-cal .mic-cal-detail{
+    font-size:var(--dm-mobile-calibration-detail-size)!important;
+  }
+}
