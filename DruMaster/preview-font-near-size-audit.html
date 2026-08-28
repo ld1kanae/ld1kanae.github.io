@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Near-size Typography Audit</title>
+<style>
+:root{color-scheme:dark;--bg:#070b11;--panel:#0d151f;--panel2:#111c28;--line:#2b3d4f;--text:#edf4fb;--muted:#8495a6;--cyan:#63cfff}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{background:radial-gradient(circle at 10% 0%,rgba(70,145,206,.15),transparent 30%),radial-gradient(circle at 90% 4%,rgba(158,97,214,.10),transparent 30%),#070b11}
+main{width:min(1500px,96vw);margin:0 auto;padding:28px 0 70px}
+h1{margin:0;font-size:28px}.lead{margin:9px 0 4px;color:#a1afbd;font-size:13px;line-height:1.7}.note{margin:0 0 28px;color:#708194;font-size:11px;line-height:1.6}
+.section{margin-top:30px}.section-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:12px}.section h2{margin:0;font-size:20px}.count{font-size:11px;color:#748598}
+.list{display:grid;gap:13px}.card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:linear-gradient(180deg,rgba(18,29,42,.95),rgba(9,15,23,.97))}.card.enabled{border-color:#4c7890;box-shadow:0 0 0 1px rgba(91,198,248,.08)}
+.card-grid{display:grid;grid-template-columns:minmax(220px,.72fr) minmax(520px,1.8fr) 245px;gap:15px;padding:14px}.meta h3{margin:0 0 7px;font-size:14px}.meta p{margin:0;color:#738598;font-size:10px;line-height:1.55}.chiprow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.chip{padding:4px 8px;border:1px solid #34485b;border-radius:999px;background:#09111a;color:#aab9c7;font:700 10px/1 ui-monospace,SFMono-Regular,Consolas,monospace}
+.compare{display:grid;grid-template-columns:1fr 34px 1fr;align-items:stretch;gap:8px}.vs{display:grid;place-items:center;color:#5e7081;font:900 10px/1 system-ui,sans-serif}.sample{min-width:0;border:1px solid #27394a;border-radius:11px;background:#081019;overflow:hidden}.sample-head{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-bottom:1px solid #223242;color:#7e90a2;font-size:9px}.sample-head b{color:#b8c8d6;font:800 10px/1 ui-monospace,SFMono-Regular,Consolas,monospace}.stage{min-height:78px;padding:10px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 20%,rgba(76,141,205,.12),transparent 58%),#09111a;overflow:hidden}
+.controls{border-left:1px solid #263748;padding-left:14px;display:flex;flex-direction:column;justify-content:center;gap:9px}.controls label{display:flex;align-items:center;gap:8px;color:#bac7d3;font-size:11px;cursor:pointer}.controls input{width:19px;height:19px;accent-color:var(--cyan)}.targets{margin-top:2px;padding-top:9px;border-top:1px solid #243444;display:grid;gap:7px}.targets small{color:#6f8192;font-size:9px;line-height:1.4}.target-a:checked,.target-b:checked{accent-color:#82d9ff}
+/* mini production-like components */
+.hud{width:190px;height:44px;padding:6px 9px;display:grid;grid-template-columns:1fr auto;align-items:center;background:linear-gradient(90deg,#101823ed,#080c13f5)}.hud .song b,.hud .song small{display:block}.hud .song small{color:#8997a7}.hud .bpm{color:#aab8c8}
+.option{width:170px;padding:8px 10px;border:1px solid #324557;border-radius:9px;background:rgba(220,240,255,.06);display:flex;align-items:center;gap:8px}.option .name{flex:1}.option .switch{width:34px;height:18px;border:1px solid #71889a;border-radius:99px}.option .state{color:#8d9aa8}
+.volume{width:175px;padding:9px 11px;border:1px solid #2d3745;border-radius:10px;background:rgba(220,240,255,.06)}.volume .row{display:flex;justify-content:space-between}.volume .bar{height:5px;margin-top:8px;border-radius:99px;background:linear-gradient(90deg,#66d5ff,#8c8aff 54%,#ffffff2e 54%)}
+.resultbox{width:190px;padding:9px 11px;background:linear-gradient(180deg,#0d1723,#070b11);text-align:center}.summary{display:flex;justify-content:center;gap:12px}.summary span{display:block;color:#7e8b9c}.summary b{display:block;margin-top:3px}.ranking{width:195px;border:1px solid #2a3a4a;border-radius:9px;background:#0b141e}.ranking .title{padding:7px;display:flex;justify-content:space-between}.ranking .head,.ranking .row{display:grid;grid-template-columns:42px 1fr 58px;align-items:center;padding:5px 7px}.ranking .head{border-top:1px solid #ffffff10;border-bottom:1px solid #ffffff10;color:#748293}.ranking .row{color:#dce6ef}.badge{display:inline-flex;align-items:center;height:18px;padding:0 7px;border:1px solid rgba(255,234,145,.72);border-radius:999px;background:rgba(255,210,78,.10);color:#fff0a2}
+.mic{width:190px;padding:10px;border:1px solid #2b3a49;border-radius:11px;background:#0b141e;text-align:center}.mic .step{color:#eaf2fa}.mic .detail{margin-top:6px;color:#8392a4}.micbtn{min-width:140px;height:36px;border:1px solid #586a7d;border-radius:999px;background:#131e2b;display:grid;place-items:center}.resultbtn{min-width:140px;height:38px;border:1px solid rgba(22,39,48,.88);border-radius:999px;background:rgba(7,17,24,.27);display:grid;place-items:center}.mono{padding:7px 9px;border:1px solid #314455;border-radius:7px;background:#071019;color:#b9c7d7;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.songcard{width:190px;padding:10px 12px;border:1px solid #2d3745;border-radius:11px;background:rgba(220,240,255,.06);position:relative}.songcard h4{margin:0}.songcard small{display:block;margin-top:5px;color:#929cab}.songcard .bpm{position:absolute;right:11px;top:10px}.dropdown{width:190px;border:1px solid #3a5169;border-radius:8px;background:#0d1824;color:#e7eef7;padding:7px 10px}.dropopt{width:190px;background:#29465d;color:#fff;padding:7px 10px}.moderow{width:180px;padding:8px 10px;border:1px solid #324557;border-radius:9px;background:rgba(220,240,255,.06)}.loading{padding:8px 10px;border-radius:8px;background:#0c151f;color:#9ba6b5}.resultnote{color:#8190a2}.fp{width:190px;padding:9px;border:1px solid #2b3a49;border-radius:10px;background:#0b141e;text-align:center}.fp small{display:block;margin-top:6px;color:#748292}
+.output{margin-top:30px;padding:16px;border:1px solid #2b3d4f;border-radius:14px;background:#0b121b}.output h2{margin:0 0 7px;font-size:15px}.output p{margin:0 0 9px;color:#7c8d9e;font-size:11px}.output textarea{width:100%;min-height:360px;resize:vertical;border:1px solid #314558;border-radius:9px;background:#060b11;color:#dce7f1;padding:12px;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.buttons{display:flex;gap:8px;margin-top:9px}.buttons button{border:1px solid #38516a;border-radius:8px;background:#122131;color:#e8f2fa;padding:8px 12px;font-weight:700;cursor:pointer}
+@media(max-width:950px){.card-grid{grid-template-columns:1fr}.controls{border-left:0;border-top:1px solid #263748;padding:12px 0 0}.compare{grid-template-columns:1fr}.vs{height:20px}.stage{min-height:68px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Near-size Typography Audit</h1>
+<p class="lead">現在の最終スタイルで、文字サイズ差が約0.5〜1.3pxに収まり、扱っている情報の役割も近い候補を抽出しています。</p>
+<p class="note">このページで想定する共通化対象は <b>font-sizeのみ</b> です。font-family、font-weight、line-height、letter-spacing、色、余白は維持します。「Aに寄せる」「Bに寄せる」が両方OFFなら、共通化時のサイズ判断はお任せ（auto）になります。</p>
+<section class="section"><div class="section-head"><h2>PC版</h2><span class="count" id="pcCount"></span></div><div class="list" id="pcList"></div></section>
+<section class="section"><div class="section-head"><h2>スマホ版</h2><span class="count" id="mobileCount"></span></div><div class="list" id="mobileList"></div></section>
+<section class="output"><h2>選択結果 JSON</h2><p>共通化する候補と寄せ先を選び、このJSONをそのままチャットへ貼ってください。</p><textarea id="jsonOut" readonly></textarea><div class="buttons"><button id="copyBtn">JSONをコピー</button><button id="resetBtn">すべて解除</button></div></section>
+</main>
+<script>
+const DATA=[
+{platform:'pc',id:'pc-hud-artist-bpm',label:'ゲームHUD：アーティスト ↔ BPM',source:'game-visual.css / song-ui.css',a:{label:'アーティスト',size:'11px',kind:'hud-artist'},b:{label:'BPM',size:'12px',kind:'hud-bpm'}},
+{platform:'pc',id:'pc-setup-state-value',label:'セットアップ：ON/OFF状態 ↔ 設定値',source:'base.css / mode-ui.css / font-commonization.css',a:{label:'ON/OFF状態',size:'11px',kind:'option-state'},b:{label:'VOLUME値・ラベル',size:'12px',kind:'volume-value'}},
+{platform:'pc',id:'pc-result-small-labels',label:'リザルト：判定集計ラベル ↔ ランキング見出し',source:'result-ui.css / result-podium-key-tune.css',a:{label:'判定集計ラベル',size:'9.5px',kind:'summary-label'},b:{label:'ランキング見出し',size:'9px',kind:'ranking-head'}},
+{platform:'pc',id:'pc-ranking-title-row',label:'ランキング：タイトル ↔ 記録行',source:'result-podium-key-tune.css / font-commonization.css',a:{label:'ランキングタイトル',size:'13px',kind:'ranking-title'},b:{label:'ランキング記録行',size:'12px',kind:'ranking-row'}},
+{platform:'pc',id:'pc-result-note-sub',label:'リザルト補助情報：注記 ↔ 曲サブ情報',source:'result-podium-key-tune.css / font-commonization.css',a:{label:'スコア注記',size:'10px',kind:'result-note'},b:{label:'曲サブ情報',size:'11px',kind:'result-sub'}},
+{platform:'pc',id:'pc-calibration-title-detail',label:'マイク調整：ステップ名 ↔ 詳細説明',source:'font-commonization.css',a:{label:'ステップ名',size:'11px',kind:'mic-step'},b:{label:'詳細説明',size:'10px',kind:'mic-detail'}},
+{platform:'pc',id:'pc-action-buttons',label:'操作ボタン：マイク調整 ↔ リザルト',source:'mic-calibration.css / result-actions-fix.css / font-commonization.css',a:{label:'マイク調整ボタン',size:'11px',kind:'mic-button'},b:{label:'リザルトボタン',size:'12px',kind:'result-button'}},
+{platform:'pc',id:'pc-mono-measure-seek',label:'monospace計測表示：調整値 ↔ 再生時間',source:'font-commonization.css / score-playback.css',a:{label:'調整・計測値',size:'10px',kind:'mono-measure'},b:{label:'楽譜再生時間',size:'9px',kind:'mono-time'}},
+{platform:'pc',id:'pc-ranking-badge-meta',label:'ランキング補助：バッジ ↔ メタ情報',source:'font-commonization.css',a:{label:'BEST / 順位バッジ',size:'8px',kind:'rank-badge'},b:{label:'ランキング補足',size:'9px',kind:'ranking-meta'}},
+
+{platform:'mobile',id:'mobile-song-title-bpm',label:'曲カード：曲名 ↔ BPM / TEMPO数値',source:'setup-mobile-tune.css / font-commonization.css',a:{label:'曲名',size:'15.5px',kind:'song-title'},b:{label:'BPM / TEMPO',size:'16px',kind:'song-bpm'}},
+{platform:'mobile',id:'mobile-setup-secondary-meta',label:'セットアップ補助：アーティスト ↔ モードラベル',source:'font-commonization.css',a:{label:'曲アーティスト',size:'11px',kind:'song-artist'},b:{label:'演奏モード',size:'12px',kind:'mode-label'}},
+{platform:'mobile',id:'mobile-song-dropdown-trigger-option',label:'曲名プルダウン：選択値 ↔ 展開項目',source:'setup-mobile-tune.css / font-commonization.css',a:{label:'選択値',size:'12px',kind:'song-trigger'},b:{label:'展開項目',size:'13px',kind:'song-option'}},
+{platform:'mobile',id:'mobile-mode-label-trigger',label:'演奏モード：項目ラベル ↔ 選択値',source:'mode-ui.css / song-ui.css',a:{label:'演奏モード ラベル',size:'12px',kind:'mode-label'},b:{label:'選択値',size:'12.5px',kind:'mode-trigger'}},
+{platform:'mobile',id:'mobile-mode-trigger-option',label:'演奏モードプルダウン：選択値 ↔ 展開項目',source:'song-ui.css / font-commonization.css',a:{label:'選択値',size:'12.5px',kind:'mode-trigger'},b:{label:'展開項目',size:'13px',kind:'mode-option'}},
+{platform:'mobile',id:'mobile-calibration-instruction',label:'マイク調整：通常指示 ↔ 指紋登録指示',source:'font-commonization.css / mic-fingerprint.css',a:{label:'通常マイク調整',size:'12px',kind:'mic-instruction'},b:{label:'指紋登録',size:'11px',kind:'fp-instruction'}},
+{platform:'mobile',id:'mobile-calibration-actions',label:'マイク調整ボタン：通常 ↔ 指紋登録',source:'mic-calibration.css / mic-fingerprint.css',a:{label:'通常マイク調整',size:'9.5px',kind:'mic-button-small'},b:{label:'指紋登録',size:'9px',kind:'fp-button'}},
+{platform:'mobile',id:'mobile-result-summary-ranking-head',label:'リザルト：判定集計ラベル ↔ ランキング見出し',source:'result-ui.css',a:{label:'判定集計ラベル',size:'10px',kind:'summary-label'},b:{label:'ランキング見出し',size:'11px',kind:'ranking-head'}},
+{platform:'mobile',id:'mobile-ranking-meta-badge',label:'ランキング補助：メタ情報 ↔ BESTバッジ',source:'result-ui.css',a:{label:'ランキング補足',size:'10px',kind:'ranking-meta'},b:{label:'BESTバッジ',size:'9px',kind:'rank-badge'}},
+{platform:'mobile',id:'mobile-result-note-sub',label:'リザルト補助情報：スコア注記 ↔ 曲サブ情報',source:'result-podium-key-tune.css / font-commonization.css',a:{label:'スコア注記',size:'11px',kind:'result-note'},b:{label:'曲サブ情報',size:'12px',kind:'result-sub'}},
+{platform:'mobile',id:'mobile-calibration-detail',label:'調整UIの詳細文：通常 ↔ 指紋登録',source:'font-commonization.css / mic-fingerprint.css',a:{label:'通常マイク詳細',size:'8px',kind:'mic-detail'},b:{label:'指紋登録詳細',size:'6.7px',kind:'fp-detail'}}
+];
+const KEY='drumaster-near-size-audit-v1';
+let state={};try{state=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+function st(size,family='Inter,"Noto Sans JP",system-ui,sans-serif'){return `font-family:${family};font-size:${size}`}
+function sample(kind,size){const inherited=st(size),system=st(size,'system-ui,sans-serif'),mono=st(size,'ui-monospace,SFMono-Regular,Consolas,monospace');switch(kind){
+case'hud-artist':return `<div class="hud"><div class="song"><b>なないろ</b><small style="${inherited}">BUMP OF CHICKEN</small></div></div>`;
+case'hud-bpm':return `<div class="hud"><div class="song"><b>なないろ</b><small>BUMP OF CHICKEN</small></div><span class="bpm" style="${system};font-weight:800">♪＝125</span></div>`;
+case'option-state':return `<div class="option"><span class="name">Auto</span><i class="switch"></i><b class="state" style="${inherited}">OFF</b></div>`;
+case'volume-value':return `<div class="volume"><div class="row"><span style="${inherited};font-weight:700">VOLUME</span><strong style="${inherited}">80%</strong></div><div class="bar"></div></div>`;
+case'summary-label':return `<div class="resultbox"><div class="summary"><p><span style="${system}">PERFECT</span><b>128</b></p><p><span style="${system}">GREAT</span><b>12</b></p></div></div>`;
+case'ranking-head':return `<div class="ranking"><div class="head" style="${inherited}"><span>RANK</span><span>SCORE</span><span>DATE</span></div></div>`;
+case'ranking-title':return `<div class="ranking"><div class="title"><b style="${inherited}">LOCAL RANKING</b><span>TOP 10</span></div></div>`;
+case'ranking-row':return `<div class="ranking"><div class="row" style="${inherited}"><b>1</b><b>983420</b><span>08/28</span></div></div>`;
+case'result-note':return `<div class="resultbox"><div class="resultnote" style="${system};font-weight:700">NO SCORE MODE</div></div>`;
+case'result-sub':return `<div class="resultbox"><b>なないろ</b><div style="${inherited};color:#77879a;letter-spacing:.12em">BUMP OF CHICKEN</div></div>`;
+case'mic-step':return `<div class="mic"><b class="step" style="${system};font-weight:850">環境音</b><div class="detail">静かな状態を測定します</div></div>`;
+case'mic-detail':return `<div class="mic"><b>環境音</b><div class="detail" style="${system}">入力レベルと閾値を確認しています</div></div>`;
+case'mic-button':return `<div class="micbtn" style="${system};font-weight:900">測定開始</div>`;
+case'result-button':return `<div class="resultbtn" style="${system};font-weight:900">リトライ</div>`;
+case'mono-measure':return `<div class="mono" style="${mono}">threshold: 0.024</div>`;
+case'mono-time':return `<div class="mono" style="${mono}">01:24 / 04:11</div>`;
+case'rank-badge':return `<span class="badge" style="${system};font-weight:900">BEST</span>`;
+case'ranking-meta':return `<div class="ranking"><div class="title"><b>LOCAL RANKING</b><span style="${inherited};color:#6f7d8e">TOP 10</span></div></div>`;
+case'song-title':return `<div class="songcard"><h4 style="${inherited}">なないろ</h4><small>BUMP OF CHICKEN</small></div>`;
+case'song-bpm':return `<div class="songcard"><h4>なないろ</h4><span class="bpm" style="${inherited};font-weight:700">♪＝125</span><small>BUMP OF CHICKEN</small></div>`;
+case'song-artist':return `<div class="songcard"><h4>なないろ</h4><small style="${inherited}">BUMP OF CHICKEN</small></div>`;
+case'mode-label':return `<div class="moderow"><span style="${inherited}">演奏モード</span></div>`;
+case'song-trigger':return `<div class="dropdown" style="${system};font-weight:700">なないろ — BUMP OF CHICKEN⌄</div>`;
+case'song-option':return `<div class="dropopt" style="${system};font-weight:700">なないろ — BUMP OF CHICKEN</div>`;
+case'mode-trigger':return `<div class="dropdown" style="${system};font-weight:700">通常⌄</div>`;
+case'mode-option':return `<div class="dropopt" style="${system};font-weight:700">通常</div>`;
+case'mic-instruction':return `<div class="mic"><b style="${system};font-weight:800">スネアを3回叩いてください</b></div>`;
+case'fp-instruction':return `<div class="fp"><b style="${system};font-weight:800">スネアを3回叩いてください</b><small>特徴を登録します</small></div>`;
+case'mic-button-small':return `<div class="micbtn" style="${system};font-weight:900;height:31px">測定開始</div>`;
+case'fp-button':return `<div class="micbtn" style="${system};font-weight:900;height:29px">再測定</div>`;
+case'fp-detail':return `<div class="fp"><b>SNARE</b><small style="${system}">音の特徴を記録します</small></div>`;
+default:return `<span style="${inherited}">Sample</span>`}}
+function ensure(id){if(!state[id])state[id]={commonize:false,target:'auto'};return state[id]}
+function targetValue(s){return s.target==='a'?'a':s.target==='b'?'b':'auto'}
+function render(platform){const items=DATA.filter(x=>x.platform===platform),root=document.getElementById(platform==='pc'?'pcList':'mobileList');document.getElementById(platform==='pc'?'pcCount':'mobileCount').textContent=`${items.length} candidates`;root.innerHTML=items.map(x=>{const s=ensure(x.id);return `<article class="card${s.commonize?' enabled':''}" data-id="${x.id}"><div class="card-grid"><div class="meta"><h3>${x.label}</h3><div class="chiprow"><span class="chip">A ${x.a.size}</span><span class="chip">B ${x.b.size}</span><span class="chip">Δ ${Math.abs(parseFloat(x.a.size)-parseFloat(x.b.size)).toFixed(1)}px</span></div><p>現在の参照元：${x.source}</p></div><div class="compare"><div class="sample"><div class="sample-head"><span>A：${x.a.label}</span><b>${x.a.size}</b></div><div class="stage">${sample(x.a.kind,x.a.size)}</div></div><div class="vs">VS</div><div class="sample"><div class="sample-head"><span>B：${x.b.label}</span><b>${x.b.size}</b></div><div class="stage">${sample(x.b.kind,x.b.size)}</div></div></div><div class="controls"><label><input class="common" type="checkbox" ${s.commonize?'checked':''}> 共通化する</label><div class="targets"><small>共通化後のサイズ</small><label><input class="target-a" type="checkbox" ${targetValue(s)==='a'?'checked':''}> A（${x.a.size}）に寄せる</label><label><input class="target-b" type="checkbox" ${targetValue(s)==='b'?'checked':''}> B（${x.b.size}）に寄せる</label><small>両方OFF＝お任せ</small></div></div></div></article>`}).join('');bind(root)}
+function bind(root){root.querySelectorAll('.card').forEach(card=>{const id=card.dataset.id,s=ensure(id),common=card.querySelector('.common'),a=card.querySelector('.target-a'),b=card.querySelector('.target-b');common.onchange=()=>{s.commonize=common.checked;card.classList.toggle('enabled',s.commonize);persist()};a.onchange=()=>{if(a.checked){b.checked=false;s.target='a'}else{s.target=b.checked?'b':'auto'}persist()};b.onchange=()=>{if(b.checked){a.checked=false;s.target='b'}else{s.target=a.checked?'a':'auto'}persist()}})}
+function output(){const arr=DATA.map(x=>{const s=ensure(x.id);return{id:x.id,platform:x.platform,label:x.label,a:{label:x.a.label,fontSize:x.a.size},b:{label:x.b.label,fontSize:x.b.size},commonize:!!s.commonize,target:targetValue(s)}});document.getElementById('jsonOut').value=JSON.stringify({nearSizeCommonization:arr},null,2)}
+function persist(){localStorage.setItem(KEY,JSON.stringify(state));output()}
+render('pc');render('mobile');output();
+document.getElementById('copyBtn').onclick=async()=>{const t=document.getElementById('jsonOut');try{await navigator.clipboard.writeText(t.value);const b=document.getElementById('copyBtn');b.textContent='コピーしました';setTimeout(()=>b.textContent='JSONをコピー',1200)}catch(e){t.select();document.execCommand('copy')}};
+document.getElementById('resetBtn').onclick=()=>{state={};localStorage.removeItem(KEY);render('pc');render('mobile');output()};
+</script>
+</body>
+</html>
