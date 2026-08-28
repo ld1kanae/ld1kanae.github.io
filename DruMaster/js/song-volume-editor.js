@@ -58,7 +58,15 @@
   }
   function getAC(){return ac||(ac=new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"}))}
   async function ensureMedia(key){
-    if(media[key])return media[key];const blob=session.originals?.[key];if(!blob)throw Error(`${stemLabel(key)}のローカル音源がありません`);
+    if(media[key])return media[key];
+    let blob=session.originals?.[key];
+    if(!blob){
+      const path=session.draft?.stems?.[key]?.path;
+      if(!path)throw Error(`${stemLabel(key)}の音源がありません`);
+      const r=await fetch(path,{cache:"no-store"});
+      if(!r.ok)throw Error(`${stemLabel(key)}の既存音源を取得できません（HTTP ${r.status}）`);
+      blob=await r.blob();
+    }
     const audio=new Audio(URL.createObjectURL(blob));audio.preload="auto";const context=getAC(),source=context.createMediaElementSource(audio),gain=context.createGain();gain.gain.value=stemValue(key);source.connect(gain).connect(context.destination);media[key]={audio,source,gain};return media[key];
   }
   async function previewStem(key){try{await getAC().resume();const m=await ensureMedia(key);for(const x of Object.values(media)){x.audio.pause();x.audio.currentTime=0}m.audio.currentTime=0;await m.audio.play();setTimeout(()=>{if(!m.audio.paused){m.audio.pause();m.audio.currentTime=0}},3000)}catch(e){console.error(e);status(e.message||String(e))}}
