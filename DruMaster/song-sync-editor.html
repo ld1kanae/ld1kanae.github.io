@@ -12,7 +12,7 @@
     const r=await fetch('song-sync-editor-v2.html?v=20260828-history2',{cache:'no-store'});
     if(!r.ok)throw Error(`Editor load failed: HTTP ${r.status}`);
     let html=await r.text();
-    const addon='<scr'+'ipt src="js/song-sync-history.js?v=20260828-tooltips1"></scr'+'ipt>';
+    const addon='<scr'+'ipt src="js/song-sync-history.js?v=20260828-mswheel1"></scr'+'ipt>';
     html=html.replace('</body>',addon+'</body>');
     document.open();
     document.write(html);
