@@ -77,13 +77,10 @@
     if(!audio||$("historyUndo"))return;
     audio.inputMode="decimal";
     audio.setAttribute("aria-label","Audio offset milliseconds");
-    audio.title="msを直接入力できます（0.1ms単位）";
+    audio.title="0.1ms単位で直接入力できます。＋＝音源を前へ、−＝音源を後ろへ。";
 
     const panel=audio.closest(".panel"),note=panel?.querySelector(".note");
-    if(note&&!note.dataset.directInputNote){
-      note.textContent=`数値欄は直接入力できます。${note.textContent}`;
-      note.dataset.directInputNote="1";
-    }
+    if(note)note.style.display="none";
 
     const row=document.createElement("div");
     row.className="row dm-history-row";
@@ -91,14 +88,22 @@
     row.innerHTML='<button id="historyUndo" type="button" disabled>↶ 元に戻す</button><button id="historyRedo" type="button" disabled>↷ やり直す</button><span id="historyStatus" class="note" style="margin:0">戻る 0/5 · やり直し 0</span>';
     if(note)panel.insertBefore(row,note);else panel?.appendChild(row);
 
+    $("historyUndo").title="元に戻す · Ctrl＋Z";
+    $("historyRedo").title="やり直す · Ctrl＋Y / Ctrl＋Shift＋Z";
     $("historyUndo").addEventListener("click",undo);
     $("historyRedo").addEventListener("click",redo);
 
+    document.querySelectorAll("[data-audio]").forEach(el=>el.title="音源オフセットを微調整します。＋＝前へ、−＝後ろへ。");
+    if($("audioReset"))$("audioReset").title="音源オフセットを0msへ戻します。";
+    if($("midiPrev"))$("midiPrev").title="MIDI全体を1小節前へ移動します。";
+    if($("midiNext"))$("midiNext").title="MIDI全体を1小節後ろへ移動します。";
+    if($("midiReset"))$("midiReset").title="MIDIの小節オフセットを0へ戻します。";
+    if($("canvas"))$("canvas").title="上段ドラッグ：音源オフセット / 下段クリック：シーク / ホイール：前後移動 / Ctrl＋ホイール：拡大・縮小";
+    if($("zoom"))$("zoom").title="波形タイムラインの拡大率。波形上ではCtrl＋ホイールでも変更できます。";
+    if($("scroll"))$("scroll").title="波形タイムラインの表示位置。波形上ではホイールでも前後移動できます。";
+
     const help=document.querySelector(".timeline-head small");
-    if(help&&!help.dataset.reaperWheelHelp){
-      help.textContent="上段ドラッグ＝音源オフセット / 下段クリック＝シーク / ホイール＝前後移動 / Ctrl＋ホイール＝拡大・縮小";
-      help.dataset.reaperWheelHelp="1";
-    }
+    if(help)help.style.display="none";
   }
 
   function timelineMetrics(){
