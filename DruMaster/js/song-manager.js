@@ -46,14 +46,27 @@
   };
 
   const songs={...builtInSongs,...loadRegistry()};
-  /* Score-playback historically expects the three separated stem slots.
-     Full-mix-only songs expose compatibility aliases to the same file; the
-     extra two aliases are muted, while normal gameplay still uses fullmix once. */
+  /* Keep the true source availability before adding internal compatibility
+     aliases. Missing optional stems point at the base source with gain 0 so
+     score-playback can switch songs without ever requesting a missing file. */
   for(const song of Object.values(songs)){
-    if(song?.fullMixOnly===true&&song.stems?.fullmix){
-      const full=song.stems.fullmix;
-      song.stems={...song.stems,base:song.stems.base||full,vocals:song.stems.vocals||full,drums:song.stems.drums||full};
+    const raw={...(song.stems||{})};
+    song.sourceAvailability={
+      fullmix:!!raw.fullmix,
+      base:!!raw.base,
+      vocals:!!raw.vocals,
+      drums:!!raw.drums
+    };
+    if(song?.fullMixOnly===true&&raw.fullmix){
+      const full=raw.fullmix;
+      song.stems={...raw,base:raw.base||full,vocals:raw.vocals||full,drums:raw.drums||full};
       song.mix={...song.mix,base:Number.isFinite(song.mix?.fullmix)?song.mix.fullmix:.95,vocals:0,drums:0};
+    }else if(raw.base){
+      const mix={...song.mix};
+      if(!raw.vocals)mix.vocals=0;
+      if(!raw.drums)mix.drums=0;
+      song.stems={...raw,vocals:raw.vocals||raw.base,drums:raw.drums||raw.base};
+      song.mix=mix;
     }
   }
   const params=new URLSearchParams(location.search),requested=params.get("song"),current=songs[requested]||songs.nanairo;
@@ -108,14 +121,14 @@
   function isFullMixOnly(song){
     if(song?.fullMixOnly===true)return true;
     if(song?.fullMixOnly===false)return false;
-    const s=song?.stems||{};
-    return !!s.fullmix&&!s.base;
+    const a=song?.sourceAvailability||{};
+    return !!a.fullmix&&!a.base;
   }
   function applySourceAvailability(song=globalThis.DruMasterSongs?.current||current){
-    const fullOnly=isFullMixOnly(song),stems=song?.stems||{};
+    const fullOnly=isFullMixOnly(song),available=song?.sourceAvailability||{};
     const states=[
-      {id:"vocalToggle",available:!!stems.vocals},
-      {id:"guideToggle",available:!!stems.drums}
+      {id:"vocalToggle",available:!!available.vocals},
+      {id:"guideToggle",available:!!available.drums}
     ];
     for(const state of states){
       const input=document.getElementById(state.id);
