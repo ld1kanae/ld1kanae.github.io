@@ -16,7 +16,7 @@ button,input,textarea{font:inherit}
 .controls{padding:15px 16px 28px;background:#07101b;border-right:1px solid rgba(145,169,192,.14);overflow:auto}
 h2{margin:0 0 5px;font-size:12px;letter-spacing:.15em}.intro{margin:0 0 14px;color:#7f91a4;font-size:10px;line-height:1.55}
 .section{margin:18px 0 9px;padding-top:11px;border-top:1px solid rgba(145,169,192,.14);font-size:10px;font-weight:900;letter-spacing:.13em;color:#84dfff}
-.ctrl{margin:0 0 12px}.ctrl-head{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:6px;margin-bottom:5px}.ctrl-head label{font-size:10px;color:#9fb0c0}.ctrl-head output{font-size:10px;font-weight:800;color:#eef7ff;font-variant-numeric:tabular-nums}.use{width:14px;height:14px;margin:0;accent-color:#79dfff}.ctrl input[type=range]{width:100%;accent-color:#76d9ff}.ctrl.disabled{opacity:.38}.ctrl.disabled input[type=range],.ctrl.disabled .color-row input{pointer-events:none}
+.ctrl{margin:0 0 12px}.ctrl-head{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:6px;margin-bottom:5px}.ctrl-head.no-check{grid-template-columns:1fr auto;padding-left:20px}.ctrl-head label{font-size:10px;color:#9fb0c0}.ctrl-head output{font-size:10px;font-weight:800;color:#eef7ff;font-variant-numeric:tabular-nums}.use{width:14px;height:14px;margin:0;accent-color:#79dfff}.ctrl input[type=range]{width:100%;accent-color:#76d9ff}.ctrl.disabled{opacity:.38}.ctrl.disabled input[type=range],.ctrl.disabled .color-row input{pointer-events:none}
 .color-row{display:grid;grid-template-columns:42px 1fr;gap:7px}.color-row input[type=color]{width:42px;height:29px;padding:2px;border:1px solid #34485d;border-radius:7px;background:#0a1320}.color-row input[type=text]{min-width:0;height:29px;padding:0 8px;border:1px solid #34485d;border-radius:7px;background:#0a1320;color:#dce8f4;font-size:10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.actions button{border:1px solid rgba(151,186,214,.28);border-radius:9px;background:#111e2c;color:#dceaf6;padding:9px 8px;font-size:10px;font-weight:850;cursor:pointer}.actions button:hover{background:#182a3d}.json{width:100%;height:150px;margin-top:9px;padding:9px;border:1px solid rgba(149,181,207,.2);border-radius:9px;background:#050b13;color:#91a7ba;font:9px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}
 .preview-area{position:relative;min-width:0;min-height:calc(100vh - 50px);padding:18px;background:radial-gradient(circle at 50% 30%,#101b2a,#050a12 70%);display:flex;align-items:center;justify-content:center;overflow:hidden}.frame-wrap{position:relative;width:100%;height:calc(100vh - 86px);min-height:480px;border:1px solid rgba(154,189,215,.22);border-radius:14px;overflow:hidden;background:#02050a;box-shadow:0 18px 45px rgba(0,0,0,.38)}
@@ -35,15 +35,15 @@ h2{margin:0 0 5px;font-size:12px;letter-spacing:.15em}.intro{margin:0 0 14px;col
 <div class="layout">
 <aside class="controls">
   <h2>譜面背景 MATERIAL</h2>
-  <p class="intro">左のチェックを外すと、その要素はプレビューから完全にオミットします。下地色はガラス層よりさらに後ろに敷く色です。</p>
+  <p class="intro">下地色は譜面枠とは別の独立レイヤーです。0%なら完全に消え、背後の演奏画面背景がそのまま見えます。左のチェックを外した要素は完全にオミットします。</p>
 
   <div class="section">後ろに敷く背景色</div>
   <div class="ctrl" data-control="underColor"><div class="ctrl-head"><input class="use" id="useUnder" type="checkbox" checked><label for="useUnder">下地色</label><output id="outUnder">#030507</output></div><div class="color-row"><input id="underColor" type="color" value="#030507"><input id="underHex" type="text" value="#030507" maxlength="7"></div></div>
-  <div class="ctrl" data-control="underAlpha"><div class="ctrl-head"><input class="use" id="useUnderAlpha" type="checkbox" checked><label for="useUnderAlpha">下地色 不透明度</label><output id="outUnderAlpha">100%</output></div><input id="underAlpha" type="range" min="0" max="1" step="0.01" value="1"></div>
+  <div class="ctrl" data-control="underAlpha"><div class="ctrl-head no-check"><label for="underAlpha">下地色 不透明度</label><output id="outUnderAlpha">100%</output></div><input id="underAlpha" type="range" min="0" max="1" step="0.01" value="1"></div>
 
   <div class="section">ガラス面</div>
   <div class="ctrl" data-control="glassColor"><div class="ctrl-head"><input class="use" id="useGlass" type="checkbox"><label for="useGlass">ガラス色</label><output id="outGlass">#DCF0FF</output></div><div class="color-row"><input id="glassColor" type="color" value="#dcf0ff"><input id="glassHex" type="text" value="#DCF0FF" maxlength="7"></div></div>
-  <div class="ctrl" data-control="glassAlpha"><div class="ctrl-head"><input class="use" id="useGlassAlpha" type="checkbox"><label for="useGlassAlpha">ガラス不透明度</label><output id="outGlassAlpha">0.08</output></div><input id="glassAlpha" type="range" min="0" max="0.30" step="0.005" value="0.08"></div>
+  <div class="ctrl" data-control="glassAlpha"><div class="ctrl-head no-check"><label for="glassAlpha">ガラス不透明度</label><output id="outGlassAlpha">0.08</output></div><input id="glassAlpha" type="range" min="0" max="0.30" step="0.005" value="0.08"></div>
   <div class="ctrl" data-control="blur"><div class="ctrl-head"><input class="use" id="useBlur" type="checkbox"><label for="useBlur">背景ぼかし</label><output id="outBlur">0 px</output></div><input id="blur" type="range" min="0" max="32" step="1" value="0"></div>
   <div class="ctrl" data-control="sat"><div class="ctrl-head"><input class="use" id="useSat" type="checkbox"><label for="useSat">背景彩度</label><output id="outSat">100%</output></div><input id="sat" type="range" min="70" max="220" step="5" value="100"></div>
 
@@ -60,34 +60,34 @@ h2{margin:0 0 5px;font-size:12px;letter-spacing:.15em}.intro{margin:0 0 14px;col
   <textarea id="json" class="json" readonly></textarea>
 </aside>
 <main class="preview-area">
-  <div class="frame-wrap"><span class="badge">LIVE PRODUCTION UI</span><iframe id="preview" src="index.html?chart-glass-editor=20260828"></iframe></div>
+  <div class="frame-wrap"><span class="badge">LIVE PRODUCTION UI</span><iframe id="preview" src="index.html?chart-glass-editor=20260828b"></iframe></div>
 </main>
 </div>
 <script>
 const $=id=>document.getElementById(id);
 const controls={
-  useUnder:$('useUnder'),useUnderAlpha:$('useUnderAlpha'),underColor:$('underColor'),underHex:$('underHex'),underAlpha:$('underAlpha'),
-  useGlass:$('useGlass'),useGlassAlpha:$('useGlassAlpha'),glassColor:$('glassColor'),glassHex:$('glassHex'),glassAlpha:$('glassAlpha'),
+  useUnder:$('useUnder'),underColor:$('underColor'),underHex:$('underHex'),underAlpha:$('underAlpha'),
+  useGlass:$('useGlass'),glassColor:$('glassColor'),glassHex:$('glassHex'),glassAlpha:$('glassAlpha'),
   useBlur:$('useBlur'),blur:$('blur'),useSat:$('useSat'),sat:$('sat'),useEdge:$('useEdge'),edge:$('edge'),useChroma:$('useChroma'),chroma:$('chroma'),
   useShadow:$('useShadow'),shadow:$('shadow'),useLanes:$('useLanes'),lanes:$('lanes'),useBorder:$('useBorder'),border:$('border')
 };
 const presets={
-  current:{useUnder:true,useUnderAlpha:true,underColor:'#030507',underAlpha:1,useGlass:false,useGlassAlpha:false,glassColor:'#dcf0ff',glassAlpha:.08,useBlur:false,blur:0,useSat:false,sat:100,useEdge:false,edge:.5,useChroma:false,chroma:12,useShadow:true,shadow:.38,useLanes:false,lanes:.045,useBorder:true,border:.26},
-  setup:{useUnder:true,useUnderAlpha:true,underColor:'#030507',underAlpha:.72,useGlass:true,useGlassAlpha:true,glassColor:'#dcf0ff',glassAlpha:.08,useBlur:false,blur:0,useSat:true,sat:100,useEdge:true,edge:.5,useChroma:false,chroma:12,useShadow:true,shadow:.32,useLanes:false,lanes:.045,useBorder:true,border:.28},
-  clear:{useUnder:false,useUnderAlpha:false,underColor:'#030507',underAlpha:0,useGlass:true,useGlassAlpha:true,glassColor:'#dcf0ff',glassAlpha:.045,useBlur:true,blur:8,useSat:true,sat:120,useEdge:true,edge:.34,useChroma:false,chroma:8,useShadow:true,shadow:.24,useLanes:true,lanes:.025,useBorder:true,border:.2},
-  dark:{useUnder:true,useUnderAlpha:true,underColor:'#07101a',underAlpha:.78,useGlass:true,useGlassAlpha:true,glassColor:'#b9dcf4',glassAlpha:.055,useBlur:true,blur:10,useSat:true,sat:115,useEdge:true,edge:.28,useChroma:true,chroma:5,useShadow:true,shadow:.42,useLanes:true,lanes:.035,useBorder:true,border:.24}
+  current:{useUnder:true,underColor:'#030507',underAlpha:1,useGlass:false,glassColor:'#dcf0ff',glassAlpha:.08,useBlur:false,blur:0,useSat:false,sat:100,useEdge:false,edge:.5,useChroma:false,chroma:12,useShadow:true,shadow:.38,useLanes:false,lanes:.045,useBorder:true,border:.26},
+  setup:{useUnder:true,underColor:'#030507',underAlpha:.72,useGlass:true,glassColor:'#dcf0ff',glassAlpha:.08,useBlur:false,blur:0,useSat:true,sat:100,useEdge:true,edge:.5,useChroma:false,chroma:12,useShadow:true,shadow:.32,useLanes:false,lanes:.045,useBorder:true,border:.28},
+  clear:{useUnder:false,underColor:'#030507',underAlpha:0,useGlass:true,glassColor:'#dcf0ff',glassAlpha:.045,useBlur:true,blur:8,useSat:true,sat:120,useEdge:true,edge:.34,useChroma:false,chroma:8,useShadow:true,shadow:.24,useLanes:true,lanes:.025,useBorder:true,border:.2},
+  dark:{useUnder:true,underColor:'#07101a',underAlpha:.78,useGlass:true,glassColor:'#b9dcf4',glassAlpha:.055,useBlur:true,blur:10,useSat:true,sat:115,useEdge:true,edge:.28,useChroma:true,chroma:5,useShadow:true,shadow:.42,useLanes:true,lanes:.035,useBorder:true,border:.24}
 };
 function validHex(v){return /^#[0-9a-f]{6}$/i.test(v)}
 function hexRgb(hex){const n=parseInt(hex.slice(1),16);return [(n>>16)&255,(n>>8)&255,n&255]}
 function setColorPair(picker,text,value){picker.value=value.toLowerCase();text.value=value.toUpperCase()}
 function applyPreset(name){const p=presets[name];Object.keys(p).forEach(k=>{const el=controls[k];if(!el)return;if(el.type==='checkbox')el.checked=!!p[k];else el.value=p[k]});setColorPair(controls.underColor,controls.underHex,p.underColor);setColorPair(controls.glassColor,controls.glassHex,p.glassColor);document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.preset===name));apply()}
 function disabledClasses(){
-  const map={underColor:controls.useUnder.checked,underAlpha:controls.useUnder.checked&&controls.useUnderAlpha.checked,glassColor:controls.useGlass.checked,glassAlpha:controls.useGlass.checked&&controls.useGlassAlpha.checked,blur:controls.useBlur.checked,sat:controls.useSat.checked,edge:controls.useEdge.checked,chroma:controls.useChroma.checked,shadow:controls.useShadow.checked,lanes:controls.useLanes.checked,border:controls.useBorder.checked};
+  const map={underColor:controls.useUnder.checked,underAlpha:controls.useUnder.checked,glassColor:controls.useGlass.checked,glassAlpha:controls.useGlass.checked,blur:controls.useBlur.checked,sat:controls.useSat.checked,edge:controls.useEdge.checked,chroma:controls.useChroma.checked,shadow:controls.useShadow.checked,lanes:controls.useLanes.checked,border:controls.useBorder.checked};
   Object.entries(map).forEach(([k,on])=>document.querySelector(`[data-control="${k}"]`)?.classList.toggle('disabled',!on));
 }
 function config(){return {
-  underlay:{enabled:controls.useUnder.checked,color:controls.underColor.value.toUpperCase(),alpha:controls.useUnderAlpha.checked?+controls.underAlpha.value:1},
-  glass:{enabled:controls.useGlass.checked,color:controls.glassColor.value.toUpperCase(),alpha:controls.useGlassAlpha.checked?+controls.glassAlpha.value:1},
+  underlay:{enabled:controls.useUnder.checked,color:controls.underColor.value.toUpperCase(),alpha:+controls.underAlpha.value},
+  glass:{enabled:controls.useGlass.checked,color:controls.glassColor.value.toUpperCase(),alpha:+controls.glassAlpha.value},
   backdropBlur:{enabled:controls.useBlur.checked,px:+controls.blur.value},
   saturation:{enabled:controls.useSat.checked,percent:+controls.sat.value},
   edgeHighlight:{enabled:controls.useEdge.checked,strength:+controls.edge.value},
@@ -96,32 +96,38 @@ function config(){return {
   alternatingLanes:{enabled:controls.useLanes.checked,alpha:+controls.lanes.value},
   border:{enabled:controls.useBorder.checked,alpha:+controls.border.value}
 }}
+function ensureEditorLayers(d){
+  const wrap=d.querySelector('#chartWrap');if(!wrap)return null;
+  let under=d.getElementById('chartEditorUnderlay');if(!under){under=d.createElement('div');under.id='chartEditorUnderlay';wrap.prepend(under)}
+  let glass=d.getElementById('chartEditorGlass');if(!glass){glass=d.createElement('div');glass.id='chartEditorGlass';under.after(glass)}
+  let lanes=d.getElementById('chartEditorLanes');if(!lanes){lanes=d.createElement('div');lanes.id='chartEditorLanes';glass.after(lanes)}
+  return {wrap,under,glass,lanes}
+}
 function injectFrame(){
   const f=$('preview'),w=f.contentWindow,d=f.contentDocument;if(!w||!d)return;
   d.querySelector('#setup')?.classList.add('hidden');d.querySelector('#result')?.classList.add('hidden');d.querySelector('#game')?.classList.remove('hidden');d.querySelector('#pausePanel')?.classList.add('hidden');
+  ensureEditorLayers(d);
   let s=d.getElementById('chartGlassEditorStyle');if(!s){s=d.createElement('style');s.id='chartGlassEditorStyle';d.head.appendChild(s)}
   s.textContent=`
     #game{min-height:100%!important}
-    #chartWrap{position:relative!important;isolation:isolate!important;overflow:hidden!important;background:
-      linear-gradient(rgba(var(--editor-glass-rgb),var(--editor-glass-a)),rgba(var(--editor-glass-rgb),var(--editor-glass-a))),
-      linear-gradient(rgba(var(--editor-under-rgb),var(--editor-under-a)),rgba(var(--editor-under-rgb),var(--editor-under-a)))!important;
-      -webkit-backdrop-filter:blur(var(--editor-blur)) saturate(var(--editor-sat))!important;backdrop-filter:blur(var(--editor-blur)) saturate(var(--editor-sat))!important;
-      border-bottom:1px solid rgba(180,216,239,var(--editor-border))!important;
-      box-shadow:inset var(--editor-chroma) 0 8px rgba(91,230,255,calc(var(--editor-edge)*.19)),inset calc(var(--editor-chroma)*-1) 0 8px rgba(238,115,221,calc(var(--editor-edge)*.18)),inset 0 1px 0 rgba(255,255,255,calc(var(--editor-edge)*.58)),0 7px 20px rgba(0,0,0,var(--editor-shadow))!important}
-    #chartWrap::before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(255,255,255,var(--editor-lane-a)) 0 25%,transparent 25% 50%,rgba(255,255,255,var(--editor-lane-a)) 50% 75%,transparent 75% 100%)}
-    #chartWrap::after{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:linear-gradient(130deg,rgba(255,255,255,calc(var(--editor-edge)*.25)),transparent 20%,transparent 76%,rgba(124,219,255,calc(var(--editor-edge)*.10)));mix-blend-mode:screen}
-    #chart{position:relative!important;z-index:2!important;background:transparent!important}
-    #judgementFx{z-index:3!important}
+    #chartWrap{position:relative!important;isolation:isolate!important;overflow:hidden!important;background:transparent!important;border-bottom:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+    #chartEditorUnderlay,#chartEditorGlass,#chartEditorLanes{position:absolute;inset:0;pointer-events:none}
+    #chartEditorUnderlay{z-index:0;background:rgba(var(--editor-under-rgb),var(--editor-under-a))}
+    #chartEditorGlass{z-index:1;background:rgba(var(--editor-glass-rgb),var(--editor-glass-a));-webkit-backdrop-filter:blur(var(--editor-blur)) saturate(var(--editor-sat));backdrop-filter:blur(var(--editor-blur)) saturate(var(--editor-sat));border-bottom:1px solid rgba(180,216,239,var(--editor-border));box-shadow:inset var(--editor-chroma) 0 8px rgba(91,230,255,calc(var(--editor-edge)*.19)),inset calc(var(--editor-chroma)*-1) 0 8px rgba(238,115,221,calc(var(--editor-edge)*.18)),inset 0 1px 0 rgba(255,255,255,calc(var(--editor-edge)*.58)),0 7px 20px rgba(0,0,0,var(--editor-shadow))}
+    #chartEditorGlass::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(130deg,rgba(255,255,255,calc(var(--editor-edge)*.25)),transparent 20%,transparent 76%,rgba(124,219,255,calc(var(--editor-edge)*.10)));mix-blend-mode:screen}
+    #chartEditorLanes{z-index:2;background:linear-gradient(to bottom,rgba(255,255,255,var(--editor-lane-a)) 0 25%,transparent 25% 50%,rgba(255,255,255,var(--editor-lane-a)) 50% 75%,transparent 75% 100%)}
+    #chart{position:relative!important;z-index:3!important;background:transparent!important}
+    #judgementFx{z-index:4!important}
     body{user-select:none}
   `;
   drawSample();applyFrameVars();
-  setTimeout(()=>{d.querySelector('#setup')?.classList.add('hidden');d.querySelector('#game')?.classList.remove('hidden');drawSample();applyFrameVars()},500);
+  setTimeout(()=>{d.querySelector('#setup')?.classList.add('hidden');d.querySelector('#game')?.classList.remove('hidden');ensureEditorLayers(d);drawSample();applyFrameVars()},500);
 }
 function applyFrameVars(){
-  const d=$('preview').contentDocument;if(!d)return;const wrap=d.querySelector('#chartWrap');if(!wrap)return;
+  const d=$('preview').contentDocument;if(!d)return;const layers=ensureEditorLayers(d);if(!layers)return;const {wrap}=layers;
   const u=hexRgb(controls.underColor.value),g=hexRgb(controls.glassColor.value);
-  wrap.style.setProperty('--editor-under-rgb',u.join(','));wrap.style.setProperty('--editor-under-a',controls.useUnder.checked?(controls.useUnderAlpha.checked?controls.underAlpha.value:1):0);
-  wrap.style.setProperty('--editor-glass-rgb',g.join(','));wrap.style.setProperty('--editor-glass-a',controls.useGlass.checked?(controls.useGlassAlpha.checked?controls.glassAlpha.value:1):0);
+  wrap.style.setProperty('--editor-under-rgb',u.join(','));wrap.style.setProperty('--editor-under-a',controls.useUnder.checked?controls.underAlpha.value:0);
+  wrap.style.setProperty('--editor-glass-rgb',g.join(','));wrap.style.setProperty('--editor-glass-a',controls.useGlass.checked?controls.glassAlpha.value:0);
   wrap.style.setProperty('--editor-blur',controls.useBlur.checked?`${controls.blur.value}px`:'0px');wrap.style.setProperty('--editor-sat',controls.useSat.checked?`${controls.sat.value}%`:'100%');
   wrap.style.setProperty('--editor-edge',controls.useEdge.checked?controls.edge.value:0);wrap.style.setProperty('--editor-chroma',controls.useChroma.checked?`${controls.chroma.value}px`:'0px');wrap.style.setProperty('--editor-shadow',controls.useShadow.checked?controls.shadow.value:0);wrap.style.setProperty('--editor-lane-a',controls.useLanes.checked?controls.lanes.value:0);wrap.style.setProperty('--editor-border',controls.useBorder.checked?controls.border.value:0)
 }
