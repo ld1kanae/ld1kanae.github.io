@@ -23,7 +23,8 @@
   function tokenFromWindow(){try{const w=JSON.parse(window.name||"{}").dmSongPublisher;return w?.token&&w?.sessionId===sessionId?w.token:""}catch{return ""}}
   function headers(t){return {"Accept":"application/vnd.github+json","Authorization":`Bearer ${t}`,"X-GitHub-Api-Version":"2022-11-28"}}
   function readDataUrl(blob){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onerror=()=>reject(fr.error||Error("base64変換失敗"));fr.onload=()=>resolve(String(fr.result).split(",")[1]||"");fr.readAsDataURL(blob)})}
-  async function putFile(path,blob,message,t,onProgress){const content=await readDataUrl(blob);return new Promise((resolve,reject)=>{const x=new XMLHttpRequest();x.open("PUT",`https://api.github.com/repos/ld1kanae/ld1kanae.github.io/contents/${path}`);for(const [k,v] of Object.entries(headers(t)))x.setRequestHeader(k,v);x.setRequestHeader("Content-Type","application/json");x.upload.onprogress=e=>{if(e.lengthComputable)onProgress?.(e.loaded/e.total)};x.onerror=()=>reject(Error("GitHubへのアップロード通信に失敗しました"));x.onload=()=>x.status>=200&&x.status<300?resolve():reject(Error(`GitHub upload ${x.status}: ${x.responseText}`));x.send(JSON.stringify({message,content,branch:"main"}))})}
+  async function putFile(path,blob,message,t,onProgress,sha=null){const content=await readDataUrl(blob);return new Promise((resolve,reject)=>{const x=new XMLHttpRequest();x.open("PUT",`https://api.github.com/repos/ld1kanae/ld1kanae.github.io/contents/${path}`);for(const [k,v] of Object.entries(headers(t)))x.setRequestHeader(k,v);x.setRequestHeader("Content-Type","application/json");x.upload.onprogress=e=>{if(e.lengthComputable)onProgress?.(e.loaded/e.total)};x.onerror=()=>reject(Error("GitHubへのアップロード通信に失敗しました"));x.onload=()=>x.status>=200&&x.status<300?resolve():reject(Error(`GitHub upload ${x.status}: ${x.responseText}`));const body={message,content,branch:"main"};if(sha)body.sha=sha;x.send(JSON.stringify(body))})}
+  async function deleteFile(path,sha,message,t){if(!sha)return;const r=await nativeFetch(`https://api.github.com/repos/ld1kanae/ld1kanae.github.io/contents/${path}`,{method:"DELETE",headers:{...headers(t),"Content-Type":"application/json"},body:JSON.stringify({message,sha,branch:"main"})});if(!r.ok)throw Error(`GitHub delete ${r.status}: ${await r.text()}`)}
 
   function updateUploadUi(){
     const bar=document.getElementById("localUploadBar"),percent=document.getElementById("localUploadPercent"),label=document.getElementById("localUploadLabel");
@@ -81,7 +82,7 @@
 
     if(method==="GET"&&url.includes("raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/main/DruMaster/")){
       const clean=url.split(/[?#]/)[0];
-      if(clean.endsWith(`/DruMaster/${session.draft.midi}`))return new Response(session.midiBlob,{status:200,headers:{"Content-Type":"audio/midi","X-DruMaster-Local":"1"}});
+      if(session.midiBlob&&clean.endsWith(`/DruMaster/${String(session.draft.midi||"").split(/[?#]/)[0]}`))return new Response(session.midiBlob,{status:200,headers:{"Content-Type":"audio/midi","X-DruMaster-Local":"1"}});
       const key=pathKey(url),blob=key&&session.originals?.[key];
       if(blob)return new Response(blob,{status:200,headers:{"Content-Type":blob.type||"application/octet-stream","X-DruMaster-Local":"1"}});
     }
@@ -103,7 +104,12 @@
     if(!items.length){uploadPercent=100;updateUploadUi();return}
     for(let i=0;i<items.length;i++){
       const it=items[i];uploadLabel=it.label||it.path;updateUploadUi();
-      await putFile(it.path,it.blob,`Stage song ${songId}: ${it.label||it.path}`,t,p=>{uploadPercent=(i+p)/items.length*100;updateUploadUi()});
+      if(it.op==="delete"){
+        await deleteFile(it.path,it.sha,`Remove song asset ${songId}: ${it.label||it.path}`,t);
+        uploadPercent=(i+1)/items.length*100;updateUploadUi();
+        continue;
+      }
+      await putFile(it.path,it.blob,`Stage song ${songId}: ${it.label||it.path}`,t,p=>{uploadPercent=(i+p)/items.length*100;updateUploadUi()},it.sha||null);
       uploadPercent=(i+1)/items.length*100;updateUploadUi();
     }
   }
