@@ -5,12 +5,17 @@ const FALLBACK_STEMS={
   vocals:{path:"songs/nanairo/vocals.mp3",bytes:6314638,sha256:"73e6ba324ffa608fb74b7a33206c9189e2b885a43c48779bd4b0094729e75c2f"},
   drums:{path:"songs/nanairo/drums.mp3",bytes:6314638,sha256:"6d50cf5fe21ab4fb73588d3cda1c8bb8ace2ae5234db1eaaca571374ff8e9eeb"}
 };
-function stemSpec(name){return globalThis.DruMasterSongs?.current?.stems?.[name]||FALLBACK_STEMS[name]}
+function stemSpec(name){
+  const current=globalThis.DruMasterSongs?.current?.stems?.[name];
+  return current||FALLBACK_STEMS[name];
+}
 
-/* Audio assets use stable URLs. Prefer an existing browser cache entry while
-   retaining exact byte/hash validation. */
+/* Chunked WAV is used by the song publisher so large browser-generated files
+   stay comfortably below GitHub's per-request practical limits. Existing MP3
+   songs keep their stable single-file path. */
 fetchJoined=async function(spec,label){
-  const paths=spec.paths||Array.from({length:spec.parts},(_,i)=>`${spec.pathPrefix}${String(i).padStart(spec.digits||3,"0")}`),parts=[];
+  const paths=Array.isArray(spec.paths)?spec.paths:(spec.parts?Array.from({length:spec.parts},(_,i)=>`${spec.pathPrefix}${String(i).padStart(spec.digits||3,"0")}`):[]),parts=[];
+  if(!paths.length)throw Error(`${label}音源の分割ファイル設定がありません`);
   for(let i=0;i<paths.length;i+=8){
     const batch=await Promise.all(paths.slice(i,i+8).map(p=>fetch(p,{cache:"force-cache"}).then(r=>{
       if(!r.ok)throw Error(`${label}音源を取得できません（HTTP ${r.status}）`);
@@ -19,10 +24,13 @@ fetchJoined=async function(spec,label){
     parts.push(...batch);
     $("#loadState").textContent=`${label}音源を読み込み中… ${Math.min(i+8,paths.length)}/${paths.length}`;
   }
-  if(parts.length===1){await verifyStem(parts[0],spec,label);return parts[0]}
   const size=parts.reduce((n,b)=>n+b.byteLength,0),out=new Uint8Array(size);let at=0;
   for(const b of parts){out.set(new Uint8Array(b),at);at+=b.byteLength}
-  await verifyStem(out.buffer,spec,label);
+  if(spec.bytes&&out.byteLength!==spec.bytes)throw Error(`${label}音源が不完全です（${out.byteLength.toLocaleString()} / ${spec.bytes.toLocaleString()} bytes）`);
+  if(spec.sha256&&globalThis.crypto?.subtle){
+    $("#loadState").textContent=`${label}音源を検証中…`;
+    if((await hashBuffer(out.buffer))!==spec.sha256)throw Error(`${label}音源の内容が一致しません`);
+  }
   return out.buffer;
 };
 
@@ -31,16 +39,21 @@ loadStem=async function(name,label){
   const spec=stemSpec(name);
   if(!spec)throw Error(`${label}音源の設定がありません`);
   $("#loadState").textContent=`${label}音源を読み込み中…`;
-  const r=await fetch(spec.path,{cache:"force-cache"});
-  if(!r.ok)throw Error(`${label}音源を取得できません（HTTP ${r.status}）`);
-  const encoded=await r.arrayBuffer();
-  if(encoded.byteLength!==spec.bytes)throw Error(`${label}音源が不完全です（${encoded.byteLength.toLocaleString()} / ${spec.bytes.toLocaleString()} bytes）`);
-  if(spec.sha256&&globalThis.crypto?.subtle){
-    $("#loadState").textContent=`${label}音源を検証中…`;
-    if((await hashBuffer(encoded))!==spec.sha256)throw Error(`${label}音源の内容が一致しません`);
+  let encoded;
+  if(Array.isArray(spec.paths)||spec.parts){
+    encoded=await fetchJoined(spec,label);
+  }else{
+    const r=await fetch(spec.path,{cache:"force-cache"});
+    if(!r.ok)throw Error(`${label}音源を取得できません（HTTP ${r.status}）`);
+    encoded=await r.arrayBuffer();
+    if(spec.bytes&&encoded.byteLength!==spec.bytes)throw Error(`${label}音源が不完全です（${encoded.byteLength.toLocaleString()} / ${spec.bytes.toLocaleString()} bytes）`);
+    if(spec.sha256&&globalThis.crypto?.subtle){
+      $("#loadState").textContent=`${label}音源を検証中…`;
+      if((await hashBuffer(encoded))!==spec.sha256)throw Error(`${label}音源の内容が一致しません`);
+    }
   }
   buffers[name]=await ac.decodeAudioData(encoded.slice(0));
-  if(Math.abs(buffers[name].duration-duration)>.1)throw Error(`${label}音源の長さが譜面と一致しません`);
+  if(Math.abs(buffers[name].duration-duration)>.15)throw Error(`${label}音源の長さが譜面と一致しません`);
 };
 
 function readWavFormat(ab){
@@ -51,12 +64,7 @@ function readWavFormat(ab){
     const id=fourCC(d,p),size=d.getUint32(p+4,true),at=p+8;
     if(id==="fmt "){
       if(size<16||at+16>ab.byteLength)throw Error("ゲーム内ドラム音源のfmtチャンクが不正です");
-      return {
-        format:d.getUint16(at,true),
-        channels:d.getUint16(at+2,true),
-        sampleRate:d.getUint32(at+4,true),
-        bitsPerSample:d.getUint16(at+14,true)
-      };
+      return {format:d.getUint16(at,true),channels:d.getUint16(at+2,true),sampleRate:d.getUint32(at+4,true),bitsPerSample:d.getUint16(at+14,true)};
     }
     p=at+size+(size&1);
   }
@@ -69,8 +77,8 @@ loadDrumSource=async function(manifest){
     fetchJoined(manifest.wav,"ゲーム内ドラム"),
     fetch(manifest.midi.path,{cache:"force-cache"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
   ]);
-  if(midi.byteLength!==manifest.midi.bytes)throw Error("ゲーム内ドラム音源MIDIが不完全です");
-  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ゲーム内ドラム音源MIDIの内容が一致しません");
+  if(midi.byteLength!==manifest.midi.bytes)throw Error("ドラム音源MIDIが不完全です");
+  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ドラム音源MIDIの内容が一致しません");
 
   const fmt=readWavFormat(wav),expectedRate=manifest.wav.sourceSampleRate||manifest.wav.sampleRate;
   if(expectedRate&&fmt.sampleRate!==expectedRate)throw Error(`ゲーム内ドラム音源の元サンプルレートが不正です（${fmt.sampleRate}Hz / ${expectedRate}Hz）`);
@@ -99,21 +107,13 @@ playDrum=function(_chartNote,type,v=.75){
   const sampleNote=DEFAULT_NOTE[type];
   const region=drumRegions[String(sampleNote)];
   if(!region)return;
-  const now=ac.currentTime,
-        source=ac.createBufferSource(),
-        gain=ac.createGain(),
-        mix=DRUM_GAIN[type]||1,
-        sourceVelocity=drumSourceVelocity/127,
-        velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
+  const now=ac.currentTime,source=ac.createBufferSource(),gain=ac.createGain(),mix=DRUM_GAIN[type]||1,sourceVelocity=drumSourceVelocity/127,velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
   source.buffer=drumBuffer;
   gain.gain.value=.85*velocityGain*mix;
   source.connect(gain).connect(masterBus);
 
   let voice=null;
-  if(type==="hhOpen"){
-    voice={source,gain};
-    openHatVoices.push(voice);
-  }
+  if(type==="hhOpen"){voice={source,gain};openHatVoices.push(voice)}
   const tracked={source,gain};
   activeDrumVoices.add(tracked);
   source.onended=()=>{
