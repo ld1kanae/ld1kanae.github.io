@@ -13,6 +13,21 @@
   function applyDruMasterTheme(){
     let doc;try{doc=frame.contentDocument}catch{return}
     if(!doc?.head)return;
+
+    if(!doc.getElementById("dmSongToolTheme")){
+      const link=doc.createElement("link");
+      link.id="dmSongToolTheme";
+      link.rel="stylesheet";
+      link.href="css/song-tool-cyan-violet-theme.css?v=20260829-theme2";
+      doc.head.appendChild(link);
+    }
+    if(!doc.getElementById("dmSongToolRangeTheme")){
+      const script=doc.createElement("script");
+      script.id="dmSongToolRangeTheme";
+      script.src="js/song-tool-range-theme.js?v=20260829-range1";
+      doc.head.appendChild(script);
+    }
+
     if(doc.getElementById("dmPublisherDruMasterTheme"))return;
     const style=doc.createElement("style");
     style.id="dmPublisherDruMasterTheme";
