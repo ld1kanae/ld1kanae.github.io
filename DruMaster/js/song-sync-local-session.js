@@ -6,7 +6,7 @@
   if(!sessionId||!songId)return;
 
   const nativeFetch=globalThis.fetch.bind(globalThis);
-  let session=null,uploadPromise=null,uploadError=null,uploadPercent=0,uploadLabel="準備中";
+  let session=null,uploadPromise=null,uploadError=null,uploadPercent=0,uploadLabel="準備中",uploadDeferred=false,updateAssetsPromise=null,updateDeletesDone=false;
 
   function openDb(){
     return new Promise((resolve,reject)=>{
@@ -29,8 +29,8 @@
   function updateUploadUi(){
     const bar=document.getElementById("localUploadBar"),percent=document.getElementById("localUploadPercent"),label=document.getElementById("localUploadLabel");
     if(bar)bar.style.width=`${Math.max(0,Math.min(100,uploadPercent))}%`;
-    if(percent)percent.textContent=`${Math.round(uploadPercent)}%`;
-    if(label)label.textContent=uploadError?`UPLOAD ERROR · ${uploadError.message||uploadError}`:uploadPercent>=100?"素材アップロード完了":`素材アップロード中 · ${uploadLabel}`;
+    if(percent)percent.textContent=uploadDeferred?"WAIT":`${Math.round(uploadPercent)}%`;
+    if(label)label.textContent=uploadError?`UPLOAD ERROR · ${uploadError.message||uploadError}`:uploadDeferred?uploadLabel:uploadPercent>=100?"素材アップロード完了":`素材アップロード中 · ${uploadLabel}`;
   }
   function installUploadUi(){
     if(document.getElementById("localUploadStatus"))return;
@@ -43,7 +43,7 @@
   function pathKey(url){
     if(!session)return null;
     const clean=String(url).split(/[?#]/)[0];
-    for(const [key,s] of Object.entries(session.draft?.stems||{}))if(s?.path&&clean.endsWith(`/DruMaster/${s.path}`))return key;
+    for(const [key,s] of Object.entries(session.draft?.stems||{}))if(s?.path&&clean.endsWith(`/DruMaster/${String(s.path).split(/[?#]/)[0]}`))return key;
     return null;
   }
   function fakeApiDraft(){
@@ -74,6 +74,32 @@
 
   const sessionReady=getSession(sessionId).then(v=>{if(!v||v.id!==songId)throw Error("ローカル編集セッションが見つかりません");session=v;return v});
 
+  async function applyUpdateAssets(){
+    if(updateAssetsPromise)return updateAssetsPromise;
+    updateAssetsPromise=(async()=>{
+      const s=await refreshSession(),t=tokenFromWindow();
+      if(!t)throw Error("GitHub tokenを引き継げませんでした。最終PUBLISH欄へ再入力してください");
+      const items=(s?.uploadItems||[]).filter(it=>it.op!=="delete");
+      uploadDeferred=false;uploadPercent=0;
+      if(!items.length){uploadPercent=100;uploadLabel="変更ファイルなし";updateUploadUi();return}
+      for(let i=0;i<items.length;i++){
+        const it=items[i];uploadLabel=it.label||it.path;updateUploadUi();
+        await putFile(it.path,it.blob,`Update song ${songId}: ${it.label||it.path}`,t,p=>{uploadPercent=(i+p)/items.length*100;updateUploadUi()},it.sha||null);
+        uploadPercent=(i+1)/items.length*100;updateUploadUi();
+      }
+    })().catch(e=>{uploadError=e;updateUploadUi();throw e});
+    return updateAssetsPromise;
+  }
+
+  async function applyUpdateDeletes(){
+    if(updateDeletesDone)return;
+    const s=await refreshSession(),t=tokenFromWindow();
+    if(!t)throw Error("GitHub tokenを引き継げませんでした");
+    const items=(s?.uploadItems||[]).filter(it=>it.op==="delete"&&it.sha);
+    for(const it of items){uploadLabel=it.label||it.path;updateUploadUi();await deleteFile(it.path,it.sha,`Remove song asset ${songId}: ${it.label||it.path}`,t)}
+    updateDeletesDone=true;
+  }
+
   globalThis.fetch=async function(input,init){
     const url=typeof input==="string"?input:input?.url||"",method=String(init?.method||"GET").toUpperCase();
     await sessionReady;
@@ -88,10 +114,16 @@
     }
 
     if(method==="PUT"&&url.includes("api.github.com/repos/ld1kanae/ld1kanae.github.io/contents/")&&(url.includes(`DruMaster/songs/${songId}/song.json`)||url.includes("DruMaster/songs/registry.json"))){
-      await waitForUpload();
+      if(session.mode==="update"&&url.includes(`DruMaster/songs/${songId}/song.json`))await applyUpdateAssets();
+      else await waitForUpload();
       const nextInit=await withLatestVolumeSettings(url,init);
       const response=await nativeFetch(input,nextInit);
-      if(response.ok&&url.includes("DruMaster/songs/registry.json"))void deleteSession(sessionId);
+      if(response.ok&&url.includes("DruMaster/songs/registry.json")){
+        if(session.mode==="update"){
+          try{await applyUpdateDeletes()}catch(e){console.warn("Unused old asset cleanup failed",e);uploadError=e;updateUploadUi()}
+        }
+        void deleteSession(sessionId);
+      }
       return response;
     }
     return nativeFetch(input,init);
@@ -101,13 +133,15 @@
     const s=await sessionReady,t=tokenFromWindow();
     if(!t)throw Error("GitHub tokenを引き継げませんでした。最終PUBLISH欄へ再入力してください");
     const items=s.uploadItems||[];
+    if(s.mode==="update"){
+      uploadDeferred=true;uploadPercent=0;uploadLabel=items.length?"変更素材は最終PUBLISH時に本番へ反映します":"素材変更なし。設定だけ最終PUBLISHで反映します";updateUploadUi();return;
+    }
     if(!items.length){uploadPercent=100;updateUploadUi();return}
     for(let i=0;i<items.length;i++){
       const it=items[i];uploadLabel=it.label||it.path;updateUploadUi();
       if(it.op==="delete"){
         await deleteFile(it.path,it.sha,`Remove song asset ${songId}: ${it.label||it.path}`,t);
-        uploadPercent=(i+1)/items.length*100;updateUploadUi();
-        continue;
+        uploadPercent=(i+1)/items.length*100;updateUploadUi();continue;
       }
       await putFile(it.path,it.blob,`Stage song ${songId}: ${it.label||it.path}`,t,p=>{uploadPercent=(i+p)/items.length*100;updateUploadUi()},it.sha||null);
       uploadPercent=(i+1)/items.length*100;updateUploadUi();
