@@ -1,5 +1,5 @@
 /* Readability balance for pause and result screens.
-   AUTO PLAY / score label / final score intentionally keep their existing scale. */
+   AUTO PLAY / final score typography intentionally keeps its existing scale. */
 
 /* Pause overlay */
 #pausePanel{
@@ -19,21 +19,30 @@
   line-height:1.2!important;
 }
 
-/* Result headings and supporting text */
+/* Result heading block: title, artist and SCORE use an explicit rhythm. */
 #result>.eyebrow{
-  font-size:14px!important;
-  line-height:1.2!important;
-  margin-bottom:7px!important;
+  display:none!important;
 }
 #result>h2{
-  font-size:clamp(30px,3vw,42px)!important;
-  line-height:1.08!important;
-  margin-bottom:5px!important;
+  font-size:clamp(34px,3.4vw,48px)!important;
+  line-height:1.05!important;
+  margin:0 0 9px!important;
 }
 #result .result-song-sub{
-  font-size:14px!important;
-  line-height:1.25!important;
+  font-size:16px!important;
+  line-height:1.15!important;
+  margin:0 0 18px!important;
 }
+#result .result-score-label{
+  font-size:14px!important;
+  line-height:1!important;
+  margin:0 0 12px!important;
+}
+#result #finalScore{
+  margin-top:0!important;
+}
+
+/* Result breakdown */
 #result .grades{
   gap:clamp(28px,3vw,46px)!important;
 }
@@ -47,15 +56,28 @@
   font-size:clamp(26px,2.4vw,34px)!important;
   line-height:1.1!important;
 }
+
+/* A real two-column layout prevents legacy button width rules from overlapping. */
 #result .result-actions{
-  gap:16px!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,190px)!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:18px!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin:18px auto 0!important;
 }
 #result .result-actions #retry,
 #result .result-actions #home{
-  width:clamp(170px,12vw,210px)!important;
-  min-width:clamp(170px,12vw,210px)!important;
-  flex-basis:clamp(170px,12vw,210px)!important;
+  box-sizing:border-box!important;
+  width:190px!important;
+  min-width:190px!important;
+  max-width:190px!important;
+  height:48px!important;
   min-height:48px!important;
+  flex:none!important;
+  margin:0!important;
   padding:12px 24px!important;
   font-size:15px!important;
   line-height:1.2!important;
@@ -77,14 +99,17 @@
     font-size:14px!important;
   }
 
-  #result>.eyebrow{
-    font-size:13px!important;
-  }
   #result>h2{
-    font-size:28px!important;
+    font-size:30px!important;
+    margin-bottom:6px!important;
   }
   #result .result-song-sub{
-    font-size:13px!important;
+    font-size:14px!important;
+    margin-bottom:11px!important;
+  }
+  #result .result-score-label{
+    font-size:12px!important;
+    margin-bottom:8px!important;
   }
   #result .grades span,
   #result .result-summary span{
@@ -94,11 +119,17 @@
   #result .result-summary b{
     font-size:24px!important;
   }
+  #result .result-actions{
+    grid-template-columns:repeat(2,142px)!important;
+    gap:12px!important;
+    margin-top:10px!important;
+  }
   #result .result-actions #retry,
   #result .result-actions #home{
     width:142px!important;
     min-width:142px!important;
-    flex-basis:142px!important;
+    max-width:142px!important;
+    height:42px!important;
     min-height:42px!important;
     padding:10px 16px!important;
     font-size:13px!important;
