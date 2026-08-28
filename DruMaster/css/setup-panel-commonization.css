@@ -1,5 +1,6 @@
 /* PC setup setting-panel geometry.
-   TEMPO and VOLUME are one component frame in both normal and compact desktop layouts. */
+   TEMPO and VOLUME are one component frame in both normal and compact desktop layouts.
+   Smartphone setup alignment also lives here as a late, narrow override. */
 :root{
   --dm-setup-setting-panel-width:min(480px,90vw);
   --dm-setup-setting-panel-margin-top:14px;
@@ -10,6 +11,9 @@
   --dm-setup-setting-panel-compact-margin:0;
   --dm-setup-setting-panel-compact-padding-y:8px;
   --dm-setup-setting-panel-compact-padding-x:16px;
+
+  /* Small optical correction for the forced-landscape smartphone setup UI. */
+  --dm-mobile-setup-global-nudge:8px;
 }
 
 @media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
@@ -30,5 +34,19 @@
     width:var(--dm-setup-setting-panel-compact-width)!important;
     margin:var(--dm-setup-setting-panel-compact-margin)!important;
     padding:var(--dm-setup-setting-panel-compact-padding-y) var(--dm-setup-setting-panel-compact-padding-x)!important;
+  }
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  /* Shift the complete setup content right while retaining the previously
+     approved additional +12px balance correction on the left column. */
+  .setup>*:not(.setup-moving-lights){
+    left:var(--dm-mobile-setup-global-nudge)!important;
+  }
+  .setup>.brand,
+  .setup>.eyebrow,
+  .setup>.song-card,
+  .setup>.hint{
+    left:calc(var(--dm-mobile-setup-left-nudge,12px) + var(--dm-mobile-setup-global-nudge))!important;
   }
 }
