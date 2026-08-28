@@ -38,7 +38,65 @@ body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display
 
 #scoreSeekWrap{display:none;position:absolute;left:50%;top:calc(100% + 12px);bottom:auto;z-index:15;width:min(720px,88%);height:28px;transform:translateX(-50%);align-items:center;gap:8px;padding:3px 10px;border-radius:999px;background:#06101ac2;border:1px solid #64788b55;backdrop-filter:blur(5px);touch-action:none}
 body[data-score-playback="1"] #scoreSeekWrap{display:flex}
-#scoreSeek{flex:1;min-width:0;height:18px;margin:0;accent-color:#73cfff;touch-action:none}
+
+/* Match the approved setup-screen CV1 seekbar exactly:
+   cyan -> #8C8AFF -> violet for elapsed range, neutral gray afterward. */
+#scoreSeek{
+  --score-seek-cyan:#66D5FF;
+  --score-seek-mid:#8C8AFF;
+  --score-seek-violet:#BAA4FF;
+  --score-range-progress:0%;
+  --score-range-mid:0%;
+  flex:1;
+  min-width:0;
+  height:16px;
+  margin:0;
+  appearance:none;
+  -webkit-appearance:none;
+  background:transparent;
+  accent-color:var(--score-seek-mid);
+  touch-action:none
+}
+#scoreSeek::-webkit-slider-runnable-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:linear-gradient(90deg,
+    var(--score-seek-cyan) 0%,
+    var(--score-seek-mid) var(--score-range-mid),
+    var(--score-seek-violet) var(--score-range-progress),
+    rgba(255,255,255,.18) var(--score-range-progress),
+    rgba(255,255,255,.18) 100%)
+}
+#scoreSeek::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:15px;
+  height:15px;
+  margin-top:-5px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
+#scoreSeek::-moz-range-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:rgba(255,255,255,.18)
+}
+#scoreSeek::-moz-range-progress{
+  height:7px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--score-seek-cyan),var(--score-seek-mid) 52%,var(--score-seek-violet))
+}
+#scoreSeek::-moz-range-thumb{
+  width:15px;
+  height:15px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
 #scoreSeekTime{min-width:72px;text-align:right;color:#b9c7d7;font:800 9px/1 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}
 body[data-score-playback="1"] #judgementFx{display:none!important}
 body[data-score-playback="1"] #chartWrap{cursor:ew-resize;touch-action:none;overflow:visible}
