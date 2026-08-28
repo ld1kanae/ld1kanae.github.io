@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Chart Glass Editor</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#050a12;color:#edf5fc;font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{overflow:auto}
+button,input,textarea{font:inherit}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;min-height:50px;padding:9px 14px;background:rgba(3,8,15,.94);backdrop-filter:blur(16px);border-bottom:1px solid rgba(149,180,205,.17)}
+.topbar strong{font-size:11px;letter-spacing:.17em}.topbar span{font-size:10px;color:#8293a6}.topbar .spacer{flex:1}
+.preset{border:1px solid rgba(154,188,214,.25);border-radius:999px;background:#0d1724;color:#9fb0c1;padding:7px 10px;font-size:9px;font-weight:850;cursor:pointer}.preset:hover,.preset.active{border-color:rgba(178,218,244,.55);background:#17283b;color:#fff}
+.layout{display:grid;grid-template-columns:370px minmax(0,1fr);min-height:calc(100vh - 50px)}
+.controls{padding:15px 16px 28px;background:#07101b;border-right:1px solid rgba(145,169,192,.14);overflow:auto}
+h2{margin:0 0 5px;font-size:12px;letter-spacing:.15em}.intro{margin:0 0 14px;color:#7f91a4;font-size:10px;line-height:1.55}
+.section{margin:18px 0 9px;padding-top:11px;border-top:1px solid rgba(145,169,192,.14);font-size:10px;font-weight:900;letter-spacing:.13em;color:#84dfff}
+.ctrl{margin:0 0 12px}.ctrl-head{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:6px;margin-bottom:5px}.ctrl-head label{font-size:10px;color:#9fb0c0}.ctrl-head output{font-size:10px;font-weight:800;color:#eef7ff;font-variant-numeric:tabular-nums}.use{width:14px;height:14px;margin:0;accent-color:#79dfff}.ctrl input[type=range]{width:100%;accent-color:#76d9ff}.ctrl.disabled{opacity:.38}.ctrl.disabled input[type=range],.ctrl.disabled .color-row input{pointer-events:none}
+.color-row{display:grid;grid-template-columns:42px 1fr;gap:7px}.color-row input[type=color]{width:42px;height:29px;padding:2px;border:1px solid #34485d;border-radius:7px;background:#0a1320}.color-row input[type=text]{min-width:0;height:29px;padding:0 8px;border:1px solid #34485d;border-radius:7px;background:#0a1320;color:#dce8f4;font-size:10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.actions button{border:1px solid rgba(151,186,214,.28);border-radius:9px;background:#111e2c;color:#dceaf6;padding:9px 8px;font-size:10px;font-weight:850;cursor:pointer}.actions button:hover{background:#182a3d}.json{width:100%;height:150px;margin-top:9px;padding:9px;border:1px solid rgba(149,181,207,.2);border-radius:9px;background:#050b13;color:#91a7ba;font:9px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}
+.preview-area{position:relative;min-width:0;min-height:calc(100vh - 50px);padding:18px;background:radial-gradient(circle at 50% 30%,#101b2a,#050a12 70%);display:flex;align-items:center;justify-content:center;overflow:hidden}.frame-wrap{position:relative;width:100%;height:calc(100vh - 86px);min-height:480px;border:1px solid rgba(154,189,215,.22);border-radius:14px;overflow:hidden;background:#02050a;box-shadow:0 18px 45px rgba(0,0,0,.38)}
+#preview{display:block;width:100%;height:100%;border:0;background:#02050a;pointer-events:none}.badge{position:absolute;z-index:4;right:12px;top:10px;padding:5px 8px;border:1px solid rgba(152,190,218,.25);border-radius:999px;background:rgba(4,10,17,.72);color:#8fa5b8;font-size:8px;font-weight:900;letter-spacing:.1em;pointer-events:none}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.controls{border-right:0;border-bottom:1px solid rgba(145,169,192,.14)}.preview-area{min-height:640px}.frame-wrap{height:620px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <strong>CHART GLASS EDITOR</strong><span>本番演奏画面をそのままプレビュー</span><div class="spacer"></div>
+  <button class="preset" data-preset="current">CURRENT</button>
+  <button class="preset" data-preset="setup">SETUP GLASS</button>
+  <button class="preset" data-preset="clear">CLEAR GLASS</button>
+  <button class="preset" data-preset="dark">DARK GLASS</button>
+</div>
+<div class="layout">
+<aside class="controls">
+  <h2>譜面背景 MATERIAL</h2>
+  <p class="intro">左のチェックを外すと、その要素はプレビューから完全にオミットします。下地色はガラス層よりさらに後ろに敷く色です。</p>
+
+  <div class="section">後ろに敷く背景色</div>
+  <div class="ctrl" data-control="underColor"><div class="ctrl-head"><input class="use" id="useUnder" type="checkbox" checked><label for="useUnder">下地色</label><output id="outUnder">#030507</output></div><div class="color-row"><input id="underColor" type="color" value="#030507"><input id="underHex" type="text" value="#030507" maxlength="7"></div></div>
+  <div class="ctrl" data-control="underAlpha"><div class="ctrl-head"><input class="use" id="useUnderAlpha" type="checkbox" checked><label for="useUnderAlpha">下地色 不透明度</label><output id="outUnderAlpha">100%</output></div><input id="underAlpha" type="range" min="0" max="1" step="0.01" value="1"></div>
+
+  <div class="section">ガラス面</div>
+  <div class="ctrl" data-control="glassColor"><div class="ctrl-head"><input class="use" id="useGlass" type="checkbox"><label for="useGlass">ガラス色</label><output id="outGlass">#DCF0FF</output></div><div class="color-row"><input id="glassColor" type="color" value="#dcf0ff"><input id="glassHex" type="text" value="#DCF0FF" maxlength="7"></div></div>
+  <div class="ctrl" data-control="glassAlpha"><div class="ctrl-head"><input class="use" id="useGlassAlpha" type="checkbox"><label for="useGlassAlpha">ガラス不透明度</label><output id="outGlassAlpha">0.08</output></div><input id="glassAlpha" type="range" min="0" max="0.30" step="0.005" value="0.08"></div>
+  <div class="ctrl" data-control="blur"><div class="ctrl-head"><input class="use" id="useBlur" type="checkbox"><label for="useBlur">背景ぼかし</label><output id="outBlur">0 px</output></div><input id="blur" type="range" min="0" max="32" step="1" value="0"></div>
+  <div class="ctrl" data-control="sat"><div class="ctrl-head"><input class="use" id="useSat" type="checkbox"><label for="useSat">背景彩度</label><output id="outSat">100%</output></div><input id="sat" type="range" min="70" max="220" step="5" value="100"></div>
+
+  <div class="section">光学エッジ</div>
+  <div class="ctrl" data-control="edge"><div class="ctrl-head"><input class="use" id="useEdge" type="checkbox"><label for="useEdge">縁ハイライト</label><output id="outEdge">0.50</output></div><input id="edge" type="range" min="0" max="1" step="0.02" value="0.5"></div>
+  <div class="ctrl" data-control="chroma"><div class="ctrl-head"><input class="use" id="useChroma" type="checkbox"><label for="useChroma">色収差</label><output id="outChroma">12 px</output></div><input id="chroma" type="range" min="0" max="20" step="1" value="12"></div>
+  <div class="ctrl" data-control="shadow"><div class="ctrl-head"><input class="use" id="useShadow" type="checkbox" checked><label for="useShadow">外側シャドウ</label><output id="outShadow">0.38</output></div><input id="shadow" type="range" min="0" max="0.8" step="0.02" value="0.38"></div>
+
+  <div class="section">譜面内部</div>
+  <div class="ctrl" data-control="lanes"><div class="ctrl-head"><input class="use" id="useLanes" type="checkbox"><label for="useLanes">レーン交互トーン</label><output id="outLanes">0.045</output></div><input id="lanes" type="range" min="0" max="0.16" step="0.005" value="0.045"></div>
+  <div class="ctrl" data-control="border"><div class="ctrl-head"><input class="use" id="useBorder" type="checkbox" checked><label for="useBorder">譜面外周線</label><output id="outBorder">0.26</output></div><input id="border" type="range" min="0" max="0.8" step="0.02" value="0.26"></div>
+
+  <div class="actions"><button id="copy">設定値をコピー</button><button id="reset">CURRENTに戻す</button></div>
+  <textarea id="json" class="json" readonly></textarea>
+</aside>
+<main class="preview-area">
+  <div class="frame-wrap"><span class="badge">LIVE PRODUCTION UI</span><iframe id="preview" src="index.html?chart-glass-editor=20260828"></iframe></div>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const controls={
+  useUnder:$('useUnder'),useUnderAlpha:$('useUnderAlpha'),underColor:$('underColor'),underHex:$('underHex'),underAlpha:$('underAlpha'),
+  useGlass:$('useGlass'),useGlassAlpha:$('useGlassAlpha'),glassColor:$('glassColor'),glassHex:$('glassHex'),glassAlpha:$('glassAlpha'),
+  useBlur:$('useBlur'),blur:$('blur'),useSat:$('useSat'),sat:$('sat'),useEdge:$('useEdge'),edge:$('edge'),useChroma:$('useChroma'),chroma:$('chroma'),
+  useShadow:$('useShadow'),shadow:$('shadow'),useLanes:$('useLanes'),lanes:$('lanes'),useBorder:$('useBorder'),border:$('border')
+};
+const presets={
+  current:{useUnder:true,useUnderAlpha:true,underColor:'#030507',underAlpha:1,useGlass:false,useGlassAlpha:false,glassColor:'#dcf0ff',glassAlpha:.08,useBlur:false,blur:0,useSat:false,sat:100,useEdge:false,edge:.5,useChroma:false,chroma:12,useShadow:true,shadow:.38,useLanes:false,lanes:.045,useBorder:true,border:.26},
+  setup:{useUnder:true,useUnderAlpha:true,underColor:'#030507',underAlpha:.72,useGlass:true,useGlassAlpha:true,glassColor:'#dcf0ff',glassAlpha:.08,useBlur:false,blur:0,useSat:true,sat:100,useEdge:true,edge:.5,useChroma:false,chroma:12,useShadow:true,shadow:.32,useLanes:false,lanes:.045,useBorder:true,border:.28},
+  clear:{useUnder:false,useUnderAlpha:false,underColor:'#030507',underAlpha:0,useGlass:true,useGlassAlpha:true,glassColor:'#dcf0ff',glassAlpha:.045,useBlur:true,blur:8,useSat:true,sat:120,useEdge:true,edge:.34,useChroma:false,chroma:8,useShadow:true,shadow:.24,useLanes:true,lanes:.025,useBorder:true,border:.2},
+  dark:{useUnder:true,useUnderAlpha:true,underColor:'#07101a',underAlpha:.78,useGlass:true,useGlassAlpha:true,glassColor:'#b9dcf4',glassAlpha:.055,useBlur:true,blur:10,useSat:true,sat:115,useEdge:true,edge:.28,useChroma:true,chroma:5,useShadow:true,shadow:.42,useLanes:true,lanes:.035,useBorder:true,border:.24}
+};
+function validHex(v){return /^#[0-9a-f]{6}$/i.test(v)}
+function hexRgb(hex){const n=parseInt(hex.slice(1),16);return [(n>>16)&255,(n>>8)&255,n&255]}
+function setColorPair(picker,text,value){picker.value=value.toLowerCase();text.value=value.toUpperCase()}
+function applyPreset(name){const p=presets[name];Object.keys(p).forEach(k=>{const el=controls[k];if(!el)return;if(el.type==='checkbox')el.checked=!!p[k];else el.value=p[k]});setColorPair(controls.underColor,controls.underHex,p.underColor);setColorPair(controls.glassColor,controls.glassHex,p.glassColor);document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.preset===name));apply()}
+function disabledClasses(){
+  const map={underColor:controls.useUnder.checked,underAlpha:controls.useUnder.checked&&controls.useUnderAlpha.checked,glassColor:controls.useGlass.checked,glassAlpha:controls.useGlass.checked&&controls.useGlassAlpha.checked,blur:controls.useBlur.checked,sat:controls.useSat.checked,edge:controls.useEdge.checked,chroma:controls.useChroma.checked,shadow:controls.useShadow.checked,lanes:controls.useLanes.checked,border:controls.useBorder.checked};
+  Object.entries(map).forEach(([k,on])=>document.querySelector(`[data-control="${k}"]`)?.classList.toggle('disabled',!on));
+}
+function config(){return {
+  underlay:{enabled:controls.useUnder.checked,color:controls.underColor.value.toUpperCase(),alpha:controls.useUnderAlpha.checked?+controls.underAlpha.value:1},
+  glass:{enabled:controls.useGlass.checked,color:controls.glassColor.value.toUpperCase(),alpha:controls.useGlassAlpha.checked?+controls.glassAlpha.value:1},
+  backdropBlur:{enabled:controls.useBlur.checked,px:+controls.blur.value},
+  saturation:{enabled:controls.useSat.checked,percent:+controls.sat.value},
+  edgeHighlight:{enabled:controls.useEdge.checked,strength:+controls.edge.value},
+  chromaticEdge:{enabled:controls.useChroma.checked,px:+controls.chroma.value},
+  outerShadow:{enabled:controls.useShadow.checked,alpha:+controls.shadow.value},
+  alternatingLanes:{enabled:controls.useLanes.checked,alpha:+controls.lanes.value},
+  border:{enabled:controls.useBorder.checked,alpha:+controls.border.value}
+}}
+function injectFrame(){
+  const f=$('preview'),w=f.contentWindow,d=f.contentDocument;if(!w||!d)return;
+  d.querySelector('#setup')?.classList.add('hidden');d.querySelector('#result')?.classList.add('hidden');d.querySelector('#game')?.classList.remove('hidden');d.querySelector('#pausePanel')?.classList.add('hidden');
+  let s=d.getElementById('chartGlassEditorStyle');if(!s){s=d.createElement('style');s.id='chartGlassEditorStyle';d.head.appendChild(s)}
+  s.textContent=`
+    #game{min-height:100%!important}
+    #chartWrap{position:relative!important;isolation:isolate!important;overflow:hidden!important;background:
+      linear-gradient(rgba(var(--editor-glass-rgb),var(--editor-glass-a)),rgba(var(--editor-glass-rgb),var(--editor-glass-a))),
+      linear-gradient(rgba(var(--editor-under-rgb),var(--editor-under-a)),rgba(var(--editor-under-rgb),var(--editor-under-a)))!important;
+      -webkit-backdrop-filter:blur(var(--editor-blur)) saturate(var(--editor-sat))!important;backdrop-filter:blur(var(--editor-blur)) saturate(var(--editor-sat))!important;
+      border-bottom:1px solid rgba(180,216,239,var(--editor-border))!important;
+      box-shadow:inset var(--editor-chroma) 0 8px rgba(91,230,255,calc(var(--editor-edge)*.19)),inset calc(var(--editor-chroma)*-1) 0 8px rgba(238,115,221,calc(var(--editor-edge)*.18)),inset 0 1px 0 rgba(255,255,255,calc(var(--editor-edge)*.58)),0 7px 20px rgba(0,0,0,var(--editor-shadow))!important}
+    #chartWrap::before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(255,255,255,var(--editor-lane-a)) 0 25%,transparent 25% 50%,rgba(255,255,255,var(--editor-lane-a)) 50% 75%,transparent 75% 100%)}
+    #chartWrap::after{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:linear-gradient(130deg,rgba(255,255,255,calc(var(--editor-edge)*.25)),transparent 20%,transparent 76%,rgba(124,219,255,calc(var(--editor-edge)*.10)));mix-blend-mode:screen}
+    #chart{position:relative!important;z-index:2!important;background:transparent!important}
+    #judgementFx{z-index:3!important}
+    body{user-select:none}
+  `;
+  drawSample();applyFrameVars();
+  setTimeout(()=>{d.querySelector('#setup')?.classList.add('hidden');d.querySelector('#game')?.classList.remove('hidden');drawSample();applyFrameVars()},500);
+}
+function applyFrameVars(){
+  const d=$('preview').contentDocument;if(!d)return;const wrap=d.querySelector('#chartWrap');if(!wrap)return;
+  const u=hexRgb(controls.underColor.value),g=hexRgb(controls.glassColor.value);
+  wrap.style.setProperty('--editor-under-rgb',u.join(','));wrap.style.setProperty('--editor-under-a',controls.useUnder.checked?(controls.useUnderAlpha.checked?controls.underAlpha.value:1):0);
+  wrap.style.setProperty('--editor-glass-rgb',g.join(','));wrap.style.setProperty('--editor-glass-a',controls.useGlass.checked?(controls.useGlassAlpha.checked?controls.glassAlpha.value:1):0);
+  wrap.style.setProperty('--editor-blur',controls.useBlur.checked?`${controls.blur.value}px`:'0px');wrap.style.setProperty('--editor-sat',controls.useSat.checked?`${controls.sat.value}%`:'100%');
+  wrap.style.setProperty('--editor-edge',controls.useEdge.checked?controls.edge.value:0);wrap.style.setProperty('--editor-chroma',controls.useChroma.checked?`${controls.chroma.value}px`:'0px');wrap.style.setProperty('--editor-shadow',controls.useShadow.checked?controls.shadow.value:0);wrap.style.setProperty('--editor-lane-a',controls.useLanes.checked?controls.lanes.value:0);wrap.style.setProperty('--editor-border',controls.useBorder.checked?controls.border.value:0)
+}
+function drawSample(){
+  const f=$('preview'),d=f.contentDocument,w=f.contentWindow;if(!d||!w)return;const c=d.querySelector('#chart');if(!c)return;const r=c.getBoundingClientRect();if(r.width<10||r.height<10)return;const dpr=Math.min(2,w.devicePixelRatio||1);c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);const W=r.width,H=r.height;ctx.clearRect(0,0,W,H);
+  const kickH=Math.max(16,H*.12),mainH=H-kickH,laneH=mainH/3,labels=['CYMBAL','HI-HAT / RIDE / OTHER','SNARE / TOMS'];
+  ctx.font=`700 ${Math.max(9,laneH*.13)}px system-ui,sans-serif`;ctx.textBaseline='top';ctx.textAlign='left';ctx.fillStyle='#8b97a6';labels.forEach((t,i)=>ctx.fillText(t,7,laneH*i+6));
+  ctx.strokeStyle='#53677d';ctx.lineWidth=1.2;for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(W,laneH*i+.5);ctx.stroke()}ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(W,mainH+.5);ctx.stroke();
+  ctx.fillStyle='#687483';ctx.textBaseline='middle';ctx.fillText('KICK · AUTO',7,mainH+kickH/2);
+  ctx.strokeStyle='rgba(255,255,255,.245)';ctx.lineWidth=1;for(let x=W*.22;x<W;x+=W*.18){ctx.beginPath();ctx.moveTo(Math.round(x)+.5,0);ctx.lineTo(Math.round(x)+.5,H);ctx.stroke()}
+  const jx=Math.min(W-16,W*.11);ctx.fillStyle='#eef6ff10';ctx.fillRect(jx-Math.max(10,W*.014)/2,0,Math.max(10,W*.014),H);ctx.strokeStyle='#f3f8ff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(jx,0);ctx.lineTo(jx,H);ctx.stroke();
+  const notes=[['crash','cymbal',.24,.82],['hhClosed','hh',.31,.72],['snare','drums',.39,.95],['kick','kick',.45,.62],['ride','hh',.53,.78],['highTom','drums',.61,.86],['hhOpen','hh',.69,.74],['midTom','drums',.78,.9],['floorTom','drums',.88,.88]];const colors={crash:'#ffd45a',ride:'#ffd45a',hhClosed:'#52dfcf',hhOpen:'#52dfcf',snare:'#ff3d73',highTom:'#d76bff',midTom:'#8875ff',floorTom:'#329cff',kick:'#aeb9c7'};
+  notes.forEach(([type,group,p,a])=>{const x=W*p,lane=group==='cymbal'?0:group==='hh'?1:group==='drums'?2:3,top=lane<3?lane*laneH:mainH,h=lane<3?laneH:kickH;ctx.globalAlpha=a;ctx.fillStyle=colors[type];if(type==='hhOpen'){ctx.fillRect(x-3,top,2,h);ctx.fillRect(x+1,top,2,h)}else ctx.fillRect(x-2,top,4,h)});ctx.globalAlpha=1
+}
+function apply(){
+  $('outUnder').textContent=controls.underColor.value.toUpperCase();$('outUnderAlpha').textContent=`${Math.round(+controls.underAlpha.value*100)}%`;$('outGlass').textContent=controls.glassColor.value.toUpperCase();$('outGlassAlpha').textContent=(+controls.glassAlpha.value).toFixed(3);$('outBlur').textContent=`${controls.blur.value} px`;$('outSat').textContent=`${controls.sat.value}%`;$('outEdge').textContent=(+controls.edge.value).toFixed(2);$('outChroma').textContent=`${controls.chroma.value} px`;$('outShadow').textContent=(+controls.shadow.value).toFixed(2);$('outLanes').textContent=(+controls.lanes.value).toFixed(3);$('outBorder').textContent=(+controls.border.value).toFixed(2);
+  disabledClasses();applyFrameVars();$('json').value=JSON.stringify(config(),null,2);document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'))
+}
+Object.values(controls).forEach(el=>{if(!el||el.type==='text')return;el.addEventListener('input',apply);el.addEventListener('change',apply)});
+[[controls.underColor,controls.underHex],[controls.glassColor,controls.glassHex]].forEach(([picker,text])=>{picker.addEventListener('input',()=>{text.value=picker.value.toUpperCase();apply()});text.addEventListener('change',()=>{let v=text.value.trim();if(v[0]!=='#')v='#'+v;if(validHex(v)){picker.value=v;text.value=v.toUpperCase();apply()}else text.value=picker.value.toUpperCase()})});
+document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>applyPreset(b.dataset.preset)));
+$('copy').addEventListener('click',async()=>{const text=JSON.stringify(config(),null,2);try{await navigator.clipboard.writeText(text);$('copy').textContent='コピーしました';setTimeout(()=>$('copy').textContent='設定値をコピー',1000)}catch{$('json').select()}});$('reset').addEventListener('click',()=>applyPreset('current'));
+$('preview').addEventListener('load',injectFrame);window.addEventListener('resize',()=>setTimeout(drawSample,80));applyPreset('current');
+</script>
+</body>
+</html>
