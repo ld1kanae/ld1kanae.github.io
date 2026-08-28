@@ -1,6 +1,26 @@
 "use strict";
 
 (()=>{
+  /* The registry is intentionally tiny. Load it synchronously before app.js runs
+     so newly published songs are selectable without rebuilding the main bundle. */
+  function loadRegistry(){
+    try{
+      const x=new XMLHttpRequest();
+      x.open("GET",`songs/registry.json?t=${Date.now()}`,false);
+      x.send();
+      if(x.status>=200&&x.status<300){
+        const v=JSON.parse(x.responseText||"{}");
+        if(v&&typeof v==="object")return v;
+      }
+    }catch(e){console.warn("Song registry load failed",e)}
+    return {};
+  }
+  if(!document.querySelector('link[data-song-source-mode]')){
+    const l=document.createElement("link");
+    l.rel="stylesheet";l.href="css/song-source-mode.css?v=20260828-fullmix1";l.dataset.songSourceMode="1";
+    document.head.appendChild(l);
+  }
+
   const builtInSongs={
     nanairo:{
       id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,bpm:125,
@@ -27,8 +47,7 @@
     }
   };
 
-  const registry=globalThis.DruMasterSongRegistry&&typeof globalThis.DruMasterSongRegistry==="object"?globalThis.DruMasterSongRegistry:{};
-  const songs={...builtInSongs,...registry};
+  const songs={...builtInSongs,...loadRegistry()};
   const params=new URLSearchParams(location.search),requested=params.get("song"),current=songs[requested]||songs.nanairo;
   const nativeFetch=globalThis.fetch.bind(globalThis),midiCache=new Map();
   globalThis.DruMasterSongs={songs,current,nativeFetch};
@@ -39,13 +58,8 @@
   }
   function requestedMidiSong(input){
     const url=cleanUrl(input);
-    /* app.js still asks for nanairo as its timing placeholder. Redirect that
-       request to the selected song, then also recognise every registered song's
-       own MIDI path for preview/game-chart requests. */
     if(url.endsWith("songs/nanairo/chart.mid"))return current;
-    for(const song of Object.values(songs)){
-      if(cleanUrl(song.midi)===url)return song;
-    }
+    for(const song of Object.values(songs))if(cleanUrl(song.midi)===url)return song;
     return null;
   }
   async function loadMidi(song){
@@ -54,8 +68,7 @@
       if(song.midiGzip&&typeof DecompressionStream==="function"){
         const r=await nativeFetch(song.midiGzip,{cache:"force-cache"});
         if(r.ok){
-          const stream=r.body.pipeThrough(new DecompressionStream("gzip"));
-          const ab=await new Response(stream).arrayBuffer();
+          const ab=await new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
           if(ab.byteLength>=14&&String.fromCharCode(...new Uint8Array(ab.slice(0,4)))==="MThd")return ab;
         }
       }
@@ -113,18 +126,13 @@
     const card=document.querySelector(".song-card");
     if(!card)return null;
     let node=card.querySelector(".setup-bpm");
-    if(!node){
-      node=document.createElement("span");
-      node.className="setup-bpm";
-      card.appendChild(node);
-    }
+    if(!node){node=document.createElement("span");node.className="setup-bpm";card.appendChild(node)}
     return node;
   }
   function positionSetupBpm(){
     const card=document.querySelector(".song-card"),title=card?.querySelector("h1"),artist=card?.querySelector("p"),node=card?.querySelector(".setup-bpm");
     if(!card||!title||!artist||!node)return;
-    const top=title.offsetTop,bottom=artist.offsetTop+artist.offsetHeight;
-    node.style.top=`${(top+bottom)/2}px`;
+    node.style.top=`${(title.offsetTop+artist.offsetTop+artist.offsetHeight)/2}px`;
   }
   function syncBpmLabels(){
     const hud=document.querySelector(".song-hud");
@@ -143,13 +151,15 @@
     document.querySelector(".song-card p")?.replaceChildren(document.createTextNode(current.artist));
     document.querySelector(".song-hud b")?.replaceChildren(document.createTextNode(current.title));
     document.querySelector(".song-hud small")?.replaceChildren(document.createTextNode(current.artist));
+    document.querySelector(".result h2")?.replaceChildren(document.createTextNode(current.title));
     syncBpmLabels();
   }
 
   const select=document.querySelector("#songSelect");
   if(select){
     select.replaceChildren();
-    const ordered=Object.values(songs).sort((a,b)=>(Number(a.order)??999)-(Number(b.order)??999));
+    const rank=s=>Number.isFinite(Number(s.order))?Number(s.order):999;
+    const ordered=Object.values(songs).sort((a,b)=>rank(a)-rank(b));
     for(const song of ordered){
       const opt=document.createElement("option");
       opt.value=song.id;
@@ -178,6 +188,20 @@
     new MutationObserver(syncDuration).observe(start,{attributes:true,attributeFilter:["disabled"]});
     setTimeout(syncDuration,0);
   }
+
+  /* Apply published MIDI timing correction to every gameplay timing consumer
+     by offsetting the shared clock. This shifts notes, judgement and measure
+     lines together without altering the MIDI binary or the drum-source MIDI. */
+  addEventListener("DOMContentLoaded",()=>{
+    const baseCurrent=globalThis.current;
+    if(typeof baseCurrent!=="function"||baseCurrent.__dmSongOffsetWrapped)return;
+    const wrapped=function(){
+      const offset=Number(current.playback?.midiOffsetSec)||0;
+      return baseCurrent()-offset;
+    };
+    wrapped.__dmSongOffsetWrapped=true;
+    globalThis.current=wrapped;
+  },{once:true});
 
   globalThis.DruMasterSongSource={isFullMixOnly:()=>isFullMixOnly(current),applySourceAvailability};
 })();
