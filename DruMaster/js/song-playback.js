@@ -41,17 +41,20 @@
   }
   function stemOffset(){
     const configuredOffset=Number(song.playback?.stemOffsetSec);
-    return Number.isFinite(configuredOffset)?Math.max(0,configuredOffset):0;
+    return Number.isFinite(configuredOffset)?configuredOffset:0;
   }
   function startStemSet(startAt){
-    const offset=stemOffset();
+    /* Positive offset advances the source by skipping its beginning. Negative
+       offset delays the whole source. This preserves Ray's existing +2 ms
+       meaning while allowing the publisher editor to correct in both directions. */
+    const offset=stemOffset(),when=startAt+Math.max(0,-offset),sourceOffset=Math.max(0,offset);
     if(fullMixOnly()){
-      playAt(buffers.fullmix,trackGain("fullmix",.95),startAt,offset);
+      playAt(buffers.fullmix,trackGain("fullmix",.95),when,sourceOffset);
       return;
     }
-    playAt(buffers.base,trackGain("base",.95),startAt,offset);
-    if($("#vocalToggle").checked)playAt(buffers.vocals,trackGain("vocals",.95),startAt,offset);
-    if($("#guideToggle").checked)playAt(buffers.drums,trackGain("drums",.70),startAt,offset);
+    playAt(buffers.base,trackGain("base",.95),when,sourceOffset);
+    if($("#vocalToggle").checked)playAt(buffers.vocals,trackGain("vocals",.95),when,sourceOffset);
+    if($("#guideToggle").checked)playAt(buffers.drums,trackGain("drums",.70),when,sourceOffset);
   }
   function resetRunState(){
     notes.forEach(n=>n.hit=false);
