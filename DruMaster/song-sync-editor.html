@@ -1,1 +1,27 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DruMaster Song Sync Editor</title><script>location.replace('song-sync-editor-v2.html'+location.search+location.hash)</script></head><body></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Song Sync Editor</title>
+</head>
+<body>
+<script>
+(async()=>{
+  try{
+    const r=await fetch('song-sync-editor-v2.html?v=20260828-history1',{cache:'no-store'});
+    if(!r.ok)throw Error(`Editor load failed: HTTP ${r.status}`);
+    let html=await r.text();
+    const addon='<scr'+'ipt src="js/song-sync-history.js?v=20260828-history1"></scr'+'ipt>';
+    html=html.replace('</body>',addon+'</body>');
+    document.open();
+    document.write(html);
+    document.close();
+  }catch(e){
+    console.error(e);
+    document.body.textContent='タイミングエディタを読み込めませんでした。再読み込みしてください。';
+  }
+})();
+</script>
+</body>
+</html>
