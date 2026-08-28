@@ -1,0 +1,16 @@
+/* Final gameplay D mark treatment.
+   Keep the header slot stable while scaling only the white vector. */
+.game header .rank::before,
+.game header .rank::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  box-shadow:none!important;
+}
+
+.game header .rank>.game-d-mark{
+  width:90%!important;
+  height:90%!important;
+  transform:none!important;
+  filter:drop-shadow(0 0 12px #6b8fff)!important;
+}
