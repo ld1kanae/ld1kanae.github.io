@@ -1,11 +1,15 @@
 /* PC setup setting-panel geometry.
-   TEMPO and VOLUME are the same component frame on normal desktop layouts.
-   The compact <=520px-height VOLUME override remains intentionally component-specific. */
+   TEMPO and VOLUME are one component frame in both normal and compact desktop layouts. */
 :root{
   --dm-setup-setting-panel-width:min(480px,90vw);
   --dm-setup-setting-panel-margin-top:14px;
   --dm-setup-setting-panel-padding-y:14px;
   --dm-setup-setting-panel-padding-x:20px;
+
+  --dm-setup-setting-panel-compact-width:min(430px,44vw);
+  --dm-setup-setting-panel-compact-margin:0;
+  --dm-setup-setting-panel-compact-padding-y:8px;
+  --dm-setup-setting-panel-compact-padding-x:16px;
 }
 
 @media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
@@ -19,11 +23,12 @@
   }
 }
 
-/* Preserve the pre-existing compact desktop exception. */
+/* Short desktop viewports compress both panels identically. */
 @media (max-height:520px) and (hover:hover) and (pointer:fine){
+  .setup .tempo-box,
   .setup .volume-box{
-    width:min(430px,44vw)!important;
-    margin:0!important;
-    padding:8px 16px!important;
+    width:var(--dm-setup-setting-panel-compact-width)!important;
+    margin:var(--dm-setup-setting-panel-compact-margin)!important;
+    padding:var(--dm-setup-setting-panel-compact-padding-y) var(--dm-setup-setting-panel-compact-padding-x)!important;
   }
 }
