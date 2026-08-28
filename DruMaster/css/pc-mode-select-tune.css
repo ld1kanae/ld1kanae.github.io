@@ -1,6 +1,64 @@
+/* Shared setup dropdown theme + PC performance-mode geometry.
+   Song/mode selectors and desktop/mobile variants all reference this one palette. */
+.setup{
+  --setup-dropdown-bg:#0d1824;
+  --setup-dropdown-selected:#29465d;
+  --setup-dropdown-hover:#1c3145;
+  --setup-dropdown-text:#e7eef7;
+  --setup-dropdown-border:#3a5169;
+  --setup-dropdown-disabled:#667382;
+}
+
+/* One authoritative palette for BOTH song and performance-mode dropdowns,
+   on BOTH desktop and smartphone. */
+.setup #songSelect,
+.setup #performanceModeSelect,
+.setup #songSelect option,
+.setup #performanceModeSelect option,
+.setup .song-custom-select>.mobile-custom-select-trigger,
+.setup .song-custom-select>.mobile-custom-select-menu,
+.setup .song-custom-select .mobile-custom-select-option,
+.setup .mode-custom-select>.mobile-custom-select-trigger,
+.setup .mode-custom-select>.mobile-custom-select-menu,
+.setup .mode-custom-select .mobile-custom-select-option{
+  background-color:var(--setup-dropdown-bg)!important;
+  background-image:none!important;
+  color:var(--setup-dropdown-text)!important;
+}
+
+.setup #songSelect,
+.setup #performanceModeSelect,
+.setup .song-custom-select>.mobile-custom-select-trigger,
+.setup .song-custom-select>.mobile-custom-select-menu,
+.setup .mode-custom-select>.mobile-custom-select-trigger,
+.setup .mode-custom-select>.mobile-custom-select-menu{
+  border-color:var(--setup-dropdown-border)!important;
+}
+
+.setup #songSelect option:checked,
+.setup #performanceModeSelect option:checked,
+.setup .song-custom-select .mobile-custom-select-option.selected,
+.setup .mode-custom-select .mobile-custom-select-option.selected{
+  background-color:var(--setup-dropdown-selected)!important;
+  background-image:none!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+
+.setup .song-custom-select .mobile-custom-select-option:hover:not(.selected),
+.setup .mode-custom-select .mobile-custom-select-option:hover:not(.selected){
+  background-color:var(--setup-dropdown-hover)!important;
+  color:#fff!important;
+}
+
+.setup .song-custom-select .mobile-custom-select-option:disabled,
+.setup .mode-custom-select .mobile-custom-select-option:disabled{
+  color:var(--setup-dropdown-disabled)!important;
+  opacity:.55;
+}
+
 /* PC performance-mode selector alignment and typography.
-   Use the same DOM-based dropdown as the song selector instead of the old
-   10px native select, and center it against the "演奏モード" label row. */
+   Colors intentionally come only from the shared variables above. */
 @media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
   .setup .performance-mode-option{
     align-items:center!important;
@@ -31,18 +89,6 @@
     isolation:isolate!important;
   }
 
-  /* Match the smartphone dropdowns' flat navy palette on PC too. */
-  .setup .performance-mode-option>.mode-custom-select>.mobile-custom-select-trigger,
-  .setup .performance-mode-option>.mode-custom-select>.mobile-custom-select-menu,
-  .setup .performance-mode-option>.mode-custom-select .mobile-custom-select-option,
-  .setup .song-custom-select>.mobile-custom-select-trigger,
-  .setup .song-custom-select>.mobile-custom-select-menu,
-  .setup .song-custom-select .mobile-custom-select-option{
-    background-color:#0d1824!important;
-    background-image:none!important;
-    color:#e7eef7!important;
-  }
-
   .setup .performance-mode-option>.mode-custom-select>.mobile-custom-select-trigger{
     min-height:36px!important;
     height:36px!important;
@@ -63,17 +109,5 @@
     padding:7px 11px!important;
     font-size:14px!important;
     line-height:1.2!important;
-  }
-
-  .setup .performance-mode-option>.mode-custom-select .mobile-custom-select-option.selected,
-  .setup .song-custom-select .mobile-custom-select-option.selected{
-    background:#29465d!important;
-    color:#fff!important;
-  }
-
-  .setup .performance-mode-option>.mode-custom-select .mobile-custom-select-option:hover:not(.selected),
-  .setup .song-custom-select .mobile-custom-select-option:hover:not(.selected){
-    background:#1c3145!important;
-    color:#fff!important;
   }
 }
