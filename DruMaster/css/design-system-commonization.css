@@ -202,7 +202,9 @@ body[data-score-playback="1"] #scorePlaybackControls button{
 #chartWrap{z-index:var(--dm-z-chart)!important}
 .dim-layer{z-index:var(--dm-z-content)!important}
 #hitLayer{z-index:var(--dm-z-hit)!important}
+#scorePlaybackBusy{z-index:var(--dm-z-hud)!important}
 #scoreHeaderLoading,
+#scoreSeekWrap,
 .game header .rank span,
 #game header #pause>.pause-white-icon,
 body[data-score-playback="1"] .transport-icon{z-index:var(--dm-z-feedback)!important}
@@ -234,7 +236,11 @@ body.hidden-mode .hidden-header-judge{z-index:var(--dm-z-top-effect)!important}
 .setup #performanceModeSelect:focus-visible{
   outline:var(--dm-focus-width) solid var(--dm-focus-color)!important;
   outline-offset:var(--dm-focus-offset)!important;
-  box-shadow:none;
+}
+.setup .mobile-custom-select-trigger:focus-visible,
+.setup #songSelect:focus-visible,
+.setup #performanceModeSelect:focus-visible{
+  box-shadow:none!important;
 }
 
 /* Action-button geometry: result / calibration / pause actions share one source. */
@@ -258,8 +264,8 @@ body.hidden-mode .hidden-header-judge{z-index:var(--dm-z-top-effect)!important}
 .ranking-panel{box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),var(--dm-shadow-panel)!important}
 .mic-calibration-card{box-shadow:var(--dm-shadow-overlay),inset 0 1px 0 rgba(255,255,255,.035)!important}
 
-/* Shared non-display typography style: rightmost audit preview. */
-.setup .eyebrow,
+/* Shared non-display typography style: rightmost audit preview.
+   Decorative eyebrows/headings, logo, score numerals and judgement text stay component-owned. */
 .setup .song-card p,
 .setup .option>span,
 .setup .option b,
@@ -276,7 +282,6 @@ body.hidden-mode .hidden-header-judge{z-index:var(--dm-z-top-effect)!important}
 #scorePlaybackBusy,
 #scoreSeekTime,
 #hitLayer kbd,
-.result .eyebrow,
 .result-song-sub,
 .result-score-label,
 .result-score-note,
@@ -286,7 +291,6 @@ body.hidden-mode .hidden-header-judge{z-index:var(--dm-z-top-effect)!important}
 .best-badge,
 .podium-badge,
 #result .result-actions button,
-.mic-cal-eyebrow,
 .mic-cal-instruction,
 .mic-cal-steps span,
 .mic-cal-steps b,
@@ -314,10 +318,16 @@ body.hidden-mode .hidden-header-judge{z-index:var(--dm-z-top-effect)!important}
 #scorePlaybackControls button,
 #pausePanel button,
 .result-actions button,
-.mic-cal-actions button,
+.mic-cal-actions button{
+  transition:
+    --glass-hover-fade var(--dm-motion-standard) var(--dm-ease-standard),
+    transform var(--dm-motion-standard) var(--dm-ease-standard),
+    color var(--dm-motion-standard) var(--dm-ease-standard),
+    text-shadow var(--dm-motion-standard) var(--dm-ease-standard)!important;
+}
 .glass-hover-drop,
 .glass-inner-stack{
-  --dm-control-motion:var(--dm-motion-standard);
+  transition:opacity var(--dm-motion-standard) var(--dm-ease-standard)!important;
 }
 
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
