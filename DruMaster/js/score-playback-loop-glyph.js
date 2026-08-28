@@ -49,8 +49,6 @@
   const hasIcon=(el,name)=>el?.querySelector(":scope > .transport-icon")&&el.dataset.icon===name;
   const setIcon=(el,name)=>{
     if(!el)return;
-    /* The playback controller originally writes ⏮ / ⏭ / ↻ text into these
-       buttons. Remove only direct text nodes: never clear the hover layers. */
     removeDirectText(el);
     if(hasIcon(el,name))return;
     const template=document.createElement("template");
@@ -85,7 +83,7 @@
   observer.observe(document.body,{attributes:true,attributeFilter:["data-score-playback"]});
   for(const el of [prev,next])if(el)observer.observe(el,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["aria-label"]});
   if(loop)observer.observe(loop,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["aria-label","data-loop"]});
-  observer.observe(pause,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["aria-label","data-transport-icon"]});
+  observer.observe(pause,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["aria-label"]});
   if(seek){seek.addEventListener("input",syncSeekGradient,{passive:true});seek.addEventListener("change",syncSeekGradient,{passive:true})}
   syncSeekGradient();
   sync();
