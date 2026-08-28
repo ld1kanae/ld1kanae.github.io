@@ -16,8 +16,10 @@
     });
   }
   async function getSession(id){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readonly"),r=tx.objectStore(STORE).get(id);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);tx.oncomplete=()=>db.close()})}
+  async function refreshSession(){const latest=await getSession(sessionId);if(latest&&latest.id===songId)session=latest;return session}
   async function deleteSession(id){try{const db=await openDb();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch{}}
   function encodeText(s){const u=new TextEncoder().encode(s);let bin="";for(let i=0;i<u.length;i+=0x8000)bin+=String.fromCharCode(...u.subarray(i,i+0x8000));return btoa(bin)}
+  function decodeText(s){const bin=atob(String(s||"").replace(/\n/g,"")),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u)}
   function tokenFromWindow(){try{const w=JSON.parse(window.name||"{}").dmSongPublisher;return w?.token&&w?.sessionId===sessionId?w.token:""}catch{return ""}}
   function headers(t){return {"Accept":"application/vnd.github+json","Authorization":`Bearer ${t}`,"X-GitHub-Api-Version":"2022-11-28"}}
   function readDataUrl(blob){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onerror=()=>reject(fr.error||Error("base64変換失敗"));fr.onload=()=>resolve(String(fr.result).split(",")[1]||"");fr.readAsDataURL(blob)})}
@@ -52,6 +54,22 @@
     await uploadPromise;
     if(uploadError)throw uploadError;
   }
+  async function withLatestVolumeSettings(url,init){
+    await refreshSession();
+    const mix=session?.draft?.mix,midiDrumMix=session?.draft?.midiDrumMix;
+    if(!init?.body||(!mix&&!midiDrumMix))return init;
+    try{
+      const body=JSON.parse(init.body);if(!body?.content)return init;
+      const data=JSON.parse(decodeText(body.content));
+      if(url.includes("DruMaster/songs/registry.json")){
+        if(data?.[songId]){if(mix)data[songId].mix=mix;if(midiDrumMix)data[songId].midiDrumMix=midiDrumMix}
+      }else{
+        if(mix)data.mix=mix;if(midiDrumMix)data.midiDrumMix=midiDrumMix;
+      }
+      body.content=encodeText(JSON.stringify(data,null,2)+"\n");
+      return {...init,body:JSON.stringify(body)};
+    }catch(e){console.warn("Volume setting injection skipped",e);return init}
+  }
 
   const sessionReady=getSession(sessionId).then(v=>{if(!v||v.id!==songId)throw Error("ローカル編集セッションが見つかりません");session=v;return v});
 
@@ -70,7 +88,8 @@
 
     if(method==="PUT"&&url.includes("api.github.com/repos/ld1kanae/ld1kanae.github.io/contents/")&&(url.includes(`DruMaster/songs/${songId}/song.json`)||url.includes("DruMaster/songs/registry.json"))){
       await waitForUpload();
-      const response=await nativeFetch(input,init);
+      const nextInit=await withLatestVolumeSettings(url,init);
+      const response=await nativeFetch(input,nextInit);
       if(response.ok&&url.includes("DruMaster/songs/registry.json"))void deleteSession(sessionId);
       return response;
     }
@@ -93,5 +112,5 @@
   uploadPromise.catch(()=>{});
 
   addEventListener("DOMContentLoaded",()=>{installUploadUi();updateUploadUi()},{once:true});
-  globalThis.DruMasterLocalPublishSession={sessionReady,waitForUpload,get uploadPercent(){return uploadPercent},get uploadError(){return uploadError}};
+  globalThis.DruMasterLocalPublishSession={sessionReady,waitForUpload,refreshSession,get uploadPercent(){return uploadPercent},get uploadError(){return uploadError}};
 })();
