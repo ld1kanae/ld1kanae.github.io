@@ -15,6 +15,8 @@
 .tab.active::after{background:linear-gradient(90deg,#d759a8,#bfbc4b,#47c9be,#4095cf,#c25cc5)}
 .tab:not(:disabled):not(.active):hover{color:#e5f1f8;background:linear-gradient(337.5deg,rgba(215,89,168,.09),rgba(71,201,190,.08),rgba(64,149,207,.10),rgba(194,92,197,.09))}
 .tab:disabled{color:#465361;cursor:not-allowed;background:rgba(255,255,255,.012)}
+.tab.locked{color:#465361;cursor:pointer;background:rgba(255,255,255,.012)}
+.tab.locked:hover{color:#596a7b;background:rgba(255,255,255,.025)}
 .tab-state{margin-left:10px;font-size:9px;font-weight:850;letter-spacing:.09em;color:#657789;vertical-align:1px}.tab.active .tab-state{color:#d6f3ff}.tab.ready .tab-state{color:#77dbac}
 .views{position:relative;width:100%;height:calc(100% - 60px)}.view{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg);display:none}.view.active{display:block}
 @keyframes dmTabSpectrum{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
@@ -24,8 +26,8 @@
 <body>
 <nav class="toolbar" role="tablist" aria-label="楽曲制作ツール">
 <button id="registerTab" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="registerView">楽曲登録 <span class="tab-state">INPUT</span></button>
-<button id="editorTab" class="tab" type="button" role="tab" aria-selected="false" aria-controls="editorView" disabled>タイミング編集 <span class="tab-state">LOCKED</span></button>
-<button id="volumeTab" class="tab" type="button" role="tab" aria-selected="false" aria-controls="volumeView" disabled>音量バランス <span class="tab-state">LOCKED</span></button>
+<button id="editorTab" class="tab locked" type="button" role="tab" aria-selected="false" aria-controls="editorView" aria-disabled="true">タイミング編集 <span class="tab-state">LOCKED</span></button>
+<button id="volumeTab" class="tab locked" type="button" role="tab" aria-selected="false" aria-controls="volumeView" aria-disabled="true">音量バランス <span class="tab-state">LOCKED</span></button>
 </nav>
 <div class="views">
 <iframe id="registerView" class="view active" title="楽曲登録" src="song-publisher-form.html?v=20260828-tabs2"></iframe>
@@ -89,7 +91,7 @@ addEventListener("message",e=>{
   if(e.origin!==location.origin||e.source!==registerView.contentWindow)return;
   const d=e.data;if(!d||d.type!=="dm-song-editor-ready"||!d.id||!d.sessionId)return;
   currentSession=d;editorReady=true;
-  for(const tab of [editorTab,volumeTab]){tab.disabled=false;tab.classList.add("ready");tab.querySelector(".tab-state").textContent="READY"}
+  for(const tab of [editorTab,volumeTab]){tab.disabled=false;tab.classList.remove("locked");tab.setAttribute("aria-disabled","false");tab.classList.add("ready");tab.querySelector(".tab-state").textContent="READY"}
   const inherited={dmSongPublisher:{token:d.token,repo:d.repo,branch:d.branch,id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
   try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
   editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1`;
@@ -98,6 +100,6 @@ addEventListener("message",e=>{
 });
 })();
 </script>
-<script src="js/song-publisher-debug-unlock.js?v=20260828-debugunlock1"></script>
+<script src="js/song-publisher-debug-unlock.js?v=20260828-debugunlock2"></script>
 </body>
 </html>
