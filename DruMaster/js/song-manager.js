@@ -46,6 +46,16 @@
   };
 
   const songs={...builtInSongs,...loadRegistry()};
+  /* Score-playback historically expects the three separated stem slots.
+     Full-mix-only songs expose compatibility aliases to the same file; the
+     extra two aliases are muted, while normal gameplay still uses fullmix once. */
+  for(const song of Object.values(songs)){
+    if(song?.fullMixOnly===true&&song.stems?.fullmix){
+      const full=song.stems.fullmix;
+      song.stems={...song.stems,base:song.stems.base||full,vocals:song.stems.vocals||full,drums:song.stems.drums||full};
+      song.mix={...song.mix,base:Number.isFinite(song.mix?.fullmix)?song.mix.fullmix:.95,vocals:0,drums:0};
+    }
+  }
   const params=new URLSearchParams(location.search),requested=params.get("song"),current=songs[requested]||songs.nanairo;
   const nativeFetch=globalThis.fetch.bind(globalThis),midiCache=new Map();
   globalThis.DruMasterSongs={songs,current,nativeFetch};
