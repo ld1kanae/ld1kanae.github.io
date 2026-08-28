@@ -51,14 +51,19 @@ body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display
 #scoreSeekWrap{display:none;position:absolute;left:50%;top:calc(100% + 12px);bottom:auto;z-index:15;width:min(720px,88%);height:28px;transform:translateX(-50%);align-items:center;gap:8px;padding:3px 10px;border-radius:999px;background:#06101ac2;border:1px solid #64788b55;backdrop-filter:blur(5px);touch-action:none}
 body[data-score-playback="1"] #scoreSeekWrap{display:flex}
 
-/* Match the approved setup-screen CV1 seekbar exactly:
-   cyan -> #8C8AFF -> violet for elapsed range, neutral gray afterward. */
+/* Keep the setup-screen seekbar geometry, but use the approved button-hover
+   spectrum for the elapsed range. The unreached range stays neutral gray. */
 #scoreSeek{
-  --score-seek-cyan:#66D5FF;
-  --score-seek-mid:#8C8AFF;
-  --score-seek-violet:#BAA4FF;
   --score-range-progress:0%;
-  --score-range-mid:0%;
+  --score-spectrum:linear-gradient(90deg,
+    #d759a8 0%,
+    #cf6f8b 14%,
+    #bfbc4b 29%,
+    #6bb77e 43%,
+    #47c9be 57%,
+    #4095cf 71%,
+    #4d65be 86%,
+    #c25cc5 100%);
   flex:1;
   min-width:0;
   height:16px;
@@ -66,19 +71,16 @@ body[data-score-playback="1"] #scoreSeekWrap{display:flex}
   appearance:none;
   -webkit-appearance:none;
   background:transparent;
-  accent-color:var(--score-seek-mid);
+  accent-color:#c25cc5;
   touch-action:none
 }
 #scoreSeek::-webkit-slider-runnable-track{
   height:7px;
   border:1px solid rgba(255,255,255,.14);
   border-radius:999px;
-  background:linear-gradient(90deg,
-    var(--score-seek-cyan) 0%,
-    var(--score-seek-mid) var(--score-range-mid),
-    var(--score-seek-violet) var(--score-range-progress),
-    rgba(255,255,255,.18) var(--score-range-progress),
-    rgba(255,255,255,.18) 100%)
+  background:
+    var(--score-spectrum) 0 0 / var(--score-range-progress) 100% no-repeat,
+    rgba(255,255,255,.18)
 }
 #scoreSeek::-webkit-slider-thumb{
   -webkit-appearance:none;
@@ -99,7 +101,15 @@ body[data-score-playback="1"] #scoreSeekWrap{display:flex}
 #scoreSeek::-moz-range-progress{
   height:7px;
   border-radius:999px;
-  background:linear-gradient(90deg,var(--score-seek-cyan),var(--score-seek-mid) 52%,var(--score-seek-violet))
+  background:linear-gradient(90deg,
+    #d759a8 0%,
+    #cf6f8b 14%,
+    #bfbc4b 29%,
+    #6bb77e 43%,
+    #47c9be 57%,
+    #4095cf 71%,
+    #4d65be 86%,
+    #c25cc5 100%)
 }
 #scoreSeek::-moz-range-thumb{
   width:15px;
