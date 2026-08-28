@@ -55,21 +55,33 @@
     await uploadPromise;
     if(uploadError)throw uploadError;
   }
+  function applyUpdatedAssetVersions(song){
+    if(session?.mode!=="update"||!song)return;
+    const changed=new Set((session.uploadItems||[]).filter(it=>it.op!=="delete").map(it=>String(it.path||"").replace(/^DruMaster\//,"").split(/[?#]/)[0]));
+    const version=Number(session.createdAt)||Date.now();
+    for(const stem of Object.values(song.stems||{})){
+      if(!stem?.path)continue;
+      const clean=String(stem.path).split(/[?#]/)[0];
+      if(changed.has(clean))stem.path=`${clean}?v=${version}`;
+    }
+    if(song.midi){const clean=String(song.midi).split(/[?#]/)[0];if(changed.has(clean))song.midi=`${clean}?v=${version}`}
+    if(song.midiGzip){const clean=String(song.midiGzip).split(/[?#]/)[0];if(changed.has(clean))song.midiGzip=`${clean}?v=${version}`}
+  }
   async function withLatestVolumeSettings(url,init){
     await refreshSession();
     const mix=session?.draft?.mix,midiDrumMix=session?.draft?.midiDrumMix;
-    if(!init?.body||(!mix&&!midiDrumMix))return init;
+    if(!init?.body)return init;
     try{
       const body=JSON.parse(init.body);if(!body?.content)return init;
       const data=JSON.parse(decodeText(body.content));
       if(url.includes("DruMaster/songs/registry.json")){
-        if(data?.[songId]){if(mix)data[songId].mix=mix;if(midiDrumMix)data[songId].midiDrumMix=midiDrumMix}
+        if(data?.[songId]){if(mix)data[songId].mix=mix;if(midiDrumMix)data[songId].midiDrumMix=midiDrumMix;applyUpdatedAssetVersions(data[songId])}
       }else{
-        if(mix)data.mix=mix;if(midiDrumMix)data.midiDrumMix=midiDrumMix;
+        if(mix)data.mix=mix;if(midiDrumMix)data.midiDrumMix=midiDrumMix;applyUpdatedAssetVersions(data);
       }
       body.content=encodeText(JSON.stringify(data,null,2)+"\n");
       return {...init,body:JSON.stringify(body)};
-    }catch(e){console.warn("Volume setting injection skipped",e);return init}
+    }catch(e){console.warn("Session setting injection skipped",e);return init}
   }
 
   const sessionReady=getSession(sessionId).then(v=>{if(!v||v.id!==songId)throw Error("ローカル編集セッションが見つかりません");session=v;return v});
