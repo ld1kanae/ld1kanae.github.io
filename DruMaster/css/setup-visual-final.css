@@ -206,8 +206,9 @@
 }
 
 /* Desktop uses the DOM selector too, because the native Windows/Chromium popup
-   forces the selected row to the system accent blue. */
-@media (hover:hover) and (pointer:fine){
+   forces the selected row to the system accent blue. Include touch-capable PCs
+   whose primary pointer is reported as coarse. */
+@media (min-width:901px), (hover:hover), (pointer:fine), (any-hover:hover), (any-pointer:fine){
   .setup #songSelect.mobile-native-select-hidden{
     position:absolute!important;
     width:1px!important;
