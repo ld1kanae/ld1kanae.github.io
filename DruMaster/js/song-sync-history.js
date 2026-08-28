@@ -5,6 +5,7 @@
   const $=id=>document.getElementById(id);
   let undoStack=[],redoStack=[],currentState=null,restoring=false,dragStartState=null,ready=false;
 
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const same=(a,b)=>!!a&&!!b&&Math.abs(a.audioMs-b.audioMs)<.0001&&a.midiMeasure===b.midiMeasure;
   const readMidiMeasure=()=>{
     const text=$("midiRead")?.textContent||"0";
@@ -92,6 +93,57 @@
 
     $("historyUndo").addEventListener("click",undo);
     $("historyRedo").addEventListener("click",redo);
+
+    const help=document.querySelector(".timeline-head small");
+    if(help&&!help.dataset.reaperWheelHelp){
+      help.textContent="上段ドラッグ＝音源オフセット / 下段クリック＝シーク / ホイール＝前後移動 / Ctrl＋ホイール＝拡大・縮小";
+      help.dataset.reaperWheelHelp="1";
+    }
+  }
+
+  function timelineMetrics(){
+    const canvas=$("canvas"),zoom=$("zoom"),scrollOut=$("scrollOut"),durationNode=$("duration");
+    if(!canvas||!zoom)return null;
+    const rect=canvas.getBoundingClientRect(),px=Math.max(1,Number(zoom.value)||260),duration=Math.max(0,parseFloat(durationNode?.textContent)||0),start=Math.max(0,parseFloat(scrollOut?.textContent)||0),visible=rect.width/px,maxStart=Math.max(0,duration-visible);
+    return {canvas,zoom,rect,px,duration,start,visible,maxStart};
+  }
+
+  function setTimelineStart(start,pxOverride=null){
+    const m=timelineMetrics(),scroll=$("scroll");
+    if(!m||!scroll)return;
+    const px=pxOverride||m.px,visible=m.rect.width/px,maxStart=Math.max(0,m.duration-visible),next=clamp(start,0,maxStart);
+    scroll.value=maxStart?String(next/maxStart*1000):"0";
+    scroll.dispatchEvent(new Event("input",{bubbles:true}));
+  }
+
+  function installWheelNavigation(canvas){
+    canvas.addEventListener("wheel",e=>{
+      const m=timelineMetrics();
+      if(!m||m.duration<=0)return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const raw=Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:e.deltaX;
+      const unit=e.deltaMode===1?16:e.deltaMode===2?m.rect.width:1;
+      const wheelPixels=raw*unit;
+
+      if(e.ctrlKey||e.metaKey){
+        const oldPx=m.px,minPx=Number(m.zoom.min)||80,maxPx=Number(m.zoom.max)||3000;
+        const factor=Math.exp(-wheelPixels*.0018),newPx=clamp(oldPx*factor,minPx,maxPx);
+        if(Math.abs(newPx-oldPx)<.01)return;
+
+        const pointerRatio=clamp((e.clientX-m.rect.left)/Math.max(1,m.rect.width),0,1);
+        const anchorTime=m.start+pointerRatio*m.visible;
+        m.zoom.value=String(newPx);
+        m.zoom.dispatchEvent(new Event("input",{bubbles:true}));
+        const newVisible=m.rect.width/newPx;
+        setTimelineStart(anchorTime-pointerRatio*newVisible,newPx);
+        return;
+      }
+
+      const deltaSec=wheelPixels/m.px;
+      setTimelineStart(m.start+deltaSec);
+    },{passive:false});
   }
 
   function installTracking(){
@@ -134,6 +186,7 @@
     };
     canvas?.addEventListener("pointerup",finishDrag);
     canvas?.addEventListener("pointercancel",finishDrag);
+    if(canvas)installWheelNavigation(canvas);
 
     addEventListener("keydown",e=>{
       if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
