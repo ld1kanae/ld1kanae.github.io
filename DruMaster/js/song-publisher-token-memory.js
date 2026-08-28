@@ -28,6 +28,9 @@
       doc.head.appendChild(script);
     }
 
+    const order=doc.getElementById("order");
+    if(order)order.autocomplete="off";
+
     if(doc.getElementById("dmPublisherDruMasterTheme"))return;
     const style=doc.createElement("style");
     style.id="dmPublisherDruMasterTheme";
@@ -37,6 +40,20 @@
       input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,select:focus{
         border-color:var(--dm-publisher-cyan)!important;
         box-shadow:0 0 0 1px rgba(82,223,207,.22),0 0 0 3px rgba(136,117,255,.10)!important
+      }
+      #order,#order:hover,#order:focus{
+        background:#080e15!important;
+        color:#edf4fb!important
+      }
+      #order:-webkit-autofill,
+      #order:-webkit-autofill:hover,
+      #order:-webkit-autofill:focus,
+      #order:-webkit-autofill:active{
+        -webkit-text-fill-color:#edf4fb!important;
+        caret-color:#edf4fb!important;
+        -webkit-box-shadow:0 0 0 1000px #080e15 inset!important;
+        box-shadow:0 0 0 1000px #080e15 inset!important;
+        transition:background-color 999999s ease-out 0s!important
       }
       input[type=file]::file-selector-button{
         border:1px solid rgba(93,183,216,.55)!important;
