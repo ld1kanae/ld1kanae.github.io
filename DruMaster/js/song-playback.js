@@ -5,6 +5,7 @@
   if(!song||typeof startGame!=="function")return;
 
   const activeStemVoices=new Set();
+  const fullMixOnly=()=>globalThis.DruMasterSongSource?.isFullMixOnly?.()||false;
 
   function trackGain(name,fallback){
     const v=song.mix?.[name];
@@ -44,6 +45,10 @@
   }
   function startStemSet(startAt){
     const offset=stemOffset();
+    if(fullMixOnly()){
+      playAt(buffers.fullmix,trackGain("fullmix",.95),startAt,offset);
+      return;
+    }
     playAt(buffers.base,trackGain("base",.95),startAt,offset);
     if($("#vocalToggle").checked)playAt(buffers.vocals,trackGain("vocals",.95),startAt,offset);
     if($("#guideToggle").checked)playAt(buffers.drums,trackGain("drums",.70),startAt,offset);
@@ -62,9 +67,6 @@
     $("#pausePanel")?.classList.toggle("hidden",!isPaused);
     const pauseButton=$("#pause");
     if(pauseButton){
-      /* Keep the font-free SVG installed by pause-icon.js. Replacing
-         textContent here removed that SVG and restored the dark, baseline-
-         shifted legacy glyph at every START/restart. */
       globalThis.DruMasterPauseIcon?.render?.(isPaused?"play":"pause");
       pauseButton.setAttribute("aria-label",isPaused?"再生を再開":"一時停止");
     }
@@ -119,39 +121,30 @@
           img.addEventListener("error",resolve,{once:true});
         });
       }
-      if(typeof img.decode==="function"){
-        try{await img.decode()}catch{}
-      }
+      if(typeof img.decode==="function"){try{await img.decode()}catch{}}
     }));
-    /* game-chart.js performs one timing-MIDI request during page setup. Await it
-       explicitly so no already-started network request can overlap gameplay. */
     try{await globalThis.DruMasterChartTimingReady}catch{}
     try{await document.fonts?.ready}catch{}
   }
 
-  /* All stems share one AudioContext timestamp. Per-song source offsets live in
-     song-manager.js so timing adjustments do not require editing playback code. */
   startGame=async function(){
     if(loading)return;
     loading=true;
     $("#start").disabled=true;
     try{
       await ac.resume();
-      await loadStem("base","オフボーカル");
-      if($("#vocalToggle").checked)await loadStem("vocals","ボーカル");
-      if($("#guideToggle").checked)await loadStem("drums","ガイドドラム");
-      /* Decode the result fanfare before the timing-critical run begins. */
+      if(fullMixOnly()){
+        await loadStem("fullmix","原曲");
+      }else{
+        await loadStem("base","オフボーカル");
+        if($("#vocalToggle").checked)await loadStem("vocals","ボーカル");
+        if($("#guideToggle").checked)await loadStem("drums","ガイドドラム");
+      }
       try{await globalThis.DruMasterResultFanfare?.prepare?.()}
       catch(e){console.warn("Result fanfare preload failed",e)}
-      /* Ensure static artwork/font requests are also finished before the timing-
-         critical section begins. No resource load is intentionally left active. */
       await finishVisualPreload();
 
-      /* app.js's legacy loop waits until duration + 0.5s before finish().
-         Rebuild this value from the song config on every run so repeated RETRY
-         actions do not shorten the song by another 0.5s each time. */
       duration=Math.max(0,(Number(song.duration)||duration)-.5);
-
       rate=+$("#tempo").value/100;
       autoplay=$("#autoToggle").checked;
       resetRunState();
@@ -185,9 +178,5 @@
   const start=document.querySelector("#start");
   if(start)start.onclick=startGame;
 
-  globalThis.DruMasterPlaybackControl={
-    restartFromBeginning,
-    endCurrentRun,
-    stopRunAudio
-  };
+  globalThis.DruMasterPlaybackControl={restartFromBeginning,endCurrentRun,stopRunAudio};
 })();
