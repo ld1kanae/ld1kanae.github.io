@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Design System Audit</title>
+<style>
+:root{color-scheme:dark;--bg:#070b11;--panel:#0d151f;--panel2:#111c28;--line:#2b3d4f;--text:#edf4fb;--muted:#8293a5;--cyan:#63cfff;--hi:#79e2ff;--warn:#ffd67a}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{background:radial-gradient(circle at 10% 0%,rgba(70,145,206,.15),transparent 31%),radial-gradient(circle at 90% 4%,rgba(158,97,214,.10),transparent 30%),#070b11}
+main{width:min(1500px,96vw);margin:0 auto;padding:28px 0 70px}h1{margin:0;font-size:28px}.lead{margin:9px 0 4px;color:#a1afbd;font-size:13px;line-height:1.7}.note{margin:0 0 24px;color:#708194;font-size:11px;line-height:1.6}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}.tag{display:inline-flex;align-items:center;min-height:24px;padding:4px 8px;border:1px solid #33485c;border-radius:999px;background:#09111a;color:#aebdca;font:700 10px/1 system-ui,sans-serif}.tag.high{border-color:#5c607f;color:#dedcff}.tag.mid{border-color:#5a5133;color:#ffe5a0}
+.section{margin-top:28px}.section-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:12px}.section h2{margin:0;font-size:20px}.count{font-size:11px;color:#748598}.list{display:grid;gap:12px}
+.card{border:1px solid var(--line);border-radius:15px;background:linear-gradient(180deg,rgba(18,29,42,.95),rgba(9,15,23,.97));overflow:hidden}.card.on{border-color:#4b7890;box-shadow:0 0 0 1px rgba(91,198,248,.08)}.row{display:grid;grid-template-columns:minmax(250px,.85fr) minmax(540px,1.8fr) 170px;gap:16px;padding:14px}.meta h3{margin:0 0 7px;font-size:14px}.meta p{margin:0;color:#738598;font-size:10px;line-height:1.5}.priority{display:inline-flex;margin-bottom:8px;padding:3px 7px;border:1px solid #36495c;border-radius:999px;background:#09121b;color:#9fb0bf;font-size:9px}.priority.highest{border-color:#5b5977;color:#dcd7ff}.priority.high{border-color:#3f6174;color:#bcecff}.priority.medium{border-color:#615334;color:#ffe1a0}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:9px}.box{border:1px solid #283a4c;border-radius:10px;background:#081019;padding:10px}.box h4{margin:0 0 6px;font-size:11px;color:#b8c8d6}.box ul{margin:0;padding-left:17px;color:#899aaa;font-size:10px;line-height:1.55}.box.keep{background:#0a1119}.box.share{background:linear-gradient(180deg,rgba(49,107,135,.09),rgba(8,16,25,.96))}.box.share h4{color:#9edfff}.box.keep h4{color:#d9c98c}
+.control{display:flex;align-items:center;justify-content:center;border-left:1px solid #253648}.control label{display:flex;align-items:center;gap:8px;color:#bac7d3;font-size:11px;cursor:pointer}.control input{width:20px;height:20px;accent-color:var(--cyan)}
+.output{margin-top:30px;padding:16px;border:1px solid #2a3c4e;border-radius:14px;background:#0b121b}.output h2{margin:0 0 8px;font-size:15px}.output p{margin:0 0 9px;color:#7f90a1;font-size:11px}.output textarea{width:100%;min-height:330px;resize:vertical;border:1px solid #314558;border-radius:9px;background:#060b11;color:#dce7f1;padding:12px;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.actions{display:flex;gap:8px;margin-top:9px}.actions button{border:1px solid #38516a;border-radius:8px;background:#122131;color:#e8f2fa;padding:8px 12px;font-weight:700;cursor:pointer}
+@media(max-width:900px){.row{grid-template-columns:1fr}.detail{grid-template-columns:1fr}.control{border-left:0;border-top:1px solid #253648;padding:10px}}
+</style>
+</head>
+<body><main>
+<h1>Design System Commonization Audit</h1>
+<p class="lead">色・フォント以外で、同じ役割のUIを共通トークン／共通ルールへ寄せた方が保守しやすい候補をまとめています。</p>
+<p class="note">「共通化する」をONにしても、PCとスマホで必要な光学補正・サイズ差・ゲーム固有演出まで同一化する意味ではありません。右欄の「残す差分」を維持しながら、参照元だけ整理する前提です。</p>
+<div class="legend"><span class="tag high">優先度：最高</span><span class="tag">優先度：高</span><span class="tag mid">優先度：中</span></div>
+<section class="section"><div class="section-head"><h2>候補一覧</h2><span class="count" id="count"></span></div><div class="list" id="list"></div></section>
+<section class="output"><h2>選択結果 JSON</h2><p>共通化したい項目をONにして、このJSONをそのままチャットへ貼ってください。</p><textarea id="out" readonly></textarea><div class="actions"><button id="copy">JSONをコピー</button><button id="reset">すべてOFF</button></div></section>
+</main>
+<script>
+const DATA=[
+{id:'transport-geometry',label:'一時停止＋楽譜再生ボタンの寸法',priority:'最高',share:['PC transport size / radius / icon-size','スマホ transport size / radius / icon-size','一時停止と楽譜再生の同一基準'],keep:['PCとスマホの物理サイズ差','一時停止と各アイコンの図形差','ホバー／タップ演出']},
+{id:'setup-toggle-geometry',label:'セットアップのトグル形状',priority:'最高',share:['本体 width / height','つまみ径・位置・移動距離','border-width / radius'],keep:['PCとスマホの寸法差','ON/OFF色・アニメーション','端末別の光学補正']},
+{id:'dropdown-geometry',label:'曲名／演奏モードのプルダウン形状',priority:'最高',share:['同一端末内の trigger height / padding / radius','option height / padding','矢印サイズ・配置'],keep:['PCとスマホの寸法差','曲名とモードの幅差','展開方向・スクロール挙動']},
+{id:'z-index-scale',label:'z-indexの階層',priority:'最高',share:['background / content / chart / HUD','feedback / overlay / dropdown','top-effect の意味別レイヤー'],keep:['各要素の必要な相対順序','特殊エフェクトの最上位指定','外部tap effectなど例外レイヤー']},
+{id:'mobile-layout-metrics',label:'スマホの基準座標・セーフエリア',priority:'高',share:['safe-left 基準','game header height','chart top / game content origin'],keep:['端末safe-area値そのもの','画面ごとの必要余白','強制横向きレイアウト仕様']},
+{id:'focus-border-system',label:'フォーカスリング／ボーダー幅',priority:'高',share:['focus色・太さ・offset','default border width','touch optical border width'],keep:['コンポーネントごとの形状','スマホ0.75px等の光学補正','発光の有無']},
+{id:'action-button-geometry',label:'マイク調整／リザルト等のアクションボタン寸法',priority:'高',share:['PC action button height','PC common horizontal padding','同系統ボタンのmin-height基準'],keep:['用途別の横幅','スマホで必要なサイズ差','STARTなど大型CTAの寸法']},
+{id:'touch-target',label:'スマホのタップ可能領域',priority:'高',share:['最小hit-area基準','小型transport周囲の透明hit-area','隣接hit-areaの最小間隔'],keep:['見た目26px等のサイズ','レイアウト上の見た目間隔','演奏用ドラムhit target']},
+{id:'motion-tokens',label:'UIアニメーション時間・easing',priority:'中',share:['hover / press duration','dropdown open / close duration','toggle / glass UIの基本easing'],keep:['判定エフェクト','リザルト演出','Aurora / dither等ゲーム固有motion']},
+{id:'radius-scale',label:'角丸スケール',priority:'中',share:['control radius','card / panel radius','pill radius'],keep:['transport rounded-square専用値','円形Dマーク等','光学上必要な端末差']},
+{id:'spacing-scale',label:'余白・gapのスケール',priority:'中',share:['4 / 6 / 8 / 10 / 12 / 16px等の基本scale','panel内padding','同種行のgap'],keep:['画面全体のレイアウト調整','左右列の位置補正','safe-area由来の余白']},
+{id:'elevation-shadow',label:'影・Elevation',priority:'中',share:['control shadow','popup shadow','panel / overlay shadow'],keep:['Auroraや発光など装飾effect','BEST等の状態演出','端末別の影強度補正']},
+{id:'disabled-state',label:'disabled / locked状態',priority:'中',share:['disabled-control opacity','disabled-option opacity','locked-state opacity'],keep:['disabledとlockedの意味の違い','色相差','機能別の必要なコントラスト']},
+{id:'typography-role-tokens',label:'タイポグラフィの残り（weight / line-height / letter-spacing）',priority:'中',share:['UI Meta / Control / Metric等の役割単位','同一役割のweight','line-height / letter-spacing'],keep:['ロゴ・スコア等の装飾書体','判定文字の特殊処理','PC/スマホで必要なサイズ差']}
+];
+const KEY='drumaster-design-system-audit-v1';let saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+function cls(p){return p==='最高'?'highest':p==='高'?'high':'medium'}
+function render(){const root=document.getElementById('list');document.getElementById('count').textContent=`${DATA.length} candidates`;root.innerHTML=DATA.map(x=>{const on=!!saved[x.id];return `<article class="card${on?' on':''}" data-id="${x.id}"><div class="row"><div class="meta"><span class="priority ${cls(x.priority)}">優先度：${x.priority}</span><h3>${x.label}</h3><p>同じ用途の値をセマンティックな共通参照へ整理する候補です。</p></div><div class="detail"><div class="box share"><h4>共通化するもの</h4><ul>${x.share.map(v=>`<li>${v}</li>`).join('')}</ul></div><div class="box keep"><h4>残す差分</h4><ul>${x.keep.map(v=>`<li>${v}</li>`).join('')}</ul></div></div><div class="control"><label><input type="checkbox" ${on?'checked':''}> 共通化する</label></div></div></article>`}).join('');root.querySelectorAll('input').forEach(cb=>cb.onchange=e=>{const card=e.target.closest('.card');saved[card.dataset.id]=e.target.checked;card.classList.toggle('on',e.target.checked);persist()});output()}
+function output(){document.getElementById('out').value=JSON.stringify({designSystemCommonization:DATA.map(x=>({id:x.id,label:x.label,priority:x.priority,commonize:!!saved[x.id]}))},null,2)}
+function persist(){localStorage.setItem(KEY,JSON.stringify(saved));output()}
+render();document.getElementById('copy').onclick=async()=>{const t=document.getElementById('out');try{await navigator.clipboard.writeText(t.value);const b=document.getElementById('copy');b.textContent='コピーしました';setTimeout(()=>b.textContent='JSONをコピー',1200)}catch(e){t.select();document.execCommand('copy')}};document.getElementById('reset').onclick=()=>{saved={};localStorage.removeItem(KEY);render()};
+</script></body></html>
