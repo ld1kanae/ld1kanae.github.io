@@ -80,9 +80,9 @@
   applySavedCorrection();
   scheduleStageUpdate();
 
-  /* Fullscreen requires a user activation. Do not consume or cancel the tap;
-     the original UI action continues normally. */
-  document.addEventListener('pointerdown',requestMobileFullscreen,{capture:true,passive:true});
+  /* Use the click event rather than pointerdown so the original target has
+     already been resolved before the viewport can change. */
+  document.addEventListener('click',requestMobileFullscreen,{capture:true});
 
   window.addEventListener('resize',scheduleStageUpdate,{passive:true});
   window.addEventListener('orientationchange',scheduleStageUpdate,{passive:true});
