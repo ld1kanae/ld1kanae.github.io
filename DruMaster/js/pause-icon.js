@@ -6,9 +6,44 @@
   if(!button||!panel)return;
 
   function makeIcon(){
-    const icon=document.createElement("span");
-    icon.className="pause-white-icon";
-    icon.setAttribute("aria-hidden","true");
+    const ns="http://www.w3.org/2000/svg";
+    const svg=document.createElementNS(ns,"svg");
+    svg.setAttribute("class","pause-white-icon");
+    svg.setAttribute("viewBox","0 0 18 18");
+    svg.setAttribute("aria-hidden","true");
+    svg.setAttribute("focusable","false");
+    svg.setAttribute("fill","#fff");
+
+    const pauseGroup=document.createElementNS(ns,"g");
+    pauseGroup.setAttribute("class","pause-shape");
+    pauseGroup.setAttribute("fill","#fff");
+    for(const x of [2,12]){
+      const rect=document.createElementNS(ns,"rect");
+      rect.setAttribute("x",String(x));
+      rect.setAttribute("y","1");
+      rect.setAttribute("width","4");
+      rect.setAttribute("height","16");
+      rect.setAttribute("rx","1.5");
+      rect.setAttribute("fill","#fff");
+      pauseGroup.appendChild(rect);
+    }
+    svg.appendChild(pauseGroup);
+
+    const play=document.createElementNS(ns,"path");
+    play.setAttribute("class","play-shape");
+    play.setAttribute("d","M4 1.5v15L16 9z");
+    play.setAttribute("fill","#fff");
+    svg.appendChild(play);
+    return svg;
+  }
+
+  function ensureSvg(){
+    let icon=button.querySelector(":scope > .pause-white-icon");
+    if(icon?.namespaceURI!=="http://www.w3.org/2000/svg"){
+      const fresh=makeIcon();
+      if(icon)icon.replaceWith(fresh);else button.appendChild(fresh);
+      icon=fresh;
+    }
     return icon;
   }
 
@@ -17,7 +52,7 @@
       if(node.nodeType===Node.TEXT_NODE)node.remove();
     }
     button.querySelectorAll(":scope > .transport-icon,:scope > .pause-transport-icon,:scope > .pause-css-icon").forEach(node=>node.remove());
-    if(!button.querySelector(":scope > .pause-white-icon"))button.appendChild(makeIcon());
+    ensureSvg();
     button.dataset.transportIcon=state;
   }
 
