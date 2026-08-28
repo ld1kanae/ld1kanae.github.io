@@ -4,6 +4,7 @@
   const HISTORY_LIMIT=5;
   const $=id=>document.getElementById(id);
   let undoStack=[],redoStack=[],currentState=null,restoring=false,dragStartState=null,ready=false;
+  let audioWheelStartState=null,audioWheelCommitTimer=0;
 
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const same=(a,b)=>!!a&&!!b&&Math.abs(a.audioMs-b.audioMs)<.0001&&a.midiMeasure===b.midiMeasure;
@@ -77,7 +78,7 @@
     if(!audio||$("historyUndo"))return;
     audio.inputMode="decimal";
     audio.setAttribute("aria-label","Audio offset milliseconds");
-    audio.title="0.1ms単位で直接入力できます。＋＝音源を前へ、−＝音源を後ろへ。";
+    audio.title="0.1ms単位で直接入力できます。クリックしてフォーカス後、ホイールで±0.1ms調整できます。＋＝音源を前へ、−＝音源を後ろへ。";
 
     const panel=audio.closest(".panel"),note=panel?.querySelector(".note");
     if(note)note.style.display="none";
@@ -151,6 +152,40 @@
     },{passive:false});
   }
 
+  function flushAudioWheelHistory(){
+    clearTimeout(audioWheelCommitTimer);
+    audioWheelCommitTimer=0;
+    if(!audioWheelStartState)return;
+    const final=readState();
+    if(!same(final,audioWheelStartState)){
+      currentState={...audioWheelStartState};
+      commit(final);
+    }
+    audioWheelStartState=null;
+  }
+
+  function installAudioWheel(audio){
+    audio.addEventListener("wheel",e=>{
+      if(document.activeElement!==audio||restoring)return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      if(!audioWheelStartState)audioWheelStartState={...currentState};
+      const direction=e.deltaY<0?1:-1;
+      const next=clamp((Number(audio.value)||0)+direction*.1,-500,500);
+      if(Math.abs(next-(Number(audio.value)||0))<.0001)return;
+
+      audio.value=next.toFixed(1);
+      restoring=true;
+      try{audio.dispatchEvent(new Event("change",{bubbles:true}))}
+      finally{restoring=false}
+
+      clearTimeout(audioWheelCommitTimer);
+      audioWheelCommitTimer=setTimeout(flushAudioWheelHistory,180);
+    },{passive:false});
+    audio.addEventListener("blur",flushAudioWheelHistory);
+  }
+
   function installTracking(){
     if(ready)return;
     ready=true;
@@ -166,6 +201,7 @@
         audio.blur();
       }
     });
+    if(audio)installAudioWheel(audio);
 
     document.querySelectorAll("[data-audio],#audioReset,#midiPrev,#midiNext,#midiReset").forEach(el=>{
       el.addEventListener("click",()=>{
