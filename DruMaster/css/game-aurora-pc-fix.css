@@ -43,24 +43,32 @@
     animation:gameAuroraCurtainWide 5s ease-in-out infinite alternate!important;
   }
 
-  /* Static vignette: preserve the darker result-screen character while the
-     aurora moves underneath it. The centre stays open; only the outer field
-     and corners are progressively darkened. */
+  /* Vignette + temporal dithering. The noise is intentionally subtle but a
+     little stronger on desktop, where the large dark gradient exposes banding
+     most clearly. Moving the tile by only a few pixels provides temporal
+     dithering without reading as visible film grain. */
   .game::after{
     content:"";
     position:absolute;
     z-index:0;
     inset:0;
     pointer-events:none;
-    background:radial-gradient(
-      ellipse at 50% 48%,
-      transparent 0%,
-      transparent 34%,
-      rgba(0,0,0,.06) 52%,
-      rgba(0,0,0,.20) 72%,
-      rgba(0,0,0,.42) 88%,
-      rgba(0,0,0,.58) 100%
-    );
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' seed='17' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(
+        ellipse at 50% 48%,
+        transparent 0%,
+        transparent 34%,
+        rgba(0,0,0,.06) 52%,
+        rgba(0,0,0,.20) 72%,
+        rgba(0,0,0,.42) 88%,
+        rgba(0,0,0,.58) 100%
+      );
+    background-size:128px 128px,100% 100%;
+    background-repeat:repeat,no-repeat;
+    background-position:0 0,center;
+    will-change:background-position;
+    animation:gameDitherShift 1.4s steps(1,end) infinite;
   }
 }
 
@@ -69,6 +77,16 @@
   100%{transform:translate3d(5%,0,0) skewX(2deg) scaleX(1.03);opacity:.92}
 }
 
+@keyframes gameDitherShift{
+  0%{background-position:0 0,center}
+  20%{background-position:1px -1px,center}
+  40%{background-position:-1px 1px,center}
+  60%{background-position:2px 1px,center}
+  80%{background-position:-2px -1px,center}
+  100%{background-position:0 0,center}
+}
+
 @media (prefers-reduced-motion:reduce){
   .game::before{animation:none!important;transform:none!important;opacity:.82!important}
+  .game::after{animation:none!important;background-position:0 0,center!important}
 }
