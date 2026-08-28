@@ -46,6 +46,6 @@
   };
 
   const s=document.createElement("script");
-  s.src="js/glass-hover-final.js?v=20260828-mobiletap2";
+  s.src="js/glass-hover-final.js?v=20260828-hoverfullrestore1";
   document.body.appendChild(s);
 })();
