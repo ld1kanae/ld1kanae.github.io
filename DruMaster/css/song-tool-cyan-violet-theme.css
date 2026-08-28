@@ -7,6 +7,9 @@
   --dm-tool-violet:#8875ff;
   --dm-tool-violet2:#a36cff;
   --dm-tool-gradient:linear-gradient(115deg,#52dfcf 0%,#5e9ee8 52%,#8875ff 100%);
+  --dm-tool-seek-cyan:#66D5FF;
+  --dm-tool-seek-mid:#8C8AFF;
+  --dm-tool-seek-violet:#BAA4FF;
 }
 
 input[type=text]:focus,
@@ -42,9 +45,55 @@ button.primary:not(:disabled):hover,
   background:linear-gradient(90deg,var(--dm-tool-cyan) 0%,var(--dm-tool-blue) 52%,var(--dm-tool-violet) 100%)!important;
 }
 
+/* Exact setup-page CV1 seekbar treatment. */
 input[type=range]{
-  accent-color:var(--dm-tool-violet)!important;
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  height:16px!important;
+  background:transparent!important;
+  accent-color:var(--dm-tool-seek-mid)!important;
 }
+input[type=range]::-webkit-slider-runnable-track{
+  height:7px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,
+    var(--dm-tool-seek-cyan) 0%,
+    var(--dm-tool-seek-mid) var(--dm-tool-range-mid,29%),
+    var(--dm-tool-seek-violet) var(--dm-tool-range-progress,56%),
+    rgba(255,255,255,.18) var(--dm-tool-range-progress,56%),
+    rgba(255,255,255,.18) 100%)!important;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none!important;
+  width:15px!important;
+  height:15px!important;
+  margin-top:-5px!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:#D7F3FF!important;
+  box-shadow:0 0 10px rgba(123,220,255,.2)!important;
+}
+input[type=range]::-moz-range-track{
+  height:7px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.18)!important;
+}
+input[type=range]::-moz-range-progress{
+  height:7px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,var(--dm-tool-seek-cyan),var(--dm-tool-seek-mid) 52%,var(--dm-tool-seek-violet))!important;
+}
+input[type=range]::-moz-range-thumb{
+  width:15px!important;
+  height:15px!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:#D7F3FF!important;
+  box-shadow:0 0 10px rgba(123,220,255,.2)!important;
+}
+
 input[type=checkbox]{
   accent-color:var(--dm-tool-cyan)!important;
 }
