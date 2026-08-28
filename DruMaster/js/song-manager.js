@@ -107,23 +107,30 @@
 
   function isFullMixOnly(song){
     if(song?.fullMixOnly===true)return true;
+    if(song?.fullMixOnly===false)return false;
     const s=song?.stems||{};
-    return !!s.fullmix&&!(s.base&&s.vocals&&s.drums);
+    return !!s.fullmix&&!s.base;
   }
   function applySourceAvailability(song=globalThis.DruMasterSongs?.current||current){
-    const locked=isFullMixOnly(song);
-    for(const id of ["vocalToggle","guideToggle"]){
-      const input=document.getElementById(id);
+    const fullOnly=isFullMixOnly(song),stems=song?.stems||{};
+    const states=[
+      {id:"vocalToggle",available:!!stems.vocals},
+      {id:"guideToggle",available:!!stems.drums}
+    ];
+    for(const state of states){
+      const input=document.getElementById(state.id);
       if(!input)continue;
       const row=input.closest(".option");
+      const locked=fullOnly||!state.available;
       input.disabled=locked;
-      if(locked)input.checked=true;
+      if(fullOnly)input.checked=true;
+      else if(!state.available)input.checked=false;
       row?.classList.toggle("source-locked",locked);
       row?.setAttribute("aria-disabled",locked?"true":"false");
       const value=row?.querySelector("b");
-      if(locked&&value)value.textContent="ON";
+      if(value)value.textContent=input.checked?"ON":"OFF";
     }
-    document.documentElement.classList.toggle("dm-fullmix-only",locked);
+    document.documentElement.classList.toggle("dm-fullmix-only",fullOnly);
   }
 
   function bpmText(){
