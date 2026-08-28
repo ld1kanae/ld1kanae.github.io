@@ -1,0 +1,51 @@
+/* Smartphone center-based layout.
+   Uses the post-rotation visible stage as the geometric reference.
+   Legacy mode skips this entire layer via html.dm-layout-legacy. */
+:root{
+  --dm-mobile-stage-w:100vh;
+  --dm-mobile-stage-h:100vw;
+  --dm-mobile-center-correction-x:0px;
+  --dm-mobile-center-correction-y:0px;
+  --dm-mobile-center-edge:24px;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  html.dm-layout-centered #app{
+    position:fixed!important;
+    left:0!important;
+    top:0!important;
+    width:var(--dm-mobile-stage-w)!important;
+    height:var(--dm-mobile-stage-h)!important;
+    transform-origin:0 0!important;
+    transform:translateY(var(--dm-mobile-stage-w)) rotate(-90deg)!important;
+  }
+
+  /* Setup only: remove the old asymmetric screen inset and center against
+     the safe visible rectangle after the forced-landscape transform. */
+  html.dm-layout-centered .setup.screen{
+    width:100%!important;
+    height:100%!important;
+    margin-left:0!important;
+  }
+
+  html.dm-layout-centered .setup{
+    box-sizing:border-box!important;
+    grid-template-columns:minmax(250px,.92fr) minmax(300px,1.08fr)!important;
+    column-gap:20px!important;
+    row-gap:4px!important;
+    align-content:center!important;
+    justify-content:center!important;
+    justify-items:center!important;
+    padding-top:12px!important;
+    padding-bottom:12px!important;
+    padding-left:max(var(--dm-mobile-center-edge),env(safe-area-inset-bottom))!important;
+    padding-right:max(var(--dm-mobile-center-edge),env(safe-area-inset-top))!important;
+  }
+
+  /* Cancel the previous global/left-column fixed nudges. The independent
+     translate property keeps existing component transforms (logo etc.) intact. */
+  html.dm-layout-centered .setup>*:not(.setup-moving-lights){
+    left:auto!important;
+    translate:var(--dm-mobile-center-correction-x) var(--dm-mobile-center-correction-y)!important;
+  }
+}
