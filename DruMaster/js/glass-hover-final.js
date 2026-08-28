@@ -6,29 +6,23 @@
 
   const SELECTOR="#start,#pause,#scorePlaybackControls button,#pausePanel button,.result-actions button,.mic-cal-actions button";
 
-  /* Production settings based on the user's approved original editor payload.
-     Only later explicitly approved changes are applied: faceSheen 120% and
-     every hover animation advanced by 150ms. Negative delays intentionally
-     begin the animation as if 150ms had already elapsed at hover start. */
+  /* Approved production hover payload. Keep the full rainbow material:
+     inner spectrum, external halo, rimRun1/2, faceSheen and faceFlash. */
   const SETTINGS={
     spectralAngle:"337.5deg",
     autoReplay:true,
     intervalSec:5,
-    oppositePairOffset:50,
     elements:{
-      rimRun1:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:0,travel:-100,kind:"rim"},
-      rimRun2:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:-50,travel:-100,kind:"rim"},
-      edge1:{enabled:false,opacity:1,speedPercent:100,fadeInMs:150,fadeOutMs:200,delayMs:-150,base:850,start:0,travel:-55,kind:"edge"},
-      edge2:{enabled:false,opacity:1,speedPercent:100,fadeInMs:150,fadeOutMs:200,delayMs:-150,base:850,start:-50,travel:-55,kind:"edge"},
-      faceSheen:{enabled:true,opacity:.7,speedPercent:120,fadeInMs:1000,fadeOutMs:1000,delayMs:-150,base:720,kind:"faceSheen"},
-      faceFlash:{enabled:true,opacity:.25,speedPercent:100,fadeInMs:1000,fadeOutMs:400,delayMs:-150,base:660,kind:"flash"},
-      faceLine:{enabled:false,opacity:1,speedPercent:20,fadeInMs:200,fadeOutMs:300,delayMs:-150,base:520,kind:"faceLine"},
-      rimPulse:{enabled:false,opacity:1,speedPercent:100,fadeInMs:100,fadeOutMs:350,delayMs:-150,base:520,kind:"pulse"}
+      rimRun1:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:0,travel:-100},
+      rimRun2:{enabled:true,opacity:.3,speedPercent:150,fadeInMs:1300,fadeOutMs:2500,delayMs:0,base:1000,start:-50,travel:-100},
+      faceSheen:{enabled:true,opacity:.7,speedPercent:120,fadeInMs:1000,fadeOutMs:1000,delayMs:-150,base:720},
+      faceFlash:{enabled:true,opacity:.25,speedPercent:100,fadeInMs:1000,fadeOutMs:400,delayMs:-150,base:660}
     }
   };
 
   const activeAnimations=new WeakMap();
   const replayTimers=new WeakMap();
+  const tapTimers=new WeakMap();
 
   function stack(pos){
     const s=document.createElement("span");
@@ -64,12 +58,12 @@
   }
 
   function buttonFor(host){
-    return host.matches?.("button")?host:host.querySelector(":scope > button");
+    return host?.matches?.("button")?host:host?.querySelector?.(":scope > button");
   }
 
   function syncRim(host){
     const button=buttonFor(host);
-    const svg=host.querySelector(":scope > .glass-hover-rim-svg");
+    const svg=host?.querySelector?.(":scope > .glass-hover-rim-svg");
     if(!button||!svg)return;
     const box=button.getBoundingClientRect();
     if(box.width<2||box.height<2)return;
@@ -87,9 +81,6 @@
     }
   }
 
-  /* This is the timing function used by the original editor when the supplied
-     settings were captured. Large fade values are proportionally fitted into
-     90% of the element's speed-derived duration. */
   function timing(s){
     const duration=Math.max(80,s.base*(100/Math.max(1,s.speedPercent)));
     let fi=Math.max(0,s.fadeInMs),fo=Math.max(0,s.fadeOutMs);
@@ -137,24 +128,21 @@
   function play(host){
     const button=buttonFor(host);
     if(!button||button.disabled)return;
+    repair(button,false);
     syncRim(host);
 
-    const old=activeAnimations.get(host)||[];
-    for(const a of old){try{a.cancel()}catch{}}
+    for(const a of activeAnimations.get(host)||[]){try{a.cancel()}catch{}}
     const running=[];
-
     const run=(el,s,spec)=>{
       if(!el||!s.enabled)return;
       const a=el.animate(spec.frames,{duration:spec.duration,delay:s.delayMs,easing:"linear",fill:"both"});
       running.push(a);
     };
-
     const e=SETTINGS.elements;
     run(host.querySelector(".rim-run-1"),e.rimRun1,strokeSpec(e.rimRun1));
     run(host.querySelector(".rim-run-2"),e.rimRun2,strokeSpec(e.rimRun2));
-    run(button.querySelector(".glass-hover-face-sheen"),e.faceSheen,moveSpec(e.faceSheen,-58,122));
-    run(button.querySelector(".glass-hover-face-flash"),e.faceFlash,fadeSpec(e.faceFlash));
-
+    run(button.querySelector(":scope > .glass-hover-face-sheen"),e.faceSheen,moveSpec(e.faceSheen,-58,122));
+    run(button.querySelector(":scope > .glass-hover-face-flash"),e.faceFlash,fadeSpec(e.faceFlash));
     activeAnimations.set(host,running);
   }
 
@@ -165,23 +153,24 @@
   }
 
   function bindHover(host,button){
-    const beginHover=()=>{
+    if(button.dataset.glassHoverBound==="1")return;
+    button.dataset.glassHoverBound="1";
+    button.addEventListener("mouseenter",()=>{
       play(host);
       stopReplay(host);
       if(SETTINGS.autoReplay){
-        const timer=setInterval(()=>{
+        replayTimers.set(host,setInterval(()=>{
           if(button.matches(":hover"))play(host);
           else stopReplay(host);
-        },SETTINGS.intervalSec*1000);
-        replayTimers.set(host,timer);
+        },SETTINGS.intervalSec*1000));
       }
-    };
-    button.addEventListener("mouseenter",beginHover);
+    });
     button.addEventListener("mouseleave",()=>stopReplay(host));
   }
 
-  const tapTimers=new WeakMap();
   function bindTap(host,button){
+    if(button.dataset.glassTapBound==="1")return;
+    button.dataset.glassTapBound="1";
     button.addEventListener("pointerdown",()=>{
       if(button.disabled)return;
       play(host);
@@ -196,64 +185,111 @@
   }
 
   function observeSize(host,button){
-    if("ResizeObserver" in window){
-      const ro=new ResizeObserver(()=>syncRim(host));
-      ro.observe(button);
+    if(button.dataset.glassResizeBound==="1")return;
+    button.dataset.glassResizeBound="1";
+    if("ResizeObserver" in window)new ResizeObserver(()=>syncRim(host)).observe(button);
+  }
+
+  function ensureButtonLayers(button){
+    let changed=false;
+    if(!button.querySelector(":scope > .glass-inner-stack.bottom")){button.prepend(stack("bottom"));changed=true}
+    if(!button.querySelector(":scope > .glass-inner-stack.top")){button.prepend(stack("top"));changed=true}
+    if(!button.querySelector(":scope > .glass-hover-face-flash")){button.prepend(makeFace("glass-hover-face-flash"));changed=true}
+    if(!button.querySelector(":scope > .glass-hover-face-sheen")){button.prepend(makeFace("glass-hover-face-sheen"));changed=true}
+    return changed;
+  }
+
+  function ensurePauseIcon(button){
+    if(button.id!=="pause"||button.querySelector(":scope > .pause-white-icon"))return;
+    const state=button.getAttribute("aria-label")==="再生を再開"?"play":"pause";
+    if(globalThis.DruMasterPauseIcon?.render)globalThis.DruMasterPauseIcon.render(state);
+    else{
+      const icon=document.createElement("span");
+      icon.className="pause-white-icon";
+      icon.setAttribute("aria-hidden","true");
+      button.appendChild(icon);
+      button.dataset.transportIcon=state;
     }
   }
 
-  function enhance(button){
-    if(!button||button.dataset.glassHoverFinal==="1")return;
+  function ensureWrap(button){
+    let wrap=button.parentElement?.classList?.contains("glass-hover-wrap")?button.parentElement:null;
+    if(!wrap){
+      wrap=document.createElement("span");
+      wrap.className="glass-hover-wrap";
+      const parent=button.parentNode;
+      if(!parent)return null;
+      parent.insertBefore(wrap,button);
+      wrap.appendChild(button);
+    }
+    if(button.id==="start")wrap.classList.add("start-wrap");
+    wrap.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
+    if(!wrap.querySelector(":scope > .glass-hover-drop")){
+      const glow=document.createElement("i");
+      glow.className="glass-hover-drop";
+      wrap.insertBefore(glow,button);
+    }
+    if(!wrap.querySelector(":scope > .glass-hover-rim-svg"))wrap.appendChild(makeRim());
+    return wrap;
+  }
+
+  function repair(button,bind=true){
+    if(!button||!button.matches?.(SELECTOR))return;
+    ensureButtonLayers(button);
+    ensurePauseIcon(button);
     button.dataset.glassHoverFinal="1";
 
-    button.prepend(stack("bottom"));
-    button.prepend(stack("top"));
-    button.prepend(makeFace("glass-hover-face-flash"));
-    button.prepend(makeFace("glass-hover-face-sheen"));
-
-    /* The pause button stays a direct flex child of the game header. Wrapping
-       it changes the header's layout box and previously displaced both the
-       pointer hit area and the animated rim. Keep every pause layer inside the
-       real button so visual and interactive coordinates are identical. */
+    let host;
     if(button.id==="pause"){
       button.classList.add("glass-hover-inline");
       button.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
-      button.appendChild(makeRim());
-      syncRim(button);
-      desktop?bindHover(button,button):bindTap(button,button);
-      observeSize(button,button);
-      return;
+      if(!button.querySelector(":scope > .glass-hover-rim-svg"))button.appendChild(makeRim());
+      host=button;
+    }else{
+      host=ensureWrap(button);
+      if(!host)return;
     }
 
-    const wrap=document.createElement("span");
-    wrap.className="glass-hover-wrap";
-    wrap.style.setProperty("--spectral-angle",SETTINGS.spectralAngle);
-    if(button.id==="start")wrap.classList.add("start-wrap");
-
-    const glow=document.createElement("i");
-    glow.className="glass-hover-drop";
-    const rim=makeRim();
-
-    const parent=button.parentNode;
-    parent.insertBefore(wrap,button);
-    wrap.appendChild(glow);
-    wrap.appendChild(button);
-    wrap.appendChild(rim);
-    syncRim(wrap);
-    desktop?bindHover(wrap,button):bindTap(wrap,button);
-    observeSize(wrap,button);
+    syncRim(host);
+    if(bind){
+      desktop?bindHover(host,button):bindTap(host,button);
+      observeSize(host,button);
+    }
   }
 
   function scan(root=document){
-    if(root.matches?.(SELECTOR))enhance(root);
-    root.querySelectorAll?.(SELECTOR).forEach(enhance);
+    if(root.matches?.(SELECTOR))repair(root);
+    root.querySelectorAll?.(SELECTOR).forEach(button=>repair(button));
   }
 
   scan();
+
+  /* State changes elsewhere can replace a button's text/children. Repair only
+     the missing hover layers instead of treating the button as permanently
+     initialized. This prevents the approved rainbow hover from fading away. */
+  let repairQueued=false;
+  const pending=new Set();
+  const queueRepair=button=>{
+    if(!button||!button.matches?.(SELECTOR))return;
+    pending.add(button);
+    if(repairQueued)return;
+    repairQueued=true;
+    queueMicrotask(()=>{
+      repairQueued=false;
+      for(const b of pending)if(b.isConnected)repair(b);
+      pending.clear();
+    });
+  };
+
   new MutationObserver(records=>{
     for(const record of records){
+      const target=record.target?.nodeType===1?record.target:null;
+      const targetButton=target?.matches?.(SELECTOR)?target:target?.closest?.(SELECTOR);
+      if(targetButton)queueRepair(targetButton);
       for(const node of record.addedNodes){
-        if(node.nodeType===1)scan(node);
+        if(node.nodeType!==1)continue;
+        if(node.matches?.(SELECTOR))queueRepair(node);
+        node.querySelectorAll?.(SELECTOR).forEach(queueRepair);
       }
     }
   }).observe(document.documentElement,{childList:true,subtree:true});
