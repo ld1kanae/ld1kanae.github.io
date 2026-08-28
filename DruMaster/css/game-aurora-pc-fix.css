@@ -42,6 +42,26 @@
     will-change:transform,opacity!important;
     animation:gameAuroraCurtainWide 5s ease-in-out infinite alternate!important;
   }
+
+  /* Static vignette: preserve the darker result-screen character while the
+     aurora moves underneath it. The centre stays open; only the outer field
+     and corners are progressively darkened. */
+  .game::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    inset:0;
+    pointer-events:none;
+    background:radial-gradient(
+      ellipse at 50% 48%,
+      transparent 0%,
+      transparent 34%,
+      rgba(0,0,0,.06) 52%,
+      rgba(0,0,0,.20) 72%,
+      rgba(0,0,0,.42) 88%,
+      rgba(0,0,0,.58) 100%
+    );
+  }
 }
 
 @keyframes gameAuroraCurtainWide{
