@@ -10,16 +10,6 @@
   const scoreActive=()=>document.body.dataset.scorePlayback==="1";
   const autoEnabled=()=>scoreActive()&&autoToggle.checked;
 
-  /* Score playback uses backing stems for the bass drum. Never synthesize a
-     second kick sample in this mode; its visual is driven independently below. */
-  const basePlayDrum=typeof playDrum==="function"?playDrum:null;
-  if(basePlayDrum){
-    playDrum=function(note,type,v){
-      if(scoreActive()&&type==="kick")return;
-      return basePlayDrum(note,type,v);
-    };
-  }
-
   const lowerBound=(list,sec)=>{
     let lo=0,hi=list.length;
     while(lo<hi){const mid=(lo+hi)>>1;if(list[mid].time<sec)lo=mid+1;else hi=mid}
@@ -128,9 +118,9 @@
          regardless of the Auto toggle. */
       flashScoreNote(n);
 
-      /* Auto controls audio only. Kick stays silent here because the backing
-         Guide Drums stem already contains it. */
-      if(autoEnabled()&&n.type!=="kick"){
+      /* Auto controls audio for every chart note, including kick.
+         Guide Drums remains an optional backing stem chosen by the user. */
+      if(autoEnabled()){
         try{playDrum(n.note,n.type,n.velocity/127)}catch{}
       }
     }

@@ -214,9 +214,6 @@
   function scoreLoop(){
     if(!active||!running||paused||scrubbing)return;
     const t=current(),d=songDuration(currentSong);
-    while(kickCursor<notes.length&&notes[kickCursor].time<=t+.012){
-      const n=notes[kickCursor++];if(n.type==="kick"&&n.time>=t-.05)playDrum(n.note,n.type,n.velocity/127);
-    }
     draw?.();updateSeekUi(t);
     if(loopMode==="all"&&d-t<=5&&d-t>=0&&prefetchFor!==currentSong.id){
       prefetchFor=currentSong.id;const target=nextSong(1);void ensureSongData(target).catch(e=>console.warn("Next song prefetch failed",e));
