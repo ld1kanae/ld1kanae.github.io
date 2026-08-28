@@ -77,8 +77,8 @@ loadDrumSource=async function(manifest){
     fetchJoined(manifest.wav,"ゲーム内ドラム"),
     fetch(manifest.midi.path,{cache:"force-cache"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
   ]);
-  if(midi.byteLength!==manifest.midi.bytes)throw Error("ドラム音源MIDIが不完全です");
-  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ドラム音源MIDIの内容が一致しません");
+  if(midi.byteLength!==manifest.midi.bytes)throw Error("ゲーム内ドラム音源MIDIが不完全です");
+  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ゲーム内ドラム音源MIDIの内容が一致しません");
 
   const fmt=readWavFormat(wav),expectedRate=manifest.wav.sourceSampleRate||manifest.wav.sampleRate;
   if(expectedRate&&fmt.sampleRate!==expectedRate)throw Error(`ゲーム内ドラム音源の元サンプルレートが不正です（${fmt.sampleRate}Hz / ${expectedRate}Hz）`);
@@ -100,6 +100,22 @@ loadDrumSource=async function(manifest){
 };
 
 const activeDrumVoices=new Set();
+const MIDI_DRUM_BALANCE_DEFAULT={cymbal:1.2,hihatRide:1,snareTom:1,kick:1.4,other:1};
+function midiDrumGroup(type){
+  if(type==="crash")return "cymbal";
+  if(["hhClosed","hhPedal","hhOpen","ride"].includes(type))return "hihatRide";
+  if(["snare","floorTom","midTom","highTom"].includes(type))return "snareTom";
+  if(type==="kick")return "kick";
+  return "other";
+}
+function midiDrumMix(type){
+  const base=DRUM_GAIN[type]||1,config=globalThis.DruMasterSongs?.current?.midiDrumMix;
+  if(!config)return base;
+  const master=Number.isFinite(Number(config.master))?Math.max(0,Number(config.master)):1;
+  if(!config.individual)return master*base;
+  const group=midiDrumGroup(type),configured=Number(config[group]),groupGain=Number.isFinite(configured)?Math.max(0,configured):MIDI_DRUM_BALANCE_DEFAULT[group];
+  return master*groupGain;
+}
 
 playDrum=function(_chartNote,type,v=.75){
   if(!ac||!drumBuffer)return;
@@ -107,7 +123,7 @@ playDrum=function(_chartNote,type,v=.75){
   const sampleNote=DEFAULT_NOTE[type];
   const region=drumRegions[String(sampleNote)];
   if(!region)return;
-  const now=ac.currentTime,source=ac.createBufferSource(),gain=ac.createGain(),mix=DRUM_GAIN[type]||1,sourceVelocity=drumSourceVelocity/127,velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
+  const now=ac.currentTime,source=ac.createBufferSource(),gain=ac.createGain(),mix=midiDrumMix(type),sourceVelocity=drumSourceVelocity/127,velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
   source.buffer=drumBuffer;
   gain.gain.value=.85*velocityGain*mix;
   source.connect(gain).connect(masterBus);
