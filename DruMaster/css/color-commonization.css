@@ -86,7 +86,8 @@
 }
 
 /* 6) Glass-button outer ring RGBs are shared. Keep the existing alpha difference
-      between desktop and touch layouts. */
+      between desktop and touch layouts. The final elevation term comes from the
+      design-system shadow token when that layer is loaded. */
 #start,
 #pause,
 #scorePlaybackControls button,
@@ -101,7 +102,7 @@
     0 0 0 1px rgb(var(--dm-glass-ring-dark-rgb) / .88),
     0 0 0 2px rgb(var(--dm-glass-ring-cyan-rgb) / .10),
     0 0 0 3px rgb(var(--dm-glass-ring-violet-rgb) / .065),
-    0 8px 20px rgba(0,0,0,.34)!important;
+    var(--dm-shadow-control-elevation,0 8px 20px rgba(0,0,0,.34))!important;
 }
 
 @media (hover:none) and (pointer:coarse){
@@ -119,6 +120,6 @@
       0 0 0 .75px rgb(var(--dm-glass-ring-dark-rgb) / .88),
       0 0 0 1.6px rgb(var(--dm-glass-ring-cyan-rgb) / .09),
       0 0 0 2.4px rgb(var(--dm-glass-ring-violet-rgb) / .055),
-      0 8px 20px rgba(0,0,0,.34)!important;
+      var(--dm-shadow-control-elevation,0 8px 20px rgba(0,0,0,.34))!important;
   }
 }
