@@ -64,8 +64,8 @@
       </section>
       <div class="best-celebration" aria-hidden="true"></div>
       <div class="result-actions result-step result-step-5">
-        <button id="retry" type="button">リトライ</button>
-        <button id="home" type="button">ホーム</button>
+        <button id="retry" type="button">RETRY</button>
+        <button id="home" type="button">HOME</button>
       </div>`;
     document.querySelector("#retry").onclick=retryCurrentSong;
     document.querySelector("#home").onclick=goHome;
