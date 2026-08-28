@@ -231,9 +231,9 @@
     resultEl.classList.add("result-reveal");
   }
 
-  function showResult(){
+  function showResult(withFanfare=true){
     resultEl.classList.remove("hidden");
-    globalThis.DruMasterResultFanfare?.play?.();
+    if(withFanfare)globalThis.DruMasterResultFanfare?.play?.();
     reveal();
   }
 
@@ -264,14 +264,12 @@
       setRankingKind(false);
       document.querySelector("#finalScore").textContent="AUTO PLAY";
       renderRanking(readRanking());
-      showResult();
+      showResult(false);
       return;
     }
 
     if(playedSeconds<MIN_SCORE_SECONDS){
-      setRankingKind(performanceRun);
-      showNoScore(performanceRun);
-      showResult();
+      goHome();
       return;
     }
 
