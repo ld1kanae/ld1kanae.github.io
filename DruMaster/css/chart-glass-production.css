@@ -1,0 +1,59 @@
+/* Production chart glass material copied from preview-chart-glass-editor.
+   Requested values:
+   underlay #030507 alpha 0;
+   glass #DCF0FF alpha .025;
+   backdrop blur 0px; saturation 100%;
+   edge highlight .22; chromatic edge disabled;
+   outer shadow .38; alternating lanes .03; border .30. */
+.game #chartWrap{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:rgba(220,240,255,.025)!important;
+  -webkit-backdrop-filter:blur(0) saturate(100%);
+  backdrop-filter:blur(0) saturate(100%);
+  border-bottom:1px solid rgba(180,216,239,.30)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.1276),
+    0 7px 20px rgba(0,0,0,.38)!important;
+}
+
+/* Alternating lane tone from the approved editor value (.03). */
+.game #chartWrap::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(
+    to bottom,
+    rgba(255,255,255,.03) 0 25%,
+    transparent 25% 50%,
+    rgba(255,255,255,.03) 50% 75%,
+    transparent 75% 100%
+  );
+}
+
+/* Edge highlight strength .22. Chromatic edge intentionally omitted. */
+.game #chartWrap::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(
+    130deg,
+    rgba(255,255,255,.055),
+    transparent 20%,
+    transparent 76%,
+    rgba(124,219,255,.022)
+  );
+  mix-blend-mode:screen;
+}
+
+.game #chart{
+  position:relative!important;
+  z-index:2!important;
+  background:transparent!important;
+}
+.game #judgementFx{z-index:3!important}
