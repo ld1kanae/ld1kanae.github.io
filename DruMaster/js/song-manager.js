@@ -1,8 +1,6 @@
 "use strict";
 
 (()=>{
-  /* The registry is intentionally tiny. Load it synchronously before app.js runs
-     so newly published songs are selectable without rebuilding the main bundle. */
   function loadRegistry(){
     try{
       const x=new XMLHttpRequest();
@@ -102,8 +100,8 @@
     const s=song?.stems||{};
     return !!s.fullmix&&!(s.base&&s.vocals&&s.drums);
   }
-  function applySourceAvailability(){
-    const locked=isFullMixOnly(current);
+  function applySourceAvailability(song=globalThis.DruMasterSongs?.current||current){
+    const locked=isFullMixOnly(song);
     for(const id of ["vocalToggle","guideToggle"]){
       const input=document.getElementById(id);
       if(!input)continue;
@@ -176,32 +174,33 @@
   document.querySelector("#tempo")?.addEventListener("input",syncBpmLabels);
   addEventListener("resize",()=>requestAnimationFrame(positionSetupBpm));
   applyLabels();
-  applySourceAvailability();
+  applySourceAvailability(current);
 
   const start=document.querySelector("#start");
   if(start){
     const syncDuration=()=>{
       if(start.disabled)return;
       try{duration=current.duration}catch{}
-      applySourceAvailability();
+      applySourceAvailability(globalThis.DruMasterSongs?.current||current);
     };
     new MutationObserver(syncDuration).observe(start,{attributes:true,attributeFilter:["disabled"]});
     setTimeout(syncDuration,0);
   }
 
-  /* Apply published MIDI timing correction to every gameplay timing consumer
-     by offsetting the shared clock. This shifts notes, judgement and measure
-     lines together without altering the MIDI binary or the drum-source MIDI. */
   addEventListener("DOMContentLoaded",()=>{
     const baseCurrent=globalThis.current;
     if(typeof baseCurrent!=="function"||baseCurrent.__dmSongOffsetWrapped)return;
     const wrapped=function(){
-      const offset=Number(current.playback?.midiOffsetSec)||0;
+      const activeSong=globalThis.DruMasterSongs?.current||current;
+      const offset=Number(activeSong.playback?.midiOffsetSec)||0;
       return baseCurrent()-offset;
     };
     wrapped.__dmSongOffsetWrapped=true;
     globalThis.current=wrapped;
   },{once:true});
 
-  globalThis.DruMasterSongSource={isFullMixOnly:()=>isFullMixOnly(current),applySourceAvailability};
+  globalThis.DruMasterSongSource={
+    isFullMixOnly:(song=globalThis.DruMasterSongs?.current||current)=>isFullMixOnly(song),
+    applySourceAvailability
+  };
 })();
