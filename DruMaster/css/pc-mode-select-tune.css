@@ -1,0 +1,55 @@
+/* PC performance-mode selector alignment and typography.
+   Use the same DOM-based dropdown as the song selector instead of the old
+   10px native select, and center it against the "演奏モード" label row. */
+@media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
+  .setup .performance-mode-option{
+    align-items:center!important;
+    min-height:42px!important;
+  }
+
+  .setup #performanceModeSelect.mobile-native-select-hidden{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    overflow:hidden!important;
+  }
+
+  .setup .performance-mode-option>.mode-custom-select{
+    position:relative!important;
+    display:block!important;
+    width:176px!important;
+    min-width:176px!important;
+    max-width:176px!important;
+    flex:0 0 176px!important;
+    margin:0!important;
+    align-self:center!important;
+    isolation:isolate!important;
+  }
+
+  .setup .performance-mode-option>.mode-custom-select>.mobile-custom-select-trigger{
+    min-height:36px!important;
+    height:36px!important;
+    padding:7px 32px 7px 11px!important;
+    border-radius:8px!important;
+    font-size:14px!important;
+    font-weight:700!important;
+    line-height:1.15!important;
+    letter-spacing:.02em!important;
+  }
+
+  .setup .performance-mode-option>.mode-custom-select .mobile-custom-select-value{
+    line-height:1.15!important;
+  }
+
+  .setup .performance-mode-option>.mode-custom-select .mobile-custom-select-option{
+    min-height:32px!important;
+    padding:7px 11px!important;
+    font-size:14px!important;
+    line-height:1.2!important;
+  }
+}
