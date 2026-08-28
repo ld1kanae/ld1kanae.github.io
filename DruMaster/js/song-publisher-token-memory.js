@@ -18,7 +18,7 @@
       const link=doc.createElement("link");
       link.id="dmSongToolTheme";
       link.rel="stylesheet";
-      link.href="css/song-tool-cyan-violet-theme.css?v=20260829-theme2";
+      link.href="css/song-tool-cyan-violet-theme.css?v=20260829-theme3";
       doc.head.appendChild(link);
     }
     if(!doc.getElementById("dmSongToolRangeTheme")){
