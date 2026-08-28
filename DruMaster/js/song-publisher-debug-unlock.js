@@ -24,6 +24,23 @@
     tab.setAttribute("aria-disabled","true");
   }
 
+  function tuneTokenOrder(){
+    try{
+      const doc=registerView.contentDocument;if(!doc)return;
+      const github=[...doc.querySelectorAll(".panel")].find(p=>p.querySelector("h2")?.textContent.trim()==="GITHUB");
+      const fields=github?.querySelector(".fields"),actions=github?.querySelector(".token-actions"),details=github?.querySelector(".token-howto");
+      if(!github||!fields||!actions)return;
+      actions.style.margin="0 0 14px";
+      github.insertBefore(actions,fields);
+      if(details){details.style.marginTop="12px";fields.insertAdjacentElement("afterend",details)}
+      for(const child of [...github.children]){
+        if(child.tagName==="DIV"&&!child.className&&!child.textContent.trim()&&!child.children.length)child.remove();
+      }
+    }catch{}
+  }
+  registerView.addEventListener("load",()=>{setTimeout(tuneTokenOrder,0);setTimeout(tuneTokenOrder,120);setTimeout(tuneTokenOrder,350)});
+  setTimeout(tuneTokenOrder,350);
+
   function openDb(){
     return new Promise((resolve,reject)=>{
       const r=indexedDB.open(DB_NAME,DB_VERSION);
