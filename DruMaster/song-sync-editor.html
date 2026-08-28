@@ -14,8 +14,9 @@
     let html=await r.text();
     const local='<scr'+'ipt src="js/song-sync-local-session.js?v=20260828-volume1"></scr'+'ipt>';
     const history='<scr'+'ipt src="js/song-sync-history.js?v=20260828-mswheel1"></scr'+'ipt>';
+    const rayTimeline='<scr'+'ipt src="js/song-sync-ray-timeline.js?v=20260828-raytimeline1"></scr'+'ipt>';
     html=html.replace('</head>',local+'</head>');
-    html=html.replace('</body>',history+'</body>');
+    html=html.replace('</body>',history+rayTimeline+'</body>');
     document.open();
     document.write(html);
     document.close();
