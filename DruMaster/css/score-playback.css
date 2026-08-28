@@ -51,10 +51,11 @@ body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display
 #scoreSeekWrap{display:none;position:absolute;left:50%;top:calc(100% + 12px);bottom:auto;z-index:15;width:min(720px,88%);height:28px;transform:translateX(-50%);align-items:center;gap:8px;padding:3px 10px;border-radius:999px;background:#06101ac2;border:1px solid #64788b55;backdrop-filter:blur(5px);touch-action:none}
 body[data-score-playback="1"] #scoreSeekWrap{display:flex}
 
-/* Keep the spectrum spatially fixed across the full seekbar.
-   Only the unreached section is covered by neutral gray. */
+/* Spectrum positions stay fixed across the full seekbar.
+   The unreached section is covered by an opaque neutral gray. */
 #scoreSeek{
   --score-range-progress:0%;
+  --score-unreached:#343c44;
   --score-spectrum:linear-gradient(90deg,
     #d759a8 0%,
     #cf6f8b 14%,
@@ -82,8 +83,8 @@ body[data-score-playback="1"] #scoreSeekWrap{display:flex}
     linear-gradient(90deg,
       transparent 0%,
       transparent var(--score-range-progress),
-      rgba(255,255,255,.18) var(--score-range-progress),
-      rgba(255,255,255,.18) 100%),
+      var(--score-unreached) var(--score-range-progress),
+      var(--score-unreached) 100%),
     var(--score-spectrum);
   background-size:100% 100%,100% 100%;
   background-repeat:no-repeat
@@ -106,8 +107,8 @@ body[data-score-playback="1"] #scoreSeekWrap{display:flex}
     linear-gradient(90deg,
       transparent 0%,
       transparent var(--score-range-progress),
-      rgba(255,255,255,.18) var(--score-range-progress),
-      rgba(255,255,255,.18) 100%),
+      var(--score-unreached) var(--score-range-progress),
+      var(--score-unreached) 100%),
     var(--score-spectrum);
   background-size:100% 100%,100% 100%;
   background-repeat:no-repeat
