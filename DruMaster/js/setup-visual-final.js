@@ -7,7 +7,7 @@
      user's finished SVG exactly, including its mask/slit edits. */
   const brand=setup.querySelector('.brand');
   if(brand){
-    fetch('assets/DruMaster.svg?v=20260828-mainlogoinline1',{cache:'no-store'})
+    fetch('assets/DruMaster.svg?v=20260828-mainlogoslits1',{cache:'no-store'})
       .then(res=>{
         if(!res.ok)throw new Error(`logo ${res.status}`);
         return res.text();
