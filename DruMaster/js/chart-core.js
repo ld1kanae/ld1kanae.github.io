@@ -153,13 +153,13 @@ globalThis.DruMusterChart=(()=>{
     const w=canvas.clientWidth,h=canvas.clientHeight,beatNow=secondsToBeat(currentSec,timing),division=timing.division||480,
           judgeX=judgementX(w),judgeZoneW=judgementZoneWidth(w),kickH=Math.max(16,h*.12),mainH=h-kickH,laneH=mainH/3,
           labelFont=Math.max(9,laneH*.13),labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
-    ctx.clearRect(0,0,w,h);ctx.fillStyle="#081019";ctx.fillRect(0,0,w,h);
+    ctx.clearRect(0,0,w,h);ctx.fillStyle="#030507";ctx.fillRect(0,0,w,h);
     for(let i=0;i<3;i++){
-      ctx.fillStyle=i%2===0?"#0d1520":"#0a121c";ctx.fillRect(0,laneH*i,w,laneH);
+      ctx.fillStyle="#030507";ctx.fillRect(0,laneH*i,w,laneH);
       if(i>0){ctx.strokeStyle="#53677d";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(w,laneH*i+.5);ctx.stroke()}
       ctx.fillStyle="#8b97a6";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(labels[i],7,laneH*i+6);
     }
-    ctx.fillStyle="#090e15";ctx.fillRect(0,mainH,w,kickH);
+    ctx.fillStyle="#030507";ctx.fillRect(0,mainH,w,kickH);
     ctx.strokeStyle="#5b6d82";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
     ctx.fillStyle="#687483";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
     drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,PIXELS_PER_QUARTER);
