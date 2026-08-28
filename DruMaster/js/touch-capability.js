@@ -5,7 +5,6 @@
   const legacyMobileQuery="(hover:none) and (pointer:coarse) and (max-width:900px)";
   const compact=s=>String(s||"").replace(/\s+/g,"").toLowerCase();
   const legacyCompact=compact(legacyMobileQuery);
-  const TOUCH_HIT_AREA=44;
   const protectedSelector=[
     "#start",
     "#pause",
@@ -20,6 +19,11 @@
     return (navigator.maxTouchPoints||0)>0 ||
       nativeMatchMedia("(any-pointer:coarse)").matches ||
       nativeMatchMedia("(pointer:coarse)").matches;
+  }
+
+  function touchHitArea(){
+    const value=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dm-touch-hit-area"));
+    return Number.isFinite(value)&&value>0?value:44;
   }
 
   /* Performance mode used to equate 'mobile' with <=900 CSS px. In landscape
@@ -53,11 +57,12 @@
      so the 26px mobile transport artwork remains visually unchanged. */
   function expandedControlAt(x,y){
     let best=null,bestDistance=Infinity;
+    const minimum=touchHitArea();
     document.querySelectorAll(protectedSelector).forEach(el=>{
       if(!isUsableControl(el))return;
       const r=el.getBoundingClientRect();
-      const w=Math.max(TOUCH_HIT_AREA,r.width);
-      const h=Math.max(TOUCH_HIT_AREA,r.height);
+      const w=Math.max(minimum,r.width);
+      const h=Math.max(minimum,r.height);
       const cx=r.left+r.width/2,cy=r.top+r.height/2;
       const left=cx-w/2,right=cx+w/2,top=cy-h/2,bottom=cy+h/2;
       if(x<left||x>right||y<top||y>bottom)return;
