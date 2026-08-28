@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Mobile Center Editor</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,"Noto Sans JP",system-ui,sans-serif;background:#090c11;color:#eef3f8}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:#090c11}
+main{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+.preview-panel,.controls{border:1px solid #2d3744;background:#0f141c;border-radius:14px;padding:16px}
+h1{font-size:20px;margin:0 0 6px}.lead{font-size:12px;line-height:1.6;color:#9eabb9;margin:0 0 14px}
+.preview-shell{display:grid;place-items:center;min-height:420px;background:#05070a;border:1px solid #252c35;border-radius:10px;padding:18px;overflow:hidden}
+.preview-frame{position:relative;width:min(100%,820px);aspect-ratio:20/9;background:#0a0f16;border:1px solid #45505e;overflow:hidden}
+.preview-frame::before,.preview-frame::after{content:"";position:absolute;z-index:8;pointer-events:none;background:#ff315f66}
+.preview-frame::before{left:50%;top:0;width:1px;height:100%}.preview-frame::after{left:0;top:50%;width:100%;height:1px}
+.safe{position:absolute;inset:18px;border:1px dashed #3f5369;pointer-events:none}
+.center-dot{position:absolute;z-index:10;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#ff315f}
+.setup-preview{position:absolute;left:50%;top:50%;width:88%;height:82%;transform:translate(calc(-50% + var(--x,0px)),calc(-50% + var(--y,0px)));display:grid;grid-template-columns:.92fr 1.08fr;gap:16px;align-content:center}
+.col{display:grid;gap:8px;min-width:0}.logo{font-size:clamp(28px,5vw,56px);font-weight:300;letter-spacing:-.06em;line-height:.9;padding:2px 8px}.sub{font-size:8px;letter-spacing:.24em;color:#8090a1;padding:0 8px}
+.card,.options,.tempo{border:1px solid #526172;border-radius:8px;background:#131a24;padding:10px 12px}.song{font-size:15px;font-weight:800}.artist{font-size:9px;color:#99a6b4;margin-top:3px}.select{margin-top:8px;border:1px solid #43566c;border-radius:8px;padding:7px 9px;font-size:10px}.row{display:flex;align-items:center;gap:8px;min-height:28px;font-size:10px}.row span:first-child{flex:1}.toggle{width:34px;height:18px;border:1px solid #526172;border-radius:999px;position:relative}.toggle::after{content:"";position:absolute;width:12px;height:12px;left:3px;top:2px;border-radius:50%;background:#edf3f8}.tempo-head{display:flex;justify-content:space-between;font-size:10px}.bar{height:5px;margin-top:10px;background:#3b4654;border-radius:999px;position:relative}.bar::before{content:"";position:absolute;left:0;top:0;width:55%;height:100%;background:#8fa8ff;border-radius:inherit}.start{justify-self:center;border:1px solid #748395;border-radius:999px;padding:9px 28px;font-size:11px;letter-spacing:.14em}.hint{text-align:center;font-size:8px;color:#65717f}
+.content-center{position:absolute;z-index:11;left:50%;top:50%;width:9px;height:9px;border:2px solid #41e1ff;border-radius:50%;transform:translate(calc(-50% + var(--x,0px)),calc(-50% + var(--y,0px)));pointer-events:none}
+.axis-note{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:#93a0ae}.axis-note b{color:#eef3f8}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;vertical-align:-1px;margin-right:5px}.red{background:#ff315f}.cyan{border:2px solid #41e1ff;background:transparent}
+.controls{display:grid;gap:16px;position:sticky;top:16px}.field{display:grid;gap:7px}.field label{display:flex;justify-content:space-between;font-size:12px;font-weight:700}.field output{font-family:ui-monospace,monospace;color:#9fd8ff}.field input[type=range]{width:100%}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}button,a.button{appearance:none;border:1px solid #46566a;background:#151d28;color:#edf3f8;border-radius:8px;min-height:40px;padding:8px 10px;font:inherit;font-size:11px;font-weight:700;text-align:center;text-decoration:none;display:grid;place-items:center;cursor:pointer}.primary{border-color:#6abfff!important;background:#12304a!important}.danger{border-color:#68404a!important}.full{grid-column:1/-1}.status{min-height:34px;border:1px solid #26313e;border-radius:8px;padding:8px 10px;font-size:10px;line-height:1.5;color:#9eabb9}.status strong{color:#dce8f3}.json{width:100%;height:118px;resize:vertical;border:1px solid #344154;border-radius:8px;background:#090d13;color:#d9e4ef;padding:10px;font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}.ratio{width:100%;border:1px solid #344154;border-radius:8px;background:#111821;color:#eef3f8;padding:8px;font:inherit}
+.preview-shell:fullscreen{background:#000;padding:2vw}.preview-shell:fullscreen .preview-frame{width:min(96vw,calc(96vh * 2.2222));max-width:none}
+@media(max-width:850px){body{padding:10px}main{grid-template-columns:1fr}.controls{position:static}.preview-shell{min-height:300px;padding:8px}.setup-preview{width:92%;gap:8px}.card,.options,.tempo{padding:7px}.logo{font-size:30px}}
+</style>
+</head>
+<body>
+<main>
+<section class="preview-panel">
+<h1>スマホ中心基準・補正エディタ</h1>
+<p class="lead">赤い十字が表示矩形の幾何学的中心、青い丸がUI中心です。X/Yを動かして補正を試せます。0 / 0 が今回の新しい中心基準です。</p>
+<div id="previewShell" class="preview-shell">
+  <div id="frame" class="preview-frame">
+    <div class="safe"></div><div class="center-dot"></div><div class="content-center"></div>
+    <div class="setup-preview">
+      <div class="col">
+        <div><div class="logo">DruMaster</div><div class="sub">DRUM RHYTHM GAME</div></div>
+        <div class="card"><div class="song">なないろ</div><div class="artist">BUMP OF CHICKEN</div><div class="select">なないろ — BUMP OF CHICKEN　⌄</div></div>
+        <div class="hint">最初のタップで音声を有効にします</div>
+      </div>
+      <div class="col">
+        <div class="options">
+          <div class="row"><span>Vocal</span><i class="toggle"></i><b>ON</b></div>
+          <div class="row"><span>Guide Drums</span><i class="toggle"></i><b>OFF</b></div>
+          <div class="row"><span>Auto</span><i class="toggle"></i><b>ON</b></div>
+          <div class="row"><span>演奏モード</span><div class="select" style="margin:0">楽譜再生　⌄</div></div>
+        </div>
+        <div class="tempo"><div class="tempo-head"><b>TEMPO</b><strong>100%</strong></div><div class="bar"></div></div>
+        <div class="start">START</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="axis-note"><span><i class="dot red"></i>画面中心</span><span><i class="dot cyan"></i>UI中心</span><span>差：<b id="deltaLabel">X 0px / Y 0px</b></span></div>
+</section>
+
+<aside class="controls">
+  <div class="field"><label for="x">横補正 X <output id="xOut">0px</output></label><input id="x" type="range" min="-60" max="60" step="1" value="0"></div>
+  <div class="field"><label for="y">縦補正 Y <output id="yOut">0px</output></label><input id="y" type="range" min="-40" max="40" step="1" value="0"></div>
+  <div class="field"><label for="ratio">簡易プレビュー比率</label><select id="ratio" class="ratio"><option value="2.2222">20:9</option><option value="2.1667">19.5:9</option><option value="2.1111">19:9</option><option value="1.7778">16:9</option><option value="current">現在のvisualViewport</option></select></div>
+  <div class="buttons">
+    <button id="reset" type="button">0 / 0に戻す</button>
+    <button id="fullscreen" type="button">プレビュー全画面</button>
+    <button id="apply" type="button" class="primary full">この端末の本番に一時適用</button>
+    <button id="clear" type="button" class="danger">端末補正を解除</button>
+    <a class="button" href="./" target="_blank" rel="noopener">本番を開く</a>
+    <a class="button full" href="./index.html?layout=legacy" target="_blank" rel="noopener">旧レイアウトを開く</a>
+  </div>
+  <div id="status" class="status"></div>
+  <textarea id="json" class="json" readonly aria-label="補正JSON"></textarea>
+</aside>
+</main>
+<script>
+(()=>{
+  const key='dm-mobile-center-correction-v1';
+  const x=document.getElementById('x'), y=document.getElementById('y');
+  const xOut=document.getElementById('xOut'), yOut=document.getElementById('yOut');
+  const frame=document.getElementById('frame'), ratio=document.getElementById('ratio');
+  const json=document.getElementById('json'), status=document.getElementById('status');
+  const deltaLabel=document.getElementById('deltaLabel');
+  const shell=document.getElementById('previewShell');
+
+  function clamp(v,min,max){const n=Number(v);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):0}
+  function saved(){try{return JSON.parse(localStorage.getItem(key)||'null')}catch(_){return null}}
+  const initial=saved();
+  if(initial){x.value=clamp(initial.xPx,-60,60);y.value=clamp(initial.yPx,-40,40)}
+
+  function currentRatio(){
+    const vv=window.visualViewport;
+    const w=vv?vv.width:innerWidth, h=vv?vv.height:innerHeight;
+    return Math.max(w,h)/Math.max(1,Math.min(w,h));
+  }
+  function updateRatio(){
+    const value=ratio.value==='current'?currentRatio():Number(ratio.value);
+    frame.style.aspectRatio=`${value} / 1`;
+  }
+  function update(){
+    const xv=clamp(x.value,-60,60), yv=clamp(y.value,-40,40);
+    frame.style.setProperty('--x',`${xv}px`);frame.style.setProperty('--y',`${yv}px`);
+    xOut.textContent=`${xv}px`;yOut.textContent=`${yv}px`;
+    deltaLabel.textContent=`X ${xv}px / Y ${yv}px`;
+    json.value=JSON.stringify({mobileCenterCorrection:{xPx:xv,yPx:yv}},null,2);
+    const vv=window.visualViewport;
+    const vw=Math.round(vv?vv.width:innerWidth), vh=Math.round(vv?vv.height:innerHeight);
+    status.innerHTML=`visualViewport: <strong>${vw} × ${vh}</strong><br>強制横向きstage: <strong>${vh} × ${vw}</strong><br>端末テスト保存: <strong>${saved()?'あり':'なし'}</strong>`;
+  }
+  x.addEventListener('input',update);y.addEventListener('input',update);ratio.addEventListener('change',()=>{updateRatio();update()});
+  document.getElementById('reset').addEventListener('click',()=>{x.value=0;y.value=0;update()});
+  document.getElementById('apply').addEventListener('click',()=>{
+    const data={xPx:clamp(x.value,-60,60),yPx:clamp(y.value,-40,40)};
+    localStorage.setItem(key,JSON.stringify(data));update();
+    status.innerHTML+='<br><strong>この端末の本番へ保存しました。新しく本番を開いて確認してください。</strong>';
+  });
+  document.getElementById('clear').addEventListener('click',()=>{localStorage.removeItem(key);x.value=0;y.value=0;update()});
+  document.getElementById('fullscreen').addEventListener('click',async()=>{
+    try{if(!document.fullscreenElement) await shell.requestFullscreen({navigationUI:'hide'});else await document.exitFullscreen()}catch(_){try{await shell.requestFullscreen()}catch(__){}}
+  });
+  if(window.visualViewport) window.visualViewport.addEventListener('resize',()=>{if(ratio.value==='current')updateRatio();update()});
+  updateRatio();update();
+})();
+</script>
+</body>
+</html>
