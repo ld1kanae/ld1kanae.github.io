@@ -48,8 +48,16 @@
   }
 
   let syncing=false;
-  const hasIcon=(el,name)=>el?.firstElementChild?.classList?.contains("transport-icon")&&el.dataset.icon===name;
-  const setIcon=(el,name)=>{if(!el||hasIcon(el,name))return;el.dataset.icon=name;el.innerHTML=SVG[name]};
+  const hasIcon=(el,name)=>el?.querySelector(":scope > .transport-icon")&&el.dataset.icon===name;
+  const setIcon=(el,name)=>{
+    if(!el||hasIcon(el,name))return;
+    const template=document.createElement("template");
+    template.innerHTML=SVG[name].trim();
+    const icon=template.content.firstElementChild;
+    const old=el.querySelector(":scope > .transport-icon");
+    if(old)old.replaceWith(icon);else el.appendChild(icon);
+    el.dataset.icon=name;
+  };
   const sync=()=>{
     if(syncing)return;syncing=true;
     syncGrouping();
