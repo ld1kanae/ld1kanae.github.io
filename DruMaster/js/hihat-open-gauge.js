@@ -15,10 +15,11 @@
   const HH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
   const VELOCITY_CURVE=Math.log(.4)/Math.log(100/127);
   const DISPLAY_SMOOTH_MS=35;
-  const FOOT_PULSE_LEVEL=7;
+  const FOOT_PULSE_LEVEL_AT_REFERENCE=7;
+  const FOOT_PULSE_REFERENCE_VELOCITY=30;
   const FOOT_PULSE_RISE_BEATS=.045;
   const FOOT_PULSE_FALL_BEATS=.16;
-  let cachedNotes=null,cachedTiming=null,events=[],pedalBeats=[];
+  let cachedNotes=null,cachedTiming=null,events=[],pedalEvents=[];
   let displayedLevel=0,lastFrameMs=performance.now(),lastBeat=NaN;
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
@@ -34,11 +35,16 @@
   function rebuildEnvelope(source,timing){
     const division=Number(timing?.division)||480;
     const actual=[];
-    pedalBeats=[];
+    pedalEvents=[];
     for(const note of source){
       if(!HH_TYPES.has(note.type))continue;
       const beat=Number(note.tick)/division;
-      if(note.type==="hhPedal")pedalBeats.push(beat);
+      if(note.type==="hhPedal"){
+        pedalEvents.push({
+          beat,
+          velocity:Math.max(0,Math.min(127,Number(note.velocity)||0))
+        });
+      }
       actual.push({
         beat,
         target:note.type==="hhOpen"?Math.max(0,Math.min(127,Number(note.velocity)||0)):0,
@@ -46,7 +52,7 @@
       });
     }
     actual.sort((a,b)=>a.beat-b.beat);
-    pedalBeats.sort((a,b)=>a-b);
+    pedalEvents.sort((a,b)=>a.beat-b.beat);
 
     const timeline=[];
     for(let i=0;i<actual.length;i++){
@@ -92,18 +98,21 @@
 
   function footPulseAtBeat(beat){
     let pulse=0;
-    for(const pedalBeat of pedalBeats){
-      const delta=beat-pedalBeat;
+    for(const event of pedalEvents){
+      const delta=beat-event.beat;
       if(delta<0)break;
       if(delta>=FOOT_PULSE_RISE_BEATS+FOOT_PULSE_FALL_BEATS)continue;
+      let shape;
       if(delta<FOOT_PULSE_RISE_BEATS){
-        pulse=Math.max(pulse,easeInOutQuart(delta/FOOT_PULSE_RISE_BEATS));
+        shape=easeInOutQuart(delta/FOOT_PULSE_RISE_BEATS);
       }else{
         const fall=(delta-FOOT_PULSE_RISE_BEATS)/FOOT_PULSE_FALL_BEATS;
-        pulse=Math.max(pulse,1-easeInOutQuart(fall));
+        shape=1-easeInOutQuart(fall);
       }
+      const amplitude=FOOT_PULSE_LEVEL_AT_REFERENCE*(event.velocity/FOOT_PULSE_REFERENCE_VELOCITY);
+      pulse=Math.max(pulse,shape*amplitude);
     }
-    return pulse*FOOT_PULSE_LEVEL;
+    return pulse;
   }
 
   function resetGauge(){
