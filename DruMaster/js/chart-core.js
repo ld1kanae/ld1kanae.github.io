@@ -5,6 +5,7 @@ globalThis.DruMusterChart=(()=>{
   const NOTE_BAR_WIDTH=4;
   const OPEN_HH_BAR_WIDTH=2;
   const OPEN_HH_GAP=1;
+  const DESKTOP_NOTE_WIDTH_SCALE=1.5;
   const MOBILE_JUDGE_OFFSET=80;
   const signatureCache=new WeakMap();
 
@@ -28,11 +29,11 @@ globalThis.DruMusterChart=(()=>{
     return "#a7b0bc";
   }
 
-  function noteVisual(type,group){
+  function noteVisual(type,group,scale=1){
     const isOpen=type==="hhOpen",
-          barWidth=isOpen?OPEN_HH_BAR_WIDTH:NOTE_BAR_WIDTH,
-          gap=isOpen?OPEN_HH_GAP:0,
-          totalWidth=isOpen?OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP:NOTE_BAR_WIDTH,
+          barWidth=(isOpen?OPEN_HH_BAR_WIDTH:NOTE_BAR_WIDTH)*scale,
+          gap=(isOpen?OPEN_HH_GAP:0)*scale,
+          totalWidth=(isOpen?OPEN_HH_BAR_WIDTH*2+OPEN_HH_GAP:NOTE_BAR_WIDTH)*scale,
           color=noteColor(type,group);
     return {kind:isOpen?"double":"single",barWidth,gap,totalWidth,color};
   }
@@ -153,7 +154,8 @@ globalThis.DruMusterChart=(()=>{
   function draw({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
     const w=canvas.clientWidth,h=canvas.clientHeight,beatNow=secondsToBeat(currentSec,timing),division=timing.division||480,
           judgeX=judgementX(w),judgeZoneW=judgementZoneWidth(w),kickH=Math.max(16,h*.12),mainH=h-kickH,laneH=mainH/3,
-          labelFont=Math.max(9,laneH*.13),labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
+          labelFont=Math.max(9,laneH*.13),labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"],
+          noteWidthScale=isMobileLayout()?1:DESKTOP_NOTE_WIDTH_SCALE;
     ctx.clearRect(0,0,w,h);ctx.fillStyle="#030507";ctx.fillRect(0,0,w,h);
     for(let i=0;i<3;i++){
       ctx.fillStyle="#030507";ctx.fillRect(0,laneH*i,w,laneH);
@@ -174,7 +176,7 @@ globalThis.DruMusterChart=(()=>{
       const n=notes[i];
       if(skipHit&&n.hit)continue;
       const x=judgeX+(n.tick/division-beatNow)*PIXELS_PER_QUARTER;
-      const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,alpha=.48+.52*n.velocity/127,visual=noteVisual(n.type,group);
+      const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,alpha=.48+.52*n.velocity/127,visual=noteVisual(n.type,group,noteWidthScale);
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;ctx.fillStyle=visual.color;
       if(lane<3){
         const barTop=lane*laneH,barH=laneH;
