@@ -48,10 +48,8 @@
       ctx.fillStyle=visual.color;
       if(lane<3){
         const barTop=lane*laneH,barH=laneH;
-        if(visual.kind==="double"){
-          const left=x-visual.totalWidth/2;
-          ctx.fillRect(left,barTop,visual.barWidth,barH);
-          ctx.fillRect(left+visual.barWidth+visual.gap,barTop,visual.barWidth,barH);
+        if(n.type==="hhOpen"){
+          chart.drawOpenHihatTail({ctx,notes,index:i,x,top:barTop,height:barH,beatNow,division,pxPerQuarter,canvasWidth:w,color:visual.color});
         }else ctx.fillRect(x-visual.totalWidth/2,barTop,visual.barWidth,barH);
       }else ctx.fillRect(x-visual.totalWidth/2,mainH+2,visual.barWidth,kickH-4);
     }
