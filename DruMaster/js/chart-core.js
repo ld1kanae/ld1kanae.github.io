@@ -47,20 +47,24 @@ globalThis.DruMusterChart=(()=>{
       endX=x+(next.tick-notes[index].tick)/division*pxPerQuarter;
       break;
     }
-    if(!Number.isFinite(endX))endX=x+pxPerQuarter*2;
-    endX=Math.max(x+4,endX);
-    const headWidth=4,headLeft=x-headWidth/2,tailLeft=x+headWidth/2,
-          tailWidth=Math.max(0,endX-tailLeft);
+    const headWidth=4,fixedTailWidth=40,
+          headLeft=x-headWidth/2,tailLeft=x+headWidth/2,
+          clipWidth=Number.isFinite(endX)
+            ?Math.max(0,Math.min(fixedTailWidth,endX-tailLeft))
+            :fixedTailWidth,
+          gradientEnd=tailLeft+fixedTailWidth;
     ctx.fillStyle=color;
     ctx.fillRect(headLeft,top,headWidth,height);
-    if(tailWidth<=0)return;
-    const gradient=ctx.createLinearGradient(tailLeft,0,endX,0);
+    if(clipWidth<=0)return;
+    /* The fade profile never stretches. A following hi-hat only clips this
+       fixed gradient, leaving a deliberately hard vertical cutoff. */
+    const gradient=ctx.createLinearGradient(tailLeft,0,gradientEnd,0);
     gradient.addColorStop(0,"rgba(82,223,207,.78)");
     gradient.addColorStop(.18,"rgba(82,223,207,.36)");
     gradient.addColorStop(.55,"rgba(82,223,207,.10)");
     gradient.addColorStop(1,"rgba(82,223,207,0)");
     ctx.fillStyle=gradient;
-    ctx.fillRect(tailLeft,top,tailWidth,height);
+    ctx.fillRect(tailLeft,top,clipWidth,height);
   }
 
   function parseTempoTiming(ab){
