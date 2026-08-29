@@ -18,11 +18,14 @@
   function sync(entry){
     const option=entry.select.options[entry.select.selectedIndex];
     entry.value.textContent=option?.textContent||"";
-    [...entry.menu.children].forEach((node,i)=>{
-      const selected=i===entry.select.selectedIndex;
+    [...entry.menu.children].forEach(node=>{
+      const index=Number(node.dataset.optionIndex);
+      const source=entry.select.options[index];
+      const selected=index===entry.select.selectedIndex;
       node.classList.toggle("selected",selected);
       node.setAttribute("aria-selected",selected?"true":"false");
-      node.disabled=!!entry.select.options[i]?.disabled;
+      node.disabled=!!source?.disabled;
+      node.hidden=!!source?.hidden;
     });
   }
 
@@ -90,9 +93,11 @@
     menu.hidden=true;
 
     [...select.options].forEach((option,index)=>{
+      if(option.hidden)return;
       const item=document.createElement("button");
       item.type="button";
       item.className="mobile-custom-select-option";
+      item.dataset.optionIndex=String(index);
       item.setAttribute("role","option");
 
       const label=document.createElement("span");
