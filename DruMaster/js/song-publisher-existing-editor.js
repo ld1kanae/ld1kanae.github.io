@@ -39,7 +39,7 @@
     const view=views[which];if(!view)return false;
     try{view.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
     view.src=which==="editor"
-      ?`song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-lazy1`
+      ?`song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-timingfix2`
       :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-lazy1`;
     loaded[which]=true;launched[which]=true;return true;
   }
