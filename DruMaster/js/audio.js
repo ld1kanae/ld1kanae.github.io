@@ -102,7 +102,7 @@ loadDrumSource=async function(manifest){
 const activeDrumVoices=new Set();
 const MIDI_DRUM_BALANCE_DEFAULT={cymbal:1.2,hihatRide:1,snareTom:1,kick:1.4,other:1};
 function midiDrumGroup(type){
-  if(type==="crash")return "cymbal";
+  if(type==="crash"||type==="crash2")return "cymbal";
   if(["hhClosed","hhPedal","hhOpen","ride"].includes(type))return "hihatRide";
   if(["snare","floorTom","midTom","highTom"].includes(type))return "snareTom";
   if(type==="kick")return "kick";
