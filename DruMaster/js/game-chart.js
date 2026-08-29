@@ -34,6 +34,12 @@ function resetFootAutoForRun(){
   }
 }
 
+function flashFootGoal(n){
+  /* Reuse the kick goal-line effect so AUTO foot notes get the same timing cue
+     without entering judgement/scoring. The chart note itself stays hhPedal. */
+  try{globalThis.DruMasterJudgement?.flashNote?.({...n,type:"kick"})}catch{}
+}
+
 function processFootAuto(){
   if(document.body.dataset.scorePlayback==="1")return;
   resetFootAutoForRun();
@@ -43,6 +49,7 @@ function processFootAuto(){
     if(n.type!=="hhPedal"||n.time<t-.04||playedFootPedals.has(n))continue;
     playedFootPedals.add(n);
     playDrum(n.note,n.type,n.velocity/127);
+    flashFootGoal(n);
   }
 }
 
