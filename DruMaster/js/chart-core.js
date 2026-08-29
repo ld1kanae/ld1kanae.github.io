@@ -47,7 +47,7 @@ globalThis.DruMusterChart=(()=>{
       endX=x+(next.tick-notes[index].tick)/division*pxPerQuarter;
       break;
     }
-    const headWidth=4,fixedTailWidth=40,
+    const headWidth=4,fixedTailWidth=pxPerQuarter,
           headLeft=x-headWidth/2,tailLeft=x+headWidth/2,
           clipWidth=Number.isFinite(endX)
             ?Math.max(0,Math.min(fixedTailWidth,endX-tailLeft))
