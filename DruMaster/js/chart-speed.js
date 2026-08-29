@@ -5,14 +5,12 @@
   if(!chart)return;
   const originalDraw=chart.draw;
   const DEFAULT_PX_PER_QUARTER=80;
+  const DESKTOP_PX_PER_QUARTER=100;
   const desktopMq=matchMedia("(hover:hover) and (pointer:fine)");
 
+  /* One global chart speed keeps every song and playback mode consistent. */
   function pixelsPerQuarter(){
-    const config=globalThis.DruMasterSongs?.current?.chart,
-          desktop=Number(config?.desktopPixelsPerQuarter),
-          base=Number(config?.pixelsPerQuarter);
-    if(desktopMq.matches&&Number.isFinite(desktop)&&desktop>0)return desktop;
-    return Number.isFinite(base)&&base>0?base:DEFAULT_PX_PER_QUARTER;
+    return desktopMq.matches?DESKTOP_PX_PER_QUARTER:DEFAULT_PX_PER_QUARTER;
   }
 
   function drawConfigured({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
