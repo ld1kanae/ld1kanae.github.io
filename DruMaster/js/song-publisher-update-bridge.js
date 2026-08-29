@@ -5,6 +5,15 @@
   if(!frame)return;
   let observer=null,initialResetDone=false;
 
+  /* Existing-song UPDATE must commit immediately even though Timing Correction
+     is now optional/manual. Keep the committer separate from the form bridge. */
+  if(!document.querySelector('script[data-dm-update-commit]')){
+    const s=document.createElement("script");
+    s.src="js/song-publisher-update-commit.js?v=20260829-immediate1";
+    s.dataset.dmUpdateCommit="1";
+    document.head.appendChild(s);
+  }
+
   function iframeDoc(){try{return frame.contentDocument}catch{return null}}
   function syncLame(){
     try{
