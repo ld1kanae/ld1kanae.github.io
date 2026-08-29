@@ -6,9 +6,10 @@
   if(!registerTab||!editorTab||!volumeTab||!registerView||!editorView||!volumeView)return;
 
   const tabs={register:registerTab,editor:editorTab,volume:volumeTab},views={register:registerView,editor:editorView,volume:volumeView};
-  const launcher=(tool)=>`song-existing-edit.html?tool=${tool}&v=20260829-restore1`;
+  const launcher=tool=>`song-existing-edit.html?tool=${tool}&v=20260829-lazy1`;
   const TOKEN_SENTINEL="__dm_existing_edit__";
-  let session=null,rememberedToken="";
+  let session=null,sessionToken="",rememberedToken="";
+  const launched={editor:false,volume:false},loaded={editor:false,volume:false};
 
   async function readRememberedToken(){
     if(!navigator.credentials?.get||typeof PasswordCredential!=="function")return "";
@@ -31,36 +32,50 @@
     tab.setAttribute("aria-disabled","false");
     const state=tab.querySelector(".tab-state");if(state)state.textContent="EDIT";
   }
-  function ensureLaunchers(){
-    makeDirectTab(editorTab);makeDirectTab(volumeTab);
-    if(!editorView.src||editorView.src==="about:blank")editorView.src=launcher("timing");
-    if(!volumeView.src||volumeView.src==="about:blank")volumeView.src=launcher("volume");
+  function enableDirectTabs(){makeDirectTab(editorTab);makeDirectTab(volumeTab)}
+  function inherited(d,token){return {dmSongPublisher:{token:token||TOKEN_SENTINEL,repo:d.repo||"ld1kanae/ld1kanae.github.io",branch:d.branch||"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}}}
+  function loadTool(which){
+    if(!session?.id||!session?.sessionId)return false;
+    const view=views[which];if(!view)return false;
+    try{view.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
+    view.src=which==="editor"
+      ?`song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-lazy1`
+      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-lazy1`;
+    loaded[which]=true;launched[which]=true;return true;
+  }
+  function openTool(which){
+    if(session?.id&&session?.sessionId){if(!loaded[which])loadTool(which)}
+    else if(!launched[which]){views[which].src=launcher(which==="editor"?"timing":"volume");launched[which]=true}
+    activate(which);
   }
 
-  editorTab.addEventListener("click",e=>{e.stopImmediatePropagation();activate("editor")},true);
-  volumeTab.addEventListener("click",e=>{e.stopImmediatePropagation();activate("volume")},true);
+  enableDirectTabs();
+  editorTab.addEventListener("click",e=>{e.stopImmediatePropagation();openTool("editor")},true);
+  volumeTab.addEventListener("click",e=>{e.stopImmediatePropagation();openTool("volume")},true);
 
   addEventListener("message",async e=>{
     if(e.origin!==location.origin)return;
     const d=e.data;
     if(d?.type==="dm-existing-editor-ready"&&(e.source===editorView.contentWindow||e.source===volumeView.contentWindow)&&d.id&&d.sessionId){
-      session=d;
+      session=d;sessionToken="";loaded.editor=false;loaded.volume=false;
       if(!rememberedToken)rememberedToken=await readRememberedToken();
-      const inherited={dmSongPublisher:{token:rememberedToken||TOKEN_SENTINEL,repo:"ld1kanae/ld1kanae.github.io",branch:"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
-      try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}
-      try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
-      editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-restore1`;
-      volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-restore1`;
+      const which=d.tool==="volume"?"volume":"editor";
+      loadTool(which);
       for(const tab of [editorTab,volumeTab]){const s=tab.querySelector(".tab-state");if(s)s.textContent="READY"}
-      activate(d.tool==="volume"?"volume":"editor");
-      return;
+      activate(which);return;
     }
-    if(d?.type==="dm-song-editor-ready"&&e.source===registerView.contentWindow&&d.mode==="update"){
-      queueMicrotask(()=>activate("register"));
+    if(d?.type==="dm-song-editor-ready"&&e.source===registerView.contentWindow&&d.id&&d.sessionId){
+      session=d;sessionToken=d.token||"";loaded.editor=false;loaded.volume=false;
+      if(d.mode==="update"){
+        editorView.src="about:blank";volumeView.src="about:blank";launched.editor=false;launched.volume=false;
+        queueMicrotask(()=>activate("register"));
+      }else{
+        /* The publisher's canonical new-song flow already opens Timing.
+           Cancel the hidden Volume iframe so its audio assets are never loaded. */
+        volumeView.src="about:blank";launched.volume=false;loaded.editor=true;launched.editor=true;
+      }
     }
   });
 
-  ensureLaunchers();
-  setTimeout(ensureLaunchers,250);
-  globalThis.DruMasterExistingEditor={activate,get session(){return session}};
+  globalThis.DruMasterExistingEditor={activate,openTool,get session(){return session}};
 })();
