@@ -9,7 +9,7 @@
 <script>
 (async()=>{
   try{
-    const r=await fetch('song-sync-editor-v2.html?v=20260829-volumeflow1',{cache:'no-store'});
+    const r=await fetch('song-sync-editor-v2.html?v=20260830-midibounds1',{cache:'no-store'});
     if(!r.ok)throw Error(`Editor load failed: HTTP ${r.status}`);
     let html=await r.text();
 
@@ -19,6 +19,25 @@
     html=html.replace('>最終 PUBLISH<','>PUBLISH<');
     html=html.replace('調整後に最終PUBLISHしてください。','調整後にPUBLISHしてください。');
     html=html.replace('波形とMIDIを同一時間軸で比較し、最終値をPublishします。','波形とMIDIを同一時間軸で比較し、補正値をPUBLISHします。');
+
+    /* The embedded editor has its own compact SMF parser. Its old bounds guard
+       trusted the MTrk-declared end position even when that position was past
+       the actual ArrayBuffer, so DataView itself could throw a raw RangeError.
+       Always cap reads at the real buffer boundary and reject malformed/truncated
+       headers/tracks with a controlled MIDI error instead. */
+    html=html.replace(
+      'const need=(n,end=d.byteLength)=>{if(p+n>end)throw Error("MIDIが途中で切れています")}',
+      'const need=(n,end=d.byteLength)=>{const limit=Math.min(Number.isFinite(end)?end:d.byteLength,d.byteLength);if(!Number.isFinite(n)||n<0||p<0||p+n>limit)throw Error("MIDIが途中で切れています")}'
+    );
+    html=html.replace(
+      'p=8+hl;const raw=[],tempoRaw=[{tick:0,us:500000}],sigs=[];',
+      'p=8+hl;if(hl<6||p>d.byteLength)throw Error("MIDIヘッダーが不正です");const raw=[],tempoRaw=[{tick:0,us:500000}],sigs=[];'
+    );
+    html=html.replace(
+      'const len=u32(),end=p+len;let tick=0,run=0;',
+      'const len=u32(),end=p+len;if(end>d.byteLength)throw Error("MIDIトラックが途中で切れています");let tick=0,run=0;'
+    );
+
     html=html.replace('function startPlayback(){if(!audioBuffer||playing)return;void ac.resume();playing=true;','async function startPlayback(){if(!audioBuffer||playing)return;await ac.resume();if($("midiClick").checked)await globalThis.DruMasterTimingMidi?.ready?.(ac);playing=true;');
     html=html.replace('playing=false;stopSource();clearInterval(scheduler);','playing=false;stopSource();globalThis.DruMasterTimingMidi?.stop?.();clearInterval(scheduler);');
     html=html.replace('const when=contextStart+(t-logicalStart),osc=ac.createOscillator(),g=ac.createGain(),at=Math.max(ac.currentTime,when);osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.08,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.025);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.03)','const when=contextStart+(t-logicalStart),at=Math.max(ac.currentTime,when);if(!globalThis.DruMasterTimingMidi?.play?.(n,at,ac)){const osc=ac.createOscillator(),g=ac.createGain();osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.12,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.05);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.06)}');
