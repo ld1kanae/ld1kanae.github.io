@@ -91,12 +91,12 @@
       beat=globalThis.DruMusterChart.secondsToBeat(current(),timing);
     }catch{
       fill.style.setProperty("--hh-open-gauge-level","0%");
-      fill.style.setProperty("--hh-open-gauge-opacity",".1");
+      fill.style.setProperty("--hh-open-gauge-opacity",".3");
       return;
     }
     const velocity=valueAtBeat(beat),level=velocityToLevel(velocity)*100;
     fill.style.setProperty("--hh-open-gauge-level",`${level.toFixed(3)}%`);
-    fill.style.setProperty("--hh-open-gauge-opacity",(0.1+0.9*level/100).toFixed(3));
+    fill.style.setProperty("--hh-open-gauge-opacity",(0.3+0.7*level/100).toFixed(3));
   }
 
   if(typeof draw==="function"){
