@@ -52,7 +52,8 @@
 
   async function loadCatalog(d){
     let reg={};try{reg=await publicJson("songs/registry.json")}catch(e){console.warn(e)}
-    catalog={...clone(BUILTIN),...(reg&&typeof reg==="object"?reg:{})};
+    let drafts={};try{drafts=await globalThis.DruMasterDraftCatalog?.discover(reg)||{}}catch(e){console.warn(e)}
+    catalog={...clone(BUILTIN),...drafts,...(reg&&typeof reg==="object"?reg:{})};
     const sel=$("dmExistingSong",d);if(!sel)return;
     const rank=s=>Number.isFinite(Number(s.order))?Number(s.order):999;
     const values=Object.values(catalog).sort((a,b)=>rank(a)-rank(b)||String(a.title).localeCompare(String(b.title),"ja"));
