@@ -15,7 +15,6 @@ globalThis.DruMasterChartTimingReady=timingReady;
 if(typeof GROUP!=="undefined")GROUP.hhPedal="kick";
 if(typeof PART!=="undefined")PART.hhPedal="autoFoot";
 
-const playedFootPedals=new WeakSet();
 let footCursor=0,lastRunStart=NaN;
 
 function lowerBoundFootTime(sec){
@@ -57,11 +56,27 @@ function processFootAuto(){
   const t=current();
   while(footCursor<notes.length&&notes[footCursor].time<=t+.012){
     const n=notes[footCursor++];
-    if(n.type!=="hhPedal"||n.time<t-.04||playedFootPedals.has(n))continue;
-    playedFootPedals.add(n);
+    if(n.type!=="hhPedal")continue;
+    /* AUTO foot notes must never become player MISSes. Mark them consumed even
+       after a dropped frame; only suppress the sound when it is already too late. */
+    if(n.hit)continue;
+    n.hit=true;
+    if(n.time<t-.08)continue;
     playDrum(n.note,n.type,n.velocity/127);
     flashFootGoal(n);
   }
+}
+
+function visibleFootRange(){
+  if(!Array.isArray(notes)||!notes.length)return {start:0,end:0};
+  const w=canvas.clientWidth,
+        beatNow=DruMusterChart.secondsToBeat(current(),beatTiming),
+        division=beatTiming.division||480,
+        judgeX=DruMusterChart.judgementX(w),
+        speed=DruMusterChart.pixelsPerQuarter?.()||DruMusterChart.PIXELS_PER_QUARTER||80,
+        minBeat=beatNow-48/speed,maxBeat=beatNow+(w+48-judgeX)/speed,
+        search=globalThis.DruMasterNoteSearch;
+  return search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length};
 }
 
 function drawFootPedals(){
@@ -74,9 +89,7 @@ function drawFootPedals(){
         speed=DruMusterChart.pixelsPerQuarter?.()||DruMusterChart.PIXELS_PER_QUARTER||80,
         isDesktop=globalThis.matchMedia?.("(hover:hover) and (pointer:fine)")?.matches,
         barWidth=isDesktop?6:4,
-        minBeat=beatNow-48/speed,maxBeat=beatNow+(w+48-judgeX)/speed;
-  const search=globalThis.DruMasterNoteSearch,
-        range=search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length};
+        range=visibleFootRange();
   ctx.save();
   ctx.fillStyle="#55bdc1";
   for(let i=range.start;i<range.end;i++){
@@ -90,12 +103,12 @@ function drawFootPedals(){
 
 const baseDraw=DruMusterChart.draw.bind(DruMusterChart);
 draw=function(){
-  const temporary=[];
-  for(const n of notes){
-    if(n.type==="hhPedal"){
-      temporary.push([n,n.hit]);
-      n.hit=true; // suppress the normal HH/kick-color rendering; custom AUTO bar is drawn below.
-    }
+  /* Only the currently visible note window needs temporary pedal suppression.
+     The old implementation scanned the complete song every animation frame. */
+  const temporary=[],range=visibleFootRange();
+  for(let i=range.start;i<range.end;i++){
+    const n=notes[i];
+    if(n.type==="hhPedal"&&!n.hit){temporary.push(n);n.hit=true}
   }
   baseDraw({
     ctx,
@@ -106,22 +119,14 @@ draw=function(){
     groupMap:GROUP,
     skipHit:true
   });
-  for(const [n,hit] of temporary)n.hit=hit;
+  for(const n of temporary)n.hit=false;
   drawFootPedals();
 };
 
 if(typeof loop==="function"){
   const baseLoop=loop;
   loop=function(){
-    if(running&&!paused){
-      processFootAuto();
-      const temporary=[];
-      for(const n of notes){
-        if(n.type==="hhPedal"&&playedFootPedals.has(n)&&!n.hit){temporary.push(n);n.hit=true}
-      }
-      try{return baseLoop()}
-      finally{for(const n of temporary)n.hit=false}
-    }
+    if(running&&!paused)processFootAuto();
     return baseLoop();
   };
 }
