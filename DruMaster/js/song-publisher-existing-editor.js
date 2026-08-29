@@ -6,7 +6,7 @@
   if(!registerTab||!editorTab||!volumeTab||!registerView||!editorView||!volumeView)return;
 
   const tabs={register:registerTab,editor:editorTab,volume:volumeTab},views={register:registerView,editor:editorView,volume:volumeView};
-  const launcher=tool=>`song-existing-edit.html?tool=${tool}&v=20260829-catalogfix1`;
+  const launcher=tool=>`song-existing-edit.html?tool=${tool}&v=20260830-midibounds2`;
   const TOKEN_SENTINEL="__dm_existing_edit__";
   let session=null,sessionToken="",rememberedToken="";
   const launched={editor:false,volume:false},loaded={editor:false,volume:false};
@@ -34,14 +34,14 @@
   }
   function enableDirectTabs(){makeDirectTab(editorTab);makeDirectTab(volumeTab)}
   function inherited(d,token){return {dmSongPublisher:{token:token||TOKEN_SENTINEL,repo:d.repo||"ld1kanae/ld1kanae.github.io",branch:d.branch||"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}}}
-  function timingUrl(){return `song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-volumeflow1`}
+  function timingUrl(){return `song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260830-midibounds2`}
   function loadTool(which){
     if(!session?.id||!session?.sessionId)return false;
     const view=views[which];if(!view)return false;
     try{view.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
     view.src=which==="editor"
       ?timingUrl()
-      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-volumeflow1`;
+      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260830-midibounds2`;
     loaded[which]=true;launched[which]=true;return true;
   }
   function openTool(which){
@@ -74,8 +74,6 @@
         editorView.src="about:blank";volumeView.src="about:blank";launched.editor=false;launched.volume=false;
         queueMicrotask(()=>activate("register"));
       }else{
-        /* Replace the publisher's legacy Timing cache key immediately, while
-           keeping Volume lazy so no hidden audio assets are loaded. */
         try{editorView.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
         editorView.src=timingUrl();
         volumeView.src="about:blank";launched.volume=false;loaded.editor=true;launched.editor=true;
