@@ -3,7 +3,7 @@
 (()=>{
   const MIDI_MAP={35:"kick",36:"kick",38:"snare",40:"snare",41:"floorTom",43:"floorTom",45:"midTom",47:"midTom",48:"highTom",50:"highTom",42:"hhClosed",44:"hhPedal",46:"hhOpen",49:"crash",52:"crash",55:"crash",57:"crash",51:"ride",53:"ride",59:"ride"};
   const SAMPLE_NOTE={kick:36,snare:38,floorTom:41,midTom:45,highTom:48,hhClosed:42,hhPedal:44,hhOpen:46,ride:51,crash:49,special:37};
-  let ac=null,buffer=null,regions=null,sourceVelocity=100,loading=null,openHats=[];
+  let ac=null,buffer=null,regions=null,sourceVelocity=100,loading=null,openHats=[],voices=new Set();
 
   function typeFor(note){return MIDI_MAP[note]||"special"}
   function status(text){const el=document.getElementById("status");if(el)el.textContent=text}
@@ -64,14 +64,16 @@
       }
     }
     const source=ac.createBufferSource(),gain=ac.createGain(),sourceV=sourceVelocity/127,velocity=Math.max(.04,(Number(noteEvent.velocity)||100)/127),velocityGain=Math.min(1.25,Math.pow(velocity/sourceV,.8)),voice={source,gain};
-    source.buffer=buffer;gain.gain.value=.85*velocityGain;source.connect(gain).connect(ac.destination);
+    source.buffer=buffer;gain.gain.value=.85*velocityGain;source.connect(gain).connect(ac.destination);voices.add(voice);
     if(type==="hhOpen")openHats.push(voice);
-    source.onended=()=>{openHats=openHats.filter(v=>v!==voice);try{source.disconnect()}catch{}try{gain.disconnect()}catch{}};
+    source.onended=()=>{voices.delete(voice);openHats=openHats.filter(v=>v!==voice);try{source.disconnect()}catch{}try{gain.disconnect()}catch{}};
     source.start(Math.max(ac.currentTime,when),region.offset,region.duration);return true;
   }
 
   function stop(){
-    for(const v of openHats.splice(0)){try{v.source.stop()}catch{}try{v.source.disconnect()}catch{}try{v.gain.disconnect()}catch{}}
+    openHats=[];
+    for(const v of [...voices]){try{v.source.onended=null;v.source.stop()}catch{}try{v.source.disconnect()}catch{}try{v.gain.disconnect()}catch{}}
+    voices.clear();
   }
 
   globalThis.DruMasterTimingMidi={ready,play,stop};
