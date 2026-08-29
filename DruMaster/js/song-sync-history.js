@@ -172,8 +172,7 @@
 
       if(!audioWheelStartState)audioWheelStartState={...currentState};
       const direction=e.deltaY<0?1:-1;
-      const next=clamp((Number(audio.value)||0)+direction*.1,-500,500);
-      if(Math.abs(next-(Number(audio.value)||0))<.0001)return;
+      const next=(Number(audio.value)||0)+direction*.1;
 
       audio.value=next.toFixed(1);
       restoring=true;
