@@ -14,7 +14,9 @@
 
   const HH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
   const VELOCITY_CURVE=Math.log(.4)/Math.log(100/127);
+  const DISPLAY_SMOOTH_MS=35;
   let cachedNotes=null,cachedTiming=null,events=[];
+  let displayedLevel=0,lastFrameMs=performance.now(),lastBeat=NaN;
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
   const easeOutQuart=value=>1-Math.pow(1-clamp01(value),4);
@@ -79,8 +81,28 @@
   }
 
   function resetGauge(){
+    displayedLevel=0;
+    lastBeat=NaN;
+    lastFrameMs=performance.now();
     fill.style.setProperty("--hh-open-gauge-level","0%");
     fill.style.setProperty("--hh-open-gauge-opacity",".3");
+  }
+
+  function smoothLevel(target,beat){
+    const now=performance.now();
+    const dt=Math.min(100,Math.max(0,now-lastFrameMs));
+    lastFrameMs=now;
+
+    // Seeking/restarting should be exact rather than gliding across unrelated positions.
+    if(!Number.isFinite(lastBeat)||beat<lastBeat-.05||Math.abs(beat-lastBeat)>1){
+      displayedLevel=target;
+    }else{
+      const alpha=1-Math.exp(-dt/DISPLAY_SMOOTH_MS);
+      displayedLevel+= (target-displayedLevel)*alpha;
+      if(Math.abs(target-displayedLevel)<.01)displayedLevel=target;
+    }
+    lastBeat=beat;
+    return displayedLevel;
   }
 
   function updateGauge(){
@@ -99,7 +121,8 @@
       resetGauge();
       return;
     }
-    const velocity=valueAtBeat(beat),level=velocityToLevel(velocity)*100;
+    const velocity=valueAtBeat(beat),targetLevel=velocityToLevel(velocity)*100;
+    const level=smoothLevel(targetLevel,beat);
     fill.style.setProperty("--hh-open-gauge-level",`${level.toFixed(3)}%`);
     fill.style.setProperty("--hh-open-gauge-opacity",(0.3+0.7*level/100).toFixed(3));
   }
