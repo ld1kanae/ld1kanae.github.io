@@ -41,7 +41,7 @@
     try{view.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
     view.src=which==="editor"
       ?timingUrl()
-      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-lazy1`;
+      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-volumeflow1`;
     loaded[which]=true;launched[which]=true;return true;
   }
   function openTool(which){
@@ -57,6 +57,9 @@
   addEventListener("message",async e=>{
     if(e.origin!==location.origin)return;
     const d=e.data;
+    if(d?.type==="dm-timing-published"&&e.source===editorView.contentWindow&&d.id===session?.id&&d.sessionId===session?.sessionId){
+      loaded.volume=false;loadTool("volume");activate("volume");return;
+    }
     if(d?.type==="dm-existing-editor-ready"&&(e.source===editorView.contentWindow||e.source===volumeView.contentWindow)&&d.id&&d.sessionId){
       session=d;sessionToken="";loaded.editor=false;loaded.volume=false;
       if(!rememberedToken)rememberedToken=await readRememberedToken();
