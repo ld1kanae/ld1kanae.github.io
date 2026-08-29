@@ -5,19 +5,16 @@
   if(!hitLayer)return;
 
   const gauge=document.createElement("div"),
-        fill=document.createElement("div"),
-        motion=document.createElement("div");
+        fill=document.createElement("div");
   gauge.id="hhOpenGauge";
   gauge.setAttribute("aria-hidden","true");
-  gauge.dataset.motionDirection="up";
   fill.id="hhOpenGaugeFill";
-  motion.id="hhOpenGaugeMotion";
-  gauge.append(fill,motion);
+  gauge.append(fill);
   hitLayer.appendChild(gauge);
 
   const HH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
   const VELOCITY_CURVE=Math.log(.4)/Math.log(100/127);
-  let cachedNotes=null,cachedTiming=null,events=[],lastLevel=0;
+  let cachedNotes=null,cachedTiming=null,events=[];
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
   const easeOutQuart=value=>1-Math.pow(1-clamp01(value),4);
@@ -81,28 +78,9 @@
     return value;
   }
 
-  function updateMotionBlur(level){
-    const delta=level-lastLevel,speed=Math.abs(delta);
-    motion.style.setProperty("--hh-motion-level",`${level.toFixed(3)}%`);
-    if(speed>.005){
-      const length=Math.min(32,Math.max(6,speed*5));
-      const opacity=Math.min(.65,.15+speed*.1);
-      gauge.dataset.motionDirection=delta>0?"up":"down";
-      motion.style.setProperty("--hh-motion-length",`${length.toFixed(3)}%`);
-      motion.style.setProperty("--hh-motion-opacity",opacity.toFixed(3));
-    }else{
-      motion.style.setProperty("--hh-motion-opacity","0");
-      motion.style.setProperty("--hh-motion-length","0%");
-    }
-    lastLevel=level;
-  }
-
   function resetGauge(){
     fill.style.setProperty("--hh-open-gauge-level","0%");
     fill.style.setProperty("--hh-open-gauge-opacity",".3");
-    motion.style.setProperty("--hh-motion-opacity","0");
-    motion.style.setProperty("--hh-motion-length","0%");
-    lastLevel=0;
   }
 
   function updateGauge(){
@@ -124,7 +102,6 @@
     const velocity=valueAtBeat(beat),level=velocityToLevel(velocity)*100;
     fill.style.setProperty("--hh-open-gauge-level",`${level.toFixed(3)}%`);
     fill.style.setProperty("--hh-open-gauge-opacity",(0.3+0.7*level/100).toFixed(3));
-    updateMotionBlur(level);
   }
 
   if(typeof draw==="function"){
