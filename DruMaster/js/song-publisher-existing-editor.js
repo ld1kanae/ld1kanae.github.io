@@ -38,7 +38,7 @@
     try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}
     try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
     editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-transport2`;
-    volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-sync1`;
+    volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-sync2`;
   }
 
   editorTab.addEventListener("click",e=>{e.stopImmediatePropagation();activate("editor")},true);
