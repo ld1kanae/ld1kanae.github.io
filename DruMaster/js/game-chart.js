@@ -72,6 +72,8 @@ function drawFootPedals(){
         judgeX=DruMusterChart.judgementX(w),
         kickH=Math.max(16,h*.12),mainH=h-kickH,
         speed=DruMusterChart.pixelsPerQuarter?.()||DruMusterChart.PIXELS_PER_QUARTER||80,
+        isDesktop=globalThis.matchMedia?.("(hover:hover) and (pointer:fine)")?.matches,
+        barWidth=isDesktop?6:4,
         minBeat=beatNow-48/speed,maxBeat=beatNow+(w+48-judgeX)/speed;
   const search=globalThis.DruMasterNoteSearch,
         range=search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length};
@@ -81,7 +83,7 @@ function drawFootPedals(){
     const n=notes[i];if(n.type!=="hhPedal")continue;
     const x=judgeX+(n.tick/division-beatNow)*speed;
     ctx.globalAlpha=.24+.18*n.velocity/127;
-    ctx.fillRect(x-2,mainH,4,kickH);
+    ctx.fillRect(x-barWidth/2,mainH,barWidth,kickH);
   }
   ctx.restore();
 }
