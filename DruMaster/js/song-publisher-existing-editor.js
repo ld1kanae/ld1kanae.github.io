@@ -34,12 +34,13 @@
   }
   function enableDirectTabs(){makeDirectTab(editorTab);makeDirectTab(volumeTab)}
   function inherited(d,token){return {dmSongPublisher:{token:token||TOKEN_SENTINEL,repo:d.repo||"ld1kanae/ld1kanae.github.io",branch:d.branch||"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}}}
+  function timingUrl(){return `song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-timingfix2`}
   function loadTool(which){
     if(!session?.id||!session?.sessionId)return false;
     const view=views[which];if(!view)return false;
     try{view.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
     view.src=which==="editor"
-      ?`song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-timingfix2`
+      ?timingUrl()
       :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-lazy1`;
     loaded[which]=true;launched[which]=true;return true;
   }
@@ -70,8 +71,10 @@
         editorView.src="about:blank";volumeView.src="about:blank";launched.editor=false;launched.volume=false;
         queueMicrotask(()=>activate("register"));
       }else{
-        /* The publisher's canonical new-song flow already opens Timing.
-           Cancel the hidden Volume iframe so its audio assets are never loaded. */
+        /* Replace the publisher's legacy Timing cache key immediately, while
+           keeping Volume lazy so no hidden audio assets are loaded. */
+        try{editorView.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
+        editorView.src=timingUrl();
         volumeView.src="about:blank";launched.volume=false;loaded.editor=true;launched.editor=true;
       }
     }
