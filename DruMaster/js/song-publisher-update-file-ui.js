@@ -5,7 +5,7 @@
   if(!frame)return;
 
   const LABEL={fullmix:"原曲",base:"オフボーカル",drums:"ドラムのみ",vocals:"ボーカルのみ",midi:"MIDI"};
-  let pollTimer=0,pollCount=0,boundDoc=null;
+  let pollTimer=0,pollCount=0,boundDoc=null,fallbackLoaded=false;
 
   function doc(){try{return frame.contentDocument}catch{return null}}
   function forceFileVisible(input){
@@ -125,6 +125,15 @@
     },true);
   }
 
+  function loadUpdateModeFallback(){
+    if(fallbackLoaded)return;
+    fallbackLoaded=true;
+    const s=document.createElement("script");
+    s.src="js/song-publisher-update-mode.js?v=20260829-inputfix-fallback1";
+    s.dataset.dmUpdateFallback="1";
+    document.head.appendChild(s);
+  }
+
   function startPolling(){
     clearInterval(pollTimer);pollTimer=0;pollCount=0;boundDoc=null;
     const tick=()=>{
@@ -138,6 +147,7 @@
           setTimeout(()=>syncAll(d),600);
           return;
         }
+        if(!ready&&d.getElementById("publish")&&pollCount===10)loadUpdateModeFallback();
       }
       if(++pollCount>=80){clearInterval(pollTimer);pollTimer=0}
     };
