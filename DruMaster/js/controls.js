@@ -139,6 +139,17 @@
   /* Capture phase deliberately supersedes app.js's old one-key map.
      Escape is the PC pause/resume shortcut; Space remains intentionally unused. */
   addEventListener("keydown",e=>{
+    if(e.code==="Space"){
+      const setup=document.querySelector("#setup"),
+            start=document.querySelector("#start"),
+            setupVisible=!!setup&&!setup.classList.contains("hidden");
+      if(!isDesktop()||!setupVisible||!start||start.disabled||e.repeat)return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      start.click();
+      return;
+    }
+
     if(e.code==="Escape"){
       if(!isDesktop()||e.repeat)return;
       let isRunning=false;
