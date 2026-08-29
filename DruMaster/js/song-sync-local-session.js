@@ -16,6 +16,7 @@
     });
   }
   async function getSession(id){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readonly"),r=tx.objectStore(STORE).get(id);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);tx.oncomplete=()=>db.close()})}
+  async function putSession(value){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(value);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||Error("編集セッションを保存できませんでした"))}})}
   async function refreshSession(){const latest=await getSession(sessionId);if(latest&&latest.id===songId)session=latest;return session}
   async function deleteSession(id){try{const db=await openDb();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch{}}
   function encodeText(s){const u=new TextEncoder().encode(s);let bin="";for(let i=0;i<u.length;i+=0x8000)bin+=String.fromCharCode(...u.subarray(i,i+0x8000));return btoa(bin)}
@@ -78,6 +79,7 @@
         if(data?.[songId]){if(mix)data[songId].mix=mix;if(midiDrumMix)data[songId].midiDrumMix=midiDrumMix;applyUpdatedAssetVersions(data[songId])}
       }else{
         if(mix)data.mix=mix;if(midiDrumMix)data.midiDrumMix=midiDrumMix;applyUpdatedAssetVersions(data);
+        if(data?.id===songId){session={...session,draft:{...(session.draft||{}),...data}};await putSession(session)}
       }
       body.content=encodeText(JSON.stringify(data,null,2)+"\n");
       return {...init,body:JSON.stringify(body)};
@@ -134,7 +136,6 @@
         if(session.mode==="update"){
           try{await applyUpdateDeletes()}catch(e){console.warn("Unused old asset cleanup failed",e);uploadError=e;updateUploadUi()}
         }
-        void deleteSession(sessionId);
       }
       return response;
     }
