@@ -21,6 +21,7 @@ globalThis.DruMusterChart=(()=>{
     if(type==="highTom")return "#d76bff";
     if(type==="midTom")return "#8875ff";
     if(type==="floorTom")return "#329cff";
+    if(type==="ride")return "#63d66f";
     if(group==="cymbal")return "#ffd45a";
     if(group==="hh")return "#52dfcf";
     if(type==="kick"||group==="kick")return "#aeb9c7";
