@@ -6,7 +6,7 @@
   if(!registerTab||!editorTab||!volumeTab||!registerView||!editorView||!volumeView)return;
 
   const tabs={register:registerTab,editor:editorTab,volume:volumeTab},views={register:registerView,editor:editorView,volume:volumeView};
-  const launcher=tool=>`song-existing-edit.html?tool=${tool}&v=20260829-lazy1`;
+  const launcher=tool=>`song-existing-edit.html?tool=${tool}&v=20260829-catalogfix1`;
   const TOKEN_SENTINEL="__dm_existing_edit__";
   let session=null,sessionToken="",rememberedToken="";
   const launched={editor:false,volume:false},loaded={editor:false,volume:false};
