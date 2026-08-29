@@ -99,7 +99,7 @@ addEventListener("message",e=>{
   const inherited={dmSongPublisher:{token:d.token,repo:d.repo,branch:d.branch,id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
   try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
   if(d.mode!=="update"){
-    editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260830-midibounds2`;
+    editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260830-midibounds3`;
     show("editor");
   }
 });
@@ -110,7 +110,7 @@ addEventListener("message",e=>{
 <script src="js/song-publisher-update-mode.js?v=20260829-catalogfix1"></script>
 <script src="js/song-publisher-update-file-ui.js?v=20260829-inputfix1"></script>
 <script src="js/song-publisher-update-bridge.js?v=20260829-draftcatalog1"></script>
-<script src="js/song-publisher-existing-editor.js?v=20260830-midibounds2"></script>
+<script src="js/song-publisher-existing-editor.js?v=20260830-midibounds3"></script>
 <script src="js/song-publisher-debug-unlock.js?v=20260828-debugunlock3"></script>
 </body>
 </html>
