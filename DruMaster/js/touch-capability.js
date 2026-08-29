@@ -72,6 +72,63 @@
     return best;
   }
 
+  function normalizedEventTimeStamp(e){
+    const now=performance.now();
+    let stamp=Number(e?.timeStamp);
+    if(!Number.isFinite(stamp))return now;
+    if(stamp>1e12&&Number.isFinite(performance.timeOrigin))stamp-=performance.timeOrigin;
+    if(stamp<0||Math.abs(stamp-now)>60000)return now;
+    return stamp;
+  }
+
+  /* Judge against the time at which the browser received the touch, not the
+     later time at which a busy main thread finally dispatches this listener. */
+  function eventSongTime(e){
+    if(typeof current!=="function")return NaN;
+    const queuedMs=Math.max(0,Math.min(160,performance.now()-normalizedEventTimeStamp(e)));
+    const playbackRate=typeof rate!=="undefined"&&Number.isFinite(Number(rate))?Number(rate):1;
+    return Math.max(0,current()-queuedMs/1000*playbackRate);
+  }
+
+  function consumeTouchAt(t){
+    if(typeof running==="undefined"||!running||typeof paused!=="undefined"&&paused||typeof autoplay!=="undefined"&&autoplay)return false;
+    if(!Number.isFinite(t)||typeof notes==="undefined"||!Array.isArray(notes))return false;
+    if(document.body.classList.contains("acoustic-calibrating"))return false;
+    const maxDelta=.160,search=globalThis.DruMasterNoteSearch;
+    let match=null;
+    if(search?.nearest){
+      match=search.nearest(notes,t,maxDelta,n=>!n.hit&&n.type!=="kick"&&n.type!=="hhPedal");
+    }else{
+      let best=null,bestDelta=maxDelta+.000001;
+      for(const n of notes){
+        if(n.time<t-maxDelta)continue;
+        if(n.time>t+maxDelta)break;
+        if(n.hit||n.type==="kick"||n.type==="hhPedal")continue;
+        const delta=Math.abs(n.time-t);
+        if(delta<bestDelta){best=n;bestDelta=delta}
+      }
+      if(best)match={note:best,delta:bestDelta};
+    }
+    if(!match||match.delta>maxDelta)return false;
+
+    const {note,delta}=match;
+    note.hit=true;
+    if(typeof playDrum==="function")playDrum(note.note,note.type,note.velocity/127);
+    if(typeof flashPart==="function"&&typeof PART!=="undefined")flashPart(PART[note.type]);
+
+    let mult,label;
+    if(delta<=.035){mult=1;label="PERFECT";counts.perfect++}
+    else if(delta<=.105){mult=.75;label="GREAT";counts.great++}
+    else{mult=.4;label="GOOD";counts.good++}
+    score+=weight(note.type)*note.velocity/127*1000*mult;
+    const scoreNode=document.querySelector("#score");
+    if(scoreNode)scoreNode.textContent=String(Math.round(score)).padStart(6,"0");
+    const judgement=globalThis.DruMasterJudgement;
+    if(judgement?.emitForNote)judgement.emitForNote(note,label,{flash:false});
+    else if(typeof showJudge==="function")showJudge(label);
+    return true;
+  }
+
   let touchStart=null;
   document.addEventListener("pointerdown",e=>{
     if(!isTouchCapable() || e.pointerType==="mouse" || !e.isPrimary)return;
@@ -108,8 +165,11 @@
       if(expandedControlAt(e.clientX,e.clientY))return;
       const api=globalThis.DruMasterPerformanceMode;
       if(!api || api.getRunMode?.()!=="touch")return;
-      const ok=api.consumeNearest?.();
-      if(!ok)return;
+
+      consumeTouchAt(eventSongTime(e));
+      /* performance-mode-v5 also has a legacy game-level pointer listener.
+         Consume the gameplay pointer here even on a MISS so it cannot run a
+         second judgement a few milliseconds later with a different timestamp. */
       e.preventDefault();
       e.stopImmediatePropagation();
     },true);
