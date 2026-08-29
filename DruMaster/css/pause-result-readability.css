@@ -202,3 +202,21 @@
     --dm-autoplay-actions-y:44px;
   }
 }
+
+
+/* PC result fine positioning: keep the song metadata and actions anchored
+   independently so reveal transforms cannot overwrite these offsets. */
+@media (hover:hover) and (pointer:fine){
+  #result:not(.autoplay)>h2,
+  #result:not(.autoplay)>.result-song-sub{
+    top:-10px!important;
+  }
+  #result:not(.autoplay)>.result-actions{
+    top:10px!important;
+  }
+  #result.autoplay{
+    --dm-autoplay-title-y:-254px;
+    --dm-autoplay-artist-y:-159px;
+    --dm-autoplay-actions-y:74px;
+  }
+}
