@@ -48,10 +48,10 @@
     KeyB:{part:"floorTom",label:"B"},
     KeyN:{part:"floorTom",label:"N"},
     KeyM:{part:"floorTom",label:"M"},
-    KeyY:{part:"crash",side:"right",label:"Y"},
-    KeyU:{part:"crash",side:"right",label:"U"},
-    KeyI:{part:"crash",side:"right",label:"I"},
-    KeyO:{part:"crash",side:"right",label:"O"},
+    KeyY:{part:"crash2",side:"right",label:"Y"},
+    KeyU:{part:"crash2",side:"right",label:"U"},
+    KeyI:{part:"crash2",side:"right",label:"I"},
+    KeyO:{part:"crash2",side:"right",label:"O"},
     KeyJ:{part:"ride",label:"J"},
     KeyK:{part:"ride",label:"K"}
   };
