@@ -71,7 +71,7 @@ function drawFootPedals(){
         division=beatTiming.division||480,
         judgeX=DruMusterChart.judgementX(w),
         kickH=Math.max(16,h*.12),mainH=h-kickH,
-        speed=DruMusterChart.PIXELS_PER_QUARTER||80,
+        speed=DruMusterChart.pixelsPerQuarter?.()||DruMusterChart.PIXELS_PER_QUARTER||80,
         minBeat=beatNow-48/speed,maxBeat=beatNow+(w+48-judgeX)/speed;
   const search=globalThis.DruMasterNoteSearch,
         range=search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length};
