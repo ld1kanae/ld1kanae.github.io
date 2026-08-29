@@ -99,7 +99,7 @@ addEventListener("message",e=>{
   const inherited={dmSongPublisher:{token:d.token,repo:d.repo,branch:d.branch,id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
   try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
   if(d.mode!=="update"){
-    editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-timingfix2`;
+    editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-volumeflow1`;
     show("editor");
   }
 });
