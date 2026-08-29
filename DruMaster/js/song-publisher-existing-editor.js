@@ -34,7 +34,7 @@
   }
   function enableDirectTabs(){makeDirectTab(editorTab);makeDirectTab(volumeTab)}
   function inherited(d,token){return {dmSongPublisher:{token:token||TOKEN_SENTINEL,repo:d.repo||"ld1kanae/ld1kanae.github.io",branch:d.branch||"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}}}
-  function timingUrl(){return `song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-timingfix2`}
+  function timingUrl(){return `song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260829-volumeflow1`}
   function loadTool(which){
     if(!session?.id||!session?.sessionId)return false;
     const view=views[which];if(!view)return false;
