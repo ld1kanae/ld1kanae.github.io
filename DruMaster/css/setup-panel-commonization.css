@@ -50,3 +50,59 @@
     left:calc(var(--dm-mobile-setup-left-nudge,12px) + var(--dm-mobile-setup-global-nudge))!important;
   }
 }
+
+
+/* TEMPO is the canonical meter component. VOLUME shares the same typography,
+   header rhythm, scale labels and range spacing through these joint selectors. */
+:root{
+  --dm-setup-meter-label-size:16px;
+  --dm-setup-meter-value-size:16px;
+  --dm-setup-meter-scale-size:10px;
+  --dm-setup-meter-line-height:1.2;
+  --dm-setup-meter-range-margin:13px 0 2px;
+}
+.setup :is(.tempo-box,.volume-box)>div:first-child{
+  display:flex!important;
+  align-items:baseline!important;
+  justify-content:space-between!important;
+}
+.setup :is(.tempo-box,.volume-box)>div:first-child>span{
+  font-family:inherit!important;
+  font-size:var(--dm-setup-meter-label-size)!important;
+  font-weight:400!important;
+  line-height:var(--dm-setup-meter-line-height)!important;
+  letter-spacing:normal!important;
+  color:inherit!important;
+}
+.setup :is(.tempo-box,.volume-box)>div:first-child>strong{
+  font-family:inherit!important;
+  font-size:var(--dm-setup-meter-value-size)!important;
+  font-weight:700!important;
+  line-height:var(--dm-setup-meter-line-height)!important;
+  letter-spacing:normal!important;
+  color:inherit!important;
+  font-variant-numeric:normal!important;
+}
+.setup :is(.tempo-box,.volume-box)>input[type="range"]{
+  display:block!important;
+  width:100%!important;
+  margin:var(--dm-setup-meter-range-margin)!important;
+}
+.setup :is(.tempo-box,.volume-box)>.scale{
+  display:flex!important;
+  justify-content:space-between!important;
+  font-family:inherit!important;
+  font-size:var(--dm-setup-meter-scale-size)!important;
+  font-weight:400!important;
+  line-height:1.2!important;
+  letter-spacing:normal!important;
+  color:#7f8996!important;
+}
+
+@media (max-height:520px) and (hover:hover) and (pointer:fine),
+       (hover:none) and (pointer:coarse) and (max-width:900px){
+  :root{
+    --dm-setup-meter-value-size:15.5px;
+    --dm-setup-meter-range-margin:7px 0 0;
+  }
+}
