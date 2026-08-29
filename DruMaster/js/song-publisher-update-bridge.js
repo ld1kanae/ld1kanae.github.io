@@ -5,11 +5,18 @@
   if(!frame)return;
   let observer=null,initialResetDone=false;
 
-  /* Existing-song UPDATE must commit immediately even though Timing Correction
-     is now optional/manual. Keep the committer separate from the form bridge. */
+  if(!document.querySelector('script[data-dm-draft-catalog]')){
+    const s=document.createElement("script");
+    s.src="js/song-publisher-draft-catalog.js?v=20260829-draftcatalog1";
+    s.dataset.dmDraftCatalog="1";
+    document.head.appendChild(s);
+  }
+
+  /* Existing-song UPDATE commits immediately. Draft-only songs stay drafts
+     until Timing Correction publishes them. */
   if(!document.querySelector('script[data-dm-update-commit]')){
     const s=document.createElement("script");
-    s.src="js/song-publisher-update-commit.js?v=20260829-immediate1";
+    s.src="js/song-publisher-update-commit-v2.js?v=20260829-draftcatalog1";
     s.dataset.dmUpdateCommit="1";
     document.head.appendChild(s);
   }
