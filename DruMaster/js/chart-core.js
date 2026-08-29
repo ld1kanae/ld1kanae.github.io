@@ -37,36 +37,6 @@ globalThis.DruMusterChart=(()=>{
     return {kind:isOpen?"double":"single",barWidth,gap,totalWidth,color};
   }
 
-  const HIHAT_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
-
-  function drawOpenHihatTail({ctx,notes,index,x,top,height,beatNow,division,pxPerQuarter,canvasWidth,color="#52dfcf"}){
-    let endX=NaN;
-    for(let i=index+1;i<notes.length;i++){
-      const next=notes[i];
-      if(!HIHAT_TYPES.has(next.type))continue;
-      endX=x+(next.tick-notes[index].tick)/division*pxPerQuarter;
-      break;
-    }
-    const headWidth=4,fixedTailWidth=pxPerQuarter,
-          headLeft=x-headWidth/2,tailLeft=x+headWidth/2,
-          clipWidth=Number.isFinite(endX)
-            ?Math.max(0,Math.min(fixedTailWidth,endX-tailLeft))
-            :fixedTailWidth,
-          gradientEnd=tailLeft+fixedTailWidth;
-    ctx.fillStyle=color;
-    ctx.fillRect(headLeft,top,headWidth,height);
-    if(clipWidth<=0)return;
-    /* The fade profile never stretches. A following hi-hat only clips this
-       fixed gradient, leaving a deliberately hard vertical cutoff. */
-    const gradient=ctx.createLinearGradient(tailLeft,0,gradientEnd,0);
-    gradient.addColorStop(0,"rgba(82,223,207,.78)");
-    gradient.addColorStop(.18,"rgba(82,223,207,.36)");
-    gradient.addColorStop(.55,"rgba(82,223,207,.10)");
-    gradient.addColorStop(1,"rgba(82,223,207,0)");
-    ctx.fillStyle=gradient;
-    ctx.fillRect(tailLeft,top,clipWidth,height);
-  }
-
   function parseTempoTiming(ab){
     const d=new DataView(ab);let p=0;
     const str=n=>{let s="";while(n--)s+=String.fromCharCode(d.getUint8(p++));return s};
@@ -208,13 +178,13 @@ globalThis.DruMusterChart=(()=>{
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;ctx.fillStyle=visual.color;
       if(lane<3){
         const barTop=lane*laneH,barH=laneH;
-        if(n.type==="hhOpen"){
-          drawOpenHihatTail({ctx,notes,index:i,x,top:barTop,height:barH,beatNow,division,pxPerQuarter:PIXELS_PER_QUARTER,canvasWidth:w,color:visual.color});
+        if(visual.kind==="double"){
+          const left=x-visual.totalWidth/2;ctx.fillRect(left,barTop,visual.barWidth,barH);ctx.fillRect(left+visual.barWidth+visual.gap,barTop,visual.barWidth,barH);
         }else ctx.fillRect(x-visual.totalWidth/2,barTop,visual.barWidth,barH);
       }else ctx.fillRect(x-visual.totalWidth/2,mainH,visual.barWidth,kickH);
     }
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
 
-  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteColor,noteVisual,drawOpenHihatTail,parseTempoTiming,secondsToBeat,drawMeasureLines,draw};
+  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteColor,noteVisual,parseTempoTiming,secondsToBeat,drawMeasureLines,draw};
 })();
