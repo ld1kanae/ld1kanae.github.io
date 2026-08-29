@@ -9,11 +9,23 @@
 <script>
 (async()=>{
   try{
-    const r=await fetch('song-sync-editor-v2.html?v=20260828-history2',{cache:'no-store'});
+    const r=await fetch('song-sync-editor-v2.html?v=20260829-timingfix2',{cache:'no-store'});
     if(!r.ok)throw Error(`Editor load failed: HTTP ${r.status}`);
     let html=await r.text();
+
+    html=html.replace('id="audioOffset" type="number" min="-500" max="500" step="0.1"','id="audioOffset" type="number" step="0.1"');
+    html=html.replace('audioOffsetMs=Math.max(-500,Math.min(500,Number($("audioOffset").value)||0));','audioOffsetMs=Number($("audioOffset").value)||0;');
+    html=html.replace('$("audioOffset").value=Math.max(-500,Math.min(500,drag.start-delta)).toFixed(1);','$("audioOffset").value=(drag.start-delta).toFixed(1);');
+    html=html.replace('>最終 PUBLISH<','>PUBLISH<');
+    html=html.replace('調整後に最終PUBLISHしてください。','調整後にPUBLISHしてください。');
+    html=html.replace('波形とMIDIを同一時間軸で比較し、最終値をPublishします。','波形とMIDIを同一時間軸で比較し、補正値をPUBLISHします。');
+    html=html.replace('function startPlayback(){if(!audioBuffer||playing)return;void ac.resume();playing=true;','async function startPlayback(){if(!audioBuffer||playing)return;await ac.resume();if($("midiClick").checked)await globalThis.DruMasterTimingMidi?.ready?.(ac);playing=true;');
+    html=html.replace('playing=false;stopSource();clearInterval(scheduler);','playing=false;stopSource();globalThis.DruMasterTimingMidi?.stop?.();clearInterval(scheduler);');
+    html=html.replace('const when=contextStart+(t-logicalStart),osc=ac.createOscillator(),g=ac.createGain(),at=Math.max(ac.currentTime,when);osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.08,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.025);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.03)','const when=contextStart+(t-logicalStart),at=Math.max(ac.currentTime,when);if(!globalThis.DruMasterTimingMidi?.play?.(n,at,ac)){const osc=ac.createOscillator(),g=ac.createGain();osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.12,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.05);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.06)}');
+
     const theme='<link rel="stylesheet" href="css/song-tool-cyan-violet-theme.css?v=20260829-theme3">';
     const local='<scr'+'ipt src="js/song-sync-local-session.js?v=20260829-update3"></scr'+'ipt>';
+    const midiAudio='<scr'+'ipt src="js/song-sync-midi-audio.js?v=20260829-timingfix2"></scr'+'ipt>';
     const history='<scr'+'ipt src="js/song-sync-history.js?v=20260828-mswheel1"></scr'+'ipt>';
     const audioOffsetUi='<scr'+'ipt src="js/song-sync-audio-offset-ui.js?v=20260829-audiooffset1"></scr'+'ipt>';
     const heading='<scr'+'ipt>(()=>{const fix=()=>{const h=document.getElementById("heading");if(h&&h.textContent!=="Timing Correction")h.textContent="Timing Correction"};new MutationObserver(fix).observe(document.documentElement,{subtree:true,childList:true,characterData:true});addEventListener("DOMContentLoaded",fix);setTimeout(fix,0);setTimeout(fix,500)})();</scr'+'ipt>';
@@ -22,7 +34,7 @@
     const clickSeek='<scr'+'ipt src="js/song-sync-click-seek.js?v=20260829-clickseek1"></scr'+'ipt>';
     const seekbar='<scr'+'ipt src="js/song-sync-seekbar.js?v=20260829-restore1"></scr'+'ipt>';
     const rayTimeline='<scr'+'ipt src="js/song-sync-ray-timeline.js?v=20260828-raytimeline1"></scr'+'ipt>';
-    html=html.replace('</head>',theme+local+'</head>');
+    html=html.replace('</head>',theme+local+midiAudio+'</head>');
     html=html.replace('</body>',history+audioOffsetUi+heading+existingToken+ranges+clickSeek+seekbar+rayTimeline+'</body>');
     document.open();
     document.write(html);
