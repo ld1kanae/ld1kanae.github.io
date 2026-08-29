@@ -6,7 +6,7 @@
   if(!registerTab||!editorTab||!volumeTab||!registerView||!editorView||!volumeView)return;
 
   const tabs={register:registerTab,editor:editorTab,volume:volumeTab},views={register:registerView,editor:editorView,volume:volumeView};
-  const launcher=tool=>`song-existing-edit.html?tool=${tool}&v=20260830-midibounds2`;
+  const launcher=tool=>`song-existing-edit.html?tool=${tool}&v=20260830-midibounds3`;
   const TOKEN_SENTINEL="__dm_existing_edit__";
   let session=null,sessionToken="",rememberedToken="";
   const launched={editor:false,volume:false},loaded={editor:false,volume:false};
@@ -34,14 +34,14 @@
   }
   function enableDirectTabs(){makeDirectTab(editorTab);makeDirectTab(volumeTab)}
   function inherited(d,token){return {dmSongPublisher:{token:token||TOKEN_SENTINEL,repo:d.repo||"ld1kanae/ld1kanae.github.io",branch:d.branch||"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}}}
-  function timingUrl(){return `song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260830-midibounds2`}
+  function timingUrl(){return `song-sync-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260830-midibounds3`}
   function loadTool(which){
     if(!session?.id||!session?.sessionId)return false;
     const view=views[which];if(!view)return false;
     try{view.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
     view.src=which==="editor"
       ?timingUrl()
-      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260830-midibounds2`;
+      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260830-midibounds3`;
     loaded[which]=true;launched[which]=true;return true;
   }
   function openTool(which){
