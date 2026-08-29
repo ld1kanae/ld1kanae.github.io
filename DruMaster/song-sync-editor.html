@@ -19,10 +19,11 @@
     const heading='<scr'+'ipt>(()=>{const fix=()=>{const h=document.getElementById("heading");if(h&&h.textContent!=="Timing Correction")h.textContent="Timing Correction"};new MutationObserver(fix).observe(document.documentElement,{subtree:true,childList:true,characterData:true});addEventListener("DOMContentLoaded",fix);setTimeout(fix,0);setTimeout(fix,500)})();</scr'+'ipt>';
     const existingToken='<scr'+'ipt>(()=>{const sentinel="__dm_existing_edit__";const setup=()=>{const t=document.getElementById("token"),p=document.getElementById("publish");if(t&&t.value===sentinel)t.value="";if(p&&!p.dataset.dmExistingTokenGuard){p.dataset.dmExistingTokenGuard="1";p.addEventListener("click",e=>{let w={};try{w=JSON.parse(window.name||"{}").dmSongPublisher||{}}catch{}if(w.token===sentinel&&!t?.value.trim()){e.preventDefault();e.stopImmediatePropagation();const m=document.getElementById("message");if(m){m.textContent="GitHub tokenを入力してください。";m.className="bad"}}},true)}};addEventListener("DOMContentLoaded",()=>setTimeout(setup,250));setTimeout(setup,700)})();</scr'+'ipt>';
     const ranges='<scr'+'ipt src="js/song-tool-range-theme.js?v=20260829-range1"></scr'+'ipt>';
-    const transport='<scr'+'ipt src="js/song-sync-transport-v2.js?v=20260829-transport2"></scr'+'ipt>';
+    const clickSeek='<scr'+'ipt src="js/song-sync-click-seek.js?v=20260829-clickseek1"></scr'+'ipt>';
+    const seekbar='<scr'+'ipt src="js/song-sync-seekbar.js?v=20260829-restore1"></scr'+'ipt>';
     const rayTimeline='<scr'+'ipt src="js/song-sync-ray-timeline.js?v=20260828-raytimeline1"></scr'+'ipt>';
     html=html.replace('</head>',theme+local+'</head>');
-    html=html.replace('</body>',history+audioOffsetUi+heading+existingToken+ranges+transport+rayTimeline+'</body>');
+    html=html.replace('</body>',history+audioOffsetUi+heading+existingToken+ranges+clickSeek+seekbar+rayTimeline+'</body>');
     document.open();
     document.write(html);
     document.close();
