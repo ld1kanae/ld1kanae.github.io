@@ -7,7 +7,14 @@
 
   const tabs={register:registerTab,editor:editorTab,volume:volumeTab},views={register:registerView,editor:editorView,volume:volumeView};
   const launcher=(tool)=>`song-existing-edit.html?tool=${tool}&v=20260829-existing1`;
-  let session=null;
+  const TOKEN_SENTINEL="__dm_existing_edit__";
+  let session=null,rememberedToken="";
+
+  async function readRememberedToken(){
+    if(!navigator.credentials?.get||typeof PasswordCredential!=="function")return "";
+    try{const c=await navigator.credentials.get({password:true,mediation:"optional"});const p=c?.password||"";return /^github_pat_/.test(p)?p:""}catch{return ""}
+  }
+  void readRememberedToken().then(v=>{rememberedToken=v});
 
   function activate(which){
     for(const [key,tab] of Object.entries(tabs)){
@@ -33,16 +40,17 @@
   editorTab.addEventListener("click",e=>{e.stopImmediatePropagation();activate("editor")},true);
   volumeTab.addEventListener("click",e=>{e.stopImmediatePropagation();activate("volume")},true);
 
-  addEventListener("message",e=>{
+  addEventListener("message",async e=>{
     if(e.origin!==location.origin)return;
     const d=e.data;
     if(d?.type==="dm-existing-editor-ready"&&(e.source===editorView.contentWindow||e.source===volumeView.contentWindow)&&d.id&&d.sessionId){
       session=d;
-      const inherited={dmSongPublisher:{repo:"ld1kanae/ld1kanae.github.io",branch:"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
+      if(!rememberedToken)rememberedToken=await readRememberedToken();
+      const inherited={dmSongPublisher:{token:rememberedToken||TOKEN_SENTINEL,repo:"ld1kanae/ld1kanae.github.io",branch:"main",id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
       try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}
       try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
-      editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1`;
-      volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1`;
+      editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-existing1`;
+      volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-existing1`;
       for(const tab of [editorTab,volumeTab]){const s=tab.querySelector(".tab-state");if(s)s.textContent="READY"}
       activate(d.tool==="volume"?"volume":"editor");
       return;
