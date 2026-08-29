@@ -220,3 +220,103 @@
     --dm-autoplay-actions-y:74px;
   }
 }
+
+/* Mobile result: reserve real space for the TOP 10 list. The forced-landscape
+   stage is only the portrait viewport width tall, so an unconstrained flex item
+   can otherwise collapse to just the ranking title/header. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  #result:not(.autoplay){
+    justify-content:flex-start!important;
+    padding-top:5px!important;
+    padding-bottom:6px!important;
+  }
+  #result:not(.autoplay)>h2{
+    flex:0 0 auto!important;
+    font-size:30px!important;
+    line-height:1!important;
+    margin-bottom:5px!important;
+  }
+  #result:not(.autoplay)>.result-song-sub{
+    flex:0 0 auto!important;
+    font-size:16px!important;
+    line-height:1.05!important;
+    margin-bottom:5px!important;
+  }
+  #result:not(.autoplay)>.result-score-label{
+    flex:0 0 auto!important;
+    font-size:14px!important;
+    line-height:1!important;
+    margin-bottom:3px!important;
+  }
+  #result:not(.autoplay)>#finalScore{
+    flex:0 0 auto!important;
+    font-size:58px!important;
+    line-height:.84!important;
+    margin:0 0 3px!important;
+  }
+  #result:not(.autoplay)>.result-summary,
+  #result:not(.autoplay)>.grades{
+    flex:0 0 auto!important;
+    margin-top:0!important;
+    margin-bottom:4px!important;
+  }
+  #result:not(.autoplay) .result-summary span,
+  #result:not(.autoplay) .grades span{
+    font-size:9px!important;
+  }
+  #result:not(.autoplay) .result-summary b,
+  #result:not(.autoplay) .grades b{
+    font-size:18px!important;
+    margin-top:1px!important;
+  }
+  #result:not(.autoplay)>.ranking-panel{
+    flex:0 0 clamp(138px,40vw,174px)!important;
+    min-height:138px!important;
+    max-height:174px!important;
+    width:min(760px,96%)!important;
+    padding:6px 12px 7px!important;
+    overflow:hidden!important;
+  }
+  #result:not(.autoplay) .ranking-title{
+    min-height:18px!important;
+    margin-bottom:3px!important;
+  }
+  #result:not(.autoplay) .ranking-title h3{
+    font-size:18px!important;
+    line-height:18px!important;
+  }
+  #result:not(.autoplay) .ranking-head,
+  #result:not(.autoplay) .ranking-row{
+    grid-template-columns:52px minmax(110px,1fr) 104px!important;
+    min-height:27px!important;
+    padding:0 8px!important;
+  }
+  #result:not(.autoplay) .ranking-head{font-size:10px!important}
+  #result:not(.autoplay) .ranking-row{font-size:13px!important}
+  #result:not(.autoplay) .ranking-list{
+    height:calc(100% - 48px)!important;
+    min-height:54px!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+  }
+  #result:not(.autoplay)>.result-actions{
+    flex:0 0 auto!important;
+    grid-template-columns:repeat(2,126px)!important;
+    gap:10px!important;
+    margin-top:5px!important;
+  }
+  #result:not(.autoplay)>.result-actions #retry,
+  #result:not(.autoplay)>.result-actions #home{
+    width:126px!important;
+    min-width:126px!important;
+    max-width:126px!important;
+    height:34px!important;
+    min-height:34px!important;
+    padding:0 18px!important;
+    font-size:12px!important;
+  }
+}
