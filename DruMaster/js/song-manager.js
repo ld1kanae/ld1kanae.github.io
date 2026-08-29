@@ -22,7 +22,7 @@
   const builtInSongs={
     nanairo:{
       id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,bpm:125,
-      chart:{pixelsPerQuarter:80},
+      chart:{pixelsPerQuarter:80,desktopPixelsPerQuarter:100},
       playback:{stemOffsetSec:0,midiOffsetSec:0},
       midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz?v=20260826-midi2",
       stems:{
@@ -33,7 +33,7 @@
     },
     ray:{
       id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,bpm:132,
-      chart:{pixelsPerQuarter:75,desktopPixelsPerQuarter:100},
+      chart:{pixelsPerQuarter:80,desktopPixelsPerQuarter:100},
       playback:{stemOffsetSec:0.005,midiOffsetSec:0},
       midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz?v=20260826-midi2",
       mix:{base:.70,vocals:.60,drums:.70},
