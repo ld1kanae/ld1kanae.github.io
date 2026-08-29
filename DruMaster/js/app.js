@@ -3,15 +3,15 @@ const ASSET={midi:"songs/nanairo/chart.mid",manifest:"songs/nanairo/audio-manife
 /* GM toms are collapsed onto the three visible kit targets: High Tom (50)
    to upper-left, Hi/Low Mid + Low Tom (48/47/45) to upper-right, and
    High/Low Floor Tom (43/41) to the lower-right floor tom. */
-const MIDI_MAP={35:"kick",36:"kick",38:"snare",40:"snare",41:"floorTom",43:"floorTom",45:"midTom",47:"midTom",48:"midTom",50:"highTom",42:"hhClosed",44:"hhPedal",46:"hhOpen",49:"crash",52:"crash",55:"crash",57:"crash",51:"ride",53:"ride",59:"ride"};
-const GROUP={kick:"kick",snare:"drums",floorTom:"drums",midTom:"drums",highTom:"drums",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"hh",crash:"cymbal",special:"hh"};
-const PART={kick:"kick",snare:"snare",floorTom:"floorTom",midTom:"midTom",highTom:"highTom",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"ride",crash:"crash",special:"special"};
-const DEFAULT_NOTE={kick:36,snare:38,floorTom:41,midTom:45,highTom:48,hhClosed:42,hhPedal:44,hhOpen:46,ride:51,crash:49,special:37};
-const DEFAULT_TYPE={kick:"kick",snare:"snare",floorTom:"floorTom",midTom:"midTom",highTom:"highTom",hh:"hhClosed",ride:"ride",crash:"crash",special:"special"};
-const KEY_PART={KeyQ:"crash",KeyW:"highTom",KeyE:"midTom",KeyP:"crash",KeyA:"hh",KeyS:"snare",KeyD:"special",KeyK:"floorTom",KeyL:"ride"};
+const MIDI_MAP={35:"kick",36:"kick",38:"snare",40:"snare",41:"floorTom",43:"floorTom",45:"midTom",47:"midTom",48:"midTom",50:"highTom",42:"hhClosed",44:"hhPedal",46:"hhOpen",49:"crash",52:"crash",55:"crash",57:"crash2",51:"ride",53:"ride",59:"ride"};
+const GROUP={kick:"kick",snare:"drums",floorTom:"drums",midTom:"drums",highTom:"drums",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"hh",crash:"cymbal",crash2:"cymbal",special:"hh"};
+const PART={kick:"kick",snare:"snare",floorTom:"floorTom",midTom:"midTom",highTom:"highTom",hhClosed:"hh",hhPedal:"hh",hhOpen:"hh",ride:"ride",crash:"crash",crash2:"crash2",special:"special"};
+const DEFAULT_NOTE={kick:36,snare:38,floorTom:41,midTom:45,highTom:48,hhClosed:42,hhPedal:44,hhOpen:46,ride:51,crash:49,crash2:57,special:37};
+const DEFAULT_TYPE={kick:"kick",snare:"snare",floorTom:"floorTom",midTom:"midTom",highTom:"highTom",hh:"hhClosed",ride:"ride",crash:"crash",crash2:"crash2",special:"special"};
+const KEY_PART={KeyQ:"crash",KeyW:"highTom",KeyE:"midTom",KeyP:"crash2",KeyA:"hh",KeyS:"snare",KeyD:"special",KeyK:"floorTom",KeyL:"ride"};
 // Mix correction relative to the other in-game drum sounds.
 // The guide-drum backing stem keeps its own independent volume.
-const DRUM_GAIN={kick:1.4,crash:1.2};
+const DRUM_GAIN={kick:1.4,crash:1.2,crash2:1.2};
 const setup=document.querySelector("#setup"),game=document.querySelector("#game"),result=document.querySelector("#result"),canvas=document.querySelector("#chart"),ctx=canvas.getContext("2d");
 const $=s=>document.querySelector(s);let ac,masterBus,safetyLimiter,audioManifest,buffers={},drumBuffer=null,drumRegions={},drumSourceVelocity=100,openHatVoices=[],notes=[],duration=0,startedAt=0,rate=1,running=false,paused=false,autoplay=false,loading=false,raf=0,nextKick=0,nextAuto=0,missCursor=0,score=0,maxScore=1,counts={perfect:0,great:0,good:0,miss:0};
 function parseMidi(ab){
@@ -93,7 +93,7 @@ async function loadDrumSource(manifest){
 }
 async function init(){try{const [m,manifest,drumManifest]=await Promise.all([fetch(ASSET.midi).then(r=>{if(!r.ok)throw Error(ASSET.midi);return r.arrayBuffer()}),fetch(ASSET.manifest,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(ASSET.manifest);return r.json()}),fetch(ASSET.drums,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(ASSET.drums);return r.json()})]);notes=parseMidi(m);audioManifest=manifest;duration=Math.max(...notes.map(n=>n.time),263.05);ac=new (window.AudioContext||window.webkitAudioContext)();setupAudioGraph();await loadDrumSource(drumManifest);maxScore=notes.filter(n=>n.type!=="kick").reduce((s,n)=>s+weight(n.type)*n.velocity/127,0)*1000;setKit();$("#loadState").textContent=`準備完了 · ${notes.length.toLocaleString()} notes`;$("#start").disabled=false}catch(e){console.error(e);$("#loadState").textContent=e.message||"読み込みに失敗しました"}}
 function weight(t){return ["snare","highTom","midTom","floorTom"].includes(t)?1.5:["hhClosed","hhOpen","hhPedal"].includes(t)?.8:1}
-function setKit(){const used=new Set(notes.map(n=>PART[n.type]));document.querySelectorAll("#hitLayer [data-part]").forEach(el=>el.classList.toggle("inactive",!used.has(el.dataset.part)));document.querySelectorAll("[data-shade]").forEach(el=>el.classList.toggle("on",!used.has(el.dataset.shade)))}
+function setKit(){const used=new Set(notes.map(n=>PART[n.type]));document.querySelectorAll("#hitLayer [data-part]").forEach(el=>el.classList.toggle("inactive",!used.has(el.dataset.part)));document.querySelectorAll("[data-shade]").forEach(el=>{const part=el.dataset.shade,active=used.has(part)||(part==="crash"&&used.has("crash2"));el.classList.toggle("on",!active)})}
 function playBuffer(buf,gain){const s=ac.createBufferSource(),g=ac.createGain();s.buffer=buf;s.playbackRate.value=rate;g.gain.value=gain;s.connect(g).connect(masterBus);s.start();return s}
 function chokeOpenHat(){const now=ac.currentTime;for(const voice of openHatVoices.splice(0)){try{voice.gain.gain.cancelScheduledValues(now);voice.gain.gain.setValueAtTime(Math.max(.001,voice.gain.gain.value),now);voice.gain.gain.exponentialRampToValueAtTime(.001,now+.025);voice.source.stop(now+.03)}catch{}}}
 function playDrum(note,type,v=.75){if(!ac||!drumBuffer)return;if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();const region=drumRegions[String(note)]||drumRegions[String(DEFAULT_NOTE[type])];if(!region)return;const now=ac.currentTime,source=ac.createBufferSource(),gain=ac.createGain(),mix=DRUM_GAIN[type]||1,sourceVelocity=drumSourceVelocity/127,velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));source.buffer=drumBuffer;gain.gain.value=.7*velocityGain*mix;source.connect(gain).connect(masterBus);source.start(now,region.offset,region.duration);if(type==="hhOpen"){const voice={source,gain};openHatVoices.push(voice);source.onended=()=>{openHatVoices=openHatVoices.filter(x=>x!==voice)}}}
