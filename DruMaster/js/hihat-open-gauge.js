@@ -19,6 +19,7 @@
   const FOOT_PULSE_REFERENCE_VELOCITY=30;
   const FOOT_PULSE_RISE_BEATS=.045;
   const FOOT_PULSE_FALL_BEATS=.16;
+  const FOOT_PULSE_WINDOW=FOOT_PULSE_RISE_BEATS+FOOT_PULSE_FALL_BEATS;
   let cachedNotes=null,cachedTiming=null,events=[],pedalEvents=[];
   let displayedLevel=0,lastFrameMs=performance.now(),lastBeat=NaN;
 
@@ -31,6 +32,17 @@
     const normalized=Math.max(0,Math.min(127,Number(velocity)||0))/127;
     return normalized<=0?0:Math.pow(normalized,VELOCITY_CURVE);
   };
+
+  function lowerBoundBeat(list,beat){
+    let lo=0,hi=list.length;
+    while(lo<hi){const mid=(lo+hi)>>>1;if(list[mid].beat<beat)lo=mid+1;else hi=mid}
+    return lo;
+  }
+  function upperBoundBeat(list,beat){
+    let lo=0,hi=list.length;
+    while(lo<hi){const mid=(lo+hi)>>>1;if(list[mid].beat<=beat)lo=mid+1;else hi=mid}
+    return lo;
+  }
 
   function rebuildEnvelope(source,timing){
     const division=Number(timing?.division)||480;
@@ -82,26 +94,26 @@
   }
 
   function valueAtBeat(beat){
-    let value=0;
-    for(const event of events){
-      if(beat<event.rampStart)return value;
-      if(beat<event.beat){
-        const span=event.beat-event.rampStart;
-        if(span<=1e-7)return event.target;
-        const progress=(beat-event.rampStart)/span;
-        return event.from+(event.target-event.from)*easeInOutQuart(progress);
-      }
-      value=event.target;
+    /* Only the previous event and the next ramp can affect the current value.
+       Binary search replaces the former full timeline scan on every frame. */
+    const nextIndex=upperBoundBeat(events,beat),previous=events[nextIndex-1],next=events[nextIndex];
+    let value=previous?.target||0;
+    if(next&&beat>=next.rampStart&&beat<next.beat){
+      const span=next.beat-next.rampStart;
+      if(span<=1e-7)return next.target;
+      const progress=(beat-next.rampStart)/span;
+      value=next.from+(next.target-next.from)*easeInOutQuart(progress);
     }
     return value;
   }
 
   function footPulseAtBeat(beat){
     let pulse=0;
-    for(const event of pedalEvents){
-      const delta=beat-event.beat;
+    const start=lowerBoundBeat(pedalEvents,beat-FOOT_PULSE_WINDOW);
+    for(let i=start;i<pedalEvents.length;i++){
+      const event=pedalEvents[i],delta=beat-event.beat;
       if(delta<0)break;
-      if(delta>=FOOT_PULSE_RISE_BEATS+FOOT_PULSE_FALL_BEATS)continue;
+      if(delta>=FOOT_PULSE_WINDOW)continue;
       let shape;
       if(delta<FOOT_PULSE_RISE_BEATS){
         shape=easeInOutQuart(delta/FOOT_PULSE_RISE_BEATS);
@@ -119,7 +131,7 @@
     displayedLevel=0;
     lastBeat=NaN;
     lastFrameMs=performance.now();
-    fill.style.setProperty("--hh-open-gauge-level","0%");
+    fill.style.setProperty("--hh-open-gauge-scale","0");
     fill.style.setProperty("--hh-open-gauge-opacity",".3");
   }
 
@@ -159,7 +171,7 @@
     const velocity=valueAtBeat(beat),baseLevel=velocityToLevel(velocity)*100;
     const targetLevel=Math.min(100,baseLevel+footPulseAtBeat(beat));
     const level=smoothLevel(targetLevel,beat);
-    fill.style.setProperty("--hh-open-gauge-level",`${level.toFixed(3)}%`);
+    fill.style.setProperty("--hh-open-gauge-scale",(level/100).toFixed(5));
     fill.style.setProperty("--hh-open-gauge-opacity",(0.3+0.7*level/100).toFixed(3));
   }
 
