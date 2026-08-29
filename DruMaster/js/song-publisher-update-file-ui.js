@@ -5,22 +5,25 @@
   if(!frame)return;
 
   const LABEL={fullmix:"原曲",base:"オフボーカル",drums:"ドラムのみ",vocals:"ボーカルのみ",midi:"MIDI"};
-  let observer=null,refreshing=false;
+  let pollTimer=0,pollCount=0,boundDoc=null;
 
   function doc(){try{return frame.contentDocument}catch{return null}}
   function forceFileVisible(input){
     if(!input)return;
     if(input.hidden)input.hidden=false;
     if(input.disabled)input.disabled=false;
-    input.removeAttribute("hidden");
-    input.removeAttribute("disabled");
+    if(input.hasAttribute("hidden"))input.removeAttribute("hidden");
+    if(input.hasAttribute("disabled"))input.removeAttribute("disabled");
   }
   function registered(meta){return !!meta&&!String(meta.textContent||"").includes("未登録")}
+  function setText(node,text){if(node&&node.textContent!==text)node.textContent=text}
 
   function setInternalAction(select,input,value){
     if(!select)return;
-    select.value=value;
-    select.dispatchEvent(new Event("change",{bubbles:true}));
+    if(select.value!==value){
+      select.value=value;
+      select.dispatchEvent(new Event("change",{bubbles:true}));
+    }
     requestAnimationFrame(()=>{
       forceFileVisible(input);
       syncAll();
@@ -38,16 +41,17 @@
       else if(select.value==="replace")parts.push(`${label}: ${registered(meta)?"差し替え":"追加"}`);
     }
     const note=d.getElementById("dmCurrentNote");
-    if(note)note.textContent=parts.length?parts.join(" / "):"素材はすべて変更なし";
+    setText(note,parts.length?parts.join(" / "):"素材はすべて変更なし");
   }
 
   function syncWrap(wrap,d){
     const select=wrap.querySelector(".dm-update-action"),input=wrap.querySelector('input[type="file"]'),meta=wrap.querySelector(".dm-update-meta");
     if(!select||!input)return;
     const key=select.dataset.key||"";
+
     select.classList.add("dm-update-action-internal");
-    select.tabIndex=-1;
-    select.setAttribute("aria-hidden","true");
+    if(select.tabIndex!==-1)select.tabIndex=-1;
+    if(select.getAttribute("aria-hidden")!=="true")select.setAttribute("aria-hidden","true");
     forceFileVisible(input);
 
     let del=wrap.querySelector(".dm-update-delete");
@@ -65,12 +69,13 @@
       });
       wrap.appendChild(del);
     }
+
     wrap.classList.toggle("dm-update-no-delete",key==="midi");
     if(del){
       const canDelete=d.body.classList.contains("dm-publisher-update")&&registered(meta);
-      del.hidden=!canDelete;
+      if(del.hidden===canDelete)del.hidden=!canDelete;
       del.classList.toggle("active",select.value==="delete");
-      del.textContent=select.value==="delete"?"削除を取消":"削除";
+      setText(del,select.value==="delete"?"削除を取消":"削除");
     }
 
     if(input.dataset.dmUpdateFileBound!=="1"){
@@ -79,10 +84,6 @@
         if(input.files?.length)setInternalAction(select,input,"replace");
         else if(select.value==="replace")setInternalAction(select,input,"keep");
       });
-      select.addEventListener("change",()=>requestAnimationFrame(()=>{
-        forceFileVisible(input);
-        syncAll();
-      }));
     }
   }
 
@@ -105,33 +106,45 @@
     d.head.appendChild(s);
   }
 
-  function syncAll(){
-    if(refreshing)return;
-    refreshing=true;
-    try{
-      const d=doc();if(!d?.head||!d.body)return;
-      injectStyle(d);
-      d.querySelectorAll(".dm-update-control").forEach(w=>syncWrap(w,d));
-      syncSummary(d);
-    }finally{refreshing=false}
+  function syncAll(d=doc()){
+    if(!d?.head||!d.body)return false;
+    injectStyle(d);
+    d.querySelectorAll(".dm-update-control").forEach(w=>syncWrap(w,d));
+    syncSummary(d);
+    return !!d.getElementById("dmPublisherMode");
   }
 
-  function install(){
-    observer?.disconnect();observer=null;
-    const d=doc();if(!d?.documentElement)return;
-    syncAll();
-    observer=new MutationObserver(()=>syncAll());
-    observer.observe(d.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:["class","hidden","disabled"]});
+  function bindDocument(d){
+    if(boundDoc===d)return;
+    boundDoc=d;
     d.addEventListener("change",e=>{
-      if(e.target?.id==="dmExistingSong")setTimeout(syncAll,0);
+      if(e.target?.id==="dmExistingSong")setTimeout(()=>syncAll(d),0);
     },true);
     d.addEventListener("click",e=>{
-      if(e.target?.matches?.(".dm-mode-switch button"))setTimeout(syncAll,0);
+      if(e.target?.matches?.(".dm-mode-switch button"))setTimeout(()=>syncAll(d),0);
     },true);
-    setTimeout(syncAll,250);
-    setTimeout(syncAll,800);
   }
 
-  frame.addEventListener("load",()=>setTimeout(install,0));
-  setTimeout(install,450);
+  function startPolling(){
+    clearInterval(pollTimer);pollTimer=0;pollCount=0;boundDoc=null;
+    const tick=()=>{
+      const d=doc();
+      if(d?.head&&d.body){
+        bindDocument(d);
+        const ready=syncAll(d);
+        if(ready&&d.querySelector(".dm-update-control")){
+          clearInterval(pollTimer);pollTimer=0;
+          setTimeout(()=>syncAll(d),150);
+          setTimeout(()=>syncAll(d),600);
+          return;
+        }
+      }
+      if(++pollCount>=80){clearInterval(pollTimer);pollTimer=0}
+    };
+    tick();
+    if(!pollTimer)pollTimer=setInterval(tick,100);
+  }
+
+  frame.addEventListener("load",()=>setTimeout(startPolling,0));
+  setTimeout(startPolling,250);
 })();
