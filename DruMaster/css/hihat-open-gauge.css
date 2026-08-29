@@ -26,24 +26,3 @@
   box-shadow:0 0 10px rgba(82,223,207,.18);
   will-change:height,opacity;
 }
-#hhOpenGaugeMotion{
-  position:absolute;
-  z-index:2;
-  left:-50%;
-  right:-50%;
-  height:var(--hh-motion-length,0%);
-  opacity:var(--hh-motion-opacity,0);
-  pointer-events:none;
-  filter:blur(3px);
-  mix-blend-mode:screen;
-  transition:opacity 100ms linear,height 100ms ease-out;
-  will-change:bottom,height,opacity;
-}
-#hhOpenGauge[data-motion-direction="up"] #hhOpenGaugeMotion{
-  bottom:calc(var(--hh-motion-level,0%) - var(--hh-motion-length,0%));
-  background:linear-gradient(to top,rgba(82,223,207,0),rgba(82,223,207,.95));
-}
-#hhOpenGauge[data-motion-direction="down"] #hhOpenGaugeMotion{
-  bottom:var(--hh-motion-level,0%);
-  background:linear-gradient(to top,rgba(82,223,207,.95),rgba(82,223,207,0));
-}
