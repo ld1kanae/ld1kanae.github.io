@@ -34,11 +34,22 @@ function resetFootAutoForRun(){
   }
 }
 
-function flashFootGoal(n){
-  /* Reuse the kick goal-line effect so AUTO foot notes get the same timing cue
-     without entering judgement/scoring. The chart note itself stays hhPedal. */
-  try{globalThis.DruMasterJudgement?.flashNote?.({...n,type:"kick"})}catch{}
+function asKickGoalNote(n){return n?.type==="hhPedal"?{...n,type:"kick"}:n}
+function flashFootGoal(n){try{globalThis.DruMasterJudgement?.flashNote?.(asKickGoalNote(n))}catch{}}
+
+/* judgement.js is loaded after this adapter. Once available, make its shared
+   flash entry point understand foot-pedal notes too. This also covers score
+   playback, which emits note-synchronised flashes through the same API. */
+function installFootGoalAdapter(){
+  const j=globalThis.DruMasterJudgement;
+  if(!j?.flashNote){requestAnimationFrame(installFootGoalAdapter);return}
+  if(j.__dmFootGoalAdapter)return;
+  const baseFlash=j.flashNote.bind(j),baseEmit=typeof j.emitForNote==="function"?j.emitForNote.bind(j):null;
+  j.flashNote=note=>baseFlash(asKickGoalNote(note));
+  if(baseEmit)j.emitForNote=(note,label,options={})=>baseEmit(asKickGoalNote(note),label,options);
+  j.__dmFootGoalAdapter=true;
 }
+requestAnimationFrame(installFootGoalAdapter);
 
 function processFootAuto(){
   if(document.body.dataset.scorePlayback==="1")return;
