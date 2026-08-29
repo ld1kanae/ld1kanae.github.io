@@ -12,7 +12,7 @@
   hitLayer.appendChild(gauge);
 
   const HH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
-  const VELOCITY_CURVE=Math.log(.5)/Math.log(100/127);
+  const VELOCITY_CURVE=Math.log(.4)/Math.log(100/127);
   let cachedNotes=null,cachedTiming=null,events=[];
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
