@@ -16,7 +16,7 @@
   let cachedNotes=null,cachedTiming=null,events=[];
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
-  const easeInOutSine=value=>-(Math.cos(Math.PI*clamp01(value))-1)/2;
+  const easeInCubic=value=>Math.pow(clamp01(value),3);
   const velocityToLevel=velocity=>{
     const normalized=Math.max(0,Math.min(127,Number(velocity)||0))/127;
     return normalized<=0?0:Math.pow(normalized,VELOCITY_CURVE);
@@ -70,7 +70,7 @@
         const span=event.beat-event.rampStart;
         if(span<=1e-7)return event.target;
         const progress=(beat-event.rampStart)/span;
-        return event.from+(event.target-event.from)*easeInOutSine(progress);
+        return event.from+(event.target-event.from)*easeInCubic(progress);
       }
       value=event.target;
     }
