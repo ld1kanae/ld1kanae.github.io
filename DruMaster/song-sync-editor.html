@@ -9,7 +9,7 @@
 <script>
 (async()=>{
   try{
-    const r=await fetch('song-sync-editor-v2.html?v=20260829-timingfix2',{cache:'no-store'});
+    const r=await fetch('song-sync-editor-v2.html?v=20260829-volumeflow1',{cache:'no-store'});
     if(!r.ok)throw Error(`Editor load failed: HTTP ${r.status}`);
     let html=await r.text();
 
@@ -24,7 +24,7 @@
     html=html.replace('const when=contextStart+(t-logicalStart),osc=ac.createOscillator(),g=ac.createGain(),at=Math.max(ac.currentTime,when);osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.08,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.025);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.03)','const when=contextStart+(t-logicalStart),at=Math.max(ac.currentTime,when);if(!globalThis.DruMasterTimingMidi?.play?.(n,at,ac)){const osc=ac.createOscillator(),g=ac.createGain();osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.12,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.05);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.06)}');
 
     const theme='<link rel="stylesheet" href="css/song-tool-cyan-violet-theme.css?v=20260829-theme3">';
-    const local='<scr'+'ipt src="js/song-sync-local-session.js?v=20260829-update3"></scr'+'ipt>';
+    const local='<scr'+'ipt src="js/song-sync-local-session.js?v=20260829-volumeflow1"></scr'+'ipt>';
     const midiAudio='<scr'+'ipt src="js/song-sync-midi-audio.js?v=20260829-timingfix2"></scr'+'ipt>';
     const history='<scr'+'ipt src="js/song-sync-history.js?v=20260829-offset2"></scr'+'ipt>';
     const audioOffsetUi='<scr'+'ipt src="js/song-sync-audio-offset-ui.js?v=20260829-audiooffset1"></scr'+'ipt>';
