@@ -99,7 +99,7 @@ addEventListener("message",e=>{
   const inherited={dmSongPublisher:{token:d.token,repo:d.repo,branch:d.branch,id:d.id,sessionId:d.sessionId,at:d.at||Date.now()}};
   try{editorView.contentWindow.name=JSON.stringify(inherited)}catch{}try{volumeView.contentWindow.name=JSON.stringify(inherited)}catch{}
   editorView.src=`song-sync-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-transport2`;
-  volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-sync1`;
+  volumeView.src=`song-volume-editor.html?song=${encodeURIComponent(d.id)}&session=${encodeURIComponent(d.sessionId)}&embedded=1&v=20260829-sync2`;
   if(d.mode!=="update")show("editor");
 });
 })();
@@ -108,7 +108,7 @@ addEventListener("message",e=>{
 <script src="js/song-publisher-update-mode.js?v=20260829-update2"></script>
 <script src="js/song-publisher-update-file-ui.js?v=20260829-fileui1"></script>
 <script src="js/song-publisher-update-bridge.js?v=20260829-immediate1"></script>
-<script src="js/song-publisher-existing-editor.js?v=20260829-existing3"></script>
+<script src="js/song-publisher-existing-editor.js?v=20260829-existing4"></script>
 <script src="js/song-publisher-debug-unlock.js?v=20260828-debugunlock3"></script>
 </body>
 </html>
