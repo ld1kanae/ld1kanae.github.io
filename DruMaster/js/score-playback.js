@@ -94,12 +94,15 @@
   }
   function playStem(entry,name,gainValue,when,logicalOffset){
     const buf=entry.buffers[name];if(!buf)return;
-    const stemOffset=Math.max(0,Number(currentSong.playback?.stemOffsetSec)||0),offset=clamp(logicalOffset+stemOffset,0,Math.max(0,buf.duration-.001));
+    const stemOffset=Number(currentSong.playback?.stemOffsetSec)||0,
+          rawOffset=logicalOffset+stemOffset,
+          offset=clamp(rawOffset,0,Math.max(0,buf.duration-.001)),
+          startWhen=when+(rawOffset<0?(-rawOffset)/Math.max(.001,rate):0);
     if(offset>=buf.duration-.001)return;
     const source=ac.createBufferSource(),gain=ac.createGain(),voice={source,gain};
     source.buffer=buf;source.playbackRate.value=rate;gain.gain.value=gainValue;source.connect(gain).connect(masterBus);
     stemVoices.add(voice);source.onended=()=>{stemVoices.delete(voice);try{source.disconnect()}catch{}try{gain.disconnect()}catch{}};
-    source.start(when,offset);
+    source.start(startWhen,offset);
   }
   function startStemSet(entry,when,logicalOffset){
     playStem(entry,"base",stemGain(currentSong,"base",.95),when,logicalOffset);
