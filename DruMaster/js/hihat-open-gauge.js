@@ -19,7 +19,10 @@
   let displayedLevel=0,lastFrameMs=performance.now(),lastBeat=NaN;
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
-  const easeOutQuart=value=>1-Math.pow(1-clamp01(value),4);
+  const easeInOutQuart=value=>{
+    const t=clamp01(value);
+    return t<.5?8*t*t*t*t:1-Math.pow(-2*t+2,4)/2;
+  };
   const velocityToLevel=velocity=>{
     const normalized=Math.max(0,Math.min(127,Number(velocity)||0))/127;
     return normalized<=0?0:Math.pow(normalized,VELOCITY_CURVE);
@@ -73,7 +76,7 @@
         const span=event.beat-event.rampStart;
         if(span<=1e-7)return event.target;
         const progress=(beat-event.rampStart)/span;
-        return event.from+(event.target-event.from)*easeOutQuart(progress);
+        return event.from+(event.target-event.from)*easeInOutQuart(progress);
       }
       value=event.target;
     }
@@ -98,7 +101,7 @@
       displayedLevel=target;
     }else{
       const alpha=1-Math.exp(-dt/DISPLAY_SMOOTH_MS);
-      displayedLevel+= (target-displayedLevel)*alpha;
+      displayedLevel+=(target-displayedLevel)*alpha;
       if(Math.abs(target-displayedLevel)<.01)displayedLevel=target;
     }
     lastBeat=beat;
