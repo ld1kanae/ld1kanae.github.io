@@ -19,6 +19,15 @@
     kit.appendChild(stage);
   }
   const stage=kit?.querySelector(":scope > .kit-stage"),kickFx=document.querySelector("#kickFx");
+  if(stage&&!stage.querySelector(":scope > .kit-art-plane")){
+    const plane=document.createElement("div");
+    plane.className="kit-art-plane";
+    const bass=stage.querySelector(":scope > .bass-drum-art");
+    const art=stage.querySelector(":scope > .kit-art");
+    stage.insertBefore(plane,bass||art||stage.firstChild);
+    if(bass)plane.appendChild(bass);
+    if(art)plane.appendChild(art);
+  }
   if(stage&&kickFx&&kickFx.parentElement!==stage)stage.appendChild(kickFx);
 
   /* Expanded PC bindings: nearby keys can strike the same drum/cymbal. */
