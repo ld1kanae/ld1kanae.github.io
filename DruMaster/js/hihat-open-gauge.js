@@ -20,7 +20,7 @@
   let cachedNotes=null,cachedTiming=null,events=[],lastLevel=0;
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
-  const easeInCubic=value=>Math.pow(clamp01(value),3);
+  const easeOutQuart=value=>1-Math.pow(1-clamp01(value),4);
   const velocityToLevel=velocity=>{
     const normalized=Math.max(0,Math.min(127,Number(velocity)||0))/127;
     return normalized<=0?0:Math.pow(normalized,VELOCITY_CURVE);
@@ -74,7 +74,7 @@
         const span=event.beat-event.rampStart;
         if(span<=1e-7)return event.target;
         const progress=(beat-event.rampStart)/span;
-        return event.from+(event.target-event.from)*easeInCubic(progress);
+        return event.from+(event.target-event.from)*easeOutQuart(progress);
       }
       value=event.target;
     }
