@@ -9,7 +9,7 @@
 <script>
 (async()=>{
   try{
-    const r=await fetch('song-sync-editor-v2.html?v=20260830-midibounds1',{cache:'no-store'});
+    const r=await fetch('song-sync-editor-v2.html?v=20260830-midibounds3',{cache:'no-store'});
     if(!r.ok)throw Error(`Editor load failed: HTTP ${r.status}`);
     let html=await r.text();
 
@@ -20,11 +20,6 @@
     html=html.replace('調整後に最終PUBLISHしてください。','調整後にPUBLISHしてください。');
     html=html.replace('波形とMIDIを同一時間軸で比較し、最終値をPublishします。','波形とMIDIを同一時間軸で比較し、補正値をPUBLISHします。');
 
-    /* The embedded editor has its own compact SMF parser. Its old bounds guard
-       trusted the MTrk-declared end position even when that position was past
-       the actual ArrayBuffer, so DataView itself could throw a raw RangeError.
-       Always cap reads at the real buffer boundary and reject malformed/truncated
-       headers/tracks with a controlled MIDI error instead. */
     html=html.replace(
       'const need=(n,end=d.byteLength)=>{if(p+n>end)throw Error("MIDIが途中で切れています")}',
       'const need=(n,end=d.byteLength)=>{const limit=Math.min(Number.isFinite(end)?end:d.byteLength,d.byteLength);if(!Number.isFinite(n)||n<0||p<0||p+n>limit)throw Error("MIDIが途中で切れています")}'
@@ -52,7 +47,7 @@
     const ranges='<scr'+'ipt src="js/song-tool-range-theme.js?v=20260829-range1"></scr'+'ipt>';
     const clickSeek='<scr'+'ipt src="js/song-sync-click-seek.js?v=20260829-clickseek1"></scr'+'ipt>';
     const seekbar='<scr'+'ipt src="js/song-sync-seekbar.js?v=20260829-restore1"></scr'+'ipt>';
-    const rayTimeline='<scr'+'ipt src="js/song-sync-ray-timeline.js?v=20260828-raytimeline1"></scr'+'ipt>';
+    const rayTimeline='<scr'+'ipt src="js/song-sync-ray-timeline-loader.js?v=20260830-midibounds3"></scr'+'ipt>';
     html=html.replace('</head>',theme+local+midiAudio+'</head>');
     html=html.replace('</body>',history+audioOffsetUi+heading+existingToken+ranges+clickSeek+seekbar+rayTimeline+'</body>');
     document.open();
