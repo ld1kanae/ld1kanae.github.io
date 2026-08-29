@@ -30,7 +30,7 @@
 
   function laneForPart(part){
     if(part==="kick")return 3;
-    if(part==="crash")return 0;
+    if(part==="crash"||part==="crash2")return 0;
     if(part==="hh"||part==="ride"||part==="special")return 1;
     if(part==="snare"||part==="highTom"||part==="midTom"||part==="floorTom")return 2;
     return -1;
@@ -67,7 +67,7 @@
       barWidth:isOpen?3:4,
       gap:isOpen?1:0,
       totalWidth:isOpen?7:4,
-      color:note.type==="snare"?"#ff3d73":note.type==="highTom"?"#d76bff":note.type==="midTom"?"#8875ff":note.type==="floorTom"?"#329cff":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#aeb9c7"
+      color:note.type==="snare"?"#ff3d73":note.type==="highTom"?"#d76bff":note.type==="midTom"?"#8875ff":note.type==="floorTom"?"#329cff":note.type==="ride"?"#63d66f":group==="cymbal"?"#ffd45a":group==="hh"?"#52dfcf":"#aeb9c7"
     };
   }
 
