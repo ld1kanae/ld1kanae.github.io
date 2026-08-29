@@ -6,6 +6,7 @@
   const originalDraw=chart.draw;
   const DEFAULT_PX_PER_QUARTER=80;
   const DESKTOP_PX_PER_QUARTER=100;
+  const DESKTOP_NOTE_WIDTH_SCALE=1.5;
   const desktopMq=matchMedia("(hover:hover) and (pointer:fine)");
 
   /* One global chart speed keeps every song and playback mode consistent. */
@@ -43,7 +44,7 @@
       if(skipHit&&n.hit)continue;
       const x=judgeX+(n.tick/division-beatNow)*pxPerQuarter;
       const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
-            alpha=.48+.52*n.velocity/127,visual=chart.noteVisual(n.type,group);
+            alpha=.48+.52*n.velocity/127,visual=chart.noteVisual(n.type,group,DESKTOP_NOTE_WIDTH_SCALE);
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;
       ctx.fillStyle=visual.color;
       if(lane<3){
