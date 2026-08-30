@@ -73,10 +73,11 @@ function readWavFormat(ab){
 
 /* drumsound.wav intentionally contains large gaps between source hits so every
    cymbal/reverb tail can finish naturally. Those gaps must not become active
-   AudioBufferSourceNodes during gameplay. Trim only the digital-silence tail
-   after the last meaningful 16-bit sample, with an extra guard after it. */
+   AudioBufferSourceNodes during gameplay. Trim only the near-digital-silence
+   tail after the last meaningful 16-bit sample, with an extra guard after it. */
 const DRUM_SILENCE_THRESHOLD=1.5/32768;
 const DRUM_TAIL_GUARD_SEC=.10;
+let drumSampleBuffers={};
 function audibleRegionDuration(offset,duration){
   if(!drumBuffer||duration<=0)return duration;
   const sr=drumBuffer.sampleRate,start=Math.max(0,Math.floor(offset*sr)),end=Math.min(drumBuffer.length,Math.ceil((offset+duration)*sr));
@@ -96,6 +97,27 @@ function audibleRegionDuration(offset,duration){
   const audible=(lastAudible-start+1)/sr+DRUM_TAIL_GUARD_SEC;
   return Math.min(duration,Math.max(.06,audible));
 }
+function copyDrumRegion(offset,duration){
+  const sr=drumBuffer.sampleRate,start=Math.max(0,Math.floor(offset*sr));
+  const frames=Math.max(1,Math.min(drumBuffer.length-start,Math.ceil(duration*sr)));
+  const out=ac.createBuffer(drumBuffer.numberOfChannels,frames,sr);
+  for(let ch=0;ch<drumBuffer.numberOfChannels;ch++){
+    out.copyToChannel(drumBuffer.getChannelData(ch).subarray(start,start+frames),ch,0);
+  }
+  return out;
+}
+function tuneRealtimeLimiter(){
+  /* The old -8 dB / 180 ms compressor acted on the complete backing+drum mix,
+     so dense drum transients repeatedly ducked the backing and could sound like
+     dropouts. Keep it only as a peak safety limiter; this changes no timing or
+     input behaviour and leaves the backing below threshold in normal use. */
+  if(!safetyLimiter)return;
+  safetyLimiter.threshold.value=-1.5;
+  safetyLimiter.knee.value=1;
+  safetyLimiter.ratio.value=20;
+  safetyLimiter.attack.value=.001;
+  safetyLimiter.release.value=.06;
+}
 
 loadDrumSource=async function(manifest){
   $("#loadState").textContent="ゲーム内ドラム音源を読み込み中…";
@@ -111,6 +133,7 @@ loadDrumSource=async function(manifest){
   if(manifest.wav.channels&&fmt.channels!==manifest.wav.channels)throw Error("ゲーム内ドラム音源のチャンネル数が一致しません");
   if(manifest.wav.bitsPerSample&&fmt.bitsPerSample!==manifest.wav.bitsPerSample)throw Error("ゲーム内ドラム音源のビット深度が一致しません");
 
+  tuneRealtimeLimiter();
   drumBuffer=await ac.decodeAudioData(wav.slice(0));
   const sourceNotes=parseMidi(midi);
   if(!sourceNotes.length)throw Error("ゲーム内ドラム音源MIDIにノートがありません");
@@ -124,6 +147,16 @@ loadDrumSource=async function(manifest){
   });
   const required=new Set(Object.values(DEFAULT_NOTE)),missing=[...required].filter(note=>!drumRegions[String(note)]);
   if(missing.length)throw Error(`ゲーム内ドラム音源に必要な基準音がありません（MIDI ${missing.join(", ")}）`);
+
+  /* Each hit previously kept a reference to the entire long source recording.
+     Split the already-trimmed source regions once during loading, then release
+     the large decoded source buffer. Runtime voices now reference only the one
+     small sample they actually play; audible tails are unchanged. */
+  drumSampleBuffers={};
+  for(const [note,region] of Object.entries(drumRegions)){
+    drumSampleBuffers[note]=copyDrumRegion(region.offset,region.duration);
+  }
+  drumBuffer=null;
 };
 
 const activeDrumVoices=new Set();
@@ -145,20 +178,20 @@ function midiDrumMix(type){
 }
 
 function startDrumVoice(type,v=.75,when){
-  if(!ac||!drumBuffer)return null;
+  if(!ac)return null;
   if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();
-  const sampleNote=DEFAULT_NOTE[type],region=drumRegions[String(sampleNote)];
-  if(!region)return null;
+  const sampleNote=DEFAULT_NOTE[type],sample=drumSampleBuffers[String(sampleNote)];
+  if(!sample)return null;
   const startAt=Number.isFinite(Number(when))?Math.max(ac.currentTime,Number(when)):ac.currentTime,
         source=ac.createBufferSource(),gain=ac.createGain(),mix=midiDrumMix(type),sourceVelocity=drumSourceVelocity/127,
         velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
-  source.buffer=drumBuffer;
+  source.buffer=sample;
   gain.gain.value=.85*velocityGain*mix;
   source.connect(gain).connect(masterBus);
 
   let voice=null;
   if(type==="hhOpen"){voice={source,gain};openHatVoices.push(voice)}
-  const tracked={source,gain};
+  const tracked={source,gain,endsAt:startAt+sample.duration};
   activeDrumVoices.add(tracked);
   source.onended=()=>{
     activeDrumVoices.delete(tracked);
@@ -166,7 +199,7 @@ function startDrumVoice(type,v=.75,when){
     try{source.disconnect()}catch{}
     try{gain.disconnect()}catch{}
   };
-  source.start(startAt,region.offset,region.duration);
+  source.start(startAt);
   return tracked;
 }
 
@@ -176,6 +209,7 @@ playDrum=function(_chartNote,type,v=.75){
 
 globalThis.DruMasterAudioControl={
   scheduleKick(v,when){return startDrumVoice("kick",v,when)},
+  getStats(){return {activeVoices:activeDrumVoices.size,sampleBuffers:Object.keys(drumSampleBuffers).length}},
   stopAllDrumVoices(){
     const now=ac?.currentTime||0;
     openHatVoices=[];
