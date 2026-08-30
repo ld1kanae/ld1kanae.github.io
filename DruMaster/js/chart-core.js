@@ -23,6 +23,7 @@ globalThis.DruMusterChart=(()=>{
     if(type==="midTom")return "#8875ff";
     if(type==="floorTom")return "#329cff";
     if(type==="ride")return "#63d66f";
+    if(type==="hhPedal")return "#52dfcf";
     if(group==="cymbal")return "#ffd45a";
     if(group==="hh")return "#52dfcf";
     if(type==="kick"||group==="kick")return "#aeb9c7";
@@ -208,7 +209,7 @@ globalThis.DruMusterChart=(()=>{
       if(skipHit&&n.hit)continue;
       const x=judgeX+(n.tick/division-beatNow)*PIXELS_PER_QUARTER+(noteOffsets.get(n)||0);
       const group=groupMap[n.type],lane=laneForGroup(group),alpha=.48+.52*n.velocity/127,visual=noteVisual(n.type,group,noteWidthScale);
-      ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;ctx.fillStyle=visual.color;
+      ctx.globalAlpha=n.type==="hhPedal"?.24+.18*n.velocity/127:n.type==="kick"?.32+.28*n.velocity/127:alpha;ctx.fillStyle=visual.color;
       if(lane<3){
         const barTop=lane*laneH,barH=laneH;
         if(visual.kind==="double"){
