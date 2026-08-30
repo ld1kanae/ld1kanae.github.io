@@ -81,26 +81,27 @@
     return Math.max(0,current()-queuedMs/1000*playbackRate);
   }
 
+  function nearestTouchNote(t,includeHit=false){
+    if(!Number.isFinite(t)||typeof notes==="undefined"||!Array.isArray(notes))return null;
+    const maxDelta=.160,search=globalThis.DruMasterNoteSearch,
+          predicate=n=>(includeHit||!n.hit)&&n.type!=="kick"&&n.type!=="hhPedal";
+    if(search?.nearest)return search.nearest(notes,t,maxDelta,predicate)||null;
+    let best=null,bestDelta=maxDelta+.000001;
+    for(const n of notes){
+      if(n.time<t-maxDelta)continue;
+      if(n.time>t+maxDelta)break;
+      if(!predicate(n))continue;
+      const delta=Math.abs(n.time-t);
+      if(delta<bestDelta){best=n;bestDelta=delta}
+    }
+    return best?{note:best,delta:bestDelta}:null;
+  }
+
   function consumeTouchAt(t){
     if(typeof running==="undefined"||!running||typeof paused!=="undefined"&&paused||typeof autoplay!=="undefined"&&autoplay)return false;
-    if(!Number.isFinite(t)||typeof notes==="undefined"||!Array.isArray(notes))return false;
     if(document.body.classList.contains("acoustic-calibrating"))return false;
-    const maxDelta=.160,search=globalThis.DruMasterNoteSearch;
-    let match=null;
-    if(search?.nearest){
-      match=search.nearest(notes,t,maxDelta,n=>!n.hit&&n.type!=="kick"&&n.type!=="hhPedal");
-    }else{
-      let best=null,bestDelta=maxDelta+.000001;
-      for(const n of notes){
-        if(n.time<t-maxDelta)continue;
-        if(n.time>t+maxDelta)break;
-        if(n.hit||n.type==="kick"||n.type==="hhPedal")continue;
-        const delta=Math.abs(n.time-t);
-        if(delta<bestDelta){best=n;bestDelta=delta}
-      }
-      if(best)match={note:best,delta:bestDelta};
-    }
-    if(!match||match.delta>maxDelta)return false;
+    const match=nearestTouchNote(t,false);
+    if(!match||match.delta>.160)return false;
 
     const {note,delta}=match;
     note.hit=true;
@@ -162,19 +163,27 @@
       if(mode.value!=="touch")return;
       if(e.target.closest("#pause,#pausePanel button,.mic-debug-controls,button:not(.hit),select,input"))return;
       if(expandedControlAt(e.clientX,e.clientY))return;
-      const api=globalThis.DruMasterPerformanceMode;
-      if(!api || api.getRunMode?.()!=="touch")return;
 
-      const consumed=consumeTouchAt(eventSongTime(e));
-      if(consumed){
+      const active=typeof running!=="undefined"&&running&&
+        !(typeof paused!=="undefined"&&paused)&&
+        !(typeof autoplay!=="undefined"&&autoplay)&&
+        !document.body.classList.contains("acoustic-calibrating");
+      if(!active)return;
+
+      const t=eventSongTime(e),nearby=nearestTouchNote(t,true);
+
+      /* Anywhere-touch owns the whole pointer while a playable chart note is
+         inside the GOOD window. This is intentionally based on note presence,
+         not only on whether an unhit note can still be consumed. It prevents a
+         drum hit target underneath the finger from sounding an extra sample. */
+      if(nearby&&nearby.delta<=.160){
         e.preventDefault();
         e.stopImmediatePropagation();
+        consumeTouchAt(t);
         return;
       }
 
-      /* No chart note nearby: this is deliberately a plain drum-set strike,
-         with no score/judgement side effects. Handle it here and stop the older
-         whole-game touch listener from trying to consume an AUTO foot note. */
+      /* Outside every note window, keep the drum set usable as a free pad. */
       const target=e.target.closest("#hitLayer .hit:not(.inactive)");
       if(target&&playFreePad(target)){
         e.preventDefault();
