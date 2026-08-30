@@ -105,6 +105,102 @@ function visibleFootRange(){
   return search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length};
 }
 
+/* The opening gauge has a musical base envelope plus small hit pulses. The
+   chart graph intentionally shows only that base envelope. Keep this curve in
+   sync with hihat-open-gauge.js: open notes set the target velocity, closed or
+   pedal notes set zero, each transition begins up to half a beat early, and an
+   isolated open note closes automatically two beats later. */
+const HH_GRAPH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
+const HH_GRAPH_VELOCITY_CURVE=Math.log(.4)/Math.log(100/127);
+let hhGraphNotes=null,hhGraphTiming=null,hhGraphEvents=[];
+const hhGraphClamp01=value=>Math.max(0,Math.min(1,value));
+const hhGraphEaseOutQuart=value=>1-Math.pow(1-hhGraphClamp01(value),4);
+const hhGraphVelocityToLevel=velocity=>{
+  const normalized=Math.max(0,Math.min(127,Number(velocity)||0))/127;
+  return normalized<=0?0:Math.pow(normalized,HH_GRAPH_VELOCITY_CURVE);
+};
+function hhGraphUpperBound(beat){
+  let lo=0,hi=hhGraphEvents.length;
+  while(lo<hi){const mid=(lo+hi)>>>1;if(hhGraphEvents[mid].beat<=beat)lo=mid+1;else hi=mid}
+  return lo;
+}
+function rebuildHiHatGraphEnvelope(){
+  if(hhGraphNotes===notes&&hhGraphTiming===beatTiming)return;
+  hhGraphNotes=notes;
+  hhGraphTiming=beatTiming;
+  const division=Number(beatTiming?.division)||480,actual=[];
+  for(const note of notes){
+    if(!HH_GRAPH_TYPES.has(note.type))continue;
+    actual.push({
+      beat:Number(note.tick)/division,
+      target:note.type==="hhOpen"?Math.max(0,Math.min(127,Number(note.velocity)||0)):0,
+      synthetic:false
+    });
+  }
+  actual.sort((a,b)=>a.beat-b.beat);
+  const timeline=[];
+  for(let i=0;i<actual.length;i++){
+    const event=actual[i],next=actual[i+1];
+    timeline.push(event);
+    if(event.target>0&&(!next||next.beat-event.beat>2))timeline.push({beat:event.beat+2,target:0,synthetic:true});
+  }
+  timeline.sort((a,b)=>a.beat-b.beat||(a.synthetic?1:-1));
+  hhGraphEvents=[];
+  let previousBeat=-Infinity,previousTarget=0;
+  for(const event of timeline){
+    if(hhGraphEvents.length&&Math.abs(hhGraphEvents[hhGraphEvents.length-1].beat-event.beat)<1e-7){
+      const prior=hhGraphEvents.pop();
+      previousTarget=prior.from;
+      previousBeat=hhGraphEvents.length?hhGraphEvents[hhGraphEvents.length-1].beat:-Infinity;
+    }
+    const rampStart=Number.isFinite(previousBeat)?Math.max(event.beat-.5,previousBeat):event.beat-.5;
+    hhGraphEvents.push({...event,from:previousTarget,rampStart});
+    previousBeat=event.beat;
+    previousTarget=event.target;
+  }
+}
+function hiHatGraphVelocityAtBeat(beat){
+  const nextIndex=hhGraphUpperBound(beat),previous=hhGraphEvents[nextIndex-1],next=hhGraphEvents[nextIndex];
+  let value=previous?.target||0;
+  if(next&&beat>=next.rampStart&&beat<next.beat){
+    const span=next.beat-next.rampStart;
+    if(span<=1e-7)return next.target;
+    const progress=(beat-next.rampStart)/span;
+    value=next.from+(next.target-next.from)*hhGraphEaseOutQuart(progress);
+  }
+  return value;
+}
+function drawHiHatOpennessGraph(){
+  if(!Array.isArray(notes)||!notes.length)return;
+  rebuildHiHatGraphEnvelope();
+  if(!hhGraphEvents.length)return;
+  const w=canvas.clientWidth,h=canvas.clientHeight,
+        beatNow=DruMusterChart.secondsToBeat(current(),beatTiming),
+        judgeX=DruMusterChart.judgementX(w),
+        kickH=Math.max(16,h*.12),mainH=h-kickH,
+        speed=DruMusterChart.pixelsPerQuarter?.()||DruMusterChart.PIXELS_PER_QUARTER||80,
+        top=mainH+2,bottom=h-2,span=Math.max(1,bottom-top),samplePx=4;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0,mainH,w,kickH);
+  ctx.clip();
+  ctx.beginPath();
+  let first=true;
+  for(let x=0;x<=w+samplePx;x+=samplePx){
+    const beat=beatNow+(x-judgeX)/speed,
+          velocity=hiHatGraphVelocityAtBeat(beat),
+          level=hhGraphVelocityToLevel(velocity),
+          y=bottom-level*span;
+    if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle="rgba(82,223,207,.24)";
+  ctx.lineWidth=.9;
+  ctx.lineJoin="round";
+  ctx.lineCap="round";
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawFootPedals(){
   if(!Array.isArray(notes)||!notes.length)return;
   const w=canvas.clientWidth,h=canvas.clientHeight,
@@ -146,6 +242,7 @@ draw=function(){
     skipHit:true
   });
   for(const n of temporary)n.hit=false;
+  drawHiHatOpennessGraph();
   drawFootPedals();
 };
 
