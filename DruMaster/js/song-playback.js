@@ -6,6 +6,11 @@
 
   const activeStemVoices=new Set();
   const fullMixOnly=()=>globalThis.DruMasterSongSource?.isFullMixOnly?.()||false;
+  const useOriginalMix=()=>{
+    if(fullMixOnly())return true;
+    const available=song?.sourceAvailability||{};
+    return !!available.fullmix&&!!$("#vocalToggle")?.checked&&!!$("#guideToggle")?.checked;
+  };
 
   function trackGain(name,fallback){
     const v=song.mix?.[name];
@@ -50,6 +55,13 @@
     const offset=stemOffset(),when=startAt+Math.max(0,-offset),sourceOffset=Math.max(0,offset);
     if(fullMixOnly()){
       playAt(buffers.fullmix,trackGain("fullmix",.95),when,sourceOffset);
+      return;
+    }
+    /* When all audible stems are requested and an original/full mix exists,
+       use that single source instead of summing offvocal + vocals + drums.
+       Its level intentionally follows the offvocal/base mix setting. */
+    if(useOriginalMix()){
+      playAt(buffers.fullmix,trackGain("base",.95),when,sourceOffset);
       return;
     }
     playAt(buffers.base,trackGain("base",.95),when,sourceOffset);
@@ -136,7 +148,7 @@
     $("#start").disabled=true;
     try{
       await ac.resume();
-      if(fullMixOnly()){
+      if(useOriginalMix()){
         await loadStem("fullmix","原曲");
       }else{
         await loadStem("base","オフボーカル");
