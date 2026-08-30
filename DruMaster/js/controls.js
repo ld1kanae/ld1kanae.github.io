@@ -44,7 +44,7 @@
   if(plane&&!plane.querySelector(":scope > .splash-cymbal-art")){
     const splashArt=document.createElement("img");
     splashArt.className="splash-cymbal-art";
-    splashArt.src="assets/splash-cymbal.svg?v=20260830-prod2";
+    splashArt.src="assets/splash-cymbal.svg?v=20260830-correctpng1";
     splashArt.alt="";
     const art=plane.querySelector(":scope > .kit-art");
     plane.insertBefore(splashArt,art||plane.firstChild);
@@ -73,8 +73,6 @@
   }
   splashHit?.classList.remove("inactive");
 
-  /* Registered before touch-capability.js, so tapping the visible splash keeps
-     the splash timbre even in anywhere-touch mode. */
   document.addEventListener("pointerdown",e=>{
     const el=e.target.closest?.('#hitLayer .hit[data-part="splash"]:not(.inactive)');
     if(!el)return;
@@ -83,7 +81,6 @@
     if(typeof input==="function")input("splash",el);
   },true);
 
-  /* Expanded PC bindings: nearby keys can strike the same drum/cymbal. */
   const KEY_BINDINGS={
     KeyA:{part:"hh",label:"A"},
     KeyS:{part:"hh",label:"S"},
@@ -163,7 +160,6 @@
     return best?{note:best,delta}:null;
   }
 
-  /* Production judgement override. GREAT/GOOD windows remain unchanged. */
   if(typeof input==="function"&&typeof notes!=="undefined"&&typeof PART!=="undefined"){
     input=function(part,visualEl){
       if(!running||paused||autoplay)return;
@@ -180,20 +176,13 @@
 
       best.hit=true;
       let mult,label;
-      if(delta<=PERFECT_WINDOW){
-        mult=1;label="PERFECT";counts.perfect++;
-      }else if(delta<=.105){
-        mult=.75;label="GREAT";counts.great++;
-      }else{
-        mult=.4;label="GOOD";counts.good++;
-      }
+      if(delta<=PERFECT_WINDOW){mult=1;label="PERFECT";counts.perfect++}
+      else if(delta<=.105){mult=.75;label="GREAT";counts.great++}
+      else{mult=.4;label="GOOD";counts.good++}
       score+=weight(best.type)*best.velocity/127*1000*mult;
       $("#score").textContent=String(Math.round(score)).padStart(6,"0");
-      if(part==="splash"&&globalThis.DruMasterJudgement?.emitForNote){
-        globalThis.DruMasterJudgement.emitForNote(best,label,{flash:false});
-      }else{
-        showJudge(label);
-      }
+      if(part==="splash"&&globalThis.DruMasterJudgement?.emitForNote){globalThis.DruMasterJudgement.emitForNote(best,label,{flash:false})}
+      else showJudge(label);
     };
   }
 
@@ -202,77 +191,39 @@
 
   function playKeyboardKick(){
     let isRunning=false,isPaused=true;
-    try{
-      isRunning=typeof running!=="undefined"&&running;
-      isPaused=typeof paused!=="undefined"&&paused;
-    }catch{}
+    try{isRunning=typeof running!=="undefined"&&running;isPaused=typeof paused!=="undefined"&&paused}catch{}
     if(!isRunning||isPaused||typeof playDrum!=="function")return false;
     try{
       const note=typeof DEFAULT_NOTE!=="undefined"&&DEFAULT_NOTE.kick||36;
       playDrum(note,"kick",.72);
-      if(kickFx){
-        kickFx.classList.remove("hit");
-        void kickFx.offsetWidth;
-        kickFx.classList.add("hit");
-      }
+      if(kickFx){kickFx.classList.remove("hit");void kickFx.offsetWidth;kickFx.classList.add("hit")}
       return true;
     }catch{return false}
   }
 
-  /* Capture phase deliberately supersedes app.js's old one-key map.
-     Escape is the PC pause/resume shortcut. Space starts from setup and
-     becomes a manual bass-drum trigger while the performance is running. */
   addEventListener("keydown",e=>{
     if(e.code==="Space"){
       if(!isDesktop()||e.repeat)return;
-      const setup=document.querySelector("#setup"),
-            start=document.querySelector("#start"),
-            setupVisible=!!setup&&!setup.classList.contains("hidden");
-      if(setupVisible){
-        if(!start||start.disabled)return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        start.click();
-        return;
-      }
-      if(playKeyboardKick()){
-        e.preventDefault();
-        e.stopImmediatePropagation();
-      }
+      const setup=document.querySelector("#setup"),start=document.querySelector("#start"),setupVisible=!!setup&&!setup.classList.contains("hidden");
+      if(setupVisible){if(!start||start.disabled)return;e.preventDefault();e.stopImmediatePropagation();start.click();return}
+      if(playKeyboardKick()){e.preventDefault();e.stopImmediatePropagation()}
       return;
     }
-
     if(e.code==="Escape"){
       if(!isDesktop()||e.repeat)return;
-      let isRunning=false;
-      try{isRunning=typeof running!=="undefined"&&running}catch{}
-      if(!isRunning)return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      try{if(typeof togglePause==="function")void togglePause()}catch{}
-      return;
+      let isRunning=false;try{isRunning=typeof running!=="undefined"&&running}catch{}
+      if(!isRunning)return;e.preventDefault();e.stopImmediatePropagation();try{if(typeof togglePause==="function")void togglePause()}catch{};return;
     }
-
-    const binding=KEY_BINDINGS[e.code];
-    if(!binding)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    if(e.repeat||heldCodes.has(e.code))return;
-    const el=visualForBinding(binding);
-    if(!el)return;
-    heldCodes.add(e.code);
-    el.classList.add("pressed");
-    if(typeof input==="function")input(binding.part,el);
+    const binding=KEY_BINDINGS[e.code];if(!binding)return;
+    e.preventDefault();e.stopImmediatePropagation();if(e.repeat||heldCodes.has(e.code))return;
+    const el=visualForBinding(binding);if(!el)return;
+    heldCodes.add(e.code);el.classList.add("pressed");if(typeof input==="function")input(binding.part,el);
   },true);
 
   addEventListener("keyup",e=>{
-    const binding=KEY_BINDINGS[e.code];
-    if(!binding)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    heldCodes.delete(e.code);
-    const el=visualForBinding(binding);
-    if(!el)return;
+    const binding=KEY_BINDINGS[e.code];if(!binding)return;
+    e.preventDefault();e.stopImmediatePropagation();heldCodes.delete(e.code);
+    const el=visualForBinding(binding);if(!el)return;
     const stillHeld=[...heldCodes].some(code=>visualForBinding(KEY_BINDINGS[code])===el);
     if(!stillHeld)el.classList.remove("pressed");
   },true);
