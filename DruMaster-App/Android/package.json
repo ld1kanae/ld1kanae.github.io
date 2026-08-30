@@ -1,0 +1,20 @@
+{
+  "name": "drumaster-android",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "sync:web": "node scripts/sync-web.mjs",
+    "android:add": "npm run sync:web && npx cap add android",
+    "android:sync": "npm run sync:web && npx cap sync android",
+    "android:icons": "npx @capacitor/assets generate --android --assetPath assets --iconBackgroundColor '#000000' --iconBackgroundColorDark '#000000' --splashBackgroundColor '#000000' --splashBackgroundColorDark '#000000'",
+    "android:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.0.0"
+  }
+}
