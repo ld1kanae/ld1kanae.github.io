@@ -61,15 +61,17 @@
     return host?.matches?.("button")?host:host?.querySelector?.(":scope > button");
   }
 
+  function rimFor(host,button){
+    return mobile
+      ? button?.querySelector?.(":scope > .glass-hover-rim-svg")
+      : host?.querySelector?.(":scope > .glass-hover-rim-svg");
+  }
+
   function syncRim(host){
     const button=buttonFor(host);
-    const svg=host?.querySelector?.(":scope > .glass-hover-rim-svg");
+    const svg=rimFor(host,button);
     if(!button||!svg)return;
 
-    /* offsetWidth/offsetHeight stay in the button's local CSS coordinate space.
-       getBoundingClientRect() reports the already-rotated box on smartphone,
-       which swaps width/height under DruMaster's -90deg app transform and made
-       the animated rim drift away from the visible outline. */
     const width=button.offsetWidth||parseFloat(getComputedStyle(button).width)||0;
     const height=button.offsetHeight||parseFloat(getComputedStyle(button).height)||0;
     if(width<2||height<2)return;
@@ -85,6 +87,7 @@
       r.setAttribute("width",String(Math.max(0,width-inset*2)));
       r.setAttribute("height",String(Math.max(0,height-inset*2)));
       r.setAttribute("rx",String(rx));
+      r.setAttribute("ry",String(rx));
     }
   }
 
@@ -146,8 +149,9 @@
       running.push(a);
     };
     const e=SETTINGS.elements;
-    run(host.querySelector(".rim-run-1"),e.rimRun1,strokeSpec(e.rimRun1));
-    run(host.querySelector(".rim-run-2"),e.rimRun2,strokeSpec(e.rimRun2));
+    const rim=rimFor(host,button);
+    run(rim?.querySelector(".rim-run-1"),e.rimRun1,strokeSpec(e.rimRun1));
+    run(rim?.querySelector(".rim-run-2"),e.rimRun2,strokeSpec(e.rimRun2));
     run(button.querySelector(":scope > .glass-hover-face-sheen"),e.faceSheen,moveSpec(e.faceSheen,-58,122));
     run(button.querySelector(":scope > .glass-hover-face-flash"),e.faceFlash,fadeSpec(e.faceFlash));
     activeAnimations.set(host,running);
@@ -236,7 +240,14 @@
       glow.className="glass-hover-drop";
       wrap.insertBefore(glow,button);
     }
-    if(!wrap.querySelector(":scope > .glass-hover-rim-svg"))wrap.appendChild(makeRim());
+
+    if(mobile){
+      const oldOuter=wrap.querySelector(":scope > .glass-hover-rim-svg");
+      if(oldOuter)oldOuter.remove();
+      if(!button.querySelector(":scope > .glass-hover-rim-svg"))button.appendChild(makeRim());
+    }else if(!wrap.querySelector(":scope > .glass-hover-rim-svg")){
+      wrap.appendChild(makeRim());
+    }
     return wrap;
   }
 
