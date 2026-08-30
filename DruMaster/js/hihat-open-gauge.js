@@ -15,6 +15,7 @@
   const HH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
   const VELOCITY_CURVE=Math.log(.4)/Math.log(100/127);
   const DISPLAY_SMOOTH_MS=35;
+  const OPEN_RAMP_BEATS=.25;
   const FOOT_PULSE_LEVEL_AT_REFERENCE=7;
   const FOOT_PULSE_REFERENCE_VELOCITY=30;
   const FOOT_PULSE_RISE_BEATS=.045;
@@ -82,8 +83,8 @@
         previousBeat=events.length?events[events.length-1].beat:-Infinity;
       }
       const rampStart=Number.isFinite(previousBeat)
-        ?Math.max(event.beat-.5,previousBeat)
-        :event.beat-.5;
+        ?Math.max(event.beat-OPEN_RAMP_BEATS,previousBeat)
+        :event.beat-OPEN_RAMP_BEATS;
       events.push({...event,from:previousTarget,rampStart});
       previousBeat=event.beat;
       previousTarget=event.target;
@@ -91,8 +92,6 @@
   }
 
   function valueAtBeat(beat){
-    /* Only the previous event and the next ramp can affect the current value.
-       Binary search replaces the former full timeline scan on every frame. */
     const nextIndex=upperBoundBeat(events,beat),previous=events[nextIndex-1],next=events[nextIndex];
     let value=previous?.target||0;
     if(next&&beat>=next.rampStart&&beat<next.beat){
@@ -136,8 +135,6 @@
     const now=performance.now();
     const dt=Math.min(100,Math.max(0,now-lastFrameMs));
     lastFrameMs=now;
-
-    // Seeking/restarting should be exact rather than gliding across unrelated positions.
     if(!Number.isFinite(lastBeat)||beat<lastBeat-.05||Math.abs(beat-lastBeat)>1){
       displayedLevel=target;
     }else{
