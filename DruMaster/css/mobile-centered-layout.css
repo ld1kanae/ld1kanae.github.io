@@ -20,12 +20,6 @@
     transform:translateY(var(--dm-mobile-stage-w)) rotate(-90deg)!important;
   }
 
-  /* If the OS/browser itself rotates to landscape, the authored stage is
-     already landscape. Do not rotate it a second time. */
-  html.dm-layout-centered.dm-browser-landscape #app{
-    transform:none!important;
-  }
-
   /* Setup only: remove the old asymmetric screen inset and center against
      the safe visible rectangle after the forced-landscape transform. */
   html.dm-layout-centered .setup.screen{
