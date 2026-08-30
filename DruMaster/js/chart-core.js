@@ -155,28 +155,34 @@ globalThis.DruMusterChart=(()=>{
   function laneForGroup(group){return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3}
 
   function simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale){
-    const buckets=new Map(),offsets=new WeakMap();
+    const buckets=new Map(),offsets=new WeakMap(),gap=1;
     for(let i=start;i<end;i++){
       const note=notes[i];
       if(skipHit&&note.hit)continue;
-      const group=groupMap[note.type],lane=laneForGroup(group),key=`${note.tick}|${lane}`;
+      const group=groupMap[note.type],lane=laneForGroup(group),key=`${note.tick}|${lane}`,
+            midiNote=Number(note.note),
+            slotKey=Number.isFinite(midiNote)?`midi:${midiNote}`:`type:${note.type}`;
       let bucket=buckets.get(key);
       if(!bucket){bucket=new Map();buckets.set(key,bucket)}
-      let slot=bucket.get(note.type);
+      let slot=bucket.get(slotKey);
       if(!slot){
-        slot={width:noteVisual(note.type,group,noteWidthScale).totalWidth,notes:[]};
-        bucket.set(note.type,slot);
+        slot={width:noteVisual(note.type,group,noteWidthScale).totalWidth,notes:[],midiNote,type:note.type};
+        bucket.set(slotKey,slot);
       }
       slot.notes.push(note);
     }
     for(const bucket of buckets.values()){
       if(bucket.size<2)continue;
-      const slots=[...bucket.values()],totalWidth=slots.reduce((sum,slot)=>sum+slot.width,0);
+      const slots=[...bucket.values()].sort((a,b)=>{
+        const aMidi=Number.isFinite(a.midiNote)?a.midiNote:Infinity,
+              bMidi=Number.isFinite(b.midiNote)?b.midiNote:Infinity;
+        return aMidi-bMidi||String(a.type).localeCompare(String(b.type));
+      }),totalWidth=slots.reduce((sum,slot)=>sum+slot.width,0)+gap*(slots.length-1);
       let cursor=-totalWidth/2;
       for(const slot of slots){
         const offset=cursor+slot.width/2;
         for(const note of slot.notes)offsets.set(note,offset);
-        cursor+=slot.width;
+        cursor+=slot.width+gap;
       }
     }
     return offsets;
