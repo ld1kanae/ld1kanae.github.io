@@ -162,8 +162,16 @@
       0 8px 20px rgba(0,0,0,.34)!important;
   }
 
+  /* The PC material includes a separate blurred horizontal halo. On a phone
+     that layer reads as an unrelated oval around the control, so suppress it.
+     The animated rim SVG and face sheen remain and follow the real button box. */
+  .glass-hover-wrap>.glass-hover-drop{
+    display:none!important;
+    opacity:0!important;
+  }
+
   /* The animated rim SVG is a sibling of wrapped buttons. Scale the wrapper,
-     not only the button, so the face, rim and halo remain in one coordinate box. */
+     not only the button, so the face and rim remain in one coordinate box. */
   .glass-hover-wrap{
     transform-origin:center center;
     transition:transform .20s ease!important;
