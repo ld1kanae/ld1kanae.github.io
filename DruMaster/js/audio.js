@@ -6,25 +6,27 @@ const FALLBACK_STEMS={
   drums:{path:"songs/nanairo/drums.mp3",bytes:6314638,sha256:"6d50cf5fe21ab4fb73588d3cda1c8bb8ace2ae5234db1eaaca571374ff8e9eeb"}
 };
 function stemSpec(name){
-  const current=globalThis.DruMasterSongs?.current?.stems?.[name];
-  return current||FALLBACK_STEMS[name];
+  return globalThis.DruMasterSongs?.current?.stems?.[name]||FALLBACK_STEMS[name];
 }
 
 fetchJoined=async function(spec,label){
-  const paths=Array.isArray(spec.paths)?spec.paths:(spec.parts?Array.from({length:spec.parts},(_,i)=>`${spec.pathPrefix}${String(i).padStart(spec.digits||3,"0")}`):[]),parts=[];
+  const paths=Array.isArray(spec.paths)?spec.paths:(spec.parts?Array.from({length:spec.parts},(_,i)=>`${spec.pathPrefix}${String(i).padStart(spec.digits||3,"0")}`):[]);
   if(!paths.length)throw Error(`${label}音源の分割ファイル設定がありません`);
+  const parts=[];
   for(let i=0;i<paths.length;i+=8){
-    const batch=await Promise.all(paths.slice(i,i+8).map(p=>fetch(p,{cache:"no-store"}).then(r=>{
+    const batch=await Promise.all(paths.slice(i,i+8).map(async p=>{
+      const r=await fetch(p,{cache:"no-store"});
       if(!r.ok)throw Error(`${label}音源を取得できません（HTTP ${r.status}）`);
       return r.arrayBuffer();
-    })));
+    }));
     parts.push(...batch);
     $("#loadState").textContent=`${label}音源を読み込み中… ${Math.min(i+8,paths.length)}/${paths.length}`;
   }
-  const size=parts.reduce((n,b)=>n+b.byteLength,0),out=new Uint8Array(size);let at=0;
+  const size=parts.reduce((n,b)=>n+b.byteLength,0),out=new Uint8Array(size);
+  let at=0;
   for(const b of parts){out.set(new Uint8Array(b),at);at+=b.byteLength}
   if(spec.bytes&&out.byteLength!==spec.bytes)throw Error(`${label}音源が不完全です（${out.byteLength.toLocaleString()} / ${spec.bytes.toLocaleString()} bytes）`);
-  if(label!=="ゲーム内ドラム"&&spec.sha256&&globalThis.crypto?.subtle){
+  if(spec.sha256&&globalThis.crypto?.subtle){
     $("#loadState").textContent=`${label}音源を検証中…`;
     if((await hashBuffer(out.buffer))!==spec.sha256)throw Error(`${label}音源の内容が一致しません`);
   }
@@ -53,52 +55,7 @@ loadStem=async function(name,label){
   if(Math.abs(buffers[name].duration-duration)>.15)throw Error(`${label}音源の長さが譜面と一致しません`);
 };
 
-function readWavFormat(ab){
-  const d=new DataView(ab);
-  if(ab.byteLength<44||fourCC(d,0)!=="RIFF"||fourCC(d,8)!=="WAVE")throw Error("ゲーム内ドラム音源のWAVヘッダーが不正です");
-  let p=12;
-  while(p+8<=ab.byteLength){
-    const id=fourCC(d,p),size=d.getUint32(p+4,true),at=p+8;
-    if(id==="fmt "){
-      if(size<16||at+16>ab.byteLength)throw Error("ゲーム内ドラム音源のfmtチャンクが不正です");
-      return {format:d.getUint16(at,true),channels:d.getUint16(at+2,true),sampleRate:d.getUint32(at+4,true),bitsPerSample:d.getUint16(at+14,true)};
-    }
-    p=at+size+(size&1);
-  }
-  throw Error("ゲーム内ドラム音源のfmtチャンクが見つかりません");
-}
-
-const DRUM_SILENCE_THRESHOLD=1.5/32768;
-const DRUM_TAIL_GUARD_SEC=.10;
 let drumSampleBuffers={};
-function audibleRegionDuration(offset,duration){
-  if(!drumBuffer||duration<=0)return duration;
-  const sr=drumBuffer.sampleRate,start=Math.max(0,Math.floor(offset*sr)),end=Math.min(drumBuffer.length,Math.ceil((offset+duration)*sr));
-  if(end<=start)return duration;
-  const channels=Array.from({length:drumBuffer.numberOfChannels},(_,i)=>drumBuffer.getChannelData(i));
-  const block=256;
-  let lastAudible=-1;
-  outer:for(let z=end;z>start;z-=block){
-    const a=Math.max(start,z-block);
-    for(let i=z-1;i>=a;i--){
-      for(const data of channels){
-        if(Math.abs(data[i])>DRUM_SILENCE_THRESHOLD){lastAudible=i;break outer}
-      }
-    }
-  }
-  if(lastAudible<0)return Math.min(duration,.08);
-  const audible=(lastAudible-start+1)/sr+DRUM_TAIL_GUARD_SEC;
-  return Math.min(duration,Math.max(.06,audible));
-}
-function copyDrumRegion(offset,duration){
-  const sr=drumBuffer.sampleRate,start=Math.max(0,Math.floor(offset*sr));
-  const frames=Math.max(1,Math.min(drumBuffer.length-start,Math.ceil(duration*sr)));
-  const out=ac.createBuffer(drumBuffer.numberOfChannels,frames,sr);
-  for(let ch=0;ch<drumBuffer.numberOfChannels;ch++){
-    out.copyToChannel(drumBuffer.getChannelData(ch).subarray(start,start+frames),ch,0);
-  }
-  return out;
-}
 function tuneRealtimeLimiter(){
   if(!safetyLimiter)return;
   safetyLimiter.threshold.value=-1.5;
@@ -109,39 +66,19 @@ function tuneRealtimeLimiter(){
 }
 
 loadDrumSource=async function(manifest){
+  const sampleNotes=[...new Set(Object.values(DEFAULT_NOTE).map(Number))];
   $("#loadState").textContent="ゲーム内ドラム音源を読み込み中…";
-  const [wav,midi]=await Promise.all([
-    fetchJoined(manifest.wav,"ゲーム内ドラム"),
-    fetch(manifest.midi.path,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
-  ]);
-  if(midi.byteLength!==manifest.midi.bytes)throw Error("ゲーム内ドラム音源MIDIが不完全です");
-  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ゲーム内ドラム音源MIDIの内容が一致しません");
-
-  const fmt=readWavFormat(wav),expectedRate=manifest.wav.sourceSampleRate||manifest.wav.sampleRate;
-  if(expectedRate&&fmt.sampleRate!==expectedRate)throw Error(`ゲーム内ドラム音源の元サンプルレートが不正です（${fmt.sampleRate}Hz / ${expectedRate}Hz）`);
-  if(manifest.wav.channels&&fmt.channels!==manifest.wav.channels)throw Error("ゲーム内ドラム音源のチャンネル数が一致しません");
-  if(manifest.wav.bitsPerSample&&fmt.bitsPerSample!==manifest.wav.bitsPerSample)throw Error("ゲーム内ドラム音源のビット深度が一致しません");
-
-  tuneRealtimeLimiter();
-  drumBuffer=await ac.decodeAudioData(wav.slice(0));
-  const sourceNotes=parseMidi(midi);
-  if(!sourceNotes.length)throw Error("ゲーム内ドラム音源MIDIにノートがありません");
-  drumSourceVelocity=manifest.sourceVelocity||100;
-  drumRegions={};
-  sourceNotes.forEach((n,i)=>{
-    const end=i+1<sourceNotes.length?sourceNotes[i+1].time:drumBuffer.duration;
-    if(n.time>=drumBuffer.duration||end<=n.time)throw Error(`ドラム音源の再生位置が不正です（MIDI ${n.note}）`);
-    const rawDuration=end-n.time;
-    drumRegions[String(n.note)]={offset:n.time,duration:audibleRegionDuration(n.time,rawDuration)};
-  });
-  const required=new Set(Object.values(DEFAULT_NOTE)),missing=[...required].filter(note=>!drumRegions[String(note)]);
-  if(missing.length)throw Error(`ゲーム内ドラム音源に必要な基準音がありません（MIDI ${missing.join(", ")}）`);
-
-  drumSampleBuffers={};
-  for(const [note,region] of Object.entries(drumRegions)){
-    drumSampleBuffers[note]=copyDrumRegion(region.offset,region.duration);
-  }
+  const loaded=await Promise.all(sampleNotes.map(async note=>{
+    const r=await fetch(`assets/drums/${note}.wav`,{cache:"no-store"});
+    if(!r.ok)throw Error(`ゲーム内ドラム音源を取得できません（MIDI ${note} / HTTP ${r.status}）`);
+    const encoded=await r.arrayBuffer();
+    return [String(note),await ac.decodeAudioData(encoded.slice(0))];
+  }));
+  drumSampleBuffers=Object.fromEntries(loaded);
+  drumSourceVelocity=manifest?.sourceVelocity||100;
   drumBuffer=null;
+  drumRegions={};
+  tuneRealtimeLimiter();
 };
 
 const activeDrumVoices=new Set();
@@ -165,7 +102,7 @@ function midiDrumMix(type){
 function startDrumVoice(type,v=.75,when){
   if(!ac)return null;
   if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();
-  const sampleNote=DEFAULT_NOTE[type],sample=drumSampleBuffers[String(sampleNote)];
+  const sample=drumSampleBuffers[String(DEFAULT_NOTE[type])];
   if(!sample)return null;
   const startAt=Number.isFinite(Number(when))?Math.max(ac.currentTime,Number(when)):ac.currentTime,
         source=ac.createBufferSource(),gain=ac.createGain(),mix=midiDrumMix(type),sourceVelocity=drumSourceVelocity/127,
@@ -173,7 +110,6 @@ function startDrumVoice(type,v=.75,when){
   source.buffer=sample;
   gain.gain.value=.85*velocityGain*mix;
   source.connect(gain).connect(masterBus);
-
   let voice=null;
   if(type==="hhOpen"){voice={source,gain};openHatVoices.push(voice)}
   const tracked={source,gain,endsAt:startAt+sample.duration};
