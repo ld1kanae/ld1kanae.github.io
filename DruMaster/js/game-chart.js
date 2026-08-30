@@ -179,7 +179,7 @@ function drawHiHatOpennessGraph(){
         judgeX=DruMusterChart.judgementX(w),
         kickH=Math.max(16,h*.12),mainH=h-kickH,
         speed=DruMusterChart.pixelsPerQuarter?.()||DruMusterChart.PIXELS_PER_QUARTER||80,
-        top=mainH+2,bottom=h-2,span=Math.max(1,bottom-top),samplePx=4;
+        top=mainH+4,bottom=h-4,span=Math.max(1,bottom-top),samplePx=3;
   ctx.save();
   ctx.beginPath();
   ctx.rect(0,mainH,w,kickH);
@@ -193,10 +193,15 @@ function drawHiHatOpennessGraph(){
           y=bottom-level*span;
     if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y);
   }
-  ctx.strokeStyle="rgba(82,223,207,.24)";
-  ctx.lineWidth=.9;
+  /* A very soft dark under-stroke keeps the cyan readable over measure lines
+     without turning the openness curve into a dominant gameplay element. */
+  ctx.strokeStyle="rgba(3,5,7,.55)";
+  ctx.lineWidth=3;
   ctx.lineJoin="round";
   ctx.lineCap="round";
+  ctx.stroke();
+  ctx.strokeStyle="rgba(82,223,207,.48)";
+  ctx.lineWidth=1.25;
   ctx.stroke();
   ctx.restore();
 }
