@@ -104,9 +104,6 @@ globalThis.DruMusterChart=(()=>{
     return tick/timing.division;
   }
 
-  /* Measure lines are a chart invariant, not a song-specific feature.
-     Valid MIDI time signatures are respected; missing or malformed data falls
-     back to 4/4 so every song always has one separator per measure. */
   function normalizedSignatures(timing){
     if(timing&&typeof timing==="object"&&signatureCache.has(timing))return signatureCache.get(timing);
     const raw=Array.isArray(timing?.signatures)?timing.signatures:[],out=[];
@@ -128,12 +125,22 @@ globalThis.DruMusterChart=(()=>{
           firstVisibleBeat=beatNow-judgeX/speed,
           lastVisibleBeat=beatNow+(w-judgeX)/speed;
     ctx.save();
-    ctx.strokeStyle="rgba(255,255,255,.245)";
     ctx.lineWidth=1;
     for(let i=0;i<signatures.length;i++){
       const sig=signatures[i],segmentStart=sig.beat,
             segmentEnd=i+1<signatures.length?signatures[i+1].beat:Infinity,
-            measureBeats=sig.measureBeats;
+            measureBeats=sig.measureBeats,
+            firstBeat=segmentStart+Math.ceil(firstVisibleBeat-segmentStart);
+      ctx.strokeStyle="rgba(255,255,255,.245)";
+      for(let beat=Math.max(segmentStart,firstBeat);beat<=lastVisibleBeat+.0001&&beat<segmentEnd-.0001;beat+=1){
+        const rel=(beat-segmentStart)/measureBeats;
+        if(Math.abs(rel-Math.round(rel))<1e-7)continue;
+        const x=judgeX+(beat-beatNow)*speed;
+        if(x<0||x>w)continue;
+        const crisp=Math.round(x)+.5;
+        ctx.beginPath();ctx.moveTo(crisp,0);ctx.lineTo(crisp,h);ctx.stroke();
+      }
+      ctx.strokeStyle="rgba(255,255,255,.49)";
       let barBeat=segmentStart+Math.ceil((firstVisibleBeat-segmentStart)/measureBeats)*measureBeats;
       if(barBeat<segmentStart)barBeat=segmentStart;
       for(;barBeat<=lastVisibleBeat+.0001&&barBeat<segmentEnd-.0001;barBeat+=measureBeats){
