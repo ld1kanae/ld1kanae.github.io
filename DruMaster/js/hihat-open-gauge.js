@@ -92,7 +92,7 @@
     lastFrameMs=performance.now();
     fill.style.setProperty("--hh-open-gauge-scale","0");
     fill.style.setProperty("--hh-open-gauge-opacity",".3");
-    handle.style.setProperty("--hh-open-gauge-handle-level","0");
+    handle.style.bottom="0%";
   }
 
   function smoothLevel(target,beat){
@@ -130,7 +130,7 @@
     const level=smoothLevel(baseLevel,beat);
     fill.style.setProperty("--hh-open-gauge-scale",(level/100).toFixed(5));
     fill.style.setProperty("--hh-open-gauge-opacity",(0.3+0.7*level/100).toFixed(3));
-    handle.style.setProperty("--hh-open-gauge-handle-level",(level/100).toFixed(5));
+    handle.style.bottom=level.toFixed(3)+"%";
   }
 
   if(typeof draw==="function"){
