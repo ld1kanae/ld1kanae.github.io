@@ -24,10 +24,7 @@
   let displayedLevel=0,lastFrameMs=performance.now(),lastBeat=NaN;
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
-  const easeInOutQuart=value=>{
-    const t=clamp01(value);
-    return t<.5?8*t*t*t*t:1-Math.pow(-2*t+2,4)/2;
-  };
+  const easeOutQuart=value=>1-Math.pow(1-clamp01(value),4);
   const velocityToLevel=velocity=>{
     const normalized=Math.max(0,Math.min(127,Number(velocity)||0))/127;
     return normalized<=0?0:Math.pow(normalized,VELOCITY_CURVE);
@@ -102,7 +99,7 @@
       const span=next.beat-next.rampStart;
       if(span<=1e-7)return next.target;
       const progress=(beat-next.rampStart)/span;
-      value=next.from+(next.target-next.from)*easeInOutQuart(progress);
+      value=next.from+(next.target-next.from)*easeOutQuart(progress);
     }
     return value;
   }
@@ -116,10 +113,10 @@
       if(delta>=FOOT_PULSE_WINDOW)continue;
       let shape;
       if(delta<FOOT_PULSE_RISE_BEATS){
-        shape=easeInOutQuart(delta/FOOT_PULSE_RISE_BEATS);
+        shape=easeOutQuart(delta/FOOT_PULSE_RISE_BEATS);
       }else{
         const fall=(delta-FOOT_PULSE_RISE_BEATS)/FOOT_PULSE_FALL_BEATS;
-        shape=1-easeInOutQuart(fall);
+        shape=1-easeOutQuart(fall);
       }
       const amplitude=FOOT_PULSE_LEVEL_AT_REFERENCE*(event.velocity/FOOT_PULSE_REFERENCE_VELOCITY);
       pulse=Math.max(pulse,shape*amplitude);
