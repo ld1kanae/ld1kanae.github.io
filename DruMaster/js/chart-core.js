@@ -151,6 +151,36 @@ globalThis.DruMusterChart=(()=>{
     return {start:0,end:notes.length};
   }
 
+  function laneForGroup(group){return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3}
+
+  function simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale){
+    const buckets=new Map(),offsets=new WeakMap();
+    for(let i=start;i<end;i++){
+      const note=notes[i];
+      if(skipHit&&note.hit)continue;
+      const group=groupMap[note.type],lane=laneForGroup(group),key=`${note.tick}|${lane}`;
+      let bucket=buckets.get(key);
+      if(!bucket){bucket=new Map();buckets.set(key,bucket)}
+      let slot=bucket.get(note.type);
+      if(!slot){
+        slot={width:noteVisual(note.type,group,noteWidthScale).totalWidth,notes:[]};
+        bucket.set(note.type,slot);
+      }
+      slot.notes.push(note);
+    }
+    for(const bucket of buckets.values()){
+      if(bucket.size<2)continue;
+      const slots=[...bucket.values()],totalWidth=slots.reduce((sum,slot)=>sum+slot.width,0);
+      let cursor=-totalWidth/2;
+      for(const slot of slots){
+        const offset=cursor+slot.width/2;
+        for(const note of slot.notes)offsets.set(note,offset);
+        cursor+=slot.width;
+      }
+    }
+    return offsets;
+  }
+
   function draw({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
     const w=canvas.clientWidth,h=canvas.clientHeight,beatNow=secondsToBeat(currentSec,timing),division=timing.division||480,
           judgeX=judgementX(w),judgeZoneW=judgementZoneWidth(w),kickH=Math.max(16,h*.12),mainH=h-kickH,laneH=mainH/3,
@@ -171,12 +201,13 @@ globalThis.DruMusterChart=(()=>{
 
     const minBeat=beatNow-48/PIXELS_PER_QUARTER,
           maxBeat=beatNow+(w+48-judgeX)/PIXELS_PER_QUARTER,
-          {start,end}=visibleRange(notes,minBeat*division,maxBeat*division);
+          {start,end}=visibleRange(notes,minBeat*division,maxBeat*division),
+          noteOffsets=simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale);
     for(let i=start;i<end;i++){
       const n=notes[i];
       if(skipHit&&n.hit)continue;
-      const x=judgeX+(n.tick/division-beatNow)*PIXELS_PER_QUARTER;
-      const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,alpha=.48+.52*n.velocity/127,visual=noteVisual(n.type,group,noteWidthScale);
+      const x=judgeX+(n.tick/division-beatNow)*PIXELS_PER_QUARTER+(noteOffsets.get(n)||0);
+      const group=groupMap[n.type],lane=laneForGroup(group),alpha=.48+.52*n.velocity/127,visual=noteVisual(n.type,group,noteWidthScale);
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;ctx.fillStyle=visual.color;
       if(lane<3){
         const barTop=lane*laneH,barH=laneH;
@@ -188,5 +219,5 @@ globalThis.DruMusterChart=(()=>{
     ctx.globalAlpha=1;ctx.textAlign="start";ctx.textBaseline="alphabetic";
   }
 
-  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteColor,noteVisual,parseTempoTiming,secondsToBeat,drawMeasureLines,draw};
+  return {PIXELS_PER_QUARTER,MOBILE_JUDGE_OFFSET,isMobileLayout,judgementX,judgementZoneWidth,noteColor,noteVisual,parseTempoTiming,secondsToBeat,drawMeasureLines,simultaneousNoteOffsets,draw};
 })();
