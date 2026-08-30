@@ -15,7 +15,54 @@
     if(opened===entry)opened=null;
   }
 
+  function optionSignature(select){
+    return [...select.options].map((o,i)=>`${i}\u0000${o.value}\u0000${o.textContent}\u0000${o.disabled?1:0}\u0000${o.hidden?1:0}`).join("\u0001");
+  }
+
+  function rebuildMenu(entry){
+    const signature=optionSignature(entry.select);
+    if(signature===entry.optionSignature)return;
+    entry.optionSignature=signature;
+    entry.menu.replaceChildren();
+
+    [...entry.select.options].forEach((option,index)=>{
+      if(option.hidden)return;
+      const item=document.createElement("button");
+      item.type="button";
+      item.className="mobile-custom-select-option";
+      item.dataset.optionIndex=String(index);
+      item.setAttribute("role","option");
+
+      const label=document.createElement("span");
+      label.className="mobile-custom-select-option-label";
+      label.textContent=option.textContent;
+      item.appendChild(label);
+
+      if(entry.select.id==="performanceModeSelect"&&option.value==="pad"){
+        const mic=document.createElement("span");
+        mic.className="mobile-custom-select-mic";
+        mic.setAttribute("aria-hidden","true");
+        mic.innerHTML='<svg viewBox="0 0 24 24"><rect x="8.5" y="2.5" width="7" height="11" rx="3.5"/><path d="M5.5 10.5v.7a6.5 6.5 0 0 0 13 0v-.7M12 17.7V21M8.5 21h7"/></svg>';
+        item.appendChild(mic);
+      }
+
+      item.disabled=option.disabled;
+      item.addEventListener("pointerdown",e=>e.stopPropagation());
+      item.addEventListener("click",()=>{
+        const source=entry.select.options[index];
+        if(!source||source.disabled)return;
+        entry.select.selectedIndex=index;
+        entry.select.value=source.value;
+        sync(entry);
+        close(entry);
+        entry.select.dispatchEvent(new Event("change",{bubbles:true}));
+      });
+      entry.menu.appendChild(item);
+    });
+  }
+
   function sync(entry){
+    rebuildMenu(entry);
     const option=entry.select.options[entry.select.selectedIndex];
     entry.value.textContent=option?.textContent||"";
     [...entry.menu.children].forEach(node=>{
@@ -26,6 +73,8 @@
       node.setAttribute("aria-selected",selected?"true":"false");
       node.disabled=!!source?.disabled;
       node.hidden=!!source?.hidden;
+      const label=node.querySelector(".mobile-custom-select-option-label");
+      if(label&&label.textContent!==(source?.textContent||""))label.textContent=source?.textContent||"";
     });
   }
 
@@ -68,7 +117,12 @@
   }
 
   function enhance(select){
-    if(!select||enhanced.has(select))return;
+    if(!select)return;
+    const existing=enhanced.get(select);
+    if(existing){
+      sync(existing);
+      return;
+    }
 
     const root=document.createElement("div");
     root.className="mobile-custom-select"+(select.id==="songSelect"?" song-custom-select":" mode-custom-select");
@@ -92,46 +146,13 @@
     menu.setAttribute("role","listbox");
     menu.hidden=true;
 
-    [...select.options].forEach((option,index)=>{
-      if(option.hidden)return;
-      const item=document.createElement("button");
-      item.type="button";
-      item.className="mobile-custom-select-option";
-      item.dataset.optionIndex=String(index);
-      item.setAttribute("role","option");
-
-      const label=document.createElement("span");
-      label.className="mobile-custom-select-option-label";
-      label.textContent=option.textContent;
-      item.appendChild(label);
-
-      if(select.id==="performanceModeSelect"&&option.value==="pad"){
-        const mic=document.createElement("span");
-        mic.className="mobile-custom-select-mic";
-        mic.setAttribute("aria-hidden","true");
-        mic.innerHTML='<svg viewBox="0 0 24 24"><rect x="8.5" y="2.5" width="7" height="11" rx="3.5"/><path d="M5.5 10.5v.7a6.5 6.5 0 0 0 13 0v-.7M12 17.7V21M8.5 21h7"/></svg>';
-        item.appendChild(mic);
-      }
-
-      item.disabled=option.disabled;
-      item.addEventListener("pointerdown",e=>e.stopPropagation());
-      item.addEventListener("click",()=>{
-        if(option.disabled)return;
-        select.selectedIndex=index;
-        select.value=option.value;
-        sync(entry);
-        close(entry);
-        select.dispatchEvent(new Event("change",{bubbles:true}));
-      });
-      menu.appendChild(item);
-    });
-
     select.classList.add("mobile-native-select-hidden");
     select.insertAdjacentElement("afterend",root);
     root.append(trigger,menu);
 
-    const entry={select,root,trigger,value,menu,host:root.closest(".song-card,.options")};
+    const entry={select,root,trigger,value,menu,host:root.closest(".song-card,.options"),optionSignature:""};
     enhanced.set(select,entry);
+    rebuildMenu(entry);
     sync(entry);
 
     trigger.addEventListener("pointerdown",e=>e.stopPropagation());
@@ -149,7 +170,9 @@
   }
 
   install();
-  new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+  /* song-manager populates the song <select> asynchronously. Re-run sync on
+     option mutations so the DOM dropdown always has exactly the same choices. */
+  new MutationObserver(install).observe(document.body,{childList:true,subtree:true,characterData:true});
   addEventListener("pointerdown",()=>close(),{passive:true});
   addEventListener("resize",()=>close(),{passive:true});
 })();
