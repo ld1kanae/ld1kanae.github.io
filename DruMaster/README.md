@@ -4,6 +4,8 @@
 
 GitHub Pages: <https://ld1kanae.github.io/DruMaster/>
 
+アプリ化・パッケージングに関する実装判断は [APP_PACKAGING_SPEC.md](APP_PACKAGING_SPEC.md) を仕様書として参照してください。
+
 ## ディレクトリ
 
 - `index.html` — 本番エントリ
