@@ -33,8 +33,15 @@ jobs:
       - name: Sync current DruMaster web core
         run: npm run sync:web
 
+      - name: Prepare square D-mark icon source
+        shell: pwsh
+        run: |
+          $src = Get-Content '../../DruMaster/assets/DruMaster-D-white.svg' -Raw
+          $src = $src.Replace('viewBox="0 0 130 145"', 'viewBox="-7.5 0 145 145"')
+          Set-Content 'DruMaster-D-icon-square.svg' $src -Encoding utf8
+
       - name: Generate D-mark Windows icons
-        run: npx tauri icon ../../DruMaster/assets/DruMaster-D-white.svg
+        run: npx tauri icon DruMaster-D-icon-square.svg
 
       - name: Build Windows app
         run: npx tauri build
