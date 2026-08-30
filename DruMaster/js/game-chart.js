@@ -230,13 +230,9 @@ function drawFootPedals(){
 
 const baseDraw=DruMusterChart.draw.bind(DruMusterChart);
 draw=function(){
-  /* Only the currently visible note window needs temporary pedal suppression.
-     The old implementation scanned the complete song every animation frame. */
-  const temporary=[],range=visibleFootRange();
-  for(let i=range.start;i<range.end;i++){
-    const n=notes[i];
-    if(n.type==="hhPedal"&&!n.hit){temporary.push(n);n.hit=true}
-  }
+  /* Keep pedal notes in the shared renderer. GROUP.hhPedal already maps them
+     to the KICK / AUTO lane, so exact-tick kick + pedal pairs use the same
+     side-by-side layout as every other simultaneous same-lane note pair. */
   baseDraw({
     ctx,
     canvas,
@@ -246,9 +242,7 @@ draw=function(){
     groupMap:GROUP,
     skipHit:true
   });
-  for(const n of temporary)n.hit=false;
   drawHiHatOpennessGraph();
-  drawFootPedals();
 };
 
 if(typeof loop==="function"){
