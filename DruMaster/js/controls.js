@@ -136,17 +136,45 @@
   const heldCodes=new Set();
   const isDesktop=()=>!!globalThis.matchMedia?.("(hover:hover) and (pointer:fine)")?.matches;
 
+  function playKeyboardKick(){
+    let isRunning=false,isPaused=true;
+    try{
+      isRunning=typeof running!=="undefined"&&running;
+      isPaused=typeof paused!=="undefined"&&paused;
+    }catch{}
+    if(!isRunning||isPaused||typeof playDrum!=="function")return false;
+    try{
+      const note=typeof DEFAULT_NOTE!=="undefined"&&DEFAULT_NOTE.kick||36;
+      playDrum(note,"kick",.72);
+      if(kickFx){
+        kickFx.classList.remove("hit");
+        void kickFx.offsetWidth;
+        kickFx.classList.add("hit");
+      }
+      return true;
+    }catch{return false}
+  }
+
   /* Capture phase deliberately supersedes app.js's old one-key map.
-     Escape is the PC pause/resume shortcut; Space remains intentionally unused. */
+     Escape is the PC pause/resume shortcut. Space starts from setup and
+     becomes a manual bass-drum trigger while the performance is running. */
   addEventListener("keydown",e=>{
     if(e.code==="Space"){
+      if(!isDesktop()||e.repeat)return;
       const setup=document.querySelector("#setup"),
             start=document.querySelector("#start"),
             setupVisible=!!setup&&!setup.classList.contains("hidden");
-      if(!isDesktop()||!setupVisible||!start||start.disabled||e.repeat)return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      start.click();
+      if(setupVisible){
+        if(!start||start.disabled)return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        start.click();
+        return;
+      }
+      if(playKeyboardKick()){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
       return;
     }
 
