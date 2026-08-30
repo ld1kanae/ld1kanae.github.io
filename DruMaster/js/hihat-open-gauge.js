@@ -5,23 +5,20 @@
   if(!hitLayer)return;
 
   const gauge=document.createElement("div"),
-        fill=document.createElement("div");
+        fill=document.createElement("div"),
+        handle=document.createElement("div");
   gauge.id="hhOpenGauge";
   gauge.setAttribute("aria-hidden","true");
   fill.id="hhOpenGaugeFill";
-  gauge.append(fill);
+  handle.id="hhOpenGaugeHandle";
+  gauge.append(fill,handle);
   hitLayer.appendChild(gauge);
 
   const HH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]);
   const VELOCITY_CURVE=Math.log(.4)/Math.log(100/127);
   const DISPLAY_SMOOTH_MS=35;
   const OPEN_RAMP_BEATS=.25;
-  const FOOT_PULSE_LEVEL_AT_REFERENCE=7;
-  const FOOT_PULSE_REFERENCE_VELOCITY=30;
-  const FOOT_PULSE_RISE_BEATS=.045;
-  const FOOT_PULSE_FALL_BEATS=.16;
-  const FOOT_PULSE_WINDOW=FOOT_PULSE_RISE_BEATS+FOOT_PULSE_FALL_BEATS;
-  let cachedNotes=null,cachedTiming=null,events=[],pulseEvents=[];
+  let cachedNotes=null,cachedTiming=null,events=[];
   let displayedLevel=0,lastFrameMs=performance.now(),lastBeat=NaN;
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
@@ -31,11 +28,6 @@
     return normalized<=0?0:Math.pow(normalized,VELOCITY_CURVE);
   };
 
-  function lowerBoundBeat(list,beat){
-    let lo=0,hi=list.length;
-    while(lo<hi){const mid=(lo+hi)>>>1;if(list[mid].beat<beat)lo=mid+1;else hi=mid}
-    return lo;
-  }
   function upperBoundBeat(list,beat){
     let lo=0,hi=list.length;
     while(lo<hi){const mid=(lo+hi)>>>1;if(list[mid].beat<=beat)lo=mid+1;else hi=mid}
@@ -45,24 +37,15 @@
   function rebuildEnvelope(source,timing){
     const division=Number(timing?.division)||480;
     const actual=[];
-    pulseEvents=[];
     for(const note of source){
       if(!HH_TYPES.has(note.type))continue;
-      const beat=Number(note.tick)/division;
-      if(note.type==="hhPedal"||note.type==="hhOpen"){
-        pulseEvents.push({
-          beat,
-          velocity:Math.max(0,Math.min(127,Number(note.velocity)||0))
-        });
-      }
       actual.push({
-        beat,
+        beat:Number(note.tick)/division,
         target:note.type==="hhOpen"?Math.max(0,Math.min(127,Number(note.velocity)||0)):0,
         synthetic:false
       });
     }
     actual.sort((a,b)=>a.beat-b.beat);
-    pulseEvents.sort((a,b)=>a.beat-b.beat);
 
     const timeline=[];
     for(let i=0;i<actual.length;i++){
@@ -103,32 +86,13 @@
     return value;
   }
 
-  function footPulseAtBeat(beat){
-    let pulse=0;
-    const start=lowerBoundBeat(pulseEvents,beat-FOOT_PULSE_WINDOW);
-    for(let i=start;i<pulseEvents.length;i++){
-      const event=pulseEvents[i],delta=beat-event.beat;
-      if(delta<0)break;
-      if(delta>=FOOT_PULSE_WINDOW)continue;
-      let shape;
-      if(delta<FOOT_PULSE_RISE_BEATS){
-        shape=easeOutQuart(delta/FOOT_PULSE_RISE_BEATS);
-      }else{
-        const fall=(delta-FOOT_PULSE_RISE_BEATS)/FOOT_PULSE_FALL_BEATS;
-        shape=1-easeOutQuart(fall);
-      }
-      const amplitude=FOOT_PULSE_LEVEL_AT_REFERENCE*(event.velocity/FOOT_PULSE_REFERENCE_VELOCITY);
-      pulse=Math.max(pulse,shape*amplitude);
-    }
-    return pulse;
-  }
-
   function resetGauge(){
     displayedLevel=0;
     lastBeat=NaN;
     lastFrameMs=performance.now();
     fill.style.setProperty("--hh-open-gauge-scale","0");
     fill.style.setProperty("--hh-open-gauge-opacity",".3");
+    handle.style.setProperty("--hh-open-gauge-handle-level","0");
   }
 
   function smoothLevel(target,beat){
@@ -163,10 +127,10 @@
       return;
     }
     const velocity=valueAtBeat(beat),baseLevel=velocityToLevel(velocity)*100;
-    const targetLevel=Math.min(100,baseLevel+footPulseAtBeat(beat));
-    const level=smoothLevel(targetLevel,beat);
+    const level=smoothLevel(baseLevel,beat);
     fill.style.setProperty("--hh-open-gauge-scale",(level/100).toFixed(5));
     fill.style.setProperty("--hh-open-gauge-opacity",(0.3+0.7*level/100).toFixed(3));
+    handle.style.setProperty("--hh-open-gauge-handle-level",(level/100).toFixed(5));
   }
 
   if(typeof draw==="function"){
