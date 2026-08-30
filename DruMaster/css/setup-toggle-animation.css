@@ -44,20 +44,6 @@
 }
 .setup .option i::after{z-index:5!important}
 
-/* Hard safety gate: OFF must never retain ON animation residue, even if a
-   checkbox is changed programmatically without dispatching change. */
-.setup .option input[type="checkbox"]:not(:checked)+i>.setup-toggle-face-sheen,
-.setup .option input[type="checkbox"]:not(:checked)+i>.setup-toggle-face-flash,
-.setup .option input[type="checkbox"]:not(:checked)+i>.setup-toggle-rim-svg{
-  opacity:0!important;
-  visibility:hidden!important;
-}
-.setup .option input[type="checkbox"]:checked+i>.setup-toggle-face-sheen,
-.setup .option input[type="checkbox"]:checked+i>.setup-toggle-face-flash,
-.setup .option input[type="checkbox"]:checked+i>.setup-toggle-rim-svg{
-  visibility:visible!important;
-}
-
 @media (prefers-reduced-motion:reduce){
   .setup-toggle-face-sheen,.setup-toggle-face-flash,.setup-toggle-rim-svg{display:none!important}
 }
