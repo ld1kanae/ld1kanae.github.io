@@ -67,14 +67,15 @@ function tuneRealtimeLimiter(){
 
 loadDrumSource=async function(manifest){
   const sampleNotes=[...new Set(Object.values(DEFAULT_NOTE).map(Number))];
-  $("#loadState").textContent="ゲーム内ドラム音源を読み込み中…";
-  const loaded=await Promise.all(sampleNotes.map(async note=>{
+  drumSampleBuffers={};
+  for(let i=0;i<sampleNotes.length;i++){
+    const note=sampleNotes[i];
+    $("#loadState").textContent=`ゲーム内ドラム音源を読み込み中… ${i+1}/${sampleNotes.length}`;
     const r=await fetch(`assets/drums/${note}.wav`,{cache:"no-store"});
     if(!r.ok)throw Error(`ゲーム内ドラム音源を取得できません（MIDI ${note} / HTTP ${r.status}）`);
     const encoded=await r.arrayBuffer();
-    return [String(note),await ac.decodeAudioData(encoded.slice(0))];
-  }));
-  drumSampleBuffers=Object.fromEntries(loaded);
+    drumSampleBuffers[String(note)]=await ac.decodeAudioData(encoded.slice(0));
+  }
   drumSourceVelocity=manifest?.sourceVelocity||100;
   drumBuffer=null;
   drumRegions={};
