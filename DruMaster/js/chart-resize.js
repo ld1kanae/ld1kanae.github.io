@@ -9,10 +9,21 @@
   if(!chart||!canvas)return;
   const chartCtx=canvas.getContext("2d");
 
+  function isTouchDevice(){
+    return (navigator.maxTouchPoints||0)>0 ||
+      !!globalThis.matchMedia?.("(any-pointer:coarse)")?.matches ||
+      !!globalThis.matchMedia?.("(pointer:coarse)")?.matches;
+  }
+
   function syncCanvasSize(){
     const w=Math.max(1,Math.round(canvas.clientWidth));
     const h=Math.max(1,Math.round(canvas.clientHeight));
-    const dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1));
+    /* A DPR-3 backing store gives a small mobile rhythm lane nine physical
+       pixels for every CSS pixel and keeps the GPU busy continuously. Cap only
+       touch hardware at DPR 2; desktop remains unchanged. Geometry and hit
+       timing are CSS-pixel based, so this does not alter gameplay alignment. */
+    const dprCap=isTouchDevice()?2:3;
+    const dpr=Math.max(1,Math.min(dprCap,window.devicePixelRatio||1));
     const bw=Math.round(w*dpr),bh=Math.round(h*dpr);
     if(canvas.width!==bw||canvas.height!==bh){
       canvas.width=bw;
