@@ -4,10 +4,37 @@
   const mobile=!!matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;
   if(!desktop&&!mobile)return;
 
+  if(mobile){
+    const style=document.createElement("style");
+    style.dataset.mobileGlassRimFix="1";
+    style.textContent=`
+      .glass-hover-wrap > .glass-hover-rim-svg{display:none!important}
+      .glass-hover-wrap > button > .glass-hover-rim-svg,
+      #pause.glass-hover-inline > .glass-hover-rim-svg{
+        position:absolute!important;
+        inset:0!important;
+        left:0!important;
+        top:0!important;
+        width:100%!important;
+        height:100%!important;
+        min-width:0!important;
+        min-height:0!important;
+        max-width:none!important;
+        max-height:none!important;
+        margin:0!important;
+        padding:0!important;
+        transform:none!important;
+        z-index:4!important;
+        pointer-events:none!important;
+        overflow:visible!important;
+        display:block!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   const SELECTOR="#start,#pause,#scorePlaybackControls button,#pausePanel button,.result-actions button,.mic-cal-actions button";
 
-  /* Approved production hover payload. Keep the full rainbow material:
-     inner spectrum, external halo, rimRun1/2, faceSheen and faceFlash. */
   const SETTINGS={
     spectralAngle:"337.5deg",
     autoReplay:true,
@@ -282,9 +309,6 @@
 
   scan();
 
-  /* State changes elsewhere can replace a button's text/children. Repair only
-     the missing hover layers instead of treating the button as permanently
-     initialized. This prevents the approved rainbow hover from fading away. */
   let repairQueued=false;
   const pending=new Set();
   const queueRepair=button=>{
