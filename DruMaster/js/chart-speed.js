@@ -14,7 +14,7 @@
     return desktopMq.matches?DESKTOP_PX_PER_QUARTER:DEFAULT_PX_PER_QUARTER;
   }
 
-  function drawConfigured({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
+  function drawConfigured({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true,hiddenTypes=null}){
     const pxPerQuarter=pixelsPerQuarter(),w=canvas.clientWidth,h=canvas.clientHeight,
           beatNow=chart.secondsToBeat(currentSec,timing),division=timing.division||480,
           judgeX=chart.judgementX(w),judgeZoneW=chart.judgementZoneWidth(w),
@@ -38,11 +38,12 @@
     const minBeat=beatNow-48/pxPerQuarter,
           maxBeat=beatNow+(w+48-judgeX)/pxPerQuarter,
           search=globalThis.DruMasterNoteSearch,
-          range=search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length};
+          range=search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length},
+          noteOffsets=chart.simultaneousNoteOffsets?.(notes,range.start,range.end,skipHit,groupMap,DESKTOP_NOTE_WIDTH_SCALE,hiddenTypes)||new WeakMap();
     for(let i=range.start;i<range.end;i++){
       const n=notes[i];
-      if(skipHit&&n.hit)continue;
-      const x=judgeX+(n.tick/division-beatNow)*pxPerQuarter;
+      if(skipHit&&n.hit||hiddenTypes?.has(n.type))continue;
+      const x=judgeX+(n.tick/division-beatNow)*pxPerQuarter+(noteOffsets.get(n)||0);
       const group=groupMap[n.type],lane=group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3,
             alpha=.48+.52*n.velocity/127,visual=chart.noteVisual(n.type,group,DESKTOP_NOTE_WIDTH_SCALE);
       ctx.globalAlpha=n.type==="kick"?.32+.28*n.velocity/127:alpha;
