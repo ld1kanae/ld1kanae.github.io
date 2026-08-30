@@ -49,7 +49,7 @@ function scheduleKickAudio(){if(document.body.dataset.scorePlayback==="1")return
 setInterval(scheduleKickAudio,KICK_AUDIO_TIMER_MS);
 function visibleFootRange(){if(!Array.isArray(notes)||!notes.length)return {start:0,end:0};const w=canvas.clientWidth,beatNow=DruMusterChart.secondsToBeat(chartCurrent(),beatTiming),division=beatTiming.division||480,judgeX=DruMusterChart.judgementX(w),speed=DruMusterChart.pixelsPerQuarter?.()||DruMusterChart.PIXELS_PER_QUARTER||80,minBeat=beatNow-48/speed,maxBeat=beatNow+(w+48-judgeX)/speed,search=globalThis.DruMusterNoteSearch;return search?.visibleTickRange?search.visibleTickRange(notes,minBeat*division,maxBeat*division):{start:0,end:notes.length}}
 
-const HH_GRAPH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]),HH_GRAPH_VELOCITY_CURVE=Math.log(.4)/Math.log(100/127),HH_GRAPH_OPEN_RAMP_BEATS=.1875,HH_GRAPH_CLOSE_LEAD_BEATS=.0625,HH_GRAPH_CLOSE_RAMP_BEATS=.25;
+const HH_GRAPH_TYPES=new Set(["hhClosed","hhOpen","hhPedal"]),HH_GRAPH_VELOCITY_CURVE=Math.log(.4)/Math.log(100/127),HH_GRAPH_OPEN_RAMP_BEATS=0,HH_GRAPH_CLOSE_LEAD_BEATS=.08,HH_GRAPH_CLOSE_RAMP_BEATS=.25;
 let hhGraphNotes=null,hhGraphTiming=null,hhGraphEvents=[];
 const hhGraphClamp01=value=>Math.max(0,Math.min(1,value)),hhGraphEaseOutQuart=value=>1-Math.pow(1-hhGraphClamp01(value),4),hhGraphEaseInOutQuart=value=>{const t=hhGraphClamp01(value);return t<.5?8*t*t*t*t:1-Math.pow(-2*t+2,4)/2},hhGraphVelocityToLevel=velocity=>{const normalized=Math.max(0,Math.min(127,Number(velocity)||0))/127;return normalized<=0?0:Math.pow(normalized,HH_GRAPH_VELOCITY_CURVE)};
 function hhGraphUpperBound(beat){let lo=0,hi=hhGraphEvents.length;while(lo<hi){const mid=(lo+hi)>>>1;if(hhGraphEvents[mid].rampEnd<=beat)lo=mid+1;else hi=mid}return lo}
