@@ -154,11 +154,11 @@ globalThis.DruMusterChart=(()=>{
 
   function laneForGroup(group){return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3}
 
-  function simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale){
+  function simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale,hiddenTypes=null){
     const buckets=new Map(),offsets=new WeakMap(),gap=1;
     for(let i=start;i<end;i++){
       const note=notes[i];
-      if(skipHit&&note.hit)continue;
+      if(skipHit&&note.hit||hiddenTypes?.has(note.type))continue;
       const group=groupMap[note.type],lane=laneForGroup(group),key=`${note.tick}|${lane}`,
             midiNote=Number(note.note),
             slotKey=Number.isFinite(midiNote)?`midi:${midiNote}`:`type:${note.type}`;
@@ -188,7 +188,7 @@ globalThis.DruMusterChart=(()=>{
     return offsets;
   }
 
-  function draw({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true}){
+  function draw({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true,hiddenTypes=null}){
     const w=canvas.clientWidth,h=canvas.clientHeight,beatNow=secondsToBeat(currentSec,timing),division=timing.division||480,
           judgeX=judgementX(w),judgeZoneW=judgementZoneWidth(w),kickH=Math.max(16,h*.12),mainH=h-kickH,laneH=mainH/3,
           labelFont=Math.max(9,laneH*.13),labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"],
@@ -209,10 +209,10 @@ globalThis.DruMusterChart=(()=>{
     const minBeat=beatNow-48/PIXELS_PER_QUARTER,
           maxBeat=beatNow+(w+48-judgeX)/PIXELS_PER_QUARTER,
           {start,end}=visibleRange(notes,minBeat*division,maxBeat*division),
-          noteOffsets=simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale);
+          noteOffsets=simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale,hiddenTypes);
     for(let i=start;i<end;i++){
       const n=notes[i];
-      if(skipHit&&n.hit)continue;
+      if(skipHit&&n.hit||hiddenTypes?.has(n.type))continue;
       const x=judgeX+(n.tick/division-beatNow)*PIXELS_PER_QUARTER+(noteOffsets.get(n)||0);
       const group=groupMap[n.type],lane=laneForGroup(group),alpha=.48+.52*n.velocity/127,visual=noteVisual(n.type,group,noteWidthScale);
       ctx.globalAlpha=n.type==="hhPedal"?.24+.18*n.velocity/127:n.type==="kick"?.32+.28*n.velocity/127:alpha;ctx.fillStyle=visual.color;
