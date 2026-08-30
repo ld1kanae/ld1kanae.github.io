@@ -65,18 +65,25 @@
     const button=buttonFor(host);
     const svg=host?.querySelector?.(":scope > .glass-hover-rim-svg");
     if(!button||!svg)return;
-    const box=button.getBoundingClientRect();
-    if(box.width<2||box.height<2)return;
+
+    /* offsetWidth/offsetHeight stay in the button's local CSS coordinate space.
+       getBoundingClientRect() reports the already-rotated box on smartphone,
+       which swaps width/height under DruMaster's -90deg app transform and made
+       the animated rim drift away from the visible outline. */
+    const width=button.offsetWidth||parseFloat(getComputedStyle(button).width)||0;
+    const height=button.offsetHeight||parseFloat(getComputedStyle(button).height)||0;
+    if(width<2||height<2)return;
+
     const inset=1.25;
     const style=getComputedStyle(button);
     const cssRadius=parseFloat(style.borderTopLeftRadius)||0;
-    const rx=Math.max(0,Math.min(cssRadius,(box.height-inset*2)/2));
-    svg.setAttribute("viewBox",`0 0 ${box.width} ${box.height}`);
+    const rx=Math.max(0,Math.min(cssRadius,(height-inset*2)/2));
+    svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
     for(const r of svg.querySelectorAll("rect")){
       r.setAttribute("x",String(inset));
       r.setAttribute("y",String(inset));
-      r.setAttribute("width",String(Math.max(0,box.width-inset*2)));
-      r.setAttribute("height",String(Math.max(0,box.height-inset*2)));
+      r.setAttribute("width",String(Math.max(0,width-inset*2)));
+      r.setAttribute("height",String(Math.max(0,height-inset*2)));
       r.setAttribute("rx",String(rx));
     }
   }
