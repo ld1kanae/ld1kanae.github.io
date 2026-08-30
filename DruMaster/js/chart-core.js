@@ -177,11 +177,10 @@ globalThis.DruMusterChart=(()=>{
         const aMidi=Number.isFinite(a.midiNote)?a.midiNote:Infinity,
               bMidi=Number.isFinite(b.midiNote)?b.midiNote:Infinity;
         return aMidi-bMidi||String(a.type).localeCompare(String(b.type));
-      }),totalWidth=slots.reduce((sum,slot)=>sum+slot.width,0)+gap*(slots.length-1);
-      let cursor=-totalWidth/2;
+      });
+      let cursor=0;
       for(const slot of slots){
-        const offset=cursor+slot.width/2;
-        for(const note of slot.notes)offsets.set(note,offset);
+        for(const note of slot.notes)offsets.set(note,cursor);
         cursor+=slot.width+gap;
       }
     }
