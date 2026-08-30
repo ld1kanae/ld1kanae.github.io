@@ -6,6 +6,7 @@
 
   const fxByLane=[];
   const glowByLane=[];
+  const CYMBAL_PARTS=new Set(["crash","crash2","ride","splash"]);
   const MOBILE_JUDGE_FONT=9;
   const MOBILE_GOAL_GAP=12;
   const MOBILE_OPTICAL_X=2;
@@ -30,7 +31,7 @@
 
   function laneForPart(part){
     if(part==="kick")return 3;
-    if(part==="crash"||part==="crash2")return 0;
+    if(part==="crash"||part==="crash2"||part==="splash")return 0;
     if(part==="hh"||part==="ride"||part==="special")return 1;
     if(part==="snare"||part==="highTom"||part==="midTom"||part==="floorTom")return 2;
     return -1;
@@ -41,17 +42,22 @@
     return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:-1;
   }
 
+  function matchesPart(part,n){
+    const notePart=PART[n.type];
+    return CYMBAL_PARTS.has(part)?CYMBAL_PARTS.has(notePart):notePart===part;
+  }
+
   function nearestNoteForPart(part,t,maxDelta=.16,includeHit=false){
     if(typeof notes==="undefined"||typeof PART==="undefined")return null;
     const search=globalThis.DruMasterNoteSearch;
     if(search?.nearest){
-      return search.nearest(notes,t,maxDelta,n=>(includeHit||!n.hit)&&n.type!=="kick"&&PART[n.type]===part)?.note||null;
+      return search.nearest(notes,t,maxDelta,n=>(includeHit||!n.hit)&&n.type!=="kick"&&matchesPart(part,n))?.note||null;
     }
     let best=null,bestDelta=maxDelta+.000001;
     for(const n of notes){
       if(n.time<t-maxDelta)continue;
       if(n.time>t+maxDelta)break;
-      if((!includeHit&&n.hit)||n.type==="kick"||PART[n.type]!==part)continue;
+      if((!includeHit&&n.hit)||n.type==="kick"||!matchesPart(part,n))continue;
       const d=Math.abs(n.time-t);
       if(d<bestDelta){best=n;bestDelta=d}
     }
