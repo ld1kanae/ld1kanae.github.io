@@ -13,7 +13,6 @@
   const mobileQuery=matchMedia('(hover:none) and (pointer:coarse) and (max-width:900px)');
   const correctionKey='dm-mobile-center-correction-v1';
   let raf=0;
-  let fullscreenTried=false;
 
   function clampNumber(value,min,max){
     const n=Number(value);
@@ -43,7 +42,6 @@
     root.style.setProperty('--dm-mobile-stage-w',`${viewportH}px`);
     root.style.setProperty('--dm-mobile-stage-h',`${viewportW}px`);
     root.dataset.dmViewport=`${viewportW}x${viewportH}`;
-    root.dataset.dmFullscreen=document.fullscreenElement||document.webkitFullscreenElement?'1':'0';
   }
 
   function scheduleStageUpdate(){
@@ -51,43 +49,14 @@
     raf=requestAnimationFrame(updateStageNow);
   }
 
-  async function requestMobileFullscreen(){
-    if(fullscreenTried||!mobileQuery.matches) return;
-    if(document.fullscreenElement||document.webkitFullscreenElement){
-      fullscreenTried=true;
-      scheduleStageUpdate();
-      return;
-    }
-    fullscreenTried=true;
-    const target=document.documentElement;
-    try{
-      if(target.requestFullscreen){
-        try{await target.requestFullscreen({navigationUI:'hide'})}
-        catch(_){await target.requestFullscreen()}
-      }else if(target.webkitRequestFullscreen){
-        target.webkitRequestFullscreen();
-      }
-    }catch(_){
-      /* Fullscreen is optional. VisualViewport centering still works when the
-         browser rejects or does not implement the request. */
-    }finally{
-      scheduleStageUpdate();
-      setTimeout(scheduleStageUpdate,120);
-      setTimeout(scheduleStageUpdate,420);
-    }
-  }
-
   applySavedCorrection();
   scheduleStageUpdate();
 
-  /* Use the click event rather than pointerdown so the original target has
-     already been resolved before the viewport can change. */
-  document.addEventListener('click',requestMobileFullscreen,{capture:true});
-
+  /* Keep the landscape-stage sizing responsive to the browser's visible
+     viewport, but never enter the Fullscreen API automatically. Browser chrome
+     remains under the user's control. */
   window.addEventListener('resize',scheduleStageUpdate,{passive:true});
   window.addEventListener('orientationchange',scheduleStageUpdate,{passive:true});
-  document.addEventListener('fullscreenchange',scheduleStageUpdate);
-  document.addEventListener('webkitfullscreenchange',scheduleStageUpdate);
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize',scheduleStageUpdate,{passive:true});
     window.visualViewport.addEventListener('scroll',scheduleStageUpdate,{passive:true});
