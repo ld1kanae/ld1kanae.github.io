@@ -71,6 +71,32 @@ function readWavFormat(ab){
   throw Error("ゲーム内ドラム音源のfmtチャンクが見つかりません");
 }
 
+/* drumsound.wav intentionally contains large gaps between source hits so every
+   cymbal/reverb tail can finish naturally. Those gaps must not become active
+   AudioBufferSourceNodes during gameplay. Trim only the digital-silence tail
+   after the last meaningful 16-bit sample, with an extra guard after it. */
+const DRUM_SILENCE_THRESHOLD=1.5/32768;
+const DRUM_TAIL_GUARD_SEC=.10;
+function audibleRegionDuration(offset,duration){
+  if(!drumBuffer||duration<=0)return duration;
+  const sr=drumBuffer.sampleRate,start=Math.max(0,Math.floor(offset*sr)),end=Math.min(drumBuffer.length,Math.ceil((offset+duration)*sr));
+  if(end<=start)return duration;
+  const channels=Array.from({length:drumBuffer.numberOfChannels},(_,i)=>drumBuffer.getChannelData(i));
+  const block=256;
+  let lastAudible=-1;
+  outer:for(let z=end;z>start;z-=block){
+    const a=Math.max(start,z-block);
+    for(let i=z-1;i>=a;i--){
+      for(const data of channels){
+        if(Math.abs(data[i])>DRUM_SILENCE_THRESHOLD){lastAudible=i;break outer}
+      }
+    }
+  }
+  if(lastAudible<0)return Math.min(duration,.08);
+  const audible=(lastAudible-start+1)/sr+DRUM_TAIL_GUARD_SEC;
+  return Math.min(duration,Math.max(.06,audible));
+}
+
 loadDrumSource=async function(manifest){
   $("#loadState").textContent="ゲーム内ドラム音源を読み込み中…";
   const [wav,midi]=await Promise.all([
@@ -93,7 +119,8 @@ loadDrumSource=async function(manifest){
   sourceNotes.forEach((n,i)=>{
     const end=i+1<sourceNotes.length?sourceNotes[i+1].time:drumBuffer.duration;
     if(n.time>=drumBuffer.duration||end<=n.time)throw Error(`ドラム音源の再生位置が不正です（MIDI ${n.note}）`);
-    drumRegions[String(n.note)]={offset:n.time,duration:end-n.time};
+    const rawDuration=end-n.time;
+    drumRegions[String(n.note)]={offset:n.time,duration:audibleRegionDuration(n.time,rawDuration)};
   });
   const required=new Set(Object.values(DEFAULT_NOTE)),missing=[...required].filter(note=>!drumRegions[String(note)]);
   if(missing.length)throw Error(`ゲーム内ドラム音源に必要な基準音がありません（MIDI ${missing.join(", ")}）`);
@@ -117,13 +144,14 @@ function midiDrumMix(type){
   return master*groupGain;
 }
 
-playDrum=function(_chartNote,type,v=.75){
-  if(!ac||!drumBuffer)return;
+function startDrumVoice(type,v=.75,when){
+  if(!ac||!drumBuffer)return null;
   if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();
-  const sampleNote=DEFAULT_NOTE[type];
-  const region=drumRegions[String(sampleNote)];
-  if(!region)return;
-  const now=ac.currentTime,source=ac.createBufferSource(),gain=ac.createGain(),mix=midiDrumMix(type),sourceVelocity=drumSourceVelocity/127,velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
+  const sampleNote=DEFAULT_NOTE[type],region=drumRegions[String(sampleNote)];
+  if(!region)return null;
+  const startAt=Number.isFinite(Number(when))?Math.max(ac.currentTime,Number(when)):ac.currentTime,
+        source=ac.createBufferSource(),gain=ac.createGain(),mix=midiDrumMix(type),sourceVelocity=drumSourceVelocity/127,
+        velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
   source.buffer=drumBuffer;
   gain.gain.value=.85*velocityGain*mix;
   source.connect(gain).connect(masterBus);
@@ -138,10 +166,16 @@ playDrum=function(_chartNote,type,v=.75){
     try{source.disconnect()}catch{}
     try{gain.disconnect()}catch{}
   };
-  source.start(now,region.offset,region.duration);
+  source.start(startAt,region.offset,region.duration);
+  return tracked;
+}
+
+playDrum=function(_chartNote,type,v=.75){
+  return startDrumVoice(type,v,ac?.currentTime);
 };
 
 globalThis.DruMasterAudioControl={
+  scheduleKick(v,when){return startDrumVoice("kick",v,when)},
   stopAllDrumVoices(){
     const now=ac?.currentTime||0;
     openHatVoices=[];
