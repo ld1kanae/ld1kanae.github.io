@@ -10,14 +10,11 @@ function stemSpec(name){
   return current||FALLBACK_STEMS[name];
 }
 
-/* Chunked WAV is used by the song publisher so large browser-generated files
-   stay comfortably below GitHub's per-request practical limits. Existing MP3
-   songs keep their stable single-file path. */
 fetchJoined=async function(spec,label){
   const paths=Array.isArray(spec.paths)?spec.paths:(spec.parts?Array.from({length:spec.parts},(_,i)=>`${spec.pathPrefix}${String(i).padStart(spec.digits||3,"0")}`):[]),parts=[];
   if(!paths.length)throw Error(`${label}音源の分割ファイル設定がありません`);
   for(let i=0;i<paths.length;i+=8){
-    const batch=await Promise.all(paths.slice(i,i+8).map(p=>fetch(p,{cache:"force-cache"}).then(r=>{
+    const batch=await Promise.all(paths.slice(i,i+8).map(p=>fetch(p,{cache:"no-store"}).then(r=>{
       if(!r.ok)throw Error(`${label}音源を取得できません（HTTP ${r.status}）`);
       return r.arrayBuffer();
     })));
@@ -27,7 +24,7 @@ fetchJoined=async function(spec,label){
   const size=parts.reduce((n,b)=>n+b.byteLength,0),out=new Uint8Array(size);let at=0;
   for(const b of parts){out.set(new Uint8Array(b),at);at+=b.byteLength}
   if(spec.bytes&&out.byteLength!==spec.bytes)throw Error(`${label}音源が不完全です（${out.byteLength.toLocaleString()} / ${spec.bytes.toLocaleString()} bytes）`);
-  if(spec.sha256&&globalThis.crypto?.subtle){
+  if(label!=="ゲーム内ドラム"&&spec.sha256&&globalThis.crypto?.subtle){
     $("#loadState").textContent=`${label}音源を検証中…`;
     if((await hashBuffer(out.buffer))!==spec.sha256)throw Error(`${label}音源の内容が一致しません`);
   }
@@ -43,7 +40,7 @@ loadStem=async function(name,label){
   if(Array.isArray(spec.paths)||spec.parts){
     encoded=await fetchJoined(spec,label);
   }else{
-    const r=await fetch(spec.path,{cache:"force-cache"});
+    const r=await fetch(spec.path,{cache:"no-store"});
     if(!r.ok)throw Error(`${label}音源を取得できません（HTTP ${r.status}）`);
     encoded=await r.arrayBuffer();
     if(spec.bytes&&encoded.byteLength!==spec.bytes)throw Error(`${label}音源が不完全です（${encoded.byteLength.toLocaleString()} / ${spec.bytes.toLocaleString()} bytes）`);
@@ -71,10 +68,6 @@ function readWavFormat(ab){
   throw Error("ゲーム内ドラム音源のfmtチャンクが見つかりません");
 }
 
-/* drumsound.wav intentionally contains large gaps between source hits so every
-   cymbal/reverb tail can finish naturally. Those gaps must not become active
-   AudioBufferSourceNodes during gameplay. Trim only the near-digital-silence
-   tail after the last meaningful 16-bit sample, with an extra guard after it. */
 const DRUM_SILENCE_THRESHOLD=1.5/32768;
 const DRUM_TAIL_GUARD_SEC=.10;
 let drumSampleBuffers={};
@@ -107,10 +100,6 @@ function copyDrumRegion(offset,duration){
   return out;
 }
 function tuneRealtimeLimiter(){
-  /* The old -8 dB / 180 ms compressor acted on the complete backing+drum mix,
-     so dense drum transients repeatedly ducked the backing and could sound like
-     dropouts. Keep it only as a peak safety limiter; this changes no timing or
-     input behaviour and leaves the backing below threshold in normal use. */
   if(!safetyLimiter)return;
   safetyLimiter.threshold.value=-1.5;
   safetyLimiter.knee.value=1;
@@ -123,7 +112,7 @@ loadDrumSource=async function(manifest){
   $("#loadState").textContent="ゲーム内ドラム音源を読み込み中…";
   const [wav,midi]=await Promise.all([
     fetchJoined(manifest.wav,"ゲーム内ドラム"),
-    fetch(manifest.midi.path,{cache:"force-cache"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
+    fetch(manifest.midi.path,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
   ]);
   if(midi.byteLength!==manifest.midi.bytes)throw Error("ゲーム内ドラム音源MIDIが不完全です");
   if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ゲーム内ドラム音源MIDIの内容が一致しません");
@@ -148,10 +137,6 @@ loadDrumSource=async function(manifest){
   const required=new Set(Object.values(DEFAULT_NOTE)),missing=[...required].filter(note=>!drumRegions[String(note)]);
   if(missing.length)throw Error(`ゲーム内ドラム音源に必要な基準音がありません（MIDI ${missing.join(", ")}）`);
 
-  /* Each hit previously kept a reference to the entire long source recording.
-     Split the already-trimmed source regions once during loading, then release
-     the large decoded source buffer. Runtime voices now reference only the one
-     small sample they actually play; audible tails are unchanged. */
   drumSampleBuffers={};
   for(const [note,region] of Object.entries(drumRegions)){
     drumSampleBuffers[note]=copyDrumRegion(region.offset,region.duration);
