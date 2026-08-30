@@ -2,6 +2,18 @@
 
 (()=>{
   const PERFECT_WINDOW=.035;
+  const CYMBAL_PARTS=new Set(["crash","crash2","ride","splash"]);
+  const CYMBAL_SOUNDS={
+    crash:{type:"crash",note:49},
+    crash2:{type:"crash2",note:57},
+    ride:{type:"ride",note:51},
+    splash:{type:"splash",note:55}
+  };
+
+  /* MIDI 55 is the GM Splash Cymbal sample already present in drumsound.wav. */
+  try{if(typeof DEFAULT_NOTE!=="undefined")DEFAULT_NOTE.splash=55}catch{}
+  try{if(typeof DEFAULT_TYPE!=="undefined")DEFAULT_TYPE.splash="splash"}catch{}
+  try{if(typeof DRUM_GAIN!=="undefined")DRUM_GAIN.splash=1.2}catch{}
 
   /* Scoring rules: drums/toms are emphasized; hi-hat now has the same 1.0
      base weight as cymbals/ride. Scores are accumulated as raw points rather
@@ -28,7 +40,48 @@
     if(bass)plane.appendChild(bass);
     if(art)plane.appendChild(art);
   }
+  const plane=stage?.querySelector(":scope > .kit-art-plane");
+  if(plane&&!plane.querySelector(":scope > .splash-cymbal-art")){
+    const splashArt=document.createElement("img");
+    splashArt.className="splash-cymbal-art";
+    splashArt.src="assets/splash-cymbal.svg?v=20260830-prod2";
+    splashArt.alt="";
+    const art=plane.querySelector(":scope > .kit-art");
+    plane.insertBefore(splashArt,art||plane.firstChild);
+  }
   if(stage&&kickFx&&kickFx.parentElement!==stage)stage.appendChild(kickFx);
+
+  /* Splash gets its own physical hit target while chart judgement treats all
+     crash/ride/splash targets as the same cymbal family. */
+  const hitLayer=stage?.querySelector("#hitLayer");
+  let splashHit=hitLayer?.querySelector('[data-part="splash"]')||null;
+  if(hitLayer&&!splashHit){
+    splashHit=document.createElement("button");
+    splashHit.type="button";
+    splashHit.className="hit splash";
+    splashHit.dataset.part="splash";
+    splashHit.setAttribute("aria-label","Splash cymbal");
+    hitLayer.appendChild(splashHit);
+  }
+  if(typeof setKit==="function"){
+    const originalSetKit=setKit;
+    setKit=function(){
+      const value=originalSetKit();
+      splashHit?.classList.remove("inactive");
+      return value;
+    };
+  }
+  splashHit?.classList.remove("inactive");
+
+  /* Registered before touch-capability.js, so tapping the visible splash keeps
+     the splash timbre even in anywhere-touch mode. */
+  document.addEventListener("pointerdown",e=>{
+    const el=e.target.closest?.('#hitLayer .hit[data-part="splash"]:not(.inactive)');
+    if(!el)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if(typeof input==="function")input("splash",el);
+  },true);
 
   /* Expanded PC bindings: nearby keys can strike the same drum/cymbal. */
   const KEY_BINDINGS={
@@ -90,16 +143,21 @@
   }
   installBadges();
 
+  function noteMatchesPart(part,n){
+    const notePart=PART[n.type];
+    return CYMBAL_PARTS.has(part)?CYMBAL_PARTS.has(notePart):notePart===part;
+  }
+
   function nearestPartNote(part,t,maxDelta=.16){
     const search=globalThis.DruMasterNoteSearch;
     if(search?.nearest){
-      return search.nearest(notes,t,maxDelta,n=>!n.hit&&n.type!=="kick"&&PART[n.type]===part);
+      return search.nearest(notes,t,maxDelta,n=>!n.hit&&n.type!=="kick"&&noteMatchesPart(part,n));
     }
     let best=null,delta=maxDelta+1e-9;
     for(const n of notes){
       if(n.time<t-maxDelta)continue;
       if(n.time>t+maxDelta)break;
-      if(n.hit||n.type==="kick"||PART[n.type]!==part)continue;
+      if(n.hit||n.type==="kick"||!noteMatchesPart(part,n))continue;
       const d=Math.abs(n.time-t);if(d<delta){best=n;delta=d}
     }
     return best?{note:best,delta}:null;
@@ -112,9 +170,11 @@
       const t=current(),match=nearestPartNote(part,t,.16),best=match?.note||null,delta=match?.delta??Infinity;
       const matched=!!best,
             vel=matched?best.velocity/127:.72,
-            type=matched?best.type:DEFAULT_TYPE[part],
-            note=matched?best.note:DEFAULT_NOTE[type];
-      playDrum(note,type,vel);
+            chartType=matched?best.type:DEFAULT_TYPE[part],
+            chartNote=matched?best.note:DEFAULT_NOTE[chartType],
+            physical=CYMBAL_SOUNDS[part];
+      if(physical)playDrum(physical.note,physical.type,vel);
+      else playDrum(chartNote,chartType,vel);
       flashPart(part,visualEl);
       if(!matched)return;
 
@@ -129,7 +189,11 @@
       }
       score+=weight(best.type)*best.velocity/127*1000*mult;
       $("#score").textContent=String(Math.round(score)).padStart(6,"0");
-      showJudge(label);
+      if(part==="splash"&&globalThis.DruMasterJudgement?.emitForNote){
+        globalThis.DruMasterJudgement.emitForNote(best,label,{flash:false});
+      }else{
+        showJudge(label);
+      }
     };
   }
 
