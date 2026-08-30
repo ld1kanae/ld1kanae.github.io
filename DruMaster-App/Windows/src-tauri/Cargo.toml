@@ -1,0 +1,18 @@
+[package]
+name = "drumaster"
+version = "0.1.0"
+description = "DruMaster desktop package"
+authors = ["ld1kanae"]
+edition = "2021"
+
+[lib]
+name = "drumaster_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
