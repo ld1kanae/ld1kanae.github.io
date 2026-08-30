@@ -166,10 +166,11 @@
       const api=globalThis.DruMasterPerformanceMode;
       if(!api || api.getRunMode?.()!=="touch")return;
 
-      consumeTouchAt(eventSongTime(e));
-      /* performance-mode-v5 also has a legacy game-level pointer listener.
-         Consume the gameplay pointer here even on a MISS so it cannot run a
-         second judgement a few milliseconds later with a different timestamp. */
+      const consumed=consumeTouchAt(eventSongTime(e));
+      /* Preserve the original free-pad semantics: only consume the pointer when
+         a chart note was actually hit. With no note inside the GOOD window the
+         event must continue to the drum target underneath so it still sounds. */
+      if(!consumed)return;
       e.preventDefault();
       e.stopImmediatePropagation();
     },true);
