@@ -60,6 +60,14 @@
     controls.appendChild(inputRow);
     controls.appendChild(historyRow);
 
+    const nudgeOrder=["1","0.1","-0.1","-1"];
+    for(const value of nudgeOrder){
+      const button=nudgeRow.querySelector(`[data-audio="${value}"]`);
+      if(button)nudgeRow.appendChild(button);
+    }
+    const reset=$("audioReset");
+    if(reset)nudgeRow.appendChild(reset);
+
     nudgeRow.classList.add("dm-audio-nudges");
     nudgeRow.style.marginTop="";
     controls.insertAdjacentElement("afterend",nudgeRow);
