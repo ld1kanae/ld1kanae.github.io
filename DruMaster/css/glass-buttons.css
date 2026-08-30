@@ -161,4 +161,17 @@
       0 0 0 2.4px rgba(8,16,62,.055),
       0 8px 20px rgba(0,0,0,.34)!important;
   }
+
+  /* The animated rim SVG is a sibling of wrapped buttons. Scale the wrapper,
+     not only the button, so the face, rim and halo remain in one coordinate box. */
+  .glass-hover-wrap{
+    transform-origin:center center;
+    transition:transform .20s ease!important;
+  }
+  .glass-hover-wrap>button:active{
+    transform:none!important;
+  }
+  .glass-hover-wrap:has(>button:active:not(:disabled)){
+    transform:translateY(1px) scale(.988)!important;
+  }
 }
