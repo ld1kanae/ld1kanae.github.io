@@ -4,7 +4,7 @@
   function loadRegistry(){
     try{
       const x=new XMLHttpRequest();
-      x.open("GET",`songs/registry.json?t=${Date.now()}`,false);
+      x.open("GET","songs/registry.json",false);
       x.send();
       if(x.status>=200&&x.status<300){
         const v=JSON.parse(x.responseText||"{}");
