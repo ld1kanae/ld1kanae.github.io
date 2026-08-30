@@ -67,6 +67,29 @@ function processFootAuto(){
   }
 }
 
+/* Bass drum audio used to be started by the render loop with only 12 ms of
+   headroom. A single slow mobile frame could therefore make a kick late or
+   skip it entirely. Keep gameplay/visual timing unchanged, but reserve the
+   actual kick AudioBufferSource on the Web Audio clock well ahead of time. */
+const KICK_AUDIO_LOOKAHEAD_SEC=.18;
+const KICK_AUDIO_TIMER_MS=25;
+function scheduleKickAudio(){
+  if(document.body.dataset.scorePlayback==="1")return;
+  if(typeof running==="undefined"||!running||typeof paused!=="undefined"&&paused)return;
+  if(typeof nextKick==="undefined"||typeof startedAt==="undefined"||typeof rate==="undefined"||!Array.isArray(notes))return;
+  const audio=globalThis.DruMasterAudioControl;
+  if(!audio?.scheduleKick||typeof ac==="undefined"||!ac)return;
+  const speed=Math.max(.01,Number(rate)||1),t=current(),limit=t+KICK_AUDIO_LOOKAHEAD_SEC*speed;
+  while(nextKick<notes.length&&notes[nextKick].time<=limit){
+    const n=notes[nextKick++];
+    if(n.type!=="kick")continue;
+    const when=Number(startedAt)+n.time/speed;
+    if(when<ac.currentTime-.08)continue;
+    audio.scheduleKick(n.velocity/127,when);
+  }
+}
+setInterval(scheduleKickAudio,KICK_AUDIO_TIMER_MS);
+
 function visibleFootRange(){
   if(!Array.isArray(notes)||!notes.length)return {start:0,end:0};
   const w=canvas.clientWidth,
@@ -126,7 +149,10 @@ draw=function(){
 if(typeof loop==="function"){
   const baseLoop=loop;
   loop=function(){
-    if(running&&!paused)processFootAuto();
+    if(running&&!paused){
+      scheduleKickAudio();
+      processFootAuto();
+    }
     return baseLoop();
   };
 }
