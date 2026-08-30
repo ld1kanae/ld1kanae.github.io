@@ -70,11 +70,14 @@ function processFootAuto(){
 /* Bass drum audio used to be started by the render loop with only 12 ms of
    headroom. A single slow mobile frame could therefore make a kick late or
    skip it entirely. Keep gameplay/visual timing unchanged, but reserve the
-   actual kick AudioBufferSource on the Web Audio clock well ahead of time. */
+   actual kick AudioBufferSource on the Web Audio clock well ahead of time.
+   AUTO mode intentionally stays on app.js's direct playDrum path: advancing
+   nextKick here would consume the kick before the AUTO render loop can play it. */
 const KICK_AUDIO_LOOKAHEAD_SEC=.18;
 const KICK_AUDIO_TIMER_MS=25;
 function scheduleKickAudio(){
   if(document.body.dataset.scorePlayback==="1")return;
+  if(typeof autoplay!=="undefined"&&autoplay)return;
   if(typeof running==="undefined"||!running||typeof paused!=="undefined"&&paused)return;
   if(typeof nextKick==="undefined"||typeof startedAt==="undefined"||typeof rate==="undefined"||!Array.isArray(notes))return;
   const audio=globalThis.DruMasterAudioControl;
