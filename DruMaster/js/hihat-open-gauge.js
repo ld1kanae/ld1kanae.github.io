@@ -20,7 +20,7 @@
   const FOOT_PULSE_RISE_BEATS=.045;
   const FOOT_PULSE_FALL_BEATS=.16;
   const FOOT_PULSE_WINDOW=FOOT_PULSE_RISE_BEATS+FOOT_PULSE_FALL_BEATS;
-  let cachedNotes=null,cachedTiming=null,events=[],pedalEvents=[];
+  let cachedNotes=null,cachedTiming=null,events=[],pulseEvents=[];
   let displayedLevel=0,lastFrameMs=performance.now(),lastBeat=NaN;
 
   const clamp01=value=>Math.max(0,Math.min(1,value));
@@ -44,12 +44,12 @@
   function rebuildEnvelope(source,timing){
     const division=Number(timing?.division)||480;
     const actual=[];
-    pedalEvents=[];
+    pulseEvents=[];
     for(const note of source){
       if(!HH_TYPES.has(note.type))continue;
       const beat=Number(note.tick)/division;
-      if(note.type==="hhPedal"){
-        pedalEvents.push({
+      if(note.type==="hhPedal"||note.type==="hhOpen"){
+        pulseEvents.push({
           beat,
           velocity:Math.max(0,Math.min(127,Number(note.velocity)||0))
         });
@@ -61,7 +61,7 @@
       });
     }
     actual.sort((a,b)=>a.beat-b.beat);
-    pedalEvents.sort((a,b)=>a.beat-b.beat);
+    pulseEvents.sort((a,b)=>a.beat-b.beat);
 
     const timeline=[];
     for(let i=0;i<actual.length;i++){
@@ -106,9 +106,9 @@
 
   function footPulseAtBeat(beat){
     let pulse=0;
-    const start=lowerBoundBeat(pedalEvents,beat-FOOT_PULSE_WINDOW);
-    for(let i=start;i<pedalEvents.length;i++){
-      const event=pedalEvents[i],delta=beat-event.beat;
+    const start=lowerBoundBeat(pulseEvents,beat-FOOT_PULSE_WINDOW);
+    for(let i=start;i<pulseEvents.length;i++){
+      const event=pulseEvents[i],delta=beat-event.beat;
       if(delta<0)break;
       if(delta>=FOOT_PULSE_WINDOW)continue;
       let shape;
