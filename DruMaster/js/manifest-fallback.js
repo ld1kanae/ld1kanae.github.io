@@ -1,7 +1,6 @@
 "use strict";
 
-// The drum-source manifest is tiny and versioned with the app. Keep an embedded copy so
-// a transient GitHub Pages/cache failure for the JSON file can never block the START button.
+// Keep the tiny drum manifest embedded so startup does not depend on a separate JSON request.
 (function(){
   const embeddedDrumManifest={
     sourceVelocity:100,
@@ -25,13 +24,13 @@
   const nativeFetch=window.fetch.bind(window);
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
-  async function fetchDrumChunk(input,init,url){
+  async function fetchWithRetry(url,attempts=3,timeoutMs=5000){
     let lastError=null;
-    for(let attempt=0;attempt<3;attempt++){
+    for(let attempt=0;attempt<attempts;attempt++){
       const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),6000);
+      const timer=setTimeout(()=>controller.abort(),timeoutMs);
       try{
-        const response=await nativeFetch(input,{...(init||{}),cache:"no-store",signal:controller.signal});
+        const response=await nativeFetch(url,{cache:"no-store",signal:controller.signal});
         clearTimeout(timer);
         if(response.ok)return response;
         lastError=new Error(`HTTP ${response.status}`);
@@ -40,7 +39,7 @@
         clearTimeout(timer);
         lastError=error;
       }
-      if(attempt<2)await wait(250*(attempt+1));
+      if(attempt+1<attempts)await wait(200*(attempt+1));
     }
     throw lastError||new Error(`Failed to fetch ${url}`);
   }
@@ -48,15 +47,48 @@
   window.fetch=async function(input,init){
     const url=typeof input==="string"?input:(input&&input.url)||"";
     if(/(?:^|\/)assets\/drumsound-manifest\.json(?:[?#].*)?$/.test(url)){
-      // Do not depend on a separate Pages request for this static metadata.
       return new Response(JSON.stringify(embeddedDrumManifest),{
         status:200,
         headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}
       });
     }
-    if(/(?:^|\/)assets\/drumsound-v2-\d{3}(?:[?#].*)?$/.test(url)){
-      return fetchDrumChunk(input,init,url);
-    }
     return nativeFetch(input,init);
   };
+
+  // app.js registers startup after scripts have loaded. Register this first so the
+  // audio.js drum loader is replaced before init() begins. We intentionally avoid
+  // the 22-part source WAV here: the already-exported per-note WAVs are much smaller
+  // and make startup independent of any single large/chunk request stalling.
+  addEventListener("load",()=>{
+    if(typeof loadDrumSource!=="function"||typeof DEFAULT_NOTE==="undefined")return;
+    loadDrumSource=async function(manifest){
+      const state=document.querySelector("#loadState");
+      const entries=[...new Set(Object.values(DEFAULT_NOTE).map(Number))];
+      const loaded=new Map();
+      let next=0,done=0;
+      if(state)state.textContent=`ゲーム内ドラム音源を読み込み中… 0/${entries.length}`;
+
+      const worker=async()=>{
+        while(true){
+          const i=next++;
+          if(i>=entries.length)return;
+          const note=entries[i];
+          const response=await fetchWithRetry(`assets/drums/${note}.wav?v=20260830-individual1`);
+          if(!response.ok)throw Error(`ゲーム内ドラム音源を取得できません（MIDI ${note} / HTTP ${response.status}）`);
+          const encoded=await response.arrayBuffer();
+          loaded.set(note,await ac.decodeAudioData(encoded.slice(0)));
+          done++;
+          if(state)state.textContent=`ゲーム内ドラム音源を読み込み中… ${done}/${entries.length}`;
+        }
+      };
+
+      await Promise.all(Array.from({length:Math.min(4,entries.length)},worker));
+      drumSampleBuffers={};
+      for(const [note,buffer] of loaded)drumSampleBuffers[String(note)]=buffer;
+      drumSourceVelocity=manifest?.sourceVelocity||100;
+      drumBuffer=null;
+      drumRegions={};
+      if(state)state.textContent="ゲーム内ドラム音源を準備しました";
+    };
+  },{once:true});
 })();
