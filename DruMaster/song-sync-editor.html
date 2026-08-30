@@ -33,6 +33,34 @@
       'const len=u32(),end=p+len;if(end>d.byteLength)throw Error("MIDIトラックが途中で切れています");let tick=0,run=0;'
     );
 
+    /* The game uses playback.midiOffsetSec as the authoritative MIDI timing.
+       Keep the exact live-game second offset even when the editor UI expresses
+       adjustments in whole measures. */
+    html=html.replace(
+      'let draft=null,tokenFromPrevious="",ac=null,audioBuffer=null,audioSource=null,notes=[],measureLengthSec=2,measureOffset=0,audioOffsetMs=0,pxPerSec=260,viewStart=0,cursor=0,playing=false,logicalStart=0,contextStart=0,raf=0,scheduler=0,nextClick=0,drag=null,renderReq=0;',
+      'let draft=null,tokenFromPrevious="",ac=null,audioBuffer=null,audioSource=null,notes=[],measureLengthSec=2,measureOffset=0,midiOffsetBaseSec=0,audioOffsetMs=0,pxPerSec=260,viewStart=0,cursor=0,playing=false,logicalStart=0,contextStart=0,raf=0,scheduler=0,nextClick=0,drag=null,renderReq=0;'
+    );
+    html=html.replace(
+      'function midiOffsetSec(){return measureOffset*measureLengthSec}',
+      'function midiOffsetSec(){return midiOffsetBaseSec+measureOffset*measureLengthSec}'
+    );
+    html=html.replace(
+      'const meta=await apiGet(`${ROOT}/${id}/song-draft.json`,tokenFromPrevious),text=decodeContent(meta.content);draft=JSON.parse(text);',
+      'const meta=await apiGet(`${ROOT}/${id}/song-draft.json`,tokenFromPrevious),text=decodeContent(meta.content);draft=JSON.parse(text);try{const regMeta=await apiGet(`${ROOT}/registry.json`,tokenFromPrevious),reg=JSON.parse(decodeContent(regMeta.content)||"{}"),live=reg?.[id];if(live?.playback)draft.playback={...(draft.playback||{}),...live.playback}}catch(e){console.warn("Live game timing load failed; using draft timing",e)}'
+    );
+    html=html.replace(
+      'measureOffset=Number(draft.playback?.midiMeasureOffset)||0;audioOffsetMs=(Number(draft.playback?.stemOffsetSec)||0)*1000;',
+      'measureOffset=Number(draft.playback?.midiMeasureOffset)||0;{const liveMidiSec=Number(draft.playback?.midiOffsetSec);midiOffsetBaseSec=Number.isFinite(liveMidiSec)?liveMidiSec-measureOffset*measureLengthSec:0}audioOffsetMs=(Number(draft.playback?.stemOffsetSec)||0)*1000;'
+    );
+    html=html.replace(
+      '$("midiReset").addEventListener("click",()=>{measureOffset=0;updateOffsetUi()});',
+      '$("midiReset").addEventListener("click",()=>{measureOffset=0;midiOffsetBaseSec=0;updateOffsetUi()});'
+    );
+    html=html.replace(
+      'await putText(`${ROOT}/${id}/song.json`,JSON.stringify({...draft,state:"published",playback},null,2)+"\n",`Publish song settings: ${id}`,t,songMeta?.sha||null);',
+      'await putText(`${ROOT}/${id}/song.json`,JSON.stringify({...draft,state:"published",playback},null,2)+"\n",`Publish song settings: ${id}`,t,songMeta?.sha||null);const draftMeta=await apiMaybeGet(`${ROOT}/${id}/song-draft.json`,t);if(draftMeta)await putText(`${ROOT}/${id}/song-draft.json`,JSON.stringify({...draft,playback},null,2)+"\n",`Sync draft timing: ${id}`,t,draftMeta.sha);'
+    );
+
     html=html.replace('function startPlayback(){if(!audioBuffer||playing)return;void ac.resume();playing=true;','async function startPlayback(){if(!audioBuffer||playing)return;await ac.resume();if($("midiClick").checked)await globalThis.DruMasterTimingMidi?.ready?.(ac);playing=true;');
     html=html.replace('playing=false;stopSource();clearInterval(scheduler);','playing=false;stopSource();globalThis.DruMasterTimingMidi?.stop?.();clearInterval(scheduler);');
     html=html.replace('const when=contextStart+(t-logicalStart),osc=ac.createOscillator(),g=ac.createGain(),at=Math.max(ac.currentTime,when);osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.08,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.025);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.03)','const when=contextStart+(t-logicalStart),at=Math.max(ac.currentTime,when);if(!globalThis.DruMasterTimingMidi?.play?.(n,at,ac)){const osc=ac.createOscillator(),g=ac.createGain();osc.frequency.value=n.note<42?130:n.note<49?220:420;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.12,at+.002);g.gain.exponentialRampToValueAtTime(.0001,at+.05);osc.connect(g).connect(ac.destination);osc.start(at);osc.stop(at+.06)}');
