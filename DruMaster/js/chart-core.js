@@ -155,7 +155,7 @@ globalThis.DruMusterChart=(()=>{
   function laneForGroup(group){return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3}
 
   function simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale,hiddenTypes=null){
-    const buckets=new Map(),offsets=new WeakMap(),gap=1;
+    const buckets=new Map(),offsets=new WeakMap(),gap=0;
     for(let i=start;i<end;i++){
       const note=notes[i];
       if(skipHit&&note.hit||hiddenTypes?.has(note.type))continue;
