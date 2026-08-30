@@ -87,10 +87,10 @@
     KeyZ:{part:"snare",label:"Z"},
     KeyX:{part:"snare",label:"X"},
     KeyC:{part:"snare",label:"C"},
+    KeyQ:{part:"crash",side:"left",label:"Q"},
     KeyW:{part:"crash",side:"left",label:"W"},
     KeyE:{part:"crash",side:"left",label:"E"},
     KeyR:{part:"crash",side:"left",label:"R"},
-    KeyT:{part:"crash",side:"left",label:"T"},
     KeyD:{part:"highTom",label:"D"},
     KeyF:{part:"highTom",label:"F"},
     KeyG:{part:"midTom",label:"G"},
@@ -131,7 +131,7 @@
   function installBadges(){
     setBadge(document.querySelector('#hitLayer [data-part="hh"]'),["A","S"]);
     setBadge(document.querySelector('#hitLayer [data-part="snare"]'),["Z","X","C"]);
-    setBadge(document.querySelector("#hitLayer .crash.left"),["W","E","R","T"]);
+    setBadge(document.querySelector("#hitLayer .crash.left"),["Q","W","E","R"]);
     setBadge(document.querySelector('#hitLayer [data-part="highTom"]'),["D","F"]);
     setBadge(document.querySelector('#hitLayer [data-part="midTom"]'),["G","H"]);
     setBadge(document.querySelector('#hitLayer [data-part="floorTom"]'),["B","N","M"]);
