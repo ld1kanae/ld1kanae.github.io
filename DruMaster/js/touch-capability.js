@@ -26,10 +26,6 @@
     return Number.isFinite(value)&&value>0?value:44;
   }
 
-  /* Performance mode used to equate 'mobile' with <=900 CSS px. In landscape
-     that disables touch input on perfectly valid phones/tablets. Preserve the
-     old query everywhere else, but make its JS .matches true on real touch
-     hardware regardless of viewport width. CSS media queries are untouched. */
   window.matchMedia=function(query){
     const list=nativeMatchMedia(query);
     if(compact(query)!==legacyCompact || !isTouchCapable())return list;
@@ -52,9 +48,6 @@
     return r.width>0 && r.height>0;
   }
 
-  /* Visual controls may intentionally stay smaller than a finger target.
-     Hit testing is expanded in pointer space instead of changing their boxes,
-     so the 26px mobile transport artwork remains visually unchanged. */
   function expandedControlAt(x,y){
     let best=null,bestDistance=Infinity;
     const minimum=touchHitArea();
@@ -81,8 +74,6 @@
     return stamp;
   }
 
-  /* Judge against the time at which the browser received the touch, not the
-     later time at which a busy main thread finally dispatches this listener. */
   function eventSongTime(e){
     if(typeof current!=="function")return NaN;
     const queuedMs=Math.max(0,Math.min(160,performance.now()-normalizedEventTimeStamp(e)));
@@ -129,6 +120,15 @@
     return true;
   }
 
+  function playFreePad(target){
+    if(!target||typeof DEFAULT_TYPE==="undefined"||typeof DEFAULT_NOTE==="undefined")return false;
+    const part=target.dataset.part,type=DEFAULT_TYPE[part],note=DEFAULT_NOTE[type];
+    if(!type||!Number.isFinite(Number(note)))return false;
+    if(typeof playDrum==="function")playDrum(note,type,.72);
+    if(typeof flashPart==="function")flashPart(part,target);
+    return true;
+  }
+
   let touchStart=null;
   document.addEventListener("pointerdown",e=>{
     if(!isTouchCapable() || e.pointerType==="mouse" || !e.isPrimary)return;
@@ -161,18 +161,25 @@
       if(!game.contains(e.target))return;
       if(mode.value!=="touch")return;
       if(e.target.closest("#pause,#pausePanel button,.mic-debug-controls,button:not(.hit),select,input"))return;
-      /* Do not convert a near-miss on a compact UI control into a drum hit. */
       if(expandedControlAt(e.clientX,e.clientY))return;
       const api=globalThis.DruMasterPerformanceMode;
       if(!api || api.getRunMode?.()!=="touch")return;
 
       const consumed=consumeTouchAt(eventSongTime(e));
-      /* Preserve the original free-pad semantics: only consume the pointer when
-         a chart note was actually hit. With no note inside the GOOD window the
-         event must continue to the drum target underneath so it still sounds. */
-      if(!consumed)return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
+      if(consumed){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+
+      /* No chart note nearby: this is deliberately a plain drum-set strike,
+         with no score/judgement side effects. Handle it here and stop the older
+         whole-game touch listener from trying to consume an AUTO foot note. */
+      const target=e.target.closest("#hitLayer .hit:not(.inactive)");
+      if(target&&playFreePad(target)){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
     },true);
   }
 
