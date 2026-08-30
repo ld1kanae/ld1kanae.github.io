@@ -35,13 +35,25 @@
     const vv=window.visualViewport;
     const viewportW=Math.max(1,Math.round(vv?vv.width:window.innerWidth));
     const viewportH=Math.max(1,Math.round(vv?vv.height:window.innerHeight));
+    const browserLandscape=viewportW>viewportH;
 
-    /* The app is authored as a landscape stage and then rotated -90deg.
-       Therefore the pre-rotation width is the visible viewport height and
-       the pre-rotation height is the visible viewport width. */
-    root.style.setProperty('--dm-mobile-stage-w',`${viewportH}px`);
-    root.style.setProperty('--dm-mobile-stage-h',`${viewportW}px`);
+    /* DruMaster is authored as a landscape stage. When the browser remains in
+       portrait we rotate that stage ourselves, as before. If Android/iOS auto
+       rotation changes the browser viewport to landscape, stop applying the
+       extra -90deg transform and use the viewport directly. The visible game
+       orientation therefore stays the same whether device auto-rotate is on or
+       off; only the browser chrome itself remains under OS control. */
+    if(browserLandscape){
+      root.classList.add('dm-browser-landscape');
+      root.style.setProperty('--dm-mobile-stage-w',`${viewportW}px`);
+      root.style.setProperty('--dm-mobile-stage-h',`${viewportH}px`);
+    }else{
+      root.classList.remove('dm-browser-landscape');
+      root.style.setProperty('--dm-mobile-stage-w',`${viewportH}px`);
+      root.style.setProperty('--dm-mobile-stage-h',`${viewportW}px`);
+    }
     root.dataset.dmViewport=`${viewportW}x${viewportH}`;
+    root.dataset.dmBrowserOrientation=browserLandscape?'landscape':'portrait';
   }
 
   function scheduleStageUpdate(){
@@ -52,9 +64,8 @@
   applySavedCorrection();
   scheduleStageUpdate();
 
-  /* Keep the landscape-stage sizing responsive to the browser's visible
-     viewport, but never enter the Fullscreen API automatically. Browser chrome
-     remains under the user's control. */
+  /* Keep the visible game orientation stable across browser/device rotation,
+     without requesting Fullscreen or native Screen Orientation lock. */
   window.addEventListener('resize',scheduleStageUpdate,{passive:true});
   window.addEventListener('orientationchange',scheduleStageUpdate,{passive:true});
   if(window.visualViewport){
