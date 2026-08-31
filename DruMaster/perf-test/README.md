@@ -95,9 +95,12 @@ Three captures at increasing accumulated play/tap load showed a strong hit-count
 
 - around song 108 s: display ~50.7 Hz, chart ~47.7 fps, `>50 ms` gaps 12,
 - around song 127 s: display ~57.8 Hz, chart ~56.8 fps, `>50 ms` gaps 40,
-- around song 150 s: display ~32.7 Hz, chart ~37.6 fps, `>50 ms` gaps 84.
+- around song 150 s: display ~32.7 Hz, chart ~37.6 fps, `>50 ms` gaps 84,
+- around song 169 s: display ~39.5 Hz, chart ~45.8 fps (5 s ~40.1), `>50 ms` gaps 52, max gap ~171.7 ms, current voices 16 / peak 21, WAAPI new 17 / reuse 3075.
 
 The important new signal is that severe degradation can reduce **display/rAF delivery itself**, not merely Canvas render completion. The user also reports that more tapping makes the symptom worse. This points strongly to work/resources created by the hit path rather than only chart time or static rendering.
+
+The 169 s screenshot still showed `PASS7`, not `PASS8`. It therefore cannot be used to evaluate the Pass 8 audio pool. The likely cause is an already-open/cached `perf-test.html` document. A dedicated cache-safe entry point was added: `DruMaster/perf-test-pass8.html`.
 
 ## Pass 8 — pooled Web Audio voice slots
 
@@ -149,19 +152,19 @@ If `audio avg/max` grows markedly with tap count or source creation correlates d
 
 ## Test procedure
 
-Normal test URL:
+Normal current test URL:
 
 - `DruMaster/perf-test.html`
 
-Lightweight FPS measurement:
+Dedicated cache-safe Pass 8 entry:
 
-- `DruMaster/perf-test.html?fps=1`
+- `DruMaster/perf-test-pass8.html`
 
 Full Pass 8 diagnostics:
 
-- `DruMaster/perf-test.html?perf=1`
+- `DruMaster/perf-test-pass8.html?perf=1`
 
-For Pass 8, use the full diagnostic mode and deliberately generate a similar amount of tapping. Capture one screenshot while still smooth and one after degradation. Key fields: `taps`, `display`, `chart`, `>50`, `input avg/max`, `audio avg/max`, `voices`, `gainPool`, `sources/ended`, `long`, and `heap`.
+Use the dedicated Pass 8 URL for the next measurement and confirm the first overlay line says `PASS8`. Deliberately generate a similar amount of tapping. Capture one screenshot while still smooth and one after degradation. Key fields: `taps`, `display`, `chart`, `>50`, `input avg/max`, `audio avg/max`, `voices`, `gainPool`, `sources/ended`, `long`, and `heap`.
 
 ## Promotion rule
 
