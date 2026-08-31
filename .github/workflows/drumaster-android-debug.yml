@@ -10,6 +10,9 @@ on:
       - '.github/workflows/drumaster-android-debug.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -53,9 +56,22 @@ jobs:
           cd android
           ./gradlew assembleDebug
 
-      - name: Upload debug APK
+      - name: Prepare direct-download APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk DruMaster-Android.apk
+
+      - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: DruMaster-Android-debug
-          path: DruMaster-App/Android/android/app/build/outputs/apk/debug/app-debug.apk
+          path: DruMaster-App/Android/DruMaster-Android.apk
           if-no-files-found: error
+
+      - name: Publish direct APK on GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view android-latest >/dev/null 2>&1; then
+            gh release upload android-latest DruMaster-Android.apk --clobber
+          else
+            gh release create android-latest DruMaster-Android.apk --title "DruMaster Android Latest" --notes "Latest Android debug build generated from main."
+          fi
