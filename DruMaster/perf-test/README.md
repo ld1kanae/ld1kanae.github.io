@@ -11,11 +11,12 @@ The bootstrap fetches the current production `index.html`, substitutes only expl
 - Primary target: smooth smartphone rendering/playback in Normal, Anywhere Touch, AUTO, and Score Playback.
 - Tap-to-sound latency optimization remains out of scope.
 - Do not change judgement windows, MIDI timing, `current()`, `startedAt`, song offsets, chart speed, judgement-line position, or input mappings merely for performance.
+- Do not shorten cymbal/open-hat sustain merely to lower CPU load unless measurement proves it is necessary and the audible consequence is explicitly accepted.
 - Production files remain untouched until a change is separately approved for promotion.
 
 ## Ranking scale
 
-Safety: **S** isolated/no semantic change; **A** narrow low-coupling change; **B** broader renderer/cache change requiring regression tests; **C** timing/architecture-adjacent.
+Safety: **S** isolated/no semantic change; **A** narrow low-coupling change; **B** broader renderer/runtime change requiring regression tests; **C** timing/architecture-adjacent.
 
 Priority: **S** common likely bottleneck; **A** substantial CPU/GC/layout/memory saving; **B** secondary or conditional; **C** mainly long-term cleanup.
 
@@ -33,11 +34,13 @@ Priority: **S** common likely bottleneck; **A** substantial CPU/GC/layout/memory
 | Cache static chart lane background/labels | B | A | Pass 4 |
 | Mobile backing-store DPR 2 -> 1.5 in test environment | B | A/B | Pass 4 |
 | Add progressive-degradation metrics: frame gaps, long tasks, heap, active voices | S | A | Pass 4 |
+| Consolidate 3 independent perpetual rAF watchers into one shared ticker | B | S | Pass 5 |
+| In-page mobile diagnostics overlay for 30s+ degradation | S | A | Pass 5 |
 | Precompute/reuse simultaneous-note offset topology while preserving hit-dependent shift | B | A | Planned |
 | Score Playback decoded AudioBuffer LRU / eviction | B | A | Planned |
-| Consolidate independent rAF watchers into one ticker | B/C | S | Later |
+| Web Audio drum mixer / reduced AudioNode-per-hit architecture | C | S/A if Pass 5 does not help | Next audio candidate |
 | Simplify mobile glow/filter/blend if paint/composite remains dominant | A | B | Trace-dependent |
-| Active drum-voice limiting/stealing | B/C | A | Only if voice count is proven to grow excessively |
+| Active drum-voice limiting/stealing | C | A | Avoid unless voice count is proven excessive; can cut sustain |
 | Replace CSS root rotation with native landscape in packaged Android build | C | B | Long-term |
 | Replace global monkey-patch architecture with explicit runtime modules | C | A/C | Long-term |
 
@@ -62,38 +65,71 @@ Priority: **S** common likely bottleneck; **A** substantial CPU/GC/layout/memory
 
 ## Pass 4 — progressive degradation response
 
-Observed on device: play starts normally, begins stuttering at roughly 30 seconds, and becomes worse toward the end of the song.
-
-Interpretation: this pattern is less consistent with a purely constant renderer cost and more consistent with sustained thermal/GC/audio pressure or a time-growing resource. Current runtime effect code mostly reuses DOM nodes. Drum playback does create one `AudioBufferSourceNode` + `GainNode` per hit and retains it until its sample tail ends, so active voice count is now explicitly monitored before introducing voice stealing that would alter sustain.
+Observed on device: play starts normally, begins stuttering at roughly 30 seconds, and becomes worse toward the end of the song. Pass 4 reduced sustained raster/render load, but the user reported that the progressive symptom continued.
 
 ### Included
 
-1. **Static chart background cache**
-   - Lane fills, separators and lane labels are rendered to an off-DOM canvas only when canvas geometry/DPR changes.
-   - Per-frame render blits this background, then draws measure lines, judgement zone/line and moving notes in their original order.
-   - MIDI/chart geometry and note positions are unchanged.
+- Static chart background cache.
+- Mobile Canvas backing-store DPR cap 2 -> 1.5 in test only.
+- Frame-gap, Long Task, heap, active-voice and peak-voice instrumentation.
 
-2. **Mobile Canvas DPR 1.5 test**
-   - Test copy of `chart-resize.js` changes only the touch backing-store cap from 2 to 1.5.
-   - CSS-pixel geometry remains unchanged; only raster resolution/GPU pixel load changes.
-   - Desktop remains capped at 3 as before.
+### Result
 
-3. **Progressive-degradation instrumentation**
-   - `frameGapOver20`, `frameGapOver33`, `frameGapOver50`, `maxRenderGapMs`.
-   - Chrome Long Task counts/durations when `?perf=1` is used.
-   - `jsHeapUsedMB` / `jsHeapTotalMB` where `performance.memory` is available.
-   - current and peak `activeVoices` from existing audio stats.
-   - actual `canvasDpr`, static-background build/blit counts.
+No meaningful change to the reported progressive stutter. This lowers the probability that raster resolution/static chart painting is the primary cause.
 
-### Why drum voice limiting is not yet enabled
+## Pass 5 — shared perpetual ticker
 
-Stopping old drum voices could immediately lower Web Audio load, but it can audibly cut cymbal/open-hat sustain. Because full sustain is a project requirement, Pass 4 measures voice growth first instead of changing sound semantics blindly.
+### Reason
+
+Static/GPU reductions did not change the roughly-30-second onset. The runtime still had multiple independent perpetual `requestAnimationFrame` loops in addition to the main gameplay/score rendering loops:
+
+1. `auto-kick-effect.js` — kick goal synchronization.
+2. `judgement.js` — normal-play kick judgement glow watcher.
+3. `score-playback-auto.js` — Score Playback note/Auto watcher, even while Score Playback was inactive.
+
+These callbacks all woke once per display refresh. On high-refresh mobile displays this creates unnecessary scheduling and JS wakeups for the full song and can contribute to sustained CPU/thermal pressure even when each individual callback is small.
+
+### Included
+
+1. **One shared ticker**
+   - `perf-ticker.js` owns one perpetual rAF.
+   - The three watchers above register their existing processing functions as ticker tasks.
+   - Their cursor logic and timing thresholds are preserved.
+   - Normal gameplay still has its main gameplay rAF; Score Playback still has its own score-render loop. Pass 5 removes only the three redundant perpetual watcher rAFs.
+
+2. **Kick goal sync preserved**
+   - `kickGoalCursor`, run reset, chart clock and `t + 0.0005` threshold remain unchanged.
+   - Only who schedules `syncKickGoalHits()` changed.
+
+3. **Judgement kick watcher preserved**
+   - Existing `lastT`, reset search and `-.025` allowance remain unchanged.
+   - Score Playback still suppresses this normal-play watcher.
+
+4. **Score Playback Auto watcher preserved**
+   - Existing cursor reset, seek/scrub handling, `t + .012` and late-note `.05` limits remain unchanged.
+   - Auto toggle synchronization is event-driven rather than redundantly rewritten every frame.
+
+5. **Visible diagnostics with `?perf=1`**
+   - Small in-game overlay shows song time, render rate, >50 ms gap count/max gap, shared ticker rate/task count/max batch time, active/peak drum voices, Long Tasks and JS heap when supported.
+   - Diagnostic voice sampling is added only in `?perf=1` mode and runs at 4 Hz through the shared ticker.
+
+## Audio interpretation
+
+Current production audio creates one `AudioBufferSourceNode` + `GainNode` per drum hit and keeps the node connected until that sample ends. This remains a strong candidate if Pass 5 does not materially delay or remove the progressive stutter. However, blindly stopping older voices would cut cymbal/open-hat sustain, so the next audio pass should prefer an architecture that reduces per-hit AudioNode overhead without shortening audible tails.
 
 ## Test procedure
 
-Use the same song and preferably the same play mode/section as the reported stutter. Test at least 60-90 seconds. With `?perf=1`, the console prints `DruMasterPerfTest.snapshot()` every 5 seconds.
+Use the same song/mode and play at least 60-90 seconds.
 
-For the reported progressive symptom, compare snapshots around 10 s, 30 s, 60 s, and later. The most useful fields are `frameGapOver50`, `maxRenderGapMs`, `longTasks`, `jsHeapUsedMB`, `audio.activeVoices`, `peakActiveVoices`, `canvasDpr`, and `renderRate`.
+Normal test URL:
+
+- `DruMaster/perf-test.html`
+
+Diagnostic URL:
+
+- `DruMaster/perf-test.html?perf=1`
+
+For Pass 5, first compare whether the stutter onset is removed, delayed, or unchanged. If it remains, use the diagnostic URL and capture the overlay once around 10-20 seconds and again after the stutter becomes obvious. The most useful fields are `>50`, `max`, `voices`, `peak`, `long`, `heap`, and ticker max batch time.
 
 ## Promotion rule
 
