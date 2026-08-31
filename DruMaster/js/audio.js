@@ -114,8 +114,8 @@ loadDrumSource=async function(manifest){
     fetchJoined(manifest.wav,"ゲーム内ドラム"),
     fetch(manifest.midi.path,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(`ドラム音源MIDIを取得できません（HTTP ${r.status}）`);return r.arrayBuffer()})
   ]);
-  if(midi.byteLength!==manifest.midi.bytes)throw Error("ゲーム内ドラム音源MIDIが不完全です");
-  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ゲーム内ドラム音源MIDIの内容が一致しません");
+  if(midi.byteLength!==manifest.midi.bytes)throw Error("ドラム音源MIDIが不完全です");
+  if(manifest.midi.sha256&&globalThis.crypto?.subtle&&(await hashBuffer(midi))!==manifest.midi.sha256)throw Error("ドラム音源MIDIの内容が一致しません");
 
   const fmt=readWavFormat(wav),expectedRate=manifest.wav.sourceSampleRate||manifest.wav.sampleRate;
   if(expectedRate&&fmt.sampleRate!==expectedRate)throw Error(`ゲーム内ドラム音源の元サンプルレートが不正です（${fmt.sampleRate}Hz / ${expectedRate}Hz）`);
@@ -144,7 +144,12 @@ loadDrumSource=async function(manifest){
   drumBuffer=null;
 };
 
-const activeDrumVoices=new Set();
+/* Pass 8: VSTi-style reusable voice slots. AudioBufferSourceNode itself is
+   intentionally still one-shot; only the GainNode/voice bookkeeping is pooled. */
+const voicePool=[];
+const sourceToSlot=new WeakMap();
+let activeVoiceCount=0,totalSourcesCreated=0,totalVoicesEnded=0,peakActiveVoiceCount=0,poolExpansions=0;
+
 const MIDI_DRUM_BALANCE_DEFAULT={cymbal:1.2,hihatRide:1,snareTom:1,kick:1.4,other:1};
 function midiDrumGroup(type){
   if(type==="crash"||type==="crash2")return "cymbal";
@@ -162,30 +167,65 @@ function midiDrumMix(type){
   return master*groupGain;
 }
 
+function createVoiceSlot(){
+  const gain=ac.createGain();
+  gain.gain.value=0;
+  gain.connect(masterBus);
+  const slot={gain,source:null,active:false,isOpenHat:false,endsAt:0};
+  voicePool.push(slot);
+  poolExpansions++;
+  return slot;
+}
+function acquireVoiceSlot(){
+  for(let i=0;i<voicePool.length;i++)if(!voicePool[i].active)return voicePool[i];
+  return createVoiceSlot();
+}
+function removeOpenHatSlot(slot){
+  const i=openHatVoices.indexOf(slot);
+  if(i>=0)openHatVoices.splice(i,1);
+}
+function releaseSource(source){
+  const slot=sourceToSlot.get(source);
+  if(!slot||slot.source!==source)return;
+  sourceToSlot.delete(source);
+  try{source.disconnect()}catch{}
+  slot.source=null;
+  slot.active=false;
+  slot.endsAt=0;
+  if(slot.isOpenHat){removeOpenHatSlot(slot);slot.isOpenHat=false}
+  if(activeVoiceCount>0)activeVoiceCount--;
+  totalVoicesEnded++;
+}
+function handleSourceEnded(event){
+  releaseSource(event.currentTarget);
+}
+
 function startDrumVoice(type,v=.75,when){
   if(!ac)return null;
   if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();
   const sampleNote=DEFAULT_NOTE[type],sample=drumSampleBuffers[String(sampleNote)];
   if(!sample)return null;
-  const startAt=Number.isFinite(Number(when))?Math.max(ac.currentTime,Number(when)):ac.currentTime,
-        source=ac.createBufferSource(),gain=ac.createGain(),mix=midiDrumMix(type),sourceVelocity=drumSourceVelocity/127,
-        velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
-  source.buffer=sample;
-  gain.gain.value=.85*velocityGain*mix;
-  source.connect(gain).connect(masterBus);
 
-  let voice=null;
-  if(type==="hhOpen"){voice={source,gain};openHatVoices.push(voice)}
-  const tracked={source,gain,endsAt:startAt+sample.duration};
-  activeDrumVoices.add(tracked);
-  source.onended=()=>{
-    activeDrumVoices.delete(tracked);
-    if(voice)openHatVoices=openHatVoices.filter(x=>x!==voice);
-    try{source.disconnect()}catch{}
-    try{gain.disconnect()}catch{}
-  };
+  const startAt=Number.isFinite(Number(when))?Math.max(ac.currentTime,Number(when)):ac.currentTime,
+        slot=acquireVoiceSlot(),source=ac.createBufferSource(),mix=midiDrumMix(type),sourceVelocity=drumSourceVelocity/127,
+        velocityGain=Math.min(1.25,Math.pow(Math.max(.04,v)/sourceVelocity,.8));
+
+  source.buffer=sample;
+  slot.gain.gain.value=.85*velocityGain*mix;
+  source.connect(slot.gain);
+  slot.source=source;
+  slot.active=true;
+  slot.endsAt=startAt+sample.duration;
+  slot.isOpenHat=type==="hhOpen";
+  if(slot.isOpenHat)openHatVoices.push(slot);
+
+  sourceToSlot.set(source,slot);
+  source.onended=handleSourceEnded;
+  activeVoiceCount++;
+  totalSourcesCreated++;
+  if(activeVoiceCount>peakActiveVoiceCount)peakActiveVoiceCount=activeVoiceCount;
   source.start(startAt);
-  return tracked;
+  return slot;
 }
 
 playDrum=function(_chartNote,type,v=.75){
@@ -194,15 +234,29 @@ playDrum=function(_chartNote,type,v=.75){
 
 globalThis.DruMasterAudioControl={
   scheduleKick(v,when){return startDrumVoice("kick",v,when)},
-  getStats(){return {activeVoices:activeDrumVoices.size,sampleBuffers:Object.keys(drumSampleBuffers).length}},
+  getStats(){
+    return {
+      activeVoices:activeVoiceCount,
+      peakActiveVoices:peakActiveVoiceCount,
+      sampleBuffers:Object.keys(drumSampleBuffers).length,
+      pooledGainNodes:voicePool.length,
+      totalSourcesCreated,
+      totalVoicesEnded,
+      poolExpansions
+    };
+  },
   stopAllDrumVoices(){
     const now=ac?.currentTime||0;
     openHatVoices=[];
-    for(const voice of [...activeDrumVoices]){
-      activeDrumVoices.delete(voice);
-      try{voice.source.onended=null;voice.source.stop(now)}catch{}
-      try{voice.source.disconnect()}catch{}
-      try{voice.gain.disconnect()}catch{}
+    for(const slot of voicePool){
+      const source=slot.source;
+      if(!slot.active||!source)continue;
+      sourceToSlot.delete(source);
+      source.onended=null;
+      try{source.stop(now)}catch{}
+      try{source.disconnect()}catch{}
+      slot.source=null;slot.active=false;slot.isOpenHat=false;slot.endsAt=0;
     }
+    activeVoiceCount=0;
   }
 };

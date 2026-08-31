@@ -12,21 +12,38 @@
   const MOBILE_OPTICAL_X=2;
   const MOBILE_OPTICAL_Y=-3;
   const DESKTOP_OPTICAL_X=-4;
-  let suppressAutoGlow=false,hiddenFx=null;
+  const stats={geometryBuilds:0,measureTextCalls:0,fxPlacements:0,glowStyleWrites:0,glowStyleSkips:0};
+  let suppressAutoGlow=false,hiddenFx=null,geometry=null,geometryVersion=0;
 
   function isMobile(){
     return DruMusterChart.isMobileLayout?DruMusterChart.isMobileLayout():!!matchMedia?.("(hover:none) and (pointer:coarse) and (max-width:900px)")?.matches;
   }
   function isHiddenMode(){return !!(isMobile()&&globalThis.DruMasterMode?.isHidden?.())}
 
-  function chartGeometry(){
+  function rebuildGeometry(){
     const w=canvas.clientWidth,h=canvas.clientHeight,
           judgeX=DruMusterChart.judgementX?DruMusterChart.judgementX(w):w*.11,
           kickH=Math.max(16,h*.12),
           mainH=h-kickH,
           laneH=mainH/3,
-          labelFont=Math.max(9,laneH*.13);
-    return {w,h,judgeX,laneH,labelFont,mainH,kickH};
+          labelFont=Math.max(9,laneH*.13),
+          mobile=isMobile();
+    let judgeWidth=0;
+    if(mobile&&w>0&&h>0){
+      ctx.save();
+      ctx.font=`900 ${MOBILE_JUDGE_FONT}px system-ui,sans-serif`;
+      const letterSpacing=MOBILE_JUDGE_FONT*.055;
+      judgeWidth=ctx.measureText("PERFECT").width+letterSpacing*6;
+      ctx.restore();
+      stats.measureTextCalls++;
+    }
+    geometry={w,h,judgeX,laneH,labelFont,mainH,kickH,mobile,judgeWidth,version:++geometryVersion};
+    stats.geometryBuilds++;
+    return geometry;
+  }
+  function chartGeometry(){
+    if(!geometry||geometry.w<=0||geometry.h<=0)return rebuildGeometry();
+    return geometry;
   }
 
   function laneForPart(part){
@@ -78,41 +95,48 @@
   }
 
   function placeFx(lane,node){
-    const {judgeX,laneH}=chartGeometry();
-    if(isMobile()){
-      ctx.save();
-      ctx.font=`900 ${MOBILE_JUDGE_FONT}px system-ui,sans-serif`;
-      const letterSpacing=MOBILE_JUDGE_FONT*.055;
-      const judgeWidth=ctx.measureText("PERFECT").width+letterSpacing*6;
-      ctx.restore();
-
-      const left=Math.max(7,judgeX-judgeWidth-MOBILE_GOAL_GAP)+MOBILE_OPTICAL_X;
+    const g=chartGeometry();
+    if(g.mobile){
+      const left=Math.max(7,g.judgeX-g.judgeWidth-MOBILE_GOAL_GAP)+MOBILE_OPTICAL_X;
       node.style.left=`${left}px`;
-      node.style.top=`${laneH*(lane+.5)+MOBILE_OPTICAL_Y}px`;
+      node.style.top=`${g.laneH*(lane+.5)+MOBILE_OPTICAL_Y}px`;
       node.style.transform="translate(0,-50%)";
     }else{
       node.style.left="9%";
-      node.style.top=`${laneH*(lane+.5)}px`;
+      node.style.top=`${g.laneH*(lane+.5)}px`;
       node.style.transform=`translate(calc(-50% + ${DESKTOP_OPTICAL_X}px),-50%)`;
     }
+    stats.fxPlacements++;
   }
 
-  function placeGlow(lane,node,note){
-    const {judgeX,laneH,mainH,kickH}=chartGeometry(),visual=noteVisual(note),isKick=lane===3||note.type==="kick";
-    node.style.left=`${judgeX-visual.totalWidth/2}px`;
-    node.style.top=`${isKick?mainH+2:lane*laneH}px`;
+  function placeGlow(lane,slot,note){
+    const g=chartGeometry(),visual=noteVisual(note),isKick=lane===3||note.type==="kick";
+    const signature=`${g.version}|${lane}|${note.type}|${visual.kind}|${visual.totalWidth}|${visual.barWidth}|${visual.gap}|${visual.color}`;
+    slot.lastNote=note;
+    if(slot.signature===signature){stats.glowStyleSkips++;return}
+    slot.signature=signature;
+    const node=slot.node;
+    node.style.left=`${g.judgeX-visual.totalWidth/2}px`;
+    node.style.top=`${isKick?g.mainH+2:lane*g.laneH}px`;
     node.style.width=`${visual.totalWidth}px`;
-    node.style.height=`${isKick?Math.max(4,kickH-4):laneH}px`;
+    node.style.height=`${isKick?Math.max(4,g.kickH-4):g.laneH}px`;
     node.style.setProperty("--note-total-w",`${visual.totalWidth}px`);
     node.style.setProperty("--note-bar-w",`${visual.barWidth}px`);
     node.style.setProperty("--note-gap",`${visual.gap}px`);
     node.style.setProperty("--note-color",visual.color);
     node.dataset.shape=visual.kind;
     node.dataset.type=note.type;
+    stats.glowStyleWrites++;
   }
 
   function syncGeometry(){
+    geometry=null;
+    rebuildGeometry();
     for(let lane=0;lane<3;lane++)if(fxByLane[lane])placeFx(lane,fxByLane[lane].fx);
+    for(let lane=0;lane<glowByLane.length;lane++){
+      const slot=glowByLane[lane];
+      if(slot?.lastNote)placeGlow(lane,slot,slot.lastNote);
+    }
   }
 
   function buildFx(className,parent){
@@ -122,7 +146,7 @@
     text.className="lane-judge-text";
     fx.appendChild(text);
     parent.appendChild(fx);
-    return {fx,text};
+    return {fx,text,lastLabel:"",lastGrade:""};
   }
   function ensureFx(lane){
     if(fxByLane[lane])return fxByLane[lane];
@@ -141,21 +165,24 @@
 
   function ensureGlow(lane){
     if(glowByLane[lane])return glowByLane[lane];
-    const glow=document.createElement("div");
-    glow.className="lane-hit-glow";
-    glow.dataset.lane=String(lane);
-    wrap.appendChild(glow);
-    glowByLane[lane]=glow;
-    return glow;
+    const node=document.createElement("div");
+    node.className="lane-hit-glow";
+    node.dataset.lane=String(lane);
+    wrap.appendChild(node);
+    const slot={node,signature:"",lastNote:null};
+    glowByLane[lane]=slot;
+    return slot;
   }
 
   function flashNote(note){
     if(!note||isHiddenMode())return;
     const lane=laneForType(note.type);
     if(lane<0)return;
-    const glow=ensureGlow(lane);
-    placeGlow(lane,glow,note);
-    for(const a of glow.getAnimations())a.cancel();
+    const slot=ensureGlow(lane),glow=slot.node;
+    placeGlow(lane,slot,note);
+    if(!globalThis.DruMasterPerfAnimationPool){
+      for(const a of glow.getAnimations())a.cancel();
+    }
     glow.animate([
       {opacity:0,filter:"brightness(1)",offset:0},
       {opacity:1,filter:"brightness(1.75)",offset:.12},
@@ -176,8 +203,9 @@
 
   function playFx(pair,label,grade){
     if(!pair)return;
-    pair.text.textContent=String(label).toUpperCase();
-    pair.fx.dataset.grade=grade;
+    const text=String(label).toUpperCase();
+    if(pair.lastLabel!==text){pair.text.textContent=text;pair.lastLabel=text}
+    if(pair.lastGrade!==grade){pair.fx.dataset.grade=grade;pair.lastGrade=grade}
     if(!pair.fx.classList.contains("play"))pair.fx.classList.add("play");
     else restartPlayClass(pair.fx);
   }
@@ -190,9 +218,7 @@
       return;
     }
     if(lane<0||lane>2)return;
-    const pair=ensureFx(lane);
-    placeFx(lane,pair.fx);
-    playFx(pair,label,grade);
+    playFx(ensureFx(lane),label,grade);
   }
 
   if(typeof flashPart==="function"){
@@ -247,8 +273,6 @@
       if(!search?.lowerBoundTime)while(kickCursor<notes.length&&notes[kickCursor].time<t-.03)kickCursor++;
     };
     const watchKick=()=>{
-      /* Score playback owns all note-synchronised visuals itself, including
-         kick, so the normal-play kick watcher must not duplicate that glow. */
       const scorePlayback=document.body.dataset.scorePlayback==="1";
       if(!scorePlayback&&typeof notes!=="undefined"&&typeof current==="function"&&typeof running!=="undefined"&&running&&!paused){
         const t=current();
@@ -261,13 +285,15 @@
       }else{
         lastT=-1;kickCursor=0;
       }
-      requestAnimationFrame(watchKick);
     };
-    requestAnimationFrame(watchKick);
+    const ticker=globalThis.DruMasterPerfTicker;
+    if(ticker?.register)ticker.register("judgement-kick-watch",watchKick);
+    else{
+      const fallback=()=>{watchKick();requestAnimationFrame(fallback)};
+      requestAnimationFrame(fallback);
+    }
   }
 
-  /* Shared entry point for input modes that match a note without choosing a
-     drum lane first (anywhere-touch / microphone pad practice). */
   globalThis.DruMasterJudgement={
     flashNote,
     emitForNote(note,label,options={}){
@@ -276,6 +302,7 @@
       emit(label,laneForType(note.type));
     }
   };
+  globalThis.DruMasterJudgementPerf={version:"20260901-pass9",stats};
 
   new ResizeObserver(()=>requestAnimationFrame(syncGeometry)).observe(wrap);
   addEventListener("resize",()=>requestAnimationFrame(syncGeometry),{passive:true});
