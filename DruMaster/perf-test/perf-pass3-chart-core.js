@@ -7,16 +7,27 @@
   const PPQ=Number(api.PIXELS_PER_QUARTER)||80;
   const DESKTOP_NOTE_WIDTH_SCALE=1.5;
   const visualCache=new Map();
+  const topologyCache=new WeakMap();
   const originalNoteVisual=api.noteVisual.bind(api);
-  const stats={noteVisualRequests:0,noteVisualMisses:0,simultaneousOffsetCalls:0,staticBuilds:0,staticBlits:0};
+  const stats={
+    noteVisualRequests:0,
+    noteVisualMisses:0,
+    simultaneousOffsetCalls:0,
+    topologyBuilds:0,
+    offsetLookups:0,
+    activeSlotChecks:0,
+    staticBuilds:0,
+    staticBlits:0
+  };
   let staticCanvas=null,staticCtx=null,staticKey="";
 
   function cachedNoteVisual(type,group,scale=1){
     stats.noteVisualRequests++;
-    const key=`${String(type)}\u0000${String(group)}\u0000${Number(scale)||1}`;
+    const normalizedScale=Number(scale)||1;
+    const key=`${String(type)}\u0000${String(group)}\u0000${normalizedScale}`;
     let visual=visualCache.get(key);
     if(visual)return visual;
-    visual=originalNoteVisual(type,group,scale);
+    visual=originalNoteVisual(type,group,normalizedScale);
     visualCache.set(key,visual);
     stats.noteVisualMisses++;
     return visual;
@@ -24,37 +35,123 @@
 
   function laneForGroup(group){return group==="cymbal"?0:group==="hh"?1:group==="drums"?2:3}
 
-  function simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale,hiddenTypes=null){
-    stats.simultaneousOffsetCalls++;
-    const buckets=new Map(),offsets=new WeakMap(),gap=0;
-    for(let i=start;i<end;i++){
+  function sameHiddenTypes(entry,hiddenTypes){
+    const count=hiddenTypes?.size||0;
+    if(entry.hiddenTypes.length!==count)return false;
+    if(!count)return true;
+    for(const type of entry.hiddenTypes)if(!hiddenTypes.has(type))return false;
+    return true;
+  }
+
+  function buildOffsetTopology(notes,groupMap,noteWidthScale,hiddenTypes){
+    const hiddenList=hiddenTypes?[...hiddenTypes]:[];
+    const buckets=new Map();
+    const noteMeta=new WeakMap();
+
+    for(let i=0;i<notes.length;i++){
       const note=notes[i];
-      if(skipHit&&note.hit||hiddenTypes?.has(note.type))continue;
-      const group=groupMap[note.type],lane=laneForGroup(group),key=`${note.tick}|${lane}`;
+      if(hiddenTypes?.has(note.type))continue;
+      const group=groupMap[note.type],lane=laneForGroup(group),bucketKey=`${note.tick}|${lane}`;
       const midiNote=Number(note.note),slotKey=Number.isFinite(midiNote)?`midi:${midiNote}`:`type:${note.type}`;
-      let bucket=buckets.get(key);
-      if(!bucket){bucket=new Map();buckets.set(key,bucket)}
-      let slot=bucket.get(slotKey);
-      if(!slot){
-        slot={width:cachedNoteVisual(note.type,group,noteWidthScale).totalWidth,notes:[],midiNote,type:note.type};
-        bucket.set(slotKey,slot);
+      let bucket=buckets.get(bucketKey);
+      if(!bucket){
+        bucket={slots:[],slotMap:new Map()};
+        buckets.set(bucketKey,bucket);
       }
-      slot.notes.push(note);
+      let slot=bucket.slotMap.get(slotKey);
+      if(!slot){
+        slot={
+          width:cachedNoteVisual(note.type,group,noteWidthScale).totalWidth,
+          entries:[],
+          midiNote,
+          type:note.type,
+          activeEpoch:0,
+          active:false
+        };
+        bucket.slotMap.set(slotKey,slot);
+        bucket.slots.push(slot);
+      }
+      slot.entries.push({note,index:i});
     }
+
     for(const bucket of buckets.values()){
-      if(bucket.size<2)continue;
-      const slots=[...bucket.values()].sort((a,b)=>{
+      bucket.slots.sort((a,b)=>{
         const aMidi=Number.isFinite(a.midiNote)?a.midiNote:Infinity;
         const bMidi=Number.isFinite(b.midiNote)?b.midiNote:Infinity;
         return aMidi-bMidi||String(a.type).localeCompare(String(b.type));
       });
-      let cursor=0;
-      for(const slot of slots){
-        for(const note of slot.notes)offsets.set(note,cursor);
-        cursor+=slot.width+gap;
+      for(let slotIndex=0;slotIndex<bucket.slots.length;slotIndex++){
+        const slot=bucket.slots[slotIndex];
+        for(const entry of slot.entries)noteMeta.set(entry.note,{bucket,slotIndex});
       }
+      bucket.slotMap=null;
     }
-    return offsets;
+
+    const topology={
+      groupMap,
+      scale:Number(noteWidthScale)||1,
+      hiddenTypes:hiddenList,
+      noteMeta,
+      epoch:0,
+      start:0,
+      end:0,
+      skipHit:true,
+      view:null
+    };
+
+    function slotIsActive(slot){
+      stats.activeSlotChecks++;
+      if(slot.activeEpoch===topology.epoch)return slot.active;
+      let active=false;
+      for(const entry of slot.entries){
+        if(entry.index<topology.start||entry.index>=topology.end)continue;
+        if(topology.skipHit&&entry.note.hit)continue;
+        active=true;
+        break;
+      }
+      slot.active=active;
+      slot.activeEpoch=topology.epoch;
+      return active;
+    }
+
+    topology.view={
+      get(note){
+        stats.offsetLookups++;
+        const meta=topology.noteMeta.get(note);
+        if(!meta)return undefined;
+        let cursor=0;
+        for(let i=0;i<meta.slotIndex;i++){
+          const slot=meta.bucket.slots[i];
+          if(slotIsActive(slot))cursor+=slot.width;
+        }
+        return cursor||undefined;
+      }
+    };
+
+    stats.topologyBuilds++;
+    return topology;
+  }
+
+  function getOffsetTopology(notes,groupMap,noteWidthScale,hiddenTypes){
+    let list=topologyCache.get(notes);
+    if(!list){list=[];topologyCache.set(notes,list)}
+    const scale=Number(noteWidthScale)||1;
+    for(const entry of list){
+      if(entry.groupMap===groupMap&&entry.scale===scale&&sameHiddenTypes(entry,hiddenTypes))return entry;
+    }
+    const topology=buildOffsetTopology(notes,groupMap,scale,hiddenTypes);
+    list.push(topology);
+    return topology;
+  }
+
+  function simultaneousNoteOffsets(notes,start,end,skipHit,groupMap,noteWidthScale,hiddenTypes=null){
+    stats.simultaneousOffsetCalls++;
+    const topology=getOffsetTopology(notes,groupMap,noteWidthScale,hiddenTypes);
+    topology.start=start;
+    topology.end=end;
+    topology.skipHit=!!skipHit;
+    topology.epoch++;
+    return topology.view;
   }
 
   function visibleRange(notes,minTick,maxTick){
@@ -152,7 +249,7 @@
   api.draw=optimizedDraw;
 
   globalThis.DruMasterPerfChartCorePass3={
-    version:"20260901-pass4",
+    version:"20260901-pass6",
     stats,
     get cacheSize(){return visualCache.size},
     invalidateStatic(){staticKey="";staticCanvas=null;staticCtx=null}
