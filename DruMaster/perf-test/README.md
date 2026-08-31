@@ -38,8 +38,10 @@ Priority: **S** common likely bottleneck; **A** substantial CPU/GC/layout/memory
 | Precompute/reuse simultaneous-note offset topology while preserving hit-dependent shift | B | A | Pass 6 |
 | Reuse WAAPI Animation objects for repeated hit/score/tap effects | A | A | Pass 7 |
 | Live 1 s / 5 s display-Hz and chart-FPS measurement, reset at gameplay start | S | A | Pass 7 |
+| Reuse GainNode/voice slots while keeping AudioBufferSourceNode one-shot | B | A/S | Pass 8 |
+| Tap/input/audio-path timing counters | S | A | Pass 8 |
 | Score Playback decoded AudioBuffer LRU / eviction | B | A | Planned |
-| Web Audio drum mixer / reduced AudioNode-per-hit architecture | C | A | Audio candidate if main-thread passes fail |
+| AudioWorklet sampler / block mixer | C | A/S | Later if pooled Web Audio graph still degrades |
 | Simplify mobile glow/filter/text-shadow if paint remains dominant | A/B | A/B | Next visual candidate |
 | Active drum-voice limiting/stealing | C | A | Avoid unless voice count is proven excessive; can cut sustain |
 | Replace CSS root rotation with native landscape in packaged Android build | C | B | Long-term |
@@ -78,62 +80,72 @@ Before Pass 6, `simultaneousNoteOffsets()` allocated new outer/nested Maps, a We
 
 The current nanairo MIDI parses as 1,758 drum notes. The old and new offset algorithms were compared across 2,000 randomized visible ranges and randomized hit states; offsets matched in all tested cases.
 
-### Device evidence after Pass 6
-
-The user reported the first slight audible/visual stutter around song 19 seconds. The screenshot showed approximately:
-
-- old cumulative render rate 41.7/s,
-- shared ticker 58.1/s,
-- `>50 ms` gap count 1, max 69.8 ms,
-- ticker batch max 15.9 ms,
-- current drum voices 5, peak 9,
-- heap 9.5 / 9.5 MB,
-- Long Task display 6, max about 358 ms.
-
-The key comparison is that ticker/rAF delivery was still near a 60 Hz display while chart rendering was already much lower. Therefore the app was actually dropping chart frames rather than simply running on a low-refresh panel.
-
-The old Long Task counters started at page load, so the displayed 6 / 358 ms may include loading/startup work. Pass 7 fixes this measurement flaw by resetting gameplay metrics when `running` changes from false to true and ignoring pre-session Long Task entries.
-
 ## Pass 7 — repeated animation reuse + real FPS measurement
 
-### Reason
+Repeated kit/goal/kick/tap/score WAAPI animations are reused rather than recreated for every hit. FPS diagnostics reset at actual gameplay start and distinguish:
 
-Even after Pass 6, current drum voices were only 5 with peak 9 at the first stutter point. At the same time, several visual paths still created fresh Web Animations objects on every hit:
+- actual shared-rAF/display delivery rate,
+- actual chart render FPS,
+- draw-request rate,
+- 1-second and 5-second windows.
 
-- kit-body hit flash,
-- goal/lane hit glow,
-- kick flash,
-- mobile tap feedback,
-- numeric score pulse.
+### Device evidence after Pass 7
 
-These animations are short-lived and repeated at drum-note frequency, making them a plausible source of allocation/GC and style/animation bookkeeping pressure on the main thread.
+Three captures at increasing accumulated play/tap load showed a strong hit-count relationship. Representative states included:
+
+- around song 108 s: display ~50.7 Hz, chart ~47.7 fps, `>50 ms` gaps 12,
+- around song 127 s: display ~57.8 Hz, chart ~56.8 fps, `>50 ms` gaps 40,
+- around song 150 s: display ~32.7 Hz, chart ~37.6 fps, `>50 ms` gaps 84.
+
+The important new signal is that severe degradation can reduce **display/rAF delivery itself**, not merely Canvas render completion. The user also reports that more tapping makes the symptom worse. This points strongly to work/resources created by the hit path rather than only chart time or static rendering.
+
+## Pass 8 — pooled Web Audio voice slots
+
+### Web/VSTi architecture basis
+
+Web Audio requires a new `AudioBufferSourceNode` for each playback; the source node is one-shot. The decoded `AudioBuffer` is intended to be reused. Therefore trying to pool/restart `AudioBufferSourceNode` would be incorrect.
+
+Traditional software instruments/samplers instead maintain a reusable pool of internal voices and mix all active voices into output blocks. A browser implementation cannot make `AudioBufferSourceNode` reusable, but it can avoid rebuilding the rest of the graph for every note.
 
 ### Included
 
-1. **Reusable WAAPI pool**
-   - A test-only `Element.prototype.animate` adapter intercepts only explicitly recognized DruMaster effect elements.
-   - First use creates the native `Animation`; later hits restart the same object with updated keyframes/timing rather than allocating a new `Animation` object.
-   - Non-DruMaster animations continue directly to the native implementation.
-   - Counters `animationCreated`, `animationReused`, and `animationRecreated` are exposed for verification.
+1. **Persistent GainNode voice slots**
+   - Each slot owns one `GainNode` connected to `masterBus` for its lifetime.
+   - On a hit, an inactive slot is reused; if every slot is active, one new slot is added.
+   - The slot is not reusable until its current source has naturally ended, so overlapping cymbal/hat tails remain intact.
+   - No fixed polyphony cap and no voice stealing are introduced.
 
-2. **Gameplay-session metric reset**
-   - FPS/gap/Long Task/peak-voice metrics reset at actual play start instead of page load.
-   - Pause does not reset the session.
-   - Pre-game loading Long Tasks are excluded from gameplay Long Task totals.
+2. **One-shot source retained correctly**
+   - A fresh `AudioBufferSourceNode` is still created for every hit, as required by Web Audio.
+   - The source connects to the reusable slot GainNode.
+   - When the source ends, only the source is disconnected; the GainNode remains pooled.
 
-3. **Real-time FPS separation**
-   - `displayHz1s` / `displayHz5s`: actual `requestAnimationFrame` delivery rate from the shared ticker. This approximates the browser/display refresh cadence available to the app.
-   - `chartFps1s` / `chartFps5s`: actual successful DruMaster chart renders after the mobile <=60 fps cap. This is the useful in-game rendering FPS.
-   - `drawRequestFps1s`: how often the gameplay/score loop requested a draw. Comparing request rate to chart FPS reveals whether frames are being suppressed or the caller itself is late.
+3. **Allocation reduction**
+   - The previous path created a new GainNode plus a new `{source,gain,endsAt}` tracked object for every hit.
+   - Pass 8 reuses persistent slot objects and GainNodes.
+   - A shared `onended` handler is used instead of allocating a new closure per hit.
 
-4. **Low-overhead FPS-only mode**
-   - `?fps=1` shows only display Hz, chart FPS, draw request rate and >50 ms gaps.
-   - It does not enable Long Task observation or full diagnostic console logging.
-   - `?perf=1` remains the full diagnostic mode and also shows animation-pool reuse.
+4. **HH choke preserved**
+   - Open-hat voice entries remain compatible with the existing `chokeOpenHat()` path.
+   - Closed/pedal HH still performs the same short choke ramp/stop behavior.
 
-## Audio interpretation
+5. **New audio diagnostics**
+   - `pooledGainNodes`: number of persistent voice slots currently allocated.
+   - `totalSourcesCreated`: one-shot source count since load.
+   - `totalVoicesEnded`: ended/released source count.
+   - `peakActiveVoices`: peak concurrent voices observed by the audio module.
 
-Production audio still creates one `AudioBufferSourceNode` + `GainNode` per drum hit. However the first-stutter screenshot showed only 5 active voices and peak 9, so active voice accumulation is not currently the strongest explanation. Audio-node creation churn remains a later candidate if the main-thread animation/paint passes do not improve the symptom.
+6. **Tap-path diagnostics (`?perf=1`)**
+   - `taps`: pointerdown count in gameplay.
+   - `input avg/max`: synchronous final `input()` CPU time.
+   - `audio avg/max`: synchronous `playDrum()` CPU time.
+   - This separates expensive input/UI work from expensive Web Audio node creation.
+
+### Expected healthy behavior
+
+After the first dense section, `gainPool` should plateau near observed peak concurrent voices. It should **not** grow with every tap. `sources` will continue increasing because one-shot source creation is required. If FPS still collapses while `gainPool` stays flat and `audio avg/max` remains tiny, the next target should be per-hit layout/paint work rather than Web Audio graph allocation.
+
+If `audio avg/max` grows markedly with tap count or source creation correlates directly with display-Hz collapse, the next architectural experiment is an `AudioWorklet` sampler/mixer that keeps voice mixing off the main thread and closer to a VSTi-style block processor.
 
 ## Test procedure
 
@@ -145,13 +157,11 @@ Lightweight FPS measurement:
 
 - `DruMaster/perf-test.html?fps=1`
 
-Full diagnostics:
+Full Pass 8 diagnostics:
 
 - `DruMaster/perf-test.html?perf=1`
 
-For Pass 7, capture around the first audible stutter and later severe stutter. The key values are `display`, `chart`, `request`, `>50`, `long`, `heap`, and `anim new/reuse`.
-
-A healthy 60 Hz case should be roughly: display ~60 Hz, draw requests ~60/s, chart ~60 fps, with very few >50 ms gaps. If display remains ~60 Hz but chart falls to ~40-50 fps, the rendering/main-loop path is still the bottleneck.
+For Pass 8, use the full diagnostic mode and deliberately generate a similar amount of tapping. Capture one screenshot while still smooth and one after degradation. Key fields: `taps`, `display`, `chart`, `>50`, `input avg/max`, `audio avg/max`, `voices`, `gainPool`, `sources/ended`, `long`, and `heap`.
 
 ## Promotion rule
 
