@@ -5,7 +5,7 @@
     !!globalThis.matchMedia?.("(any-pointer:coarse)")?.matches||
     !!globalThis.matchMedia?.("(pointer:coarse)")?.matches;
 
-  document.documentElement.dataset.dmPerfTest="pass2";
+  document.documentElement.dataset.dmPerfTest="pass3";
 
   const stats={
     renderRequests:0,
@@ -39,7 +39,7 @@
 
   if(isTouch){
     const style=document.createElement("style");
-    style.dataset.dmPerfPass="2";
+    style.dataset.dmPerfPass="3";
     style.textContent=`
       @media (hover:none) and (pointer:coarse) and (max-width:900px){
         .game #chartWrap{
@@ -53,11 +53,12 @@
   }
 
   globalThis.DruMasterPerfTest={
-    version:"20260901-pass2",
+    version:"20260901-pass3",
     stats,
     snapshot(){
       const elapsed=Math.max(.001,(performance.now()-stats.startedAt)/1000);
       const graph=globalThis.DruMasterPerfChartPass2?.stats||null;
+      const core=globalThis.DruMasterPerfChartCorePass3||null;
       return {
         ...stats,
         elapsedSec:+elapsed.toFixed(2),
@@ -67,6 +68,10 @@
         hhGraphFrames:graph?.frames??null,
         hhGraphSamples:graph?.samples??null,
         hhGraphSamplesPerFrame:graph?.frames?+(graph.samples/graph.frames).toFixed(1):null,
+        noteVisualCacheSize:core?.cacheSize??null,
+        noteVisualRequests:core?.stats?.noteVisualRequests??null,
+        noteVisualMisses:core?.stats?.noteVisualMisses??null,
+        simultaneousOffsetCalls:core?.stats?.simultaneousOffsetCalls??null,
         audio:globalThis.DruMasterAudioControl?.getStats?.()||null
       };
     }
