@@ -5,7 +5,7 @@
     !!globalThis.matchMedia?.("(any-pointer:coarse)")?.matches||
     !!globalThis.matchMedia?.("(pointer:coarse)")?.matches;
 
-  document.documentElement.dataset.dmPerfTest="pass4";
+  document.documentElement.dataset.dmPerfTest="pass5";
 
   const stats={
     renderRequests:0,
@@ -58,7 +58,7 @@
 
   if(isTouch){
     const style=document.createElement("style");
-    style.dataset.dmPerfPass="4";
+    style.dataset.dmPerfPass="5";
     style.textContent=`
       @media (hover:none) and (pointer:coarse) and (max-width:900px){
         .game #chartWrap{
@@ -86,8 +86,18 @@
     }catch{}
   }
 
+  if(perfEnabled&&globalThis.DruMasterPerfTicker?.register){
+    let lastAudioSample=0;
+    globalThis.DruMasterPerfTicker.register("perf-metrics",ts=>{
+      if(ts-lastAudioSample<250)return;
+      lastAudioSample=ts;
+      const audio=globalThis.DruMasterAudioControl?.getStats?.();
+      if(audio?.activeVoices>stats.peakActiveVoices)stats.peakActiveVoices=audio.activeVoices;
+    });
+  }
+
   globalThis.DruMasterPerfTest={
-    version:"20260901-pass4",
+    version:"20260901-pass5",
     stats,
     snapshot(){
       const elapsed=Math.max(.001,(performance.now()-stats.startedAt)/1000);
@@ -96,15 +106,23 @@
       const audio=globalThis.DruMasterAudioControl?.getStats?.()||null;
       if(audio?.activeVoices>stats.peakActiveVoices)stats.peakActiveVoices=audio.activeVoices;
       const memory=performance?.memory;
+      const ticker=globalThis.DruMasterPerfTicker?.snapshot?.()||null;
+      let songSec=null;
+      try{if(typeof current==="function"&&typeof running!=="undefined"&&running)songSec=current()}catch{}
       return {
         ...stats,
         maxRenderGapMs:+stats.maxRenderGapMs.toFixed(2),
         longTaskTotalMs:+stats.longTaskTotalMs.toFixed(1),
         maxLongTaskMs:+stats.maxLongTaskMs.toFixed(1),
         elapsedSec:+elapsed.toFixed(2),
+        songSec:Number.isFinite(songSec)?+songSec.toFixed(1):null,
         renderRequestRate:+(stats.renderRequests/elapsed).toFixed(1),
         renderRate:+(stats.actualRenders/elapsed).toFixed(1),
         suppressedRenderRate:+(stats.suppressedRenders/elapsed).toFixed(1),
+        tickerFrameRate:ticker?.frameRate??null,
+        tickerTaskCount:ticker?.taskCount??null,
+        tickerTaskErrors:ticker?.taskErrors??null,
+        tickerMaxBatchMs:ticker?.maxTaskBatchMs??null,
         hhGraphFrames:graph?.frames??null,
         hhGraphSamples:graph?.samples??null,
         hhGraphSamplesPerFrame:graph?.frames?+(graph.samples/graph.frames).toFixed(1):null,
@@ -123,6 +141,28 @@
   };
 
   if(perfEnabled){
-    setInterval(()=>console.table(globalThis.DruMasterPerfTest.snapshot()),5000);
+    const overlay=document.createElement("div");
+    overlay.id="dmPerfOverlay";
+    Object.assign(overlay.style,{
+      position:"absolute",right:"4px",bottom:"4px",zIndex:"99999",pointerEvents:"none",
+      padding:"4px 6px",borderRadius:"4px",background:"rgba(0,0,0,.72)",color:"#dff7ff",
+      font:"700 9px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace",whiteSpace:"pre",textAlign:"left"
+    });
+    const host=document.querySelector("#game")||document.body;
+    host.appendChild(overlay);
+    const refresh=()=>{
+      const s=globalThis.DruMasterPerfTest.snapshot();
+      const voices=s.audio?.activeVoices??"-";
+      overlay.textContent=[
+        `PASS5  song ${s.songSec??"-"}s`,
+        `render ${s.renderRate}/s  >50 ${s.frameGapOver50}  max ${s.maxRenderGapMs}ms`,
+        `ticker ${s.tickerFrameRate??"-"}/s  tasks ${s.tickerTaskCount??"-"}  max ${s.tickerMaxBatchMs??"-"}ms`,
+        `voices ${voices}  peak ${s.peakActiveVoices}`,
+        `long ${s.longTasks}  max ${s.maxLongTaskMs}ms`,
+        `heap ${s.jsHeapUsedMB??"-"}/${s.jsHeapTotalMB??"-"} MB`
+      ].join("\n");
+    };
+    refresh();
+    setInterval(()=>{refresh();console.table(globalThis.DruMasterPerfTest.snapshot())},1000);
   }
 })();
