@@ -1,5 +1,5 @@
 import { access, cp, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
-import { extname, join, resolve } from 'node:path';
+import { extname, join, relative, resolve } from 'node:path';
 
 const packageRoot = resolve(import.meta.dirname, '..');
 const source = resolve(packageRoot, '../../DruMaster');
@@ -39,6 +39,63 @@ async function walk(dir) {
 
 await walk(target);
 
+// Web playback stores large WAV stems as extensionless split chunks for
+// GitHub Pages. Capacitor's local asset server can fall back to index.html for
+// those extensionless chunk URLs. Reconstruct every packaged
+// audio-manifest-v2.json stem into one normal .wav file and point the Android
+// manifest at that file. Only the packaged copy is changed.
+const songRoot = join(target, 'songs');
+async function reconstructSongAudio(dir) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await reconstructSongAudio(path);
+      continue;
+    }
+    if (entry.name !== 'audio-manifest-v2.json') continue;
+
+    const manifest = JSON.parse(await readFile(path, 'utf8'));
+    let changed = false;
+    for (const [stemName, spec] of Object.entries(manifest)) {
+      if (!spec || typeof spec !== 'object') continue;
+      const parts = Number(spec.parts || 0);
+      const prefix = String(spec.pathPrefix || '');
+      if (!(parts > 0) || !prefix) continue;
+
+      const digits = Number(spec.digits || 3);
+      const chunks = [];
+      const sourceParts = [];
+      let totalBytes = 0;
+      for (let i = 0; i < parts; i++) {
+        const rel = `${prefix}${String(i).padStart(digits, '0')}`;
+        const abs = join(target, rel);
+        const bytes = await readFile(abs);
+        chunks.push(bytes);
+        sourceParts.push(abs);
+        totalBytes += bytes.byteLength;
+      }
+      if (Number.isFinite(Number(spec.bytes)) && Number(spec.bytes) > 0 && totalBytes !== Number(spec.bytes)) {
+        throw new Error(`Android song WAV reconstruction size mismatch for ${stemName}: ${totalBytes} / ${spec.bytes}`);
+      }
+
+      const manifestDir = relative(target, dir).replaceAll('\\', '/');
+      const outRel = `${manifestDir}/android-audio/${stemName}.wav`;
+      const outAbs = join(target, outRel);
+      await mkdir(join(dir, 'android-audio'), { recursive: true });
+      await writeFile(outAbs, Buffer.concat(chunks, totalBytes));
+      await Promise.all(sourceParts.map(p => rm(p, { force: true })));
+
+      spec.paths = [outRel];
+      delete spec.pathPrefix;
+      delete spec.parts;
+      delete spec.digits;
+      changed = true;
+    }
+    if (changed) await writeFile(path, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  }
+}
+await reconstructSongAudio(songRoot);
+
 // Score Playback on the Web uses the gzip MIDI to reduce network transfer.
 // In the Android package every chart.mid is already embedded locally, so the
 // gzip path adds no benefit and introduces a second Android asset-serving
@@ -77,8 +134,6 @@ for (const song of Object.values(registry)) {
     throw new Error(`Android packaged raw MIDI is missing for ${song?.id || song?.title || 'unknown'}: ${rawPath}`);
   }
 
-  // Keep validating the renamed gzip copy too because normal gameplay can use
-  // it before falling back to raw MIDI.
   const gzipRef = String(song?.midiGzip || '');
   if (!gzipRef) continue;
   const gzipPath = gzipRef.split(/[?#]/, 1)[0];
@@ -88,6 +143,31 @@ for (const song of Object.values(registry)) {
     throw new Error(`Android packaged MIDI gzip is missing for ${song?.id || song?.title || 'unknown'}: ${gzipPath}`);
   }
 }
+
+// Validate reconstructed song manifests and their single WAV targets.
+async function validateSongAudio(dir) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await validateSongAudio(path);
+      continue;
+    }
+    if (entry.name !== 'audio-manifest-v2.json') continue;
+    const manifest = JSON.parse(await readFile(path, 'utf8'));
+    for (const [stemName, spec] of Object.entries(manifest)) {
+      if (!spec || typeof spec !== 'object' || !Number.isFinite(Number(spec.bytes))) continue;
+      if (!Array.isArray(spec.paths) || spec.paths.length !== 1 || !String(spec.paths[0]).endsWith('.wav')) {
+        throw new Error(`Android song manifest did not collapse ${stemName} to one WAV: ${path}`);
+      }
+      const wavPath = join(target, spec.paths[0]);
+      const bytes = await readFile(wavPath);
+      if (bytes.byteLength !== Number(spec.bytes)) {
+        throw new Error(`Android packaged song WAV size mismatch for ${stemName}: ${bytes.byteLength} / ${spec.bytes}`);
+      }
+    }
+  }
+}
+await validateSongAudio(songRoot);
 
 // The game drum WAV is split only for the Web/GitHub Pages distribution.
 // Capacitor's local asset server can fall back to index.html for the split
@@ -122,9 +202,6 @@ if (drumParts > 0 && drumPrefix) {
 
   const relativeWav = 'assets/drumsound-v2.wav';
   await writeFile(join(target, relativeWav), Buffer.concat(chunks, totalBytes));
-
-  // Remove only the split source files used to reconstruct this WAV from the
-  // packaged copy. The Web source tree remains untouched.
   await Promise.all(sourceParts.map(path => rm(path, { force: true })));
 
   drumManifest.wav.paths = [relativeWav];
@@ -168,7 +245,9 @@ if (packagedScoreCache.includes('addDescriptor(song.midiGzip')) {
 
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
 console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only; dot preserved)');
+console.log('Android package transform: split song WAV stems → one .wav per stem');
 console.log('Android package transform: Score Playback uses embedded raw chart.mid files');
 console.log('Android package validation: all registry raw MIDI and midiGzip references resolve to packaged files');
+console.log('Android package validation: reconstructed song WAV manifests resolve to exact-size .wav files');
 console.log('Android package transform: split game-drum source → one-element wav.paths for assets/drumsound-v2.wav');
 console.log('Android package transform: Web drum manifest fallback disabled');
