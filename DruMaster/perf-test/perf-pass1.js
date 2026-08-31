@@ -5,7 +5,7 @@
     !!globalThis.matchMedia?.("(any-pointer:coarse)")?.matches||
     !!globalThis.matchMedia?.("(pointer:coarse)")?.matches;
 
-  document.documentElement.dataset.dmPerfTest="pass1";
+  document.documentElement.dataset.dmPerfTest="pass2";
 
   const stats={
     renderRequests:0,
@@ -15,9 +15,6 @@
     startedAt:performance.now()
   };
 
-  /* Performance pass 1 / high-safety change:
-     keep gameplay/audio/event clocks at native rAF cadence, but do not repaint
-     the heavy chart faster than 60 fps on 90/120 Hz touch displays. */
   if(isTouch&&typeof draw==="function"){
     const rawDraw=draw,FRAME_MS=1000/60;
     let nextRender=0,lastResult;
@@ -36,19 +33,13 @@
     };
   }
 
-  /* game-chart.js already registered the original scheduleKickAudio function
-     with setInterval(...,25). Its rAF wrapper calls the global binding again.
-     Replacing only the later binding with a no-op leaves the 25 ms lookahead
-     scheduler intact while removing the duplicate per-frame invocation. */
   if(typeof scheduleKickAudio==="function"){
     scheduleKickAudio=function(){stats.suppressedKickSchedulerCalls++};
   }
 
-  /* No visual benefit at blur(0)/saturate(100%); make the mobile compositing
-     path explicit and cheap in the test environment only. */
   if(isTouch){
     const style=document.createElement("style");
-    style.dataset.dmPerfPass="1";
+    style.dataset.dmPerfPass="2";
     style.textContent=`
       @media (hover:none) and (pointer:coarse) and (max-width:900px){
         .game #chartWrap{
@@ -62,16 +53,20 @@
   }
 
   globalThis.DruMasterPerfTest={
-    version:"20260901-pass1",
+    version:"20260901-pass2",
     stats,
     snapshot(){
       const elapsed=Math.max(.001,(performance.now()-stats.startedAt)/1000);
+      const graph=globalThis.DruMasterPerfChartPass2?.stats||null;
       return {
         ...stats,
         elapsedSec:+elapsed.toFixed(2),
         renderRequestRate:+(stats.renderRequests/elapsed).toFixed(1),
         renderRate:+(stats.actualRenders/elapsed).toFixed(1),
         suppressedRenderRate:+(stats.suppressedRenders/elapsed).toFixed(1),
+        hhGraphFrames:graph?.frames??null,
+        hhGraphSamples:graph?.samples??null,
+        hhGraphSamplesPerFrame:graph?.frames?+(graph.samples/graph.frames).toFixed(1):null,
         audio:globalThis.DruMasterAudioControl?.getStats?.()||null
       };
     }
