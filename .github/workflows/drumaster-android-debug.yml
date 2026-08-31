@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - drumaster-mobile-package-20260831-1537
     paths:
       - 'DruMaster/**'
       - 'DruMaster-App/Android/**'
@@ -67,7 +68,11 @@ jobs:
       - name: Prepare direct-download APK
         run: |
           SHORT_SHA="${GITHUB_SHA::7}"
-          APK_NAME="DruMaster-Android-${GITHUB_RUN_NUMBER}-${SHORT_SHA}.apk"
+          if [ "$GITHUB_REF_NAME" = "drumaster-mobile-package-20260831-1537" ]; then
+            APK_NAME="DruMaster-Android-1537-${GITHUB_RUN_NUMBER}-${SHORT_SHA}.apk"
+          else
+            APK_NAME="DruMaster-Android-${GITHUB_RUN_NUMBER}-${SHORT_SHA}.apk"
+          fi
           cp android/app/build/outputs/apk/debug/app-debug.apk "$APK_NAME"
           echo "APK_NAME=$APK_NAME" >> "$GITHUB_ENV"
 
@@ -85,5 +90,5 @@ jobs:
           if gh release view android-latest >/dev/null 2>&1; then
             gh release upload android-latest "$APK_NAME"
           else
-            gh release create android-latest "$APK_NAME" --title "DruMaster Android Latest" --notes "Latest Android debug build generated from main."
+            gh release create android-latest "$APK_NAME" --title "DruMaster Android Latest" --notes "Latest Android debug build."
           fi
