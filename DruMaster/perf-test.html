@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#080b11">
+  <title>DruMaster Performance Test</title>
+</head>
+<body style="margin:0;background:#080b11;color:#eaf3ff;font-family:system-ui,sans-serif">
+  <p id="perfBootstrapState" style="padding:20px;margin:0">DruMaster 軽量化テスト環境を読み込み中…</p>
+  <script>
+  (()=>{
+    const state=document.getElementById('perfBootstrapState');
+    fetch('index.html?perf-base=20260901-pass1',{cache:'no-store'})
+      .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.text()})
+      .then(html=>{
+        html=html.replace('<title>DruMaster</title>','<title>DruMaster Performance Test</title>');
+        html=html.replace(/js\/hit-flash-performance\.js\?v=[^\"]+/,'perf-test/hit-flash-performance.js?v=20260901-pass1');
+        html=html.replace(/js\/hihat-open-gauge\.js\?v=[^\"]+/,'perf-test/hihat-open-gauge.js?v=20260901-pass1');
+        html=html.replace(/js\/score-playback-auto\.js\?v=[^\"]+/,'perf-test/score-playback-auto.js?v=20260901-pass1');
+        html=html.replace('</body>','<script src="perf-test/perf-pass1.js?v=20260901-pass1"><\\/script></body>');
+        document.open();
+        document.write(html);
+        document.close();
+      })
+      .catch(err=>{
+        console.error(err);
+        if(state)state.textContent=`軽量化テスト環境の読み込みに失敗しました: ${err.message||err}`;
+      });
+  })();
+  </script>
+</body>
+</html>
