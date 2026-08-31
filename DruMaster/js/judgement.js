@@ -162,7 +162,6 @@
       {opacity:.78,filter:"brightness(1.3)",offset:.42},
       {opacity:0,filter:"brightness(1)",offset:1}
     ],{duration:200,easing:"ease-out"});
-    queueMicrotask(()=>{note.hit=true});
   }
 
   function restartPlayClass(fx){
@@ -256,7 +255,7 @@
         if(lastT<0||t<lastT-.08)resetKickCursor(t);
         while(kickCursor<notes.length&&notes[kickCursor].time<=t){
           const n=notes[kickCursor++];
-          if(n.type==="kick"&&n.time>=Math.max(0,lastT)-.025)flashNote(n);
+          if(n.type==="kick"&&n.time>=Math.max(0,lastT)-.025){n.hit=true;flashNote(n)}
         }
         lastT=t;
       }else{
