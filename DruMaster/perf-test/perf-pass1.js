@@ -4,8 +4,11 @@
   const isTouch=(navigator.maxTouchPoints||0)>0||
     !!globalThis.matchMedia?.("(any-pointer:coarse)")?.matches||
     !!globalThis.matchMedia?.("(pointer:coarse)")?.matches;
+  const params=new URLSearchParams(location.search);
+  const perfEnabled=params.get("perf")==="1";
+  const fpsEnabled=perfEnabled||params.get("fps")==="1";
 
-  document.documentElement.dataset.dmPerfTest="pass6";
+  document.documentElement.dataset.dmPerfTest="pass7";
 
   const stats={
     renderRequests:0,
@@ -20,15 +23,53 @@
     longTasks:0,
     longTaskTotalMs:0,
     maxLongTaskMs:0,
-    startedAt:performance.now()
+    startedAt:performance.now(),
+    sessionActive:false
   };
+
+  const fpsBuckets=new Float64Array(5),requestBuckets=new Float64Array(5);
+  let fpsBucketCount=0,fpsBucketIndex=0,fpsWindowStartedAt=performance.now(),fpsWindowRenders=0,fpsWindowRequests=0;
+  let chartFps1s=0,chartFps5s=0,drawRequestFps1s=0,drawRequestFps5s=0;
+  let nextRender=0,lastResult,lastActual=0;
+
+  function resetFpsWindow(now=performance.now()){
+    fpsBuckets.fill(0);requestBuckets.fill(0);fpsBucketCount=0;fpsBucketIndex=0;
+    fpsWindowStartedAt=now;fpsWindowRenders=0;fpsWindowRequests=0;
+    chartFps1s=0;chartFps5s=0;drawRequestFps1s=0;drawRequestFps5s=0;
+  }
+
+  function updateFpsWindow(now=performance.now()){
+    const elapsed=now-fpsWindowStartedAt;
+    if(elapsed<1000)return;
+    chartFps1s=fpsWindowRenders*1000/Math.max(1,elapsed);
+    drawRequestFps1s=fpsWindowRequests*1000/Math.max(1,elapsed);
+    fpsBuckets[fpsBucketIndex]=chartFps1s;
+    requestBuckets[fpsBucketIndex]=drawRequestFps1s;
+    fpsBucketIndex=(fpsBucketIndex+1)%fpsBuckets.length;
+    fpsBucketCount=Math.min(fpsBuckets.length,fpsBucketCount+1);
+    let totalFps=0,totalRequests=0;
+    for(let i=0;i<fpsBucketCount;i++){totalFps+=fpsBuckets[i];totalRequests+=requestBuckets[i]}
+    chartFps5s=totalFps/Math.max(1,fpsBucketCount);
+    drawRequestFps5s=totalRequests/Math.max(1,fpsBucketCount);
+    fpsWindowStartedAt=now;fpsWindowRenders=0;fpsWindowRequests=0;
+  }
+
+  function resetSession(now=performance.now()){
+    stats.renderRequests=0;stats.actualRenders=0;stats.suppressedRenders=0;
+    stats.frameGapOver20=0;stats.frameGapOver33=0;stats.frameGapOver50=0;stats.maxRenderGapMs=0;
+    stats.peakActiveVoices=0;stats.longTasks=0;stats.longTaskTotalMs=0;stats.maxLongTaskMs=0;
+    stats.startedAt=now;stats.sessionActive=true;
+    lastActual=0;nextRender=0;
+    resetFpsWindow(now);
+    globalThis.DruMasterPerfTicker?.resetMetrics?.(now);
+  }
 
   if(isTouch&&typeof draw==="function"){
     const rawDraw=draw,FRAME_MS=1000/60;
-    let nextRender=0,lastResult,lastActual=0;
     draw=function(...args){
-      stats.renderRequests++;
+      stats.renderRequests++;fpsWindowRequests++;
       const now=performance.now();
+      updateFpsWindow(now);
       if(nextRender&&now+.75<nextRender){
         stats.suppressedRenders++;
         return lastResult;
@@ -46,7 +87,7 @@
         }
       }
       lastActual=now;
-      stats.actualRenders++;
+      stats.actualRenders++;fpsWindowRenders++;
       lastResult=rawDraw.apply(this,args);
       return lastResult;
     };
@@ -58,7 +99,7 @@
 
   if(isTouch){
     const style=document.createElement("style");
-    style.dataset.dmPerfPass="6";
+    style.dataset.dmPerfPass="7";
     style.textContent=`
       @media (hover:none) and (pointer:coarse) and (max-width:900px){
         .game #chartWrap{
@@ -71,11 +112,12 @@
     document.head.appendChild(style);
   }
 
-  const perfEnabled=new URLSearchParams(location.search).get("perf")==="1";
   if(perfEnabled&&typeof PerformanceObserver==="function"){
     try{
       const observer=new PerformanceObserver(list=>{
+        if(!stats.sessionActive)return;
         for(const entry of list.getEntries()){
+          if(entry.startTime<stats.startedAt)continue;
           const duration=Number(entry.duration)||0;
           stats.longTasks++;
           stats.longTaskTotalMs+=duration;
@@ -86,19 +128,28 @@
     }catch{}
   }
 
-  if(perfEnabled&&globalThis.DruMasterPerfTicker?.register){
-    let lastAudioSample=0;
-    globalThis.DruMasterPerfTicker.register("perf-metrics",ts=>{
-      if(ts-lastAudioSample<250)return;
-      lastAudioSample=ts;
-      const audio=globalThis.DruMasterAudioControl?.getStats?.();
-      if(audio?.activeVoices>stats.peakActiveVoices)stats.peakActiveVoices=audio.activeVoices;
+  const ticker=globalThis.DruMasterPerfTicker;
+  if(ticker?.register){
+    let wasRunning=false,lastAudioSample=0;
+    ticker.register("perf-session",ts=>{
+      let isRunning=false;
+      try{isRunning=typeof running!=="undefined"&&!!running}catch{}
+      if(isRunning&&!wasRunning)resetSession(ts);
+      wasRunning=isRunning;
+      updateFpsWindow(ts);
+
+      if(perfEnabled&&isRunning&&ts-lastAudioSample>=250){
+        lastAudioSample=ts;
+        const audio=globalThis.DruMasterAudioControl?.getStats?.();
+        if(audio?.activeVoices>stats.peakActiveVoices)stats.peakActiveVoices=audio.activeVoices;
+      }
     });
   }
 
   globalThis.DruMasterPerfTest={
-    version:"20260901-pass6",
+    version:"20260901-pass7",
     stats,
+    resetSession,
     snapshot(){
       const elapsed=Math.max(.001,(performance.now()-stats.startedAt)/1000);
       const graph=globalThis.DruMasterPerfChartPass2?.stats||null;
@@ -106,7 +157,8 @@
       const audio=globalThis.DruMasterAudioControl?.getStats?.()||null;
       if(audio?.activeVoices>stats.peakActiveVoices)stats.peakActiveVoices=audio.activeVoices;
       const memory=performance?.memory;
-      const ticker=globalThis.DruMasterPerfTicker?.snapshot?.()||null;
+      const tickerSnapshot=ticker?.snapshot?.()||null;
+      const animations=globalThis.DruMasterPerfAnimationPool?.stats||null;
       let songSec=null;
       try{if(typeof current==="function"&&typeof running!=="undefined"&&running)songSec=current()}catch{}
       return {
@@ -116,13 +168,19 @@
         maxLongTaskMs:+stats.maxLongTaskMs.toFixed(1),
         elapsedSec:+elapsed.toFixed(2),
         songSec:Number.isFinite(songSec)?+songSec.toFixed(1):null,
-        renderRequestRate:+(stats.renderRequests/elapsed).toFixed(1),
+        chartFps1s:+chartFps1s.toFixed(1),
+        chartFps5s:+chartFps5s.toFixed(1),
+        drawRequestFps1s:+drawRequestFps1s.toFixed(1),
+        drawRequestFps5s:+drawRequestFps5s.toFixed(1),
+        displayHz1s:tickerSnapshot?.frameRate1s??null,
+        displayHz5s:tickerSnapshot?.frameRate5s??null,
         renderRate:+(stats.actualRenders/elapsed).toFixed(1),
-        suppressedRenderRate:+(stats.suppressedRenders/elapsed).toFixed(1),
-        tickerFrameRate:ticker?.frameRate??null,
-        tickerTaskCount:ticker?.taskCount??null,
-        tickerTaskErrors:ticker?.taskErrors??null,
-        tickerMaxBatchMs:ticker?.maxTaskBatchMs??null,
+        tickerTaskCount:tickerSnapshot?.taskCount??null,
+        tickerTaskErrors:tickerSnapshot?.taskErrors??null,
+        tickerMaxBatchMs:tickerSnapshot?.maxTaskBatchMs??null,
+        animationCreated:animations?.created??null,
+        animationReused:animations?.reused??null,
+        animationRecreated:animations?.recreated??null,
         hhGraphFrames:graph?.frames??null,
         hhGraphSamples:graph?.samples??null,
         hhGraphSamplesPerFrame:graph?.frames?+(graph.samples/graph.frames).toFixed(1):null,
@@ -143,7 +201,7 @@
     }
   };
 
-  if(perfEnabled){
+  if(fpsEnabled){
     const overlay=document.createElement("div");
     overlay.id="dmPerfOverlay";
     Object.assign(overlay.style,{
@@ -153,20 +211,43 @@
     });
     const host=document.querySelector("#game")||document.body;
     host.appendChild(overlay);
+
     const refresh=()=>{
       const s=globalThis.DruMasterPerfTest.snapshot();
+      if(!perfEnabled){
+        overlay.textContent=[
+          `FPS PASS7  song ${s.songSec??"-"}s`,
+          `display ${s.displayHz1s??"-"} Hz  (5s ${s.displayHz5s??"-"})`,
+          `chart   ${s.chartFps1s} fps (5s ${s.chartFps5s})`,
+          `request ${s.drawRequestFps1s}/s`,
+          `>50ms ${s.frameGapOver50}  max ${s.maxRenderGapMs}ms`
+        ].join("\n");
+        return;
+      }
       const voices=s.audio?.activeVoices??"-";
       overlay.textContent=[
-        `PASS6  song ${s.songSec??"-"}s`,
-        `render ${s.renderRate}/s  >50 ${s.frameGapOver50}  max ${s.maxRenderGapMs}ms`,
-        `ticker ${s.tickerFrameRate??"-"}/s  tasks ${s.tickerTaskCount??"-"}  max ${s.tickerMaxBatchMs??"-"}ms`,
+        `PASS7  song ${s.songSec??"-"}s`,
+        `display ${s.displayHz1s??"-"}Hz  chart ${s.chartFps1s}fps (5s ${s.chartFps5s})`,
+        `request ${s.drawRequestFps1s}/s  >50 ${s.frameGapOver50}  max ${s.maxRenderGapMs}ms`,
+        `ticker tasks ${s.tickerTaskCount??"-"}  max ${s.tickerMaxBatchMs??"-"}ms`,
         `voices ${voices}  peak ${s.peakActiveVoices}`,
         `long ${s.longTasks}  max ${s.maxLongTaskMs}ms`,
         `heap ${s.jsHeapUsedMB??"-"}/${s.jsHeapTotalMB??"-"} MB`,
-        `topology ${s.topologyBuilds??"-"}  offset calls ${s.simultaneousOffsetCalls??"-"}`
+        `anim new ${s.animationCreated??"-"}  reuse ${s.animationReused??"-"}`,
+        `topology ${s.topologyBuilds??"-"}`
       ].join("\n");
     };
+
+    let lastRefresh=0;
+    if(ticker?.register){
+      ticker.register("perf-overlay",ts=>{
+        if(ts-lastRefresh<500)return;
+        lastRefresh=ts;refresh();
+        if(perfEnabled)console.table(globalThis.DruMasterPerfTest.snapshot());
+      });
+    }else{
+      setInterval(refresh,500);
+    }
     refresh();
-    setInterval(()=>{refresh();console.table(globalThis.DruMasterPerfTest.snapshot())},1000);
   }
 })();
