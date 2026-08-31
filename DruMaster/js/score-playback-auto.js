@@ -123,6 +123,7 @@
       if(autoEnabled()){
         try{playDrum(n.note,n.type,n.velocity/127)}catch{}
       }
+      n.hit=true;
     }
     lastNotes=list;lastStartedAt=start;lastTime=t;
     requestAnimationFrame(scoreFrame);
