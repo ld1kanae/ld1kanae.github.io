@@ -7,34 +7,14 @@ if(typeof PART!=="undefined")PART.hhPedal="autoFoot";
 const HIDDEN_CHART_TYPES=new Set(["hhPedal"]);
 let footCursor=0,lastRunStart=NaN;
 
-/* Web Audio's currentTime advances ahead of the sample that has physically
-   reached the output device. Drawing directly from current() therefore makes
-   the goal crossing appear early by the device/browser output latency. Use
-   getOutputTimestamp() when available, and latency properties as a fallback,
-   so the chart follows the MIDI/audio time that is actually being heard. */
+/* Keep chart motion on the same MIDI clock used by judgement and note
+   playback. Output-device latency compensation here made the visible goal
+   crossing lag behind the actual judgement time, especially on mobile. */
 function audibleContextTime(){
   if(typeof ac==="undefined"||!ac||!Number.isFinite(Number(ac.currentTime)))return NaN;
-  const now=Number(ac.currentTime);
-  try{
-    const ts=typeof ac.getOutputTimestamp==="function"?ac.getOutputTimestamp():null,
-          contextTime=Number(ts?.contextTime),performanceTime=Number(ts?.performanceTime);
-    if(Number.isFinite(contextTime)&&contextTime>=0&&Number.isFinite(performanceTime)&&performanceTime>0&&typeof performance!=="undefined"){
-      const presented=contextTime+Math.max(0,(performance.now()-performanceTime)/1000);
-      if(Number.isFinite(presented)&&presented<=now+.02)return Math.max(0,presented);
-    }
-  }catch{}
-  const outputLatency=Number(ac.outputLatency),baseLatency=Number(ac.baseLatency),
-        latency=Number.isFinite(outputLatency)&&outputLatency>0?outputLatency:Number.isFinite(baseLatency)&&baseLatency>0?baseLatency:0;
-  return Math.max(0,now-latency);
+  return Number(ac.currentTime);
 }
-function chartCurrent(){
-  const midiNow=current();
-  if(typeof ac==="undefined"||!ac)return midiNow;
-  const audible=audibleContextTime(),now=Number(ac.currentTime);
-  if(!Number.isFinite(audible)||!Number.isFinite(now))return midiNow;
-  const lag=Math.max(0,Math.min(.25,now-audible)),speed=Math.max(.01,Number(rate)||1);
-  return midiNow-lag*speed;
-}
+function chartCurrent(){return current()}
 globalThis.DruMasterChartClock={current:chartCurrent,audibleContextTime};
 
 function lowerBoundFootTime(sec){let lo=0,hi=notes.length;while(lo<hi){const mid=(lo+hi)>>1;if(notes[mid].time<sec)lo=mid+1;else hi=mid}return lo}
