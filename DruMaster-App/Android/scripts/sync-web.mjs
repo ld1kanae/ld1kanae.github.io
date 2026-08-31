@@ -37,12 +37,11 @@ async function walk(dir) {
 
 await walk(target);
 
-// The game drum source is a split PCM WAV. Extensionless assets are Deflate-
-// compressed by Android packaging, which can make Capacitor's local asset
-// server return the compressed payload instead of the original bytes. Rename
-// only the Android package copies to .wav so AAPT stores them uncompressed,
-// and point the packaged manifest at those files explicitly. Web files remain
-// exactly as they are in DruMaster/.
+// The game drum WAV is split only for the Web/GitHub Pages distribution.
+// Capacitor's local asset server can fall back to index.html for the split
+// extensionless/renamed chunks even though they are present in the APK. For
+// Android, reconstruct the original WAV at package time and point only the
+// packaged manifest at that single file. This leaves DruMaster/ untouched.
 const drumManifestPath = join(target, 'assets', 'drumsound-manifest.json');
 const drumManifest = JSON.parse(await readFile(drumManifestPath, 'utf8'));
 const drumParts = Number(drumManifest?.wav?.parts || 0);
@@ -50,16 +49,32 @@ const drumDigits = Number(drumManifest?.wav?.digits || 3);
 const drumPrefix = String(drumManifest?.wav?.pathPrefix || '');
 
 if (drumParts > 0 && drumPrefix) {
-  const packagedPaths = [];
+  const chunks = [];
+  const sourceParts = [];
+  let totalBytes = 0;
+
   for (let i = 0; i < drumParts; i++) {
-    const stem = `${drumPrefix}${String(i).padStart(drumDigits, '0')}`;
-    const sourcePart = join(target, stem);
-    const packagedPart = `${sourcePart}.wav`;
-    await rename(sourcePart, packagedPart);
-    packagedPaths.push(`${stem}.wav`);
+    const relativePart = `${drumPrefix}${String(i).padStart(drumDigits, '0')}`;
+    const absolutePart = join(target, relativePart);
+    const bytes = await readFile(absolutePart);
+    chunks.push(bytes);
+    sourceParts.push(absolutePart);
+    totalBytes += bytes.byteLength;
   }
 
-  drumManifest.wav.paths = packagedPaths;
+  if (drumManifest.wav.bytes && totalBytes !== Number(drumManifest.wav.bytes)) {
+    throw new Error(`Android drum WAV reconstruction size mismatch: ${totalBytes} / ${drumManifest.wav.bytes}`);
+  }
+
+  const relativeWav = 'assets/drumsound-v2.wav';
+  await writeFile(join(target, relativeWav), Buffer.concat(chunks, totalBytes));
+
+  // Remove package-only source chunks so the APK contains just the WAV that
+  // the Android manifest references.
+  await Promise.all(sourceParts.map(path => rm(path, { force: true })));
+
+  drumManifest.wav.path = relativeWav;
+  delete drumManifest.wav.paths;
   delete drumManifest.wav.pathPrefix;
   delete drumManifest.wav.parts;
   delete drumManifest.wav.digits;
@@ -68,4 +83,4 @@ if (drumParts > 0 && drumPrefix) {
 
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
 console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only)');
-console.log('Android package transform: drumsound WAV chunks → *.wav (uncompressed Android assets)');
+console.log('Android package transform: split game-drum source → assets/drumsound-v2.wav (packaged copy only)');
