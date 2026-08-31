@@ -9,7 +9,7 @@ Public test entry point:
 
 - `DruMaster/perf-test.html`
 
-The test bootstrap fetches the current production `index.html`, substitutes only explicitly listed performance-test files, and appends the current performance pass. This keeps the visible/gameplay baseline aligned with production while isolating experimental code.
+The test bootstrap fetches the current production `index.html`, substitutes only explicitly listed performance-test files, and appends the current performance passes. This keeps the visible/gameplay baseline aligned with production while isolating experimental code.
 
 ## Hard constraints
 
@@ -43,8 +43,9 @@ The test bootstrap fetches the current production `index.html`, substitutes only
 | Remove duplicate rAF call to kick lookahead scheduler while preserving existing 25 ms timer | **S** | **A** | Pass 1 |
 | HH open gauge: stop per-frame `bottom` layout writes; use transform and 30 Hz DOM updates | **A** | **A** | Pass 1 |
 | Disable no-op mobile `backdrop-filter: blur(0) saturate(100%)` | **S** | **B** | Pass 1 |
-| HH openness graph: reduce sampling/allocation and update rate | **B** | **A** | Next candidate |
-| Precompute simultaneous-note offsets / cache note visuals | **B** | **A** | Planned |
+| HH openness graph: reduce mobile sampling and remove per-sample JS object allocations | **B** | **A** | Pass 2 |
+| Cache `noteVisual()` results | **A/B** | **B/A** | Next candidate |
+| Precompute/reuse simultaneous-note offset topology without changing hit-note shift behavior | **B** | **A** | Planned |
 | Cache static chart background/labels/goal material | **B** | **A** | Planned |
 | Score Playback decoded AudioBuffer LRU / eviction | **B** | **A** | Planned |
 | Consolidate independent rAF watchers into one visual ticker | **B/C** | **S** | Later after instrumentation |
@@ -83,11 +84,36 @@ Base `main` before test-lab commit: `e8a1ecd89dc30104f4b661fceff27eea1e338313`.
 5. **No-op mobile backdrop filter disabled**
    - Test-only style sets chart backdrop filter to `none` on mobile.
 
-### Deliberately deferred from Pass 1
+## Pass 2 — 2026-09-01
 
-- HH openness Canvas graph optimization: high expected benefit but the function is closure-bound inside `game-chart.js`; replacing that core file just to alter graph sampling would increase regression surface. Handle after the first pass confirms the test bootstrap and basic runtime are stable.
-- Full rAF unification: highest architectural benefit, but it touches several independently evolved note/visual cursors and is intentionally not the first edit.
-- AudioBuffer eviction: important for Score Playback memory pressure but separate from the first CPU/layout pass.
+### Included
+
+1. **HH openness graph mobile sampling reduction**
+   - Production graph samples every 3 CSS px.
+   - Test renderer keeps desktop at 3 px and changes mobile to 9 px.
+   - At an 800 CSS-px chart this reduces graph envelope evaluations from roughly 267 to roughly 90 per rendered frame.
+
+2. **HH openness graph allocation reduction**
+   - The production path builds `runs[]`, `run[]`, and one `{x,y}` object per visible graph sample every frame.
+   - Pass 2 builds fill/stroke geometry directly with two `Path2D` objects per frame where supported.
+   - A compatibility fallback retains the old array method but still uses the coarser mobile sample interval.
+
+3. **Renderer placement preserves later wrappers**
+   - Pass 2 is injected immediately after production `game-chart.js`.
+   - Existing later patches, including the HH gauge wrapper, continue to wrap the replacement draw function.
+   - The final Pass 1 <=60 fps wrapper still applies after all gameplay scripts have loaded.
+
+### Explicitly not changed
+
+- HH envelope event timings, ramp constants, easing functions and velocity curve are unchanged.
+- `current()`, `beatTiming`, judgement position, chart speed and note positions are unchanged.
+- Kick redraw behavior and simultaneous-note offset logic are copied without semantic changes.
+
+## Deferred because of safety
+
+- Precomputing simultaneous-note offsets across hit state can subtly change how the remaining bar shifts after one note of a simultaneous group is hit. Do not implement that naïvely. A later optimization must preserve the current hit-dependent layout or prove that changing it is intended.
+- Full rAF unification remains high priority but touches several independently evolved cursors and should follow device measurements.
+- AudioBuffer eviction is important for Score Playback memory pressure but is separate from the CPU/layout passes.
 
 ## Test procedure
 
@@ -100,15 +126,16 @@ Check the same song/section in this order:
 5. Score Playback, Auto OFF.
 6. Score Playback, Auto ON.
 
-For Pass 1 specifically verify:
+Verify:
 
 - No change in chart/goal timing.
 - No missing or doubled kick audio.
 - Score Playback still shows both goal-line and kit-body hit effects.
 - HH open gauge follows the same envelope and reaches the same endpoints.
+- HH graph shape and transitions remain visually equivalent; mobile should only be marginally less densely sampled.
 - Pause/resume and seek still work.
 
-Add `?perf=1` to the test URL to log `DruMasterPerfTest.snapshot()` every 5 seconds. The same object is available manually from DevTools.
+Add `?perf=1` to the test URL to log `DruMasterPerfTest.snapshot()` every 5 seconds. Pass 2 also reports `hhGraphFrames`, `hhGraphSamples`, and `hhGraphSamplesPerFrame`.
 
 ## Promotion rule
 
