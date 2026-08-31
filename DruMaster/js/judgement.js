@@ -162,6 +162,7 @@
       {opacity:.78,filter:"brightness(1.3)",offset:.42},
       {opacity:0,filter:"brightness(1)",offset:1}
     ],{duration:200,easing:"ease-out"});
+    queueMicrotask(()=>{note.hit=true});
   }
 
   function restartPlayClass(fx){
