@@ -110,14 +110,16 @@
 
     if(list!==lastNotes||start!==lastStartedAt||t<lastTime-.05)resetCursor();
 
-    while(cursor<list.length&&list[cursor].time<=t){
+    while(cursor<list.length&&list[cursor].time<=t+.012){
       const n=list[cursor++];
       if(n.time<t-.05)continue;
 
-      /* The MIDI event, its visual feedback, and note retirement all happen
-         in the same frame. Do not retire notes from a look-ahead window. */
+      /* In score playback every chart note produces both visual effects,
+         regardless of the Auto toggle. */
       flashScoreNote(n);
 
+      /* Auto controls audio for every chart note, including kick.
+         Guide Drums remains an optional backing stem chosen by the user. */
       if(autoEnabled()){
         try{playDrum(n.note,n.type,n.velocity/127)}catch{}
       }
