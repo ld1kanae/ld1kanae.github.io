@@ -36,86 +36,78 @@ Priority: **S** common likely bottleneck; **A** substantial CPU/GC/layout/memory
 | Add progressive-degradation metrics: frame gaps, long tasks, heap, active voices | S | A | Pass 4 |
 | Consolidate 3 independent perpetual rAF watchers into one shared ticker | B | S | Pass 5 |
 | In-page mobile diagnostics overlay for 30s+ degradation | S | A | Pass 5 |
-| Precompute/reuse simultaneous-note offset topology while preserving hit-dependent shift | B | A | Planned |
+| Precompute/reuse simultaneous-note offset topology while preserving hit-dependent shift | B | A | Pass 6 |
 | Score Playback decoded AudioBuffer LRU / eviction | B | A | Planned |
-| Web Audio drum mixer / reduced AudioNode-per-hit architecture | C | S/A if Pass 5 does not help | Next audio candidate |
+| Web Audio drum mixer / reduced AudioNode-per-hit architecture | C | S/A if Pass 6 does not help | Next audio candidate |
 | Simplify mobile glow/filter/blend if paint/composite remains dominant | A | B | Trace-dependent |
 | Active drum-voice limiting/stealing | C | A | Avoid unless voice count is proven excessive; can cut sustain |
 | Replace CSS root rotation with native landscape in packaged Android build | C | B | Long-term |
 | Replace global monkey-patch architecture with explicit runtime modules | C | A/C | Long-term |
 
-## Pass 1
+## Passes 1-4 summary
 
-- Reused WAAPI kit flash in Score Playback instead of forced synchronous layout.
-- Touch chart repaint capped near 60 fps without throttling gameplay/audio clocks.
-- Removed duplicate rAF kick scheduling while preserving the original 25 ms lookahead timer.
-- HH open gauge uses transform and 30 Hz DOM writes.
-- Mobile no-op backdrop filter disabled.
+- Pass 1: removed Score Playback forced reflow, capped touch rendering near 60 fps, removed duplicate kick lookahead call, moved HH gauge to transform/30 Hz, disabled no-op mobile backdrop filter.
+- Pass 2: reduced mobile HH graph samples from 3 px to 9 px and removed per-sample point objects where `Path2D` is available.
+- Pass 3: cached `noteVisual(type, group, scale)`.
+- Pass 4: cached static chart lane background/labels, lowered test-only mobile Canvas DPR cap 2 -> 1.5, and added progressive-degradation diagnostics.
 
-## Pass 2
-
-- Mobile HH graph sampling changed from 3 CSS px to 9 CSS px.
-- `Path2D` builds graph geometry without one `{x,y}` allocation per sample where supported.
-- HH envelope timing, velocity curve and easing remain unchanged.
-
-## Pass 3
-
-- `noteVisual(type, group, scale)` results cached.
-- Simultaneous-note buckets still rebuild each frame and still honor current `note.hit`, preserving existing hit-dependent note shifts.
-
-## Pass 4 — progressive degradation response
-
-Observed on device: play starts normally, begins stuttering at roughly 30 seconds, and becomes worse toward the end of the song. Pass 4 reduced sustained raster/render load, but the user reported that the progressive symptom continued.
-
-### Included
-
-- Static chart background cache.
-- Mobile Canvas backing-store DPR cap 2 -> 1.5 in test only.
-- Frame-gap, Long Task, heap, active-voice and peak-voice instrumentation.
-
-### Result
-
-No meaningful change to the reported progressive stutter. This lowers the probability that raster resolution/static chart painting is the primary cause.
+Pass 4 did not materially change the reported symptom: play starts normally, begins stuttering at roughly 30 seconds, then worsens toward the end.
 
 ## Pass 5 — shared perpetual ticker
 
-### Reason
+Three independent perpetual rAF watchers were consolidated into one shared ticker:
 
-Static/GPU reductions did not change the roughly-30-second onset. The runtime still had multiple independent perpetual `requestAnimationFrame` loops in addition to the main gameplay/score rendering loops:
+1. kick goal synchronization,
+2. normal-play kick judgement watcher,
+3. Score Playback note/Auto watcher.
 
-1. `auto-kick-effect.js` — kick goal synchronization.
-2. `judgement.js` — normal-play kick judgement glow watcher.
-3. `score-playback-auto.js` — Score Playback note/Auto watcher, even while Score Playback was inactive.
+Their cursor logic and timing thresholds were preserved. Pass 5 also added an on-device `?perf=1` overlay.
 
-These callbacks all woke once per display refresh. On high-refresh mobile displays this creates unnecessary scheduling and JS wakeups for the full song and can contribute to sustained CPU/thermal pressure even when each individual callback is small.
+### Device evidence captured after Pass 5
+
+At roughly 74.6 song seconds the diagnostic overlay showed approximately:
+
+- render rate ~50.9/s,
+- `>50 ms` frame gaps: 23,
+- max render gap: 123.7 ms,
+- shared ticker ~56.2/s,
+- ticker task batch max 15.6 ms,
+- current drum voices 8, peak 21,
+- Long Tasks 6, max roughly 368 ms,
+- JS heap 35.6 / 37.8 MB.
+
+Interpretation:
+
+- Voice count is not monotonically exploding; peak 21 is not enough evidence to justify cutting sustain.
+- Shared ticker work itself is not the large stall; its measured batch max was only 15.6 ms.
+- The important signal is main-thread stalls together with heap sitting near its current allocated ceiling.
+- This raises the probability of allocation/GC pressure rather than a simple constant GPU load or an ever-growing AudioNode count.
+
+## Pass 6 — remove per-frame simultaneous-note topology allocation
+
+### Target
+
+Before Pass 6, `simultaneousNoteOffsets()` allocated a new outer `Map`, nested `Map`s, a `WeakMap`, string keys, slot objects, slot arrays, and a sorted slot array on every call. It is called once from the main chart draw and again when KICK/AUTO notes are redrawn, so this generated short-lived objects continuously for the entire song.
 
 ### Included
 
-1. **One shared ticker**
-   - `perf-ticker.js` owns one perpetual rAF.
-   - The three watchers above register their existing processing functions as ticker tasks.
-   - Their cursor logic and timing thresholds are preserved.
-   - Normal gameplay still has its main gameplay rAF; Score Playback still has its own score-render loop. Pass 5 removes only the three redundant perpetual watcher rAFs.
+- Build tick/lane/slot topology once per notes array + group map + width scale + hidden-type configuration.
+- Store stable note-to-slot metadata in a `WeakMap` once.
+- Each frame only updates the current visible range / hit-state epoch and answers `.get(note)` from the reusable topology view.
+- A preceding simultaneous slot contributes width only if at least one of its notes is currently visible and, when `skipHit` is enabled, still unhit. This preserves the existing behavior where remaining simultaneous notes shift after another slot is hit.
+- No judgement, MIDI clock, chart position, note width, or hit-state semantics are changed.
 
-2. **Kick goal sync preserved**
-   - `kickGoalCursor`, run reset, chart clock and `t + 0.0005` threshold remain unchanged.
-   - Only who schedules `syncKickGoalHits()` changed.
+### Semantic regression check
 
-3. **Judgement kick watcher preserved**
-   - Existing `lastT`, reset search and `-.025` allowance remain unchanged.
-   - Score Playback still suppresses this normal-play watcher.
+The supplied/current nanairo MIDI was parsed as 1,758 drum notes. The old and new offset algorithms were compared across 2,000 randomized visible ranges and randomized hit states. The resulting offsets matched in all tested cases.
 
-4. **Score Playback Auto watcher preserved**
-   - Existing cursor reset, seek/scrub handling, `t + .012` and late-note `.05` limits remain unchanged.
-   - Auto toggle synchronization is event-driven rather than redundantly rewritten every frame.
+### New diagnostics
 
-5. **Visible diagnostics with `?perf=1`**
-   - Small in-game overlay shows song time, render rate, >50 ms gap count/max gap, shared ticker rate/task count/max batch time, active/peak drum voices, Long Tasks and JS heap when supported.
-   - Diagnostic voice sampling is added only in `?perf=1` mode and runs at 4 Hz through the shared ticker.
+`?perf=1` now shows `PASS6` and reports `topologyBuilds` / simultaneous offset call counts. `topologyBuilds` should remain very small after warm-up rather than increasing every frame.
 
 ## Audio interpretation
 
-Current production audio creates one `AudioBufferSourceNode` + `GainNode` per drum hit and keeps the node connected until that sample ends. This remains a strong candidate if Pass 5 does not materially delay or remove the progressive stutter. However, blindly stopping older voices would cut cymbal/open-hat sustain, so the next audio pass should prefer an architecture that reduces per-hit AudioNode overhead without shortening audible tails.
+Current production audio creates one `AudioBufferSourceNode` + `GainNode` per drum hit and retains it until the sample tail ends. This remains the next major candidate if Pass 6 does not materially reduce the progressive stutter. However, blindly stopping older voices would cut cymbal/open-hat sustain, so any audio pass should reduce node-management overhead without shortening audible tails.
 
 ## Test procedure
 
@@ -129,7 +121,7 @@ Diagnostic URL:
 
 - `DruMaster/perf-test.html?perf=1`
 
-For Pass 5, first compare whether the stutter onset is removed, delayed, or unchanged. If it remains, use the diagnostic URL and capture the overlay once around 10-20 seconds and again after the stutter becomes obvious. The most useful fields are `>50`, `max`, `voices`, `peak`, `long`, `heap`, and ticker max batch time.
+For Pass 6, compare the same 60-90 second section. If stutter remains, capture the overlay after it becomes obvious. The most useful fields are `>50`, `max`, `long`, `heap`, `voices/peak`, and `topology`.
 
 ## Promotion rule
 
