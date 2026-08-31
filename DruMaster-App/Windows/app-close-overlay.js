@@ -44,6 +44,23 @@
 
   document.addEventListener('mouseleave', () => setVisible(false));
 
+  document.addEventListener('mousedown', async (event) => {
+    if (event.button !== 0) return;
+    if (event.clientY < 0 || event.clientY > HOT_ZONE_PX) return;
+    if (button.contains(event.target)) return;
+
+    event.preventDefault();
+    try {
+      await window.__TAURI__?.core?.invoke('start_window_drag');
+    } catch (error) {
+      console.error('Failed to start DruMaster window drag:', error);
+    }
+  });
+
+  button.addEventListener('mousedown', (event) => {
+    event.stopPropagation();
+  });
+
   button.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopPropagation();
