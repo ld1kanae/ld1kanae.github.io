@@ -54,16 +54,6 @@ if (!scorePlayback.includes(webMidiLoader)) {
 scorePlayback = scorePlayback.replace(webMidiLoader, androidMidiLoader);
 await writeFile(scorePlaybackPath, scorePlayback, 'utf8');
 
-const scoreCachePath = join(target, 'js', 'score-playback-offline-cache.js');
-let scoreCache = await readFile(scoreCachePath, 'utf8');
-const webDescriptor = '    addDescriptor(song.midiGzip,`midi:${song.id}:${song.midiGzip}`);';
-const androidDescriptor = '    addDescriptor(song.midi,`midi:${song.id}:${song.midi}`);';
-if (!scoreCache.includes(webDescriptor)) {
-  throw new Error('Android score-playback cache raw-MIDI patch target was not found');
-}
-scoreCache = scoreCache.replace(webDescriptor, androidDescriptor);
-await writeFile(scoreCachePath, scoreCache, 'utf8');
-
 // Verify every score-playback raw MIDI reference exists in the packaged copy.
 const registryPath = join(target, 'songs', 'registry.json');
 const registry = JSON.parse(await readFile(registryPath, 'utf8'));
@@ -161,11 +151,6 @@ const packagedScorePlayback = await readFile(scorePlaybackPath, 'utf8');
 if (packagedScorePlayback.includes('nativeFetch(song.midiGzip')) {
   throw new Error('Android Score Playback still fetches midiGzip');
 }
-const packagedScoreCache = await readFile(scoreCachePath, 'utf8');
-if (packagedScoreCache.includes('addDescriptor(song.midiGzip')) {
-  throw new Error('Android Score Playback cache still targets midiGzip');
-}
-
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
 console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only; dot preserved)');
 console.log('Android package transform: Score Playback uses embedded raw chart.mid files');
