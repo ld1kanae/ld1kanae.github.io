@@ -47,6 +47,7 @@
   chartWrap.addEventListener("pointerdown",beginScrub,true);
   chartWrap.addEventListener("pointerup",waitForCommit,true);
   chartWrap.addEventListener("pointercancel",waitForCommit,true);
+  autoToggle.addEventListener("change",syncAutoplayFlag,{passive:true});
 
   const baseInput=typeof input==="function"?input:null;
   if(baseInput){
@@ -74,16 +75,12 @@
     const el=document.querySelector(`#hitLayer [data-part="${part}"]:not(.inactive)`);
     if(!el)return;
 
-    /* Performance pass 1: never restart CSS animation by forcing layout with
-       offsetWidth. Reuse the same WAAPI kit flash as normal gameplay instead. */
     const rawFlash=globalThis.DruMasterHitFlash?.flash;
     if(typeof rawFlash==="function"){
       rawFlash(part,el);
       return;
     }
 
-    /* Safe fallback if the performance helper fails to load: visual feedback
-       only, still without synchronous layout reads. */
     try{
       for(const a of el.getAnimations())a.cancel();
       el.animate([
@@ -99,24 +96,22 @@
   }
 
   function scoreFrame(){
-    syncAutoplayFlag();
     if(!scoreActive()){
       lastNotes=null;
-      requestAnimationFrame(scoreFrame);
       return;
     }
 
     const list=notesSafe(),start=startedAtSafe(),t=currentTimeSafe();
-    if(!list){requestAnimationFrame(scoreFrame);return}
+    if(!list)return;
 
     if(waitingCommit&&start!==scrubStartedAt){
       scrubbing=false;waitingCommit=false;resetCursor();
     }
-    if(scrubbing){requestAnimationFrame(scoreFrame);return}
+    if(scrubbing)return;
 
     let canPlay=false;
     try{canPlay=typeof running!=="undefined"&&running&&typeof paused!=="undefined"&&!paused}catch{}
-    if(!canPlay){requestAnimationFrame(scoreFrame);return}
+    if(!canPlay)return;
 
     if(list!==lastNotes||start!==lastStartedAt||t<lastTime-.05)resetCursor();
 
@@ -132,9 +127,14 @@
       n.hit=true;
     }
     lastNotes=list;lastStartedAt=start;lastTime=t;
-    requestAnimationFrame(scoreFrame);
   }
-  requestAnimationFrame(scoreFrame);
+
+  const ticker=globalThis.DruMasterPerfTicker;
+  if(ticker?.register)ticker.register("score-playback-auto",scoreFrame);
+  else{
+    const fallback=()=>{scoreFrame();requestAnimationFrame(fallback)};
+    requestAnimationFrame(fallback);
+  }
 
   globalThis.DruMasterScoreAuto={
     isEnabled:autoEnabled,
