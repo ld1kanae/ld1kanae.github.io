@@ -39,9 +39,11 @@ await walk(target);
 
 // The game drum WAV is split only for the Web/GitHub Pages distribution.
 // Capacitor's local asset server can fall back to index.html for the split
-// extensionless/renamed chunks even though they are present in the APK. For
-// Android, reconstruct the original WAV at package time and point only the
-// packaged manifest at that single file. This leaves DruMaster/ untouched.
+// extensionless chunks even though they are present in the APK. For Android,
+// reconstruct the original WAV at package time. Keep the manifest contract
+// expected by audio.js: loadDrumSource() calls fetchJoined(), which consumes
+// wav.paths (or parts/pathPrefix), so expose the single packaged WAV as a
+// one-element paths array rather than wav.path. DruMaster/ remains untouched.
 const drumManifestPath = join(target, 'assets', 'drumsound-manifest.json');
 const drumManifest = JSON.parse(await readFile(drumManifestPath, 'utf8'));
 const drumParts = Number(drumManifest?.wav?.parts || 0);
@@ -73,8 +75,8 @@ if (drumParts > 0 && drumPrefix) {
   // the Android manifest references.
   await Promise.all(sourceParts.map(path => rm(path, { force: true })));
 
-  drumManifest.wav.path = relativeWav;
-  delete drumManifest.wav.paths;
+  drumManifest.wav.paths = [relativeWav];
+  delete drumManifest.wav.path;
   delete drumManifest.wav.pathPrefix;
   delete drumManifest.wav.parts;
   delete drumManifest.wav.digits;
@@ -83,4 +85,4 @@ if (drumParts > 0 && drumPrefix) {
 
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
 console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only)');
-console.log('Android package transform: split game-drum source → assets/drumsound-v2.wav (packaged copy only)');
+console.log('Android package transform: split game-drum source → one-element wav.paths for assets/drumsound-v2.wav');
