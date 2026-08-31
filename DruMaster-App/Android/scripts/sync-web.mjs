@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 
 const packageRoot = resolve(import.meta.dirname, '..');
@@ -22,7 +22,9 @@ async function walk(dir) {
     }
 
     if (entry.name.endsWith('.mid.gz')) {
-      await rename(path, `${path.slice(0, -3)}gzip`);
+      // Remove only the final "gz", preserving the dot:
+      // chart.mid.gz -> chart.mid.gzip
+      await rename(path, `${path.slice(0, -2)}gzip`);
       continue;
     }
 
@@ -36,6 +38,22 @@ async function walk(dir) {
 }
 
 await walk(target);
+
+// Verify every score-playback MIDI gzip reference in the packaged registry
+// resolves to a real packaged file. This catches filename/reference drift at
+// build time instead of producing HTTP 404 on-device.
+const registryPath = join(target, 'songs', 'registry.json');
+const registry = JSON.parse(await readFile(registryPath, 'utf8'));
+for (const song of Object.values(registry)) {
+  const ref = String(song?.midiGzip || '');
+  if (!ref) continue;
+  const relativePath = ref.split(/[?#]/, 1)[0];
+  try {
+    await access(join(target, relativePath));
+  } catch {
+    throw new Error(`Android packaged MIDI gzip is missing for ${song?.id || song?.title || 'unknown'}: ${relativePath}`);
+  }
+}
 
 // The game drum WAV is split only for the Web/GitHub Pages distribution.
 // Capacitor's local asset server can fall back to index.html for the split
@@ -107,6 +125,7 @@ if (packagedFallback.includes('pathPrefix') || packagedFallback.includes('embedd
 }
 
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
-console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only)');
+console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only; dot preserved)');
+console.log('Android package validation: all registry midiGzip references resolve to packaged files');
 console.log('Android package transform: split game-drum source → one-element wav.paths for assets/drumsound-v2.wav');
 console.log('Android package transform: Web drum manifest fallback disabled');
