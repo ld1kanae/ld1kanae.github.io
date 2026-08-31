@@ -71,8 +71,8 @@ if (drumParts > 0 && drumPrefix) {
   const relativeWav = 'assets/drumsound-v2.wav';
   await writeFile(join(target, relativeWav), Buffer.concat(chunks, totalBytes));
 
-  // Remove package-only source chunks so the APK contains just the WAV that
-  // the Android manifest references.
+  // Remove only the split source files used to reconstruct this WAV from the
+  // packaged copy. The Web source tree remains untouched.
   await Promise.all(sourceParts.map(path => rm(path, { force: true })));
 
   drumManifest.wav.paths = [relativeWav];
@@ -83,6 +83,30 @@ if (drumParts > 0 && drumPrefix) {
   await writeFile(drumManifestPath, `${JSON.stringify(drumManifest, null, 2)}\n`, 'utf8');
 }
 
+// manifest-fallback.js exists for GitHub Pages and deliberately intercepts
+// requests for assets/drumsound-manifest.json with an embedded 22-part Web
+// manifest. In a packaged Android app that interception is harmful: it hides
+// the Android-specific one-file manifest written above and makes audio.js
+// fetch the obsolete split paths. Local packaged assets do not need the Pages
+// network fallback, so make this script a no-op in the Android copy only.
+const drumFallbackPath = join(target, 'js', 'manifest-fallback.js');
+await writeFile(
+  drumFallbackPath,
+  '"use strict";\n// Android package: GitHub Pages drum-manifest fallback intentionally disabled.\n',
+  'utf8'
+);
+
+// Fail the package build immediately if a future edit reintroduces a mismatch.
+const packagedManifest = JSON.parse(await readFile(drumManifestPath, 'utf8'));
+if (!Array.isArray(packagedManifest?.wav?.paths) || packagedManifest.wav.paths.length !== 1 || packagedManifest.wav.paths[0] !== 'assets/drumsound-v2.wav') {
+  throw new Error('Android drum manifest contract is invalid after packaging');
+}
+const packagedFallback = await readFile(drumFallbackPath, 'utf8');
+if (packagedFallback.includes('pathPrefix') || packagedFallback.includes('embeddedDrumManifest')) {
+  throw new Error('Android drum manifest fallback was not disabled');
+}
+
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
 console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only)');
 console.log('Android package transform: split game-drum source → one-element wav.paths for assets/drumsound-v2.wav');
+console.log('Android package transform: Web drum manifest fallback disabled');
