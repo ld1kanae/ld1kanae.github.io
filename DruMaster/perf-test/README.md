@@ -44,7 +44,7 @@ The test bootstrap fetches the current production `index.html`, substitutes only
 | HH open gauge: stop per-frame `bottom` layout writes; use transform and 30 Hz DOM updates | **A** | **A** | Pass 1 |
 | Disable no-op mobile `backdrop-filter: blur(0) saturate(100%)` | **S** | **B** | Pass 1 |
 | HH openness graph: reduce mobile sampling and remove per-sample JS object allocations | **B** | **A** | Pass 2 |
-| Cache `noteVisual()` results | **A/B** | **B/A** | Next candidate |
+| Cache `noteVisual()` results without changing note layout semantics | **A** | **B/A** | Pass 3 |
 | Precompute/reuse simultaneous-note offset topology without changing hit-note shift behavior | **B** | **A** | Planned |
 | Cache static chart background/labels/goal material | **B** | **A** | Planned |
 | Score Playback decoded AudioBuffer LRU / eviction | **B** | **A** | Planned |
@@ -94,7 +94,7 @@ Base `main` before test-lab commit: `e8a1ecd89dc30104f4b661fceff27eea1e338313`.
    - At an 800 CSS-px chart this reduces graph envelope evaluations from roughly 267 to roughly 90 per rendered frame.
 
 2. **HH openness graph allocation reduction**
-   - The production path builds `runs[]`, `run[]`, and one `{x,y}` object per visible graph sample every frame.
+   - Production builds `runs[]`, `run[]`, and one `{x,y}` object per visible graph sample every frame.
    - Pass 2 builds fill/stroke geometry directly with two `Path2D` objects per frame where supported.
    - A compatibility fallback retains the old array method but still uses the coarser mobile sample interval.
 
@@ -109,9 +109,38 @@ Base `main` before test-lab commit: `e8a1ecd89dc30104f4b661fceff27eea1e338313`.
 - `current()`, `beatTiming`, judgement position, chart speed and note positions are unchanged.
 - Kick redraw behavior and simultaneous-note offset logic are copied without semantic changes.
 
+## Pass 3 — 2026-09-01
+
+### Included
+
+1. **`noteVisual()` cache**
+   - Visual geometry/color depends only on note type, group and width scale.
+   - Pass 3 caches those small immutable-by-convention result objects by `(type, group, scale)` instead of allocating a new object for every visible note and simultaneous-note slot on every render.
+   - Existing callers only read `kind`, `barWidth`, `gap`, `totalWidth`, and `color`; Pass 3 does not alter those values.
+
+2. **Simultaneous-note calculation keeps current semantics**
+   - The algorithm still creates current-frame buckets and still checks `note.hit` each render.
+   - Therefore a remaining note can shift exactly as it does in production after another simultaneous note becomes hit.
+   - Only the repeated visual-width object creation inside the algorithm is removed.
+
+3. **Load order**
+   - Pass 3 is injected after production `chart-core.js` and before `game-chart.js`.
+   - It replaces only exported chart rendering functions; the production MIDI timing parser, measure-line logic and judgement geometry remain the source of truth.
+
+### Metrics
+
+`DruMasterPerfTest.snapshot()` now also reports:
+
+- `noteVisualCacheSize`
+- `noteVisualRequests`
+- `noteVisualMisses`
+- `simultaneousOffsetCalls`
+
+After warm-up, `noteVisualMisses` should stop or increase only when a previously unseen `(type, group, scale)` appears.
+
 ## Deferred because of safety
 
-- Precomputing simultaneous-note offsets across hit state can subtly change how the remaining bar shifts after one note of a simultaneous group is hit. Do not implement that naïvely. A later optimization must preserve the current hit-dependent layout or prove that changing it is intended.
+- Naively precomputing simultaneous-note offsets across hit state can subtly change how the remaining bar shifts after one note of a simultaneous group is hit. A later optimization must preserve the current hit-dependent layout or prove that changing it is intended.
 - Full rAF unification remains high priority but touches several independently evolved cursors and should follow device measurements.
 - AudioBuffer eviction is important for Score Playback memory pressure but is separate from the CPU/layout passes.
 
@@ -133,9 +162,10 @@ Verify:
 - Score Playback still shows both goal-line and kit-body hit effects.
 - HH open gauge follows the same envelope and reaches the same endpoints.
 - HH graph shape and transitions remain visually equivalent; mobile should only be marginally less densely sampled.
+- Simultaneous note bars retain the same positions and hit-dependent shift behavior.
 - Pause/resume and seek still work.
 
-Add `?perf=1` to the test URL to log `DruMasterPerfTest.snapshot()` every 5 seconds. Pass 2 also reports `hhGraphFrames`, `hhGraphSamples`, and `hhGraphSamplesPerFrame`.
+Add `?perf=1` to the test URL to log `DruMasterPerfTest.snapshot()` every 5 seconds.
 
 ## Promotion rule
 
