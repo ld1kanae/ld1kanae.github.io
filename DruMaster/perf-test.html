@@ -11,15 +11,16 @@
   <script>
   (()=>{
     const state=document.getElementById('perfBootstrapState');
-    fetch('index.html?perf-base=20260901-pass2',{cache:'no-store'})
+    fetch('index.html?perf-base=20260901-pass3',{cache:'no-store'})
       .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.text()})
       .then(html=>{
         html=html.replace('<title>DruMaster</title>','<title>DruMaster Performance Test</title>');
         html=html.replace(/js\/hit-flash-performance\.js\?v=[^\"]+/,'perf-test/hit-flash-performance.js?v=20260901-pass1');
         html=html.replace(/js\/hihat-open-gauge\.js\?v=[^\"]+/,'perf-test/hihat-open-gauge.js?v=20260901-pass1');
         html=html.replace(/js\/score-playback-auto\.js\?v=[^\"]+/,'perf-test/score-playback-auto.js?v=20260901-pass1');
+        html=html.replace(/(<script src="js\/chart-core\.js\?v=[^\"]+"><\/script>)/,'$1<script src="perf-test/perf-pass3-chart-core.js?v=20260901-pass3"></scr'+'ipt>');
         html=html.replace(/(<script src="js\/game-chart\.js\?v=[^\"]+"><\/script>)/,'$1<script src="perf-test/perf-pass2-chart.js?v=20260901-pass2"></scr'+'ipt>');
-        html=html.replace('</body>','<script src="perf-test/perf-pass1.js?v=20260901-pass2"></scr'+'ipt></body>');
+        html=html.replace('</body>','<script src="perf-test/perf-pass1.js?v=20260901-pass3"></scr'+'ipt></body>');
         document.open();
         document.write(html);
         document.close();
