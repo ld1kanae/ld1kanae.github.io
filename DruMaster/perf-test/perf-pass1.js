@@ -8,7 +8,7 @@
   const perfEnabled=params.get("perf")==="1";
   const fpsEnabled=perfEnabled||params.get("fps")==="1";
 
-  document.documentElement.dataset.dmPerfTest="pass7";
+  document.documentElement.dataset.dmPerfTest="pass8";
 
   const stats={
     renderRequests:0,
@@ -23,6 +23,13 @@
     longTasks:0,
     longTaskTotalMs:0,
     maxLongTaskMs:0,
+    tapEvents:0,
+    inputCalls:0,
+    inputTotalMs:0,
+    inputMaxMs:0,
+    playDrumCalls:0,
+    playDrumTotalMs:0,
+    playDrumMaxMs:0,
     startedAt:performance.now(),
     sessionActive:false
   };
@@ -58,6 +65,8 @@
     stats.renderRequests=0;stats.actualRenders=0;stats.suppressedRenders=0;
     stats.frameGapOver20=0;stats.frameGapOver33=0;stats.frameGapOver50=0;stats.maxRenderGapMs=0;
     stats.peakActiveVoices=0;stats.longTasks=0;stats.longTaskTotalMs=0;stats.maxLongTaskMs=0;
+    stats.tapEvents=0;stats.inputCalls=0;stats.inputTotalMs=0;stats.inputMaxMs=0;
+    stats.playDrumCalls=0;stats.playDrumTotalMs=0;stats.playDrumMaxMs=0;
     stats.startedAt=now;stats.sessionActive=true;
     lastActual=0;nextRender=0;
     resetFpsWindow(now);
@@ -99,7 +108,7 @@
 
   if(isTouch){
     const style=document.createElement("style");
-    style.dataset.dmPerfPass="7";
+    style.dataset.dmPerfPass="8";
     style.textContent=`
       @media (hover:none) and (pointer:coarse) and (max-width:900px){
         .game #chartWrap{
@@ -110,6 +119,39 @@
       }
     `;
     document.head.appendChild(style);
+  }
+
+  if(perfEnabled){
+    addEventListener("pointerdown",e=>{
+      const target=e.target;
+      if(target instanceof Element&&target.closest("#game")&&stats.sessionActive)stats.tapEvents++;
+    },true);
+
+    if(typeof playDrum==="function"){
+      const rawPlayDrum=playDrum;
+      playDrum=function(...args){
+        const started=performance.now();
+        try{return rawPlayDrum.apply(this,args)}
+        finally{
+          const d=performance.now()-started;
+          stats.playDrumCalls++;stats.playDrumTotalMs+=d;
+          if(d>stats.playDrumMaxMs)stats.playDrumMaxMs=d;
+        }
+      };
+    }
+
+    if(typeof input==="function"){
+      const rawInput=input;
+      input=function(...args){
+        const started=performance.now();
+        try{return rawInput.apply(this,args)}
+        finally{
+          const d=performance.now()-started;
+          stats.inputCalls++;stats.inputTotalMs+=d;
+          if(d>stats.inputMaxMs)stats.inputMaxMs=d;
+        }
+      };
+    }
   }
 
   if(perfEnabled&&typeof PerformanceObserver==="function"){
@@ -141,13 +183,14 @@
       if(perfEnabled&&isRunning&&ts-lastAudioSample>=250){
         lastAudioSample=ts;
         const audio=globalThis.DruMasterAudioControl?.getStats?.();
-        if(audio?.activeVoices>stats.peakActiveVoices)stats.peakActiveVoices=audio.activeVoices;
+        const active=audio?.activeVoices||0;
+        if(active>stats.peakActiveVoices)stats.peakActiveVoices=active;
       }
     });
   }
 
   globalThis.DruMasterPerfTest={
-    version:"20260901-pass7",
+    version:"20260901-pass8",
     stats,
     resetSession,
     snapshot(){
@@ -155,7 +198,8 @@
       const graph=globalThis.DruMasterPerfChartPass2?.stats||null;
       const core=globalThis.DruMasterPerfChartCorePass3||null;
       const audio=globalThis.DruMasterAudioControl?.getStats?.()||null;
-      if(audio?.activeVoices>stats.peakActiveVoices)stats.peakActiveVoices=audio.activeVoices;
+      const active=audio?.activeVoices||0;
+      if(active>stats.peakActiveVoices)stats.peakActiveVoices=active;
       const memory=performance?.memory;
       const tickerSnapshot=ticker?.snapshot?.()||null;
       const animations=globalThis.DruMasterPerfAnimationPool?.stats||null;
@@ -163,6 +207,10 @@
       try{if(typeof current==="function"&&typeof running!=="undefined"&&running)songSec=current()}catch{}
       return {
         ...stats,
+        inputAvgMs:stats.inputCalls?+(stats.inputTotalMs/stats.inputCalls).toFixed(3):0,
+        inputMaxMs:+stats.inputMaxMs.toFixed(3),
+        playDrumAvgMs:stats.playDrumCalls?+(stats.playDrumTotalMs/stats.playDrumCalls).toFixed(3):0,
+        playDrumMaxMs:+stats.playDrumMaxMs.toFixed(3),
         maxRenderGapMs:+stats.maxRenderGapMs.toFixed(2),
         longTaskTotalMs:+stats.longTaskTotalMs.toFixed(1),
         maxLongTaskMs:+stats.maxLongTaskMs.toFixed(1),
@@ -216,7 +264,7 @@
       const s=globalThis.DruMasterPerfTest.snapshot();
       if(!perfEnabled){
         overlay.textContent=[
-          `FPS PASS7  song ${s.songSec??"-"}s`,
+          `FPS PASS8  song ${s.songSec??"-"}s`,
           `display ${s.displayHz1s??"-"} Hz  (5s ${s.displayHz5s??"-"})`,
           `chart   ${s.chartFps1s} fps (5s ${s.chartFps5s})`,
           `request ${s.drawRequestFps1s}/s`,
@@ -224,17 +272,17 @@
         ].join("\n");
         return;
       }
-      const voices=s.audio?.activeVoices??"-";
+      const a=s.audio||{};
       overlay.textContent=[
-        `PASS7  song ${s.songSec??"-"}s`,
+        `PASS8  song ${s.songSec??"-"}s  taps ${s.tapEvents}`,
         `display ${s.displayHz1s??"-"}Hz  chart ${s.chartFps1s}fps (5s ${s.chartFps5s})`,
         `request ${s.drawRequestFps1s}/s  >50 ${s.frameGapOver50}  max ${s.maxRenderGapMs}ms`,
-        `ticker tasks ${s.tickerTaskCount??"-"}  max ${s.tickerMaxBatchMs??"-"}ms`,
-        `voices ${voices}  peak ${s.peakActiveVoices}`,
-        `long ${s.longTasks}  max ${s.maxLongTaskMs}ms`,
-        `heap ${s.jsHeapUsedMB??"-"}/${s.jsHeapTotalMB??"-"} MB`,
-        `anim new ${s.animationCreated??"-"}  reuse ${s.animationReused??"-"}`,
-        `topology ${s.topologyBuilds??"-"}`
+        `input avg/max ${s.inputAvgMs}/${s.inputMaxMs}ms`,
+        `audio avg/max ${s.playDrumAvgMs}/${s.playDrumMaxMs}ms`,
+        `voices ${a.activeVoices??"-"} peak ${a.peakActiveVoices??s.peakActiveVoices}  gainPool ${a.pooledGainNodes??"-"}`,
+        `sources ${a.totalSourcesCreated??"-"} ended ${a.totalVoicesEnded??"-"}`,
+        `long ${s.longTasks} max ${s.maxLongTaskMs}ms  heap ${s.jsHeapUsedMB??"-"}/${s.jsHeapTotalMB??"-"}MB`,
+        `anim new ${s.animationCreated??"-"} reuse ${s.animationReused??"-"}`
       ].join("\n");
     };
 
