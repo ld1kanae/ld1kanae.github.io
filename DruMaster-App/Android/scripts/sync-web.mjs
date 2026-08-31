@@ -39,19 +39,53 @@ async function walk(dir) {
 
 await walk(target);
 
-// Verify every score-playback MIDI gzip reference in the packaged registry
-// resolves to a real packaged file. This catches filename/reference drift at
-// build time instead of producing HTTP 404 on-device.
+// Score Playback on the Web uses the gzip MIDI to reduce network transfer.
+// In the Android package every chart.mid is already embedded locally, so the
+// gzip path adds no benefit and introduces a second Android asset-serving
+// path. Use the embedded raw MIDI directly for Score Playback and its offline
+// cache. This is an Android-copy-only patch; DruMaster/ remains untouched.
+const scorePlaybackPath = join(target, 'js', 'score-playback.js');
+let scorePlayback = await readFile(scorePlaybackPath, 'utf8');
+const webMidiLoader = `      const r=await nativeFetch(song.midiGzip,{cache:"force-cache"});\n      if(!r.ok)throw Error(\`${'${song.title}'} の楽譜を取得できません（HTTP ${'${r.status}'}）\`);\n      if(typeof DecompressionStream!=="function")throw Error("このブラウザではMIDI展開機能を利用できません");\n      const ab=await new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();`;
+const androidMidiLoader = `      const r=await nativeFetch(song.midi,{cache:"force-cache"});\n      if(!r.ok)throw Error(\`${'${song.title}'} の楽譜を取得できません（HTTP ${'${r.status}'}）\`);\n      const ab=await r.arrayBuffer();`;
+if (!scorePlayback.includes(webMidiLoader)) {
+  throw new Error('Android score-playback raw-MIDI patch target was not found');
+}
+scorePlayback = scorePlayback.replace(webMidiLoader, androidMidiLoader);
+await writeFile(scorePlaybackPath, scorePlayback, 'utf8');
+
+const scoreCachePath = join(target, 'js', 'score-playback-offline-cache.js');
+let scoreCache = await readFile(scoreCachePath, 'utf8');
+const webDescriptor = '    addDescriptor(song.midiGzip,`midi:${song.id}:${song.midiGzip}`);';
+const androidDescriptor = '    addDescriptor(song.midi,`midi:${song.id}:${song.midi}`);';
+if (!scoreCache.includes(webDescriptor)) {
+  throw new Error('Android score-playback cache raw-MIDI patch target was not found');
+}
+scoreCache = scoreCache.replace(webDescriptor, androidDescriptor);
+await writeFile(scoreCachePath, scoreCache, 'utf8');
+
+// Verify every score-playback raw MIDI reference exists in the packaged copy.
 const registryPath = join(target, 'songs', 'registry.json');
 const registry = JSON.parse(await readFile(registryPath, 'utf8'));
 for (const song of Object.values(registry)) {
-  const ref = String(song?.midiGzip || '');
-  if (!ref) continue;
-  const relativePath = ref.split(/[?#]/, 1)[0];
+  const rawRef = String(song?.midi || '');
+  if (!rawRef) throw new Error(`Android packaged raw MIDI reference is missing for ${song?.id || song?.title || 'unknown'}`);
+  const rawPath = rawRef.split(/[?#]/, 1)[0];
   try {
-    await access(join(target, relativePath));
+    await access(join(target, rawPath));
   } catch {
-    throw new Error(`Android packaged MIDI gzip is missing for ${song?.id || song?.title || 'unknown'}: ${relativePath}`);
+    throw new Error(`Android packaged raw MIDI is missing for ${song?.id || song?.title || 'unknown'}: ${rawPath}`);
+  }
+
+  // Keep validating the renamed gzip copy too because normal gameplay can use
+  // it before falling back to raw MIDI.
+  const gzipRef = String(song?.midiGzip || '');
+  if (!gzipRef) continue;
+  const gzipPath = gzipRef.split(/[?#]/, 1)[0];
+  try {
+    await access(join(target, gzipPath));
+  } catch {
+    throw new Error(`Android packaged MIDI gzip is missing for ${song?.id || song?.title || 'unknown'}: ${gzipPath}`);
   }
 }
 
@@ -123,9 +157,18 @@ const packagedFallback = await readFile(drumFallbackPath, 'utf8');
 if (packagedFallback.includes('pathPrefix') || packagedFallback.includes('embeddedDrumManifest')) {
   throw new Error('Android drum manifest fallback was not disabled');
 }
+const packagedScorePlayback = await readFile(scorePlaybackPath, 'utf8');
+if (packagedScorePlayback.includes('nativeFetch(song.midiGzip')) {
+  throw new Error('Android Score Playback still fetches midiGzip');
+}
+const packagedScoreCache = await readFile(scoreCachePath, 'utf8');
+if (packagedScoreCache.includes('addDescriptor(song.midiGzip')) {
+  throw new Error('Android Score Playback cache still targets midiGzip');
+}
 
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
 console.log('Android package transform: *.mid.gz → *.mid.gzip (packaged copy only; dot preserved)');
-console.log('Android package validation: all registry midiGzip references resolve to packaged files');
+console.log('Android package transform: Score Playback uses embedded raw chart.mid files');
+console.log('Android package validation: all registry raw MIDI and midiGzip references resolve to packaged files');
 console.log('Android package transform: split game-drum source → one-element wav.paths for assets/drumsound-v2.wav');
 console.log('Android package transform: Web drum manifest fallback disabled');
