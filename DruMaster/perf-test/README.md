@@ -33,13 +33,14 @@ Priority: **S** common likely bottleneck; **A** substantial CPU/GC/layout/memory
 | Cache `noteVisual()` results | A | B/A | Pass 3 |
 | Cache static chart lane background/labels | B | A | Pass 4 |
 | Mobile backing-store DPR 2 -> 1.5 in test environment | B | A/B | Pass 4 |
-| Add progressive-degradation metrics: frame gaps, long tasks, heap, active voices | S | A | Pass 4 |
+| Add progressive-degradation metrics | S | A | Pass 4 |
 | Consolidate 3 independent perpetual rAF watchers into one shared ticker | B | S | Pass 5 |
-| In-page mobile diagnostics overlay for 30s+ degradation | S | A | Pass 5 |
 | Precompute/reuse simultaneous-note offset topology while preserving hit-dependent shift | B | A | Pass 6 |
+| Reuse WAAPI Animation objects for repeated hit/score/tap effects | A | A | Pass 7 |
+| Live 1 s / 5 s display-Hz and chart-FPS measurement, reset at gameplay start | S | A | Pass 7 |
 | Score Playback decoded AudioBuffer LRU / eviction | B | A | Planned |
-| Web Audio drum mixer / reduced AudioNode-per-hit architecture | C | S/A if Pass 6 does not help | Next audio candidate |
-| Simplify mobile glow/filter/blend if paint/composite remains dominant | A | B | Trace-dependent |
+| Web Audio drum mixer / reduced AudioNode-per-hit architecture | C | A | Audio candidate if main-thread passes fail |
+| Simplify mobile glow/filter/text-shadow if paint remains dominant | A/B | A/B | Next visual candidate |
 | Active drum-voice limiting/stealing | C | A | Avoid unless voice count is proven excessive; can cut sustain |
 | Replace CSS root rotation with native landscape in packaged Android build | C | B | Long-term |
 | Replace global monkey-patch architecture with explicit runtime modules | C | A/C | Long-term |
@@ -51,77 +52,106 @@ Priority: **S** common likely bottleneck; **A** substantial CPU/GC/layout/memory
 - Pass 3: cached `noteVisual(type, group, scale)`.
 - Pass 4: cached static chart lane background/labels, lowered test-only mobile Canvas DPR cap 2 -> 1.5, and added progressive-degradation diagnostics.
 
-Pass 4 did not materially change the reported symptom: play starts normally, begins stuttering at roughly 30 seconds, then worsens toward the end.
+Pass 4 did not materially change the progressive symptom.
 
 ## Pass 5 — shared perpetual ticker
 
-Three independent perpetual rAF watchers were consolidated into one shared ticker:
+Three independent perpetual rAF watchers were consolidated into one shared ticker: kick goal synchronization, normal-play kick judgement watcher, and Score Playback note/Auto watcher. Their cursor logic and timing thresholds were preserved.
 
-1. kick goal synchronization,
-2. normal-play kick judgement watcher,
-3. Score Playback note/Auto watcher.
+### Device evidence after Pass 5
 
-Their cursor logic and timing thresholds were preserved. Pass 5 also added an on-device `?perf=1` overlay.
-
-### Device evidence captured after Pass 5
-
-At roughly 74.6 song seconds the diagnostic overlay showed approximately:
+At roughly 74.6 song seconds:
 
 - render rate ~50.9/s,
-- `>50 ms` frame gaps: 23,
+- `>50 ms` gaps: 23,
 - max render gap: 123.7 ms,
-- shared ticker ~56.2/s,
-- ticker task batch max 15.6 ms,
+- ticker ~56.2/s,
+- ticker batch max 15.6 ms,
 - current drum voices 8, peak 21,
-- Long Tasks 6, max roughly 368 ms,
-- JS heap 35.6 / 37.8 MB.
+- heap 35.6 / 37.8 MB.
 
-Interpretation:
-
-- Voice count is not monotonically exploding; peak 21 is not enough evidence to justify cutting sustain.
-- Shared ticker work itself is not the large stall; its measured batch max was only 15.6 ms.
-- The important signal is main-thread stalls together with heap sitting near its current allocated ceiling.
-- This raises the probability of allocation/GC pressure rather than a simple constant GPU load or an ever-growing AudioNode count.
+This reduced the probability that the shared ticker or monotonically growing voice count was the primary cause.
 
 ## Pass 6 — remove per-frame simultaneous-note topology allocation
 
-### Target
+Before Pass 6, `simultaneousNoteOffsets()` allocated new outer/nested Maps, a WeakMap, strings, slot objects and arrays on every call. Pass 6 builds the tick/lane/slot topology once per chart configuration and reuses it while still respecting current visibility and `note.hit` state.
 
-Before Pass 6, `simultaneousNoteOffsets()` allocated a new outer `Map`, nested `Map`s, a `WeakMap`, string keys, slot objects, slot arrays, and a sorted slot array on every call. It is called once from the main chart draw and again when KICK/AUTO notes are redrawn, so this generated short-lived objects continuously for the entire song.
+The current nanairo MIDI parses as 1,758 drum notes. The old and new offset algorithms were compared across 2,000 randomized visible ranges and randomized hit states; offsets matched in all tested cases.
+
+### Device evidence after Pass 6
+
+The user reported the first slight audible/visual stutter around song 19 seconds. The screenshot showed approximately:
+
+- old cumulative render rate 41.7/s,
+- shared ticker 58.1/s,
+- `>50 ms` gap count 1, max 69.8 ms,
+- ticker batch max 15.9 ms,
+- current drum voices 5, peak 9,
+- heap 9.5 / 9.5 MB,
+- Long Task display 6, max about 358 ms.
+
+The key comparison is that ticker/rAF delivery was still near a 60 Hz display while chart rendering was already much lower. Therefore the app was actually dropping chart frames rather than simply running on a low-refresh panel.
+
+The old Long Task counters started at page load, so the displayed 6 / 358 ms may include loading/startup work. Pass 7 fixes this measurement flaw by resetting gameplay metrics when `running` changes from false to true and ignoring pre-session Long Task entries.
+
+## Pass 7 — repeated animation reuse + real FPS measurement
+
+### Reason
+
+Even after Pass 6, current drum voices were only 5 with peak 9 at the first stutter point. At the same time, several visual paths still created fresh Web Animations objects on every hit:
+
+- kit-body hit flash,
+- goal/lane hit glow,
+- kick flash,
+- mobile tap feedback,
+- numeric score pulse.
+
+These animations are short-lived and repeated at drum-note frequency, making them a plausible source of allocation/GC and style/animation bookkeeping pressure on the main thread.
 
 ### Included
 
-- Build tick/lane/slot topology once per notes array + group map + width scale + hidden-type configuration.
-- Store stable note-to-slot metadata in a `WeakMap` once.
-- Each frame only updates the current visible range / hit-state epoch and answers `.get(note)` from the reusable topology view.
-- A preceding simultaneous slot contributes width only if at least one of its notes is currently visible and, when `skipHit` is enabled, still unhit. This preserves the existing behavior where remaining simultaneous notes shift after another slot is hit.
-- No judgement, MIDI clock, chart position, note width, or hit-state semantics are changed.
+1. **Reusable WAAPI pool**
+   - A test-only `Element.prototype.animate` adapter intercepts only explicitly recognized DruMaster effect elements.
+   - First use creates the native `Animation`; later hits restart the same object with updated keyframes/timing rather than allocating a new `Animation` object.
+   - Non-DruMaster animations continue directly to the native implementation.
+   - Counters `animationCreated`, `animationReused`, and `animationRecreated` are exposed for verification.
 
-### Semantic regression check
+2. **Gameplay-session metric reset**
+   - FPS/gap/Long Task/peak-voice metrics reset at actual play start instead of page load.
+   - Pause does not reset the session.
+   - Pre-game loading Long Tasks are excluded from gameplay Long Task totals.
 
-The supplied/current nanairo MIDI was parsed as 1,758 drum notes. The old and new offset algorithms were compared across 2,000 randomized visible ranges and randomized hit states. The resulting offsets matched in all tested cases.
+3. **Real-time FPS separation**
+   - `displayHz1s` / `displayHz5s`: actual `requestAnimationFrame` delivery rate from the shared ticker. This approximates the browser/display refresh cadence available to the app.
+   - `chartFps1s` / `chartFps5s`: actual successful DruMaster chart renders after the mobile <=60 fps cap. This is the useful in-game rendering FPS.
+   - `drawRequestFps1s`: how often the gameplay/score loop requested a draw. Comparing request rate to chart FPS reveals whether frames are being suppressed or the caller itself is late.
 
-### New diagnostics
-
-`?perf=1` now shows `PASS6` and reports `topologyBuilds` / simultaneous offset call counts. `topologyBuilds` should remain very small after warm-up rather than increasing every frame.
+4. **Low-overhead FPS-only mode**
+   - `?fps=1` shows only display Hz, chart FPS, draw request rate and >50 ms gaps.
+   - It does not enable Long Task observation or full diagnostic console logging.
+   - `?perf=1` remains the full diagnostic mode and also shows animation-pool reuse.
 
 ## Audio interpretation
 
-Current production audio creates one `AudioBufferSourceNode` + `GainNode` per drum hit and retains it until the sample tail ends. This remains the next major candidate if Pass 6 does not materially reduce the progressive stutter. However, blindly stopping older voices would cut cymbal/open-hat sustain, so any audio pass should reduce node-management overhead without shortening audible tails.
+Production audio still creates one `AudioBufferSourceNode` + `GainNode` per drum hit. However the first-stutter screenshot showed only 5 active voices and peak 9, so active voice accumulation is not currently the strongest explanation. Audio-node creation churn remains a later candidate if the main-thread animation/paint passes do not improve the symptom.
 
 ## Test procedure
-
-Use the same song/mode and play at least 60-90 seconds.
 
 Normal test URL:
 
 - `DruMaster/perf-test.html`
 
-Diagnostic URL:
+Lightweight FPS measurement:
+
+- `DruMaster/perf-test.html?fps=1`
+
+Full diagnostics:
 
 - `DruMaster/perf-test.html?perf=1`
 
-For Pass 6, compare the same 60-90 second section. If stutter remains, capture the overlay after it becomes obvious. The most useful fields are `>50`, `max`, `long`, `heap`, `voices/peak`, and `topology`.
+For Pass 7, capture around the first audible stutter and later severe stutter. The key values are `display`, `chart`, `request`, `>50`, `long`, `heap`, and `anim new/reuse`.
+
+A healthy 60 Hz case should be roughly: display ~60 Hz, draw requests ~60/s, chart ~60 fps, with very few >50 ms gaps. If display remains ~60 Hz but chart falls to ~40-50 fps, the rendering/main-loop path is still the bottleneck.
 
 ## Promotion rule
 
