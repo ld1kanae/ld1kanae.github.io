@@ -34,6 +34,7 @@
     let slot=fxByTarget.get(target);
     if(slot)return slot;
     const fx=document.createElement("span");
+    fx.className="dm-reusable-hit-fx";
     const [left,top]=originFor(target);
     fx.setAttribute("aria-hidden","true");
     Object.assign(fx.style,{
@@ -61,9 +62,5 @@
 
   flashPart=rawFlashPart;
 
-  /* Performance-test-only raw entry point. judgement.js later wraps the global
-     flashPart() to add goal-line feedback; score playback already emits that
-     feedback separately, so it needs the raw reusable kit flash without a
-     second judgement pass or a forced layout. */
   globalThis.DruMasterHitFlash={flash:rawFlashPart};
 })();
