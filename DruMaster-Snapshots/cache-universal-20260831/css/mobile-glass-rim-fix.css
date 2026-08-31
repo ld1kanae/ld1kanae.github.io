@@ -1,0 +1,34 @@
+/* Mobile-only correction for tap rim geometry.
+   The rim SVG lives inside the real button and must use exactly the same box. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .glass-hover-wrap > .glass-hover-rim-svg{
+    display:none!important;
+  }
+
+  .glass-hover-wrap > button > .glass-hover-rim-svg,
+  #pause.glass-hover-inline > .glass-hover-rim-svg{
+    position:absolute!important;
+    inset:0!important;
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+    z-index:4!important;
+    pointer-events:none!important;
+    overflow:visible!important;
+    display:block!important;
+  }
+
+  .glass-hover-wrap > button > .glass-hover-rim-svg rect,
+  #pause.glass-hover-inline > .glass-hover-rim-svg rect{
+    fill:none!important;
+    vector-effect:non-scaling-stroke;
+  }
+}

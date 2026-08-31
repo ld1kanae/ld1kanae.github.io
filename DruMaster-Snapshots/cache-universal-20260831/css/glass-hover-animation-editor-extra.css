@@ -1,0 +1,22 @@
+/* Preview-only extensions for hover animation editor. */
+.face-flash{
+  top:0!important;
+  bottom:0!important;
+  left:50%!important;
+  right:auto!important;
+  width:var(--flash-width,100%)!important;
+  transform:translateX(-50%)!important;
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,.22) 12%,
+      rgba(255,255,255,.92) 38%,
+      rgba(222,246,255,.36) 62%,
+      rgba(255,255,255,.20) 88%,
+      transparent 100%),
+    linear-gradient(180deg,rgba(255,255,255,.36),rgba(222,246,255,.14) 46%,rgba(255,255,255,.28))!important;
+  mix-blend-mode:screen;
+}
+.element-card.has-extra{grid-template-columns:minmax(180px,1fr) repeat(6,minmax(90px,.7fr))}
+@media(max-width:1050px){.element-card.has-extra{grid-template-columns:repeat(3,minmax(0,1fr))}.element-card.has-extra .element-title{grid-column:1/-1}}
+@media(max-width:700px){.element-card.has-extra{grid-template-columns:repeat(2,minmax(0,1fr))}}

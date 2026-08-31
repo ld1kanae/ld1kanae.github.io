@@ -1,0 +1,152 @@
+.performance-mode-option{display:flex!important}
+body[data-score-playback="1"] .score{display:none!important}
+
+#scorePlaybackControls{display:none;align-items:center;gap:6px;margin-left:10px;margin-right:0}
+body[data-score-playback="1"] #scorePlaybackControls{display:flex;margin-left:auto}
+body[data-score-playback="1"] #scorePlaybackControls>button{
+  width:42px!important;min-width:42px!important;max-width:42px!important;
+  height:42px!important;min-height:42px!important;max-height:42px!important;
+  padding:0!important;margin:0!important;display:grid!important;place-items:center!important;
+  border-radius:12px!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap{
+  width:42px!important;min-width:42px!important;max-width:42px!important;
+  height:42px!important;min-height:42px!important;max-height:42px!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>button{
+  width:42px!important;min-width:42px!important;max-width:42px!important;
+  height:42px!important;min-height:42px!important;max-height:42px!important;
+  padding:0!important;margin:0!important;display:grid!important;place-items:center!important;
+  border-radius:12px!important;
+}
+body[data-score-playback="1"] .transport-icon{
+  position:absolute!important;left:50%!important;top:50%!important;z-index:20!important;
+  width:20px;height:20px;display:block;overflow:visible;pointer-events:none;
+  margin:0!important;transform:translate(-50%,-50%)!important;
+  fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;
+}
+body[data-score-playback="1"] .transport-icon .fill{fill:currentColor;stroke:none}
+body[data-score-playback="1"] #scoreLoop[data-loop="all"],
+body[data-score-playback="1"] #scoreLoop[data-loop="one"]{color:#73cfff!important}
+
+#scoreHeaderLoading{
+  display:none;
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  z-index:20;
+  pointer-events:none;
+  white-space:nowrap;
+  color:#8996a5;
+  font:700 10px/1 system-ui,sans-serif;
+  letter-spacing:.06em;
+  opacity:.72;
+  text-shadow:0 1px 3px #000b;
+}
+body[data-score-playback="1"] #scoreHeaderLoading.show{display:block}
+
+#scorePlaybackBusy{display:none;position:absolute;right:9px;bottom:7px;z-index:12;padding:4px 8px;border-radius:999px;background:#071019d9;border:1px solid #73839766;color:#b9c7d7;font:800 8px/1 system-ui,sans-serif;letter-spacing:.12em;pointer-events:none}
+body[data-score-playback="1"][data-score-loading="1"] #scorePlaybackBusy{display:block}
+
+#scoreSeekWrap{display:none;position:absolute;left:50%;top:calc(100% + 12px);bottom:auto;z-index:15;width:min(720px,88%);height:28px;transform:translateX(-50%);align-items:center;gap:8px;padding:3px 10px;border-radius:999px;background:#06101ac2;border:1px solid #64788b55;backdrop-filter:blur(5px);touch-action:none}
+body[data-score-playback="1"] #scoreSeekWrap{display:flex}
+
+/* Spectrum positions stay fixed across the full seekbar.
+   The unreached section is covered by an opaque neutral gray. */
+#scoreSeek{
+  --score-range-progress:0%;
+  --score-unreached:#343c44;
+  --score-spectrum:linear-gradient(90deg,
+    #d759a8 0%,
+    #cf6f8b 14%,
+    #bfbc4b 29%,
+    #6bb77e 43%,
+    #47c9be 57%,
+    #4095cf 71%,
+    #4d65be 86%,
+    #c25cc5 100%);
+  flex:1;
+  min-width:0;
+  height:16px;
+  margin:0;
+  appearance:none;
+  -webkit-appearance:none;
+  background:transparent;
+  accent-color:#c25cc5;
+  touch-action:none
+}
+#scoreSeek::-webkit-slider-runnable-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      transparent var(--score-range-progress),
+      var(--score-unreached) var(--score-range-progress),
+      var(--score-unreached) 100%),
+    var(--score-spectrum);
+  background-size:100% 100%,100% 100%;
+  background-repeat:no-repeat
+}
+#scoreSeek::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:15px;
+  height:15px;
+  margin-top:-5px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
+#scoreSeek::-moz-range-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      transparent var(--score-range-progress),
+      var(--score-unreached) var(--score-range-progress),
+      var(--score-unreached) 100%),
+    var(--score-spectrum);
+  background-size:100% 100%,100% 100%;
+  background-repeat:no-repeat
+}
+#scoreSeek::-moz-range-progress{
+  height:7px;
+  border:0;
+  border-radius:999px;
+  background:transparent
+}
+#scoreSeek::-moz-range-thumb{
+  width:15px;
+  height:15px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
+#scoreSeekTime{min-width:72px;text-align:right;color:#b9c7d7;font:800 9px/1 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}
+body[data-score-playback="1"] #judgementFx{display:none!important}
+body[data-score-playback="1"] #chartWrap{cursor:ew-resize;touch-action:none;overflow:visible}
+body[data-score-playback="1"] #chart{touch-action:none}
+
+@media (hover:none) and (pointer:coarse){
+  #scorePlaybackControls{gap:4px;margin-left:5px;margin-right:0}
+  body[data-score-playback="1"] #scorePlaybackControls{margin-left:auto}
+  body[data-score-playback="1"] #scorePlaybackControls>button{
+    width:26px!important;min-width:26px!important;max-width:26px!important;
+    height:26px!important;min-height:26px!important;max-height:26px!important;border-radius:6px!important;
+  }
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap,
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>button{
+    width:26px!important;min-width:26px!important;max-width:26px!important;
+    height:26px!important;min-height:26px!important;max-height:26px!important;
+  }
+  body[data-score-playback="1"] .transport-icon{width:14px;height:14px;stroke-width:2.25}
+  #scoreHeaderLoading{font-size:8px;letter-spacing:.04em;opacity:.68}
+  #scoreSeekWrap{top:calc(100% + 9px);width:min(500px,86%);height:25px;padding:2px 8px}
+  #scoreSeekTime{min-width:64px;font-size:8px}
+  body[data-score-playback="1"] .song-hud{column-gap:5px}
+}

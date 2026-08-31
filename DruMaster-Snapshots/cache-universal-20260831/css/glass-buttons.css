@@ -1,0 +1,185 @@
+@import url("glass-hover-final.css?v=20260828-singleoutline2");
+/* Production glass controls. Material matches the approved rollback preview.
+   Drum hit targets stay transparent and are intentionally excluded. */
+@property --glass-hover-fade{
+  syntax:"<number>";
+  inherits:false;
+  initial-value:0;
+}
+
+#start,
+#pause,
+#scorePlaybackControls button,
+#pausePanel button,
+.result-actions button,
+.mic-cal-actions button{
+  --glass-hover-fade:0;
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  -webkit-tap-highlight-color:transparent!important;
+  touch-action:manipulation;
+  border:1px solid rgba(22,39,48,.88)!important;
+  border-radius:999px!important;
+  color:#eef3f7!important;
+  background:
+    linear-gradient(0deg,
+      rgb(255 255 255 / calc(.25 * var(--glass-hover-fade))) 0%,
+      rgb(255 255 255 / calc(.21 * var(--glass-hover-fade))) 28%,
+      rgb(255 255 255 / calc(.16 * var(--glass-hover-fade))) 58%,
+      rgb(255 255 255 / calc(.10 * var(--glass-hover-fade))) 100%),
+    linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(255,255,255,.10) 100%),
+    rgba(7,17,24,.27)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(203,230,245,.92),
+    inset 0 -1px 0 rgba(184,209,225,.88),
+    inset 1px 0 0 rgba(8,20,27,.54),
+    inset -1px 0 0 rgba(8,20,27,.54),
+    0 0 0 1px rgba(0,8,13,.88),
+    0 0 0 2px rgba(0,49,57,.10),
+    0 0 0 3px rgba(8,16,62,.065),
+    0 8px 20px rgba(0,0,0,.34)!important;
+  backdrop-filter:blur(12px) saturate(101%);
+  -webkit-backdrop-filter:blur(12px) saturate(101%);
+  text-shadow:0 1px 2px rgba(0,0,0,.76)!important;
+  transition:
+    --glass-hover-fade .20s ease,
+    transform .20s ease,
+    color .20s ease,
+    text-shadow .20s ease!important;
+}
+
+#pause,
+#scorePlaybackControls button{
+  border-radius:12px!important;
+  color:#eef3f7!important;
+}
+
+#start::before,
+#scorePlaybackControls button::before,
+#pausePanel button::before,
+.result-actions button::before,
+.mic-cal-actions button::before{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  pointer-events:none;
+  inset:4px 5px 3px;
+  border-radius:inherit;
+  background:rgba(0,8,13,.20);
+  filter:blur(9px);
+  transform:translateY(7%);
+}
+
+#start::after,
+#scorePlaybackControls button::after,
+#pausePanel button::after,
+.result-actions button::after,
+.mic-cal-actions button::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:2px;
+  border-radius:inherit;
+  background:transparent!important;
+  box-shadow:
+    inset 0 -8px 10px -9px rgba(210,232,240,.10),
+    inset 5px -5px 10px -11px rgba(182,216,228,.07),
+    inset -5px -5px 10px -11px rgba(182,216,228,.07)!important;
+  filter:blur(1.4px);
+}
+
+@media (hover:hover) and (pointer:fine){
+  #start:hover:not(:disabled),
+  #pause:hover,
+  #scorePlaybackControls button:hover,
+  #pausePanel button:hover,
+  .result-actions button:hover,
+  .mic-cal-actions button:hover:not(:disabled){
+    --glass-hover-fade:1;
+  }
+}
+
+#start:active:not(:disabled),
+#pause:active,
+#scorePlaybackControls button:active,
+#pausePanel button:active,
+.result-actions button:active,
+.mic-cal-actions button:active:not(:disabled){
+  transform:translateY(1px) scale(.988)!important;
+}
+
+#start:focus,
+#pause:focus,
+#scorePlaybackControls button:focus,
+#pausePanel button:focus,
+.result-actions button:focus,
+.mic-cal-actions button:focus{
+  -webkit-tap-highlight-color:transparent!important;
+}
+#start:focus-visible,
+#pause:focus-visible,
+#scorePlaybackControls button:focus-visible,
+#pausePanel button:focus-visible,
+.result-actions button:focus-visible,
+.mic-cal-actions button:focus-visible{
+  outline:2px solid rgba(205,232,244,.72)!important;
+  outline-offset:3px;
+}
+
+#start:disabled,
+.mic-cal-actions button:disabled{
+  filter:saturate(.4) brightness(.72);
+  color:#708090!important;
+  opacity:.68;
+  box-shadow:
+    inset 0 1px 0 rgba(180,200,215,.24),
+    inset 0 -1px 0 rgba(100,120,138,.18),
+    0 0 0 1px rgba(0,8,13,.72)!important;
+}
+
+@media (hover:none) and (pointer:coarse){
+  #start,
+  #pause,
+  #scorePlaybackControls button,
+  #pausePanel button,
+  .result-actions button,
+  .mic-cal-actions button{
+    --glass-hover-fade:0;
+    -webkit-tap-highlight-color:rgba(0,0,0,0)!important;
+    user-select:none;
+    -webkit-user-select:none;
+    border-width:.75px!important;
+    box-shadow:
+      inset 0 .75px 0 rgba(203,230,245,.92),
+      inset 0 -.75px 0 rgba(184,209,225,.88),
+      inset .75px 0 0 rgba(8,20,27,.54),
+      inset -.75px 0 0 rgba(8,20,27,.54),
+      0 0 0 .75px rgba(0,8,13,.88),
+      0 0 0 1.6px rgba(0,49,57,.09),
+      0 0 0 2.4px rgba(8,16,62,.055),
+      0 8px 20px rgba(0,0,0,.34)!important;
+  }
+
+  /* The PC material includes a separate blurred horizontal halo. On a phone
+     that layer reads as an unrelated oval around the control, so suppress it.
+     The animated rim SVG and face sheen remain and follow the real button box. */
+  .glass-hover-wrap>.glass-hover-drop{
+    display:none!important;
+    opacity:0!important;
+  }
+
+  /* The animated rim SVG is a sibling of wrapped buttons. Scale the wrapper,
+     not only the button, so the face and rim remain in one coordinate box. */
+  .glass-hover-wrap{
+    transform-origin:center center;
+    transition:transform .20s ease!important;
+  }
+  .glass-hover-wrap>button:active{
+    transform:none!important;
+  }
+  .glass-hover-wrap:has(>button:active:not(:disabled)){
+    transform:translateY(1px) scale(.988)!important;
+  }
+}

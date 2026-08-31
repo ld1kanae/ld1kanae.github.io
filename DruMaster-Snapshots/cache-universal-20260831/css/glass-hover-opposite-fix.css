@@ -1,0 +1,92 @@
+/* Preview-only correction: paired rim highlights are normalized to a 100-unit
+   perimeter and the second highlight is always exactly 50 units away. */
+.rim-svg rect[pathLength="100"]{vector-effect:non-scaling-stroke}
+
+.rim-spark-a,.rim-spark-b{stroke-dasharray:6 94}
+.rim-glint-a,.rim-glint-b{stroke-dasharray:11 89}
+
+.anim-a.demo-active .rim-spark-a,.anim-a:hover .rim-spark-a,.anim-a:focus-visible .rim-spark-a{
+  animation:rimOppositeSparkA 1.02s linear .10s both!important;
+}
+.anim-a.demo-active .rim-spark-b,.anim-a:hover .rim-spark-b,.anim-a:focus-visible .rim-spark-b{
+  animation:rimOppositeSparkB 1.02s linear .10s both!important;
+}
+@keyframes rimOppositeSparkA{
+  0%{opacity:0;stroke-dashoffset:0}
+  16%{opacity:.92}
+  38%{opacity:1}
+  76%{opacity:.88}
+  100%{opacity:0;stroke-dashoffset:-100}
+}
+@keyframes rimOppositeSparkB{
+  0%{opacity:0;stroke-dashoffset:-50}
+  16%{opacity:.92}
+  38%{opacity:1}
+  76%{opacity:.88}
+  100%{opacity:0;stroke-dashoffset:-150}
+}
+
+.anim-b.demo-active .rim-glint-a,.anim-b:hover .rim-glint-a,.anim-b:focus-visible .rim-glint-a{
+  animation:rimOppositeGlintA .84s linear .12s both!important;
+}
+.anim-b.demo-active .rim-glint-b,.anim-b:hover .rim-glint-b,.anim-b:focus-visible .rim-glint-b{
+  animation:rimOppositeGlintB .84s linear .12s both!important;
+}
+@keyframes rimOppositeGlintA{
+  0%{opacity:0;stroke-dashoffset:0}
+  18%{opacity:.96}
+  45%{opacity:1}
+  80%{opacity:.90}
+  100%{opacity:0;stroke-dashoffset:-55}
+}
+@keyframes rimOppositeGlintB{
+  0%{opacity:0;stroke-dashoffset:-50}
+  18%{opacity:.96}
+  45%{opacity:1}
+  80%{opacity:.90}
+  100%{opacity:0;stroke-dashoffset:-105}
+}
+
+/* E reuses the same pair, still locked at exactly half a perimeter apart. */
+.anim-e.demo-active .rim-glint-a,.anim-e:hover .rim-glint-a,.anim-e:focus-visible .rim-glint-a{
+  animation:rimOppositeGlintEA .66s linear .04s both!important;
+}
+.anim-e.demo-active .rim-glint-b,.anim-e:hover .rim-glint-b,.anim-e:focus-visible .rim-glint-b{
+  animation:rimOppositeGlintEB .66s linear .04s both!important;
+}
+@keyframes rimOppositeGlintEA{
+  0%{opacity:0;stroke-dashoffset:0}
+  18%{opacity:1}
+  52%{opacity:.94}
+  100%{opacity:0;stroke-dashoffset:-48}
+}
+@keyframes rimOppositeGlintEB{
+  0%{opacity:0;stroke-dashoffset:-50}
+  18%{opacity:1}
+  52%{opacity:.94}
+  100%{opacity:0;stroke-dashoffset:-98}
+}
+
+/* "25% speed" means quarter of the original travel velocity, not 25% slower.
+   Original face sweep 0.72s -> 2.88s; crisp sweep 0.52s -> 2.08s. */
+.anim-c.demo-active .face-sheen,.anim-c:hover .face-sheen,.anim-c:focus-visible .face-sheen{
+  animation:faceSweepQuarter 2.88s linear .04s both!important;
+}
+.anim-e.demo-active .face-sheen,.anim-e:hover .face-sheen,.anim-e:focus-visible .face-sheen{
+  animation:faceSweepQuarter 2.88s linear .04s both!important;
+}
+@keyframes faceSweepQuarter{
+  0%{opacity:0;left:-58%}
+  9%{opacity:.90}
+  78%{opacity:.72}
+  100%{opacity:0;left:122%}
+}
+.anim-f.demo-active .face-line,.anim-f:hover .face-line,.anim-f:focus-visible .face-line{
+  animation:crispSweepQuarter 2.08s linear .06s both!important;
+}
+@keyframes crispSweepQuarter{
+  0%{opacity:0;left:-32%}
+  10%{opacity:1}
+  78%{opacity:.75}
+  100%{opacity:0;left:116%}
+}

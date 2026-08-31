@@ -1,0 +1,36 @@
+/* Production setup-screen DruMaster logo. */
+.setup .brand{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 auto!important;
+  width:clamp(320px,35vw,430px)!important;
+  height:76px!important;
+  min-height:76px!important;
+  max-height:76px!important;
+  background:none!important;
+  overflow:visible!important;
+}
+.setup .brand>span,
+.setup .brand>b{display:none!important}
+.setup .brand>img,
+.setup .brand>svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  pointer-events:none!important;
+  user-select:none!important;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .setup .brand{
+    width:270px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+  }
+}

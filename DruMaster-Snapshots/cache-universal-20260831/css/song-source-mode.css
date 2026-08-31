@@ -1,0 +1,23 @@
+/* Song-source availability states. Kept separate from the general disabled-state system. */
+.setup .option.source-locked{
+  opacity:.46!important;
+  cursor:not-allowed!important;
+}
+.setup .option.source-locked>i{
+  filter:grayscale(1) saturate(0)!important;
+}
+.setup .option.source-locked>i::before{
+  opacity:.42!important;
+}
+.setup .option.source-locked>b,
+.setup .option.source-locked>span{
+  color:#8b949f!important;
+}
+.setup .option.source-locked input:disabled+i{
+  cursor:not-allowed!important;
+}
+.setup .option.source-locked .setup-toggle-face-sheen,
+.setup .option.source-locked .setup-toggle-face-flash,
+.setup .option.source-locked .setup-toggle-rim-svg{
+  display:none!important;
+}

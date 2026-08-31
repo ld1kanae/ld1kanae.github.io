@@ -1,0 +1,380 @@
+/* Approved setup-screen visual treatment.
+   Scope: setup background, glass material, approved accent colors, requested BPM alignment,
+   dropdown material, approved CV1 seekbar styling, and approved toggle glass values only. */
+.setup{
+  --setup-seek-cyan:#66D5FF;
+  --setup-seek-mid:#8C8AFF;
+  --setup-seek-violet:#BAA4FF;
+  --setup-glass-alpha:.08;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 25%,rgba(72,129,190,.23),transparent 31%),
+    radial-gradient(circle at 22% 82%,rgba(177,104,255,.14),transparent 36%),
+    radial-gradient(circle at 68% 84%,rgba(72,190,225,.09),transparent 35%),
+    linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%);
+}
+
+/* PC Moving Lights. Smartphone keeps the same background static. */
+.setup>.setup-moving-lights{position:absolute;z-index:0;inset:0;overflow:hidden;pointer-events:none}
+.setup>.setup-moving-lights .setup-light{position:absolute;border-radius:50%;filter:blur(46px);mix-blend-mode:screen;opacity:.74;will-change:transform}
+.setup>.setup-moving-lights .setup-light-cyan{
+  width:44vw;height:44vw;min-width:340px;min-height:340px;max-width:580px;max-height:580px;left:28%;top:14%;
+  background:radial-gradient(circle,rgba(112,228,255,.22) 0%,rgba(112,228,255,.11) 36%,rgba(112,228,255,0) 74%);
+  animation:setupCyanMove 13s ease-in-out infinite alternate
+}
+.setup>.setup-moving-lights .setup-light-blue{
+  width:37vw;height:37vw;min-width:290px;min-height:290px;max-width:500px;max-height:500px;left:43%;top:25%;
+  background:radial-gradient(circle,rgba(99,156,255,.20) 0%,rgba(99,156,255,.10) 40%,rgba(99,156,255,0) 75%);
+  animation:setupBlueMove 15s ease-in-out infinite alternate
+}
+.setup>.setup-moving-lights .setup-light-violet{
+  width:42vw;height:42vw;min-width:320px;min-height:320px;max-width:560px;max-height:560px;left:14%;top:41%;
+  background:radial-gradient(circle,rgba(192,135,255,.18) 0%,rgba(192,135,255,.10) 38%,rgba(192,135,255,0) 75%);
+  animation:setupVioletMove 14s ease-in-out infinite alternate
+}
+@keyframes setupCyanMove{0%{transform:translate(-30px,8px) scale(1)}50%{transform:translate(18px,-16px) scale(1.06)}100%{transform:translate(40px,16px) scale(1.01)}}
+@keyframes setupBlueMove{0%{transform:translate(10px,-18px) scale(1)}50%{transform:translate(-24px,10px) scale(1.04)}100%{transform:translate(22px,22px) scale(.99)}}
+@keyframes setupVioletMove{0%{transform:translate(-14px,20px) scale(1)}50%{transform:translate(20px,-12px) scale(1.05)}100%{transform:translate(46px,4px) scale(1)}}
+.setup>*:not(.setup-moving-lights){position:relative;z-index:2}
+
+/* Glass material: alpha .08, no chromatic split, outline-only edge. */
+.setup .song-card,
+.setup .options,
+.setup .tempo-box,
+.setup .volume-box{
+  border-color:rgba(180,216,239,.275);
+  background:rgba(220,240,255,var(--setup-glass-alpha));
+  -webkit-backdrop-filter:saturate(100%);
+  backdrop-filter:saturate(100%);
+  box-shadow:none
+}
+.setup .song-card::before,
+.setup .options::before,
+.setup .tempo-box::before,
+.setup .volume-box::before{content:none!important}
+
+/* Toggle values approved in preview-toggle-glass-editor.html.
+   OFF: transparent outline only.
+   ON: static spectral glass with preserved white thumb. */
+.setup .option i{
+  width:48px;
+  height:27px;
+  border:1px solid rgba(180,216,239,.28);
+  border-radius:999px;
+  background:transparent;
+  box-shadow:none;
+  overflow:hidden
+}
+.setup .option i::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  opacity:0;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.095) 46%,
+      rgba(255,255,255,.28) 100%),
+    linear-gradient(297.5deg,
+      rgba(215,89,168,.90) 0%,
+      rgba(207,111,139,.72) 9%,
+      rgba(191,188,75,.66) 27%,
+      rgba(107,183,126,.60) 42%,
+      rgba(71,201,190,.78) 52%,
+      rgba(64,149,207,.81) 67%,
+      rgba(77,101,190,.75) 82%,
+      rgba(194,92,197,.84) 100%);
+  background-size:100% 100%,115% 100%;
+  background-position:center,50% center;
+  background-repeat:no-repeat;
+  transition:opacity .2s ease
+}
+.setup .option input:checked+i{
+  border-color:rgba(220,231,241,.60);
+  background:transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(223,225,227,.76),
+    inset 0 -1px 0 rgba(228,230,232,.78),
+    inset 1px 0 0 rgba(154,161,168,.42),
+    inset -1px 0 0 rgba(154,161,168,.42),
+    0 2px 7px rgba(105,194,238,.52)
+}
+.setup .option input:checked+i::before{opacity:1}
+.setup .option i::after{
+  z-index:2;
+  width:20px;
+  height:20px;
+  left:3px;
+  top:3px
+}
+.setup .option input:checked+i::after{transform:translateX(22px)}
+
+/* Match VOLUME typography to the existing TEMPO typography. */
+.setup .volume-box>div:first-child>span{
+  font-size:inherit;
+  font-weight:inherit;
+  letter-spacing:normal
+}
+.setup .volume-box>div:first-child>strong{
+  font-size:inherit;
+  color:inherit;
+  font-variant-numeric:normal
+}
+
+/* Song / mode dropdowns: flat cool navy, no black gradient. */
+.setup #songSelect,
+.setup #performanceModeSelect{
+  background:#152639;
+  border-color:#3a5169;
+  color:#e7eef7;
+}
+.setup #songSelect option,
+.setup #performanceModeSelect option{
+  background:#152639;
+  color:#e7eef7;
+}
+.setup #songSelect option:checked,
+.setup #performanceModeSelect option:checked{
+  background-color:#29465d!important;
+  background-image:linear-gradient(#29465d,#29465d)!important;
+  color:#fff!important;
+  box-shadow:0 0 0 100vmax #29465d inset!important;
+}
+.setup .mobile-custom-select-trigger{
+  background:#16253a;
+  border-color:#3a5169;
+}
+.setup .mobile-custom-select-menu{background:#16253a}
+
+/* Approved CV1 seekbar geometry and color. */
+.setup .tempo-box input[type="range"],
+.setup .volume-box input[type="range"]{
+  appearance:none;
+  -webkit-appearance:none;
+  height:16px;
+  background:transparent;
+  accent-color:var(--setup-seek-mid)
+}
+.setup .tempo-box input[type="range"]::-webkit-slider-runnable-track,
+.setup .volume-box input[type="range"]::-webkit-slider-runnable-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:linear-gradient(90deg,
+    var(--setup-seek-cyan) 0%,
+    var(--setup-seek-mid) var(--setup-range-mid,29%),
+    var(--setup-seek-violet) var(--setup-range-progress,56%),
+    rgba(255,255,255,.18) var(--setup-range-progress,56%),
+    rgba(255,255,255,.18) 100%)
+}
+.setup .tempo-box input[type="range"]::-webkit-slider-thumb,
+.setup .volume-box input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:15px;
+  height:15px;
+  margin-top:-5px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
+.setup .tempo-box input[type="range"]::-moz-range-track,
+.setup .volume-box input[type="range"]::-moz-range-track{
+  height:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:rgba(255,255,255,.18)
+}
+.setup .tempo-box input[type="range"]::-moz-range-progress,
+.setup .volume-box input[type="range"]::-moz-range-progress{
+  height:7px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--setup-seek-cyan),var(--setup-seek-mid) 52%,var(--setup-seek-violet))
+}
+.setup .tempo-box input[type="range"]::-moz-range-thumb,
+.setup .volume-box input[type="range"]::-moz-range-thumb{
+  width:15px;
+  height:15px;
+  border:0;
+  border-radius:50%;
+  background:#D7F3FF;
+  box-shadow:0 0 10px rgba(123,220,255,.2)
+}
+
+/* Desktop uses the DOM selector too, because the native Windows/Chromium popup
+   forces the selected row to the system accent blue. Include touch-capable PCs
+   whose primary pointer is reported as coarse. */
+@media (min-width:901px), (hover:hover), (pointer:fine), (any-hover:hover), (any-pointer:fine){
+  .setup #songSelect.mobile-native-select-hidden{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    overflow:hidden!important
+  }
+  .setup .song-custom-select{
+    position:relative;
+    display:block;
+    width:100%;
+    min-width:0;
+    margin-top:9px;
+    isolation:isolate
+  }
+  .setup .mobile-custom-select.open{z-index:1000}
+  .setup .mobile-select-host-open{z-index:1002!important}
+  .setup .mobile-custom-select-trigger{
+    position:relative;
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:34px;
+    padding:9px 30px 9px 11px;
+    border:1px solid #3a5169;
+    border-radius:8px;
+    background:#152639;
+    color:#e7eef7;
+    box-shadow:none;
+    text-align:left;
+    font:700 12px/1.2 system-ui,sans-serif;
+    letter-spacing:.03em;
+    white-space:nowrap;
+    overflow:hidden
+  }
+  .setup .mobile-custom-select-trigger:focus-visible{
+    outline:none;
+    border-color:#5ebdff;
+    box-shadow:0 0 0 2px #38a9ff22
+  }
+  .setup .mobile-custom-select-value{
+    display:block;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap
+  }
+  .setup .mobile-custom-select-arrow{
+    position:absolute;
+    right:12px;
+    top:50%;
+    width:7px;
+    height:7px;
+    border-right:2px solid #aebdca;
+    border-bottom:2px solid #aebdca;
+    transform:translateY(-68%) rotate(45deg)
+  }
+  .setup .mobile-custom-select.open .mobile-custom-select-arrow{
+    transform:translateY(-30%) rotate(225deg)
+  }
+  .setup .mobile-custom-select-menu{
+    position:absolute;
+    left:0;
+    right:0;
+    top:calc(100% + 1px);
+    z-index:1001;
+    max-height:180px;
+    overflow:auto;
+    padding:0;
+    border:1px solid #3a5169;
+    border-radius:0;
+    background:#152639;
+    box-shadow:0 8px 18px rgba(0,0,0,.42);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none
+  }
+  .setup .mobile-custom-select.open-up .mobile-custom-select-menu{
+    top:auto;
+    bottom:calc(100% + 1px)
+  }
+  .setup .mobile-custom-select-menu[hidden]{display:none!important}
+  .setup .mobile-custom-select-option{
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:25px;
+    padding:5px 11px;
+    border:0;
+    border-radius:0;
+    background:#152639;
+    color:#e7eef7;
+    text-align:left;
+    font:700 12px/1.2 system-ui,sans-serif;
+    letter-spacing:.03em;
+    white-space:normal
+  }
+  .setup .mobile-custom-select-option.selected{
+    background:#29465d!important;
+    color:#fff!important;
+    box-shadow:none!important
+  }
+  .setup .mobile-custom-select-option:hover:not(.selected){
+    background:#1c3145;
+    color:#fff
+  }
+  .setup .mobile-custom-select-option:disabled{color:#667382;opacity:.55}
+}
+
+/* Fixed project requirement: PC setup BPM is centered on the combined title + artist two-line block. */
+@media (hover:hover) and (pointer:fine){
+  .setup .song-card .setup-bpm{
+    top:45px;
+    bottom:auto;
+    right:12px;
+    transform:translateY(-50%)
+  }
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .setup>.setup-moving-lights{display:none!important}
+
+  /* Keep the smartphone custom dropdown on the exact same navy palette as
+     the PC native select, including the expanded list and selected row. */
+  /* The setup cards are sibling stacking contexts. Raise the card that owns
+     an open dropdown so later cards (for example TEMPO) cannot paint over it. */
+  .setup .mobile-select-host-open{
+    z-index:1002!important;
+  }
+  .setup .mobile-custom-select{
+    isolation:isolate;
+  }
+  .setup .mobile-custom-select-trigger,
+  .setup .mobile-custom-select-menu,
+  .setup .mobile-custom-select-option{
+    background-color:#0d1824!important;
+    background-image:none!important;
+    color:#e7eef7!important;
+    opacity:1!important
+  }
+  .setup .mobile-custom-select-menu{
+    border-color:#3a5169!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    filter:none!important
+  }
+  .setup .mobile-custom-select-trigger{border-color:#3a5169!important}
+  .setup .mobile-custom-select-option.selected{
+    background:#29465d!important;
+    color:#fff!important
+  }
+
+  .setup .option>i{
+    width:42px!important;
+    height:23px!important;
+    border-radius:999px!important
+  }
+  .setup .option>i::after{
+    width:16px!important;
+    height:16px!important;
+    left:3px!important;
+    top:3px!important
+  }
+  .setup .option input:checked+i::after{transform:translateX(20px)!important}
+}
+@media (prefers-reduced-motion:reduce){.setup>.setup-moving-lights .setup-light{animation:none!important}}

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#070b11">
+  <title>Ray Sync Debug | DruMaster</title>
+  <link rel="stylesheet" href="css/ray-sync-debug-v3.css?v=20260827-raysync6">
+</head>
+<body>
+  <main class="debug-shell">
+    <header class="debug-header">
+      <div>
+        <p class="eyebrow">DRUMASTER / DEBUG TOOL</p>
+        <h1>Ray — Drum Stem / MIDI Sync</h1>
+        <p class="sub">伴奏ドラム波形と譜面MIDIを同一時間軸で比較します。波形ドラッグ／数値入力とも0.1ms単位です。</p>
+      </div>
+      <div class="status-box"><span>STATUS</span><b id="status">読み込み中…</b></div>
+    </header>
+
+    <section class="control-grid">
+      <div class="panel transport-panel">
+        <span class="panel-label">TRANSPORT</span>
+        <div class="transport-row">
+          <button id="play" class="primary" disabled>▶ 再生</button>
+          <button id="stop" disabled>■ 停止</button>
+          <button id="back1" disabled>−1秒</button>
+          <button id="forward1" disabled>＋1秒</button>
+          <output id="timeText">00:00.000 / 00:00.000</output>
+        </div>
+        <p class="midi-audio-note">MIDI AUDIO：本番ゲームと同じドラム音源</p>
+      </div>
+
+      <div class="panel offset-panel">
+        <span class="panel-label">STEM OFFSET</span>
+        <div class="offset-main">
+          <label><input id="offset" type="number" min="-500" max="500" step="0.1" value="2.0"><span>ms</span></label>
+          <strong id="offsetReadout">+2.0 ms</strong>
+        </div>
+        <div class="offset-buttons">
+          <button data-nudge="-1">−1.0</button><button data-nudge="-0.1">−0.1</button>
+          <button data-nudge="0.1">＋0.1</button><button data-nudge="1">＋1.0</button>
+          <button id="resetOffset">本番値 2.0ms</button><button id="copyOffset">値をコピー</button>
+        </div>
+        <p>＋：ドラムstemを前へ ／ −：ドラムstemを後ろへ。MIDIドラムは固定です。</p>
+      </div>
+
+      <div class="panel view-panel">
+        <span class="panel-label">VIEW</span>
+        <label>拡大率 <input id="zoom" type="range" min="80" max="3000" step="10" value="260"><output id="zoomText">260 px/s</output></label>
+        <label>表示位置 <input id="scroll" type="range" min="0" max="1000" step="1" value="0"></label>
+        <p>ホイール：時間移動 ／ Ctrl＋ホイール：ズーム</p>
+      </div>
+    </section>
+
+    <section class="timeline-panel">
+      <div class="timeline-head">
+        <div><b>DRUM STEM WAVEFORM / MIDI</b><span>songs/ray/drums.mp3 + Ray chart</span></div>
+        <div class="legend"><span class="wave-key">WAVE</span><span class="midi-key">MIDI NOTE</span><span class="cursor-key">PLAYHEAD</span></div>
+      </div>
+      <canvas id="timeline" aria-label="Rayドラム波形とMIDI譜面"></canvas>
+      <p class="drag-help">上段の波形を左右ドラッグ＝stemオフセット調整 ｜ 下段クリック＝シーク</p>
+    </section>
+
+    <section class="info-grid">
+      <div class="panel"><span class="panel-label">MIDI</span><dl><dt>Notes</dt><dd id="noteCount">—</dd><dt>Tempo</dt><dd id="tempoInfo">—</dd><dt>Last note</dt><dd id="lastNote">—</dd></dl></div>
+      <div class="panel"><span class="panel-label">AUDIO</span><dl><dt>Duration</dt><dd id="audioDuration">—</dd><dt>Sample rate</dt><dd id="sampleRate">—</dd><dt>Production</dt><dd>+2.0 ms</dd></dl></div>
+      <div class="panel copy-panel"><span class="panel-label">PRODUCTION VALUE</span><code id="productionCode">playback:{stemOffsetSec:0.002}</code><button id="copyCode">コードをコピー</button></div>
+    </section>
+  </main>
+  <script src="js/ray-sync-debug-v3.js?v=20260827-raysync6"></script>
+  <script src="js/ray-sync-offset0.js?v=20260827-rayoffset2"></script>
+</body>
+</html>

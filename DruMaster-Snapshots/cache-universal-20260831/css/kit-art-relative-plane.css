@@ -1,0 +1,78 @@
+/* Shared artwork coordinate plane.
+   All artwork uses the calibrated 1280x854 kit plane. Splash stays behind both
+   the bass-drum overlay and the main drum-kit artwork, matching the approved
+   layer-test composition. */
+.kit-stage>.kit-art-plane{
+  position:absolute!important;
+  z-index:1!important;
+  left:50%!important;
+  right:auto!important;
+  top:-8%!important;
+  bottom:auto!important;
+  width:auto!important;
+  height:118%!important;
+  aspect-ratio:1280 / 854!important;
+  transform:translateX(-50%)!important;
+  transform-origin:50% 50%!important;
+  isolation:isolate!important;
+  pointer-events:none!important;
+}
+
+.kit-stage>.kit-art-plane>.splash-cymbal-art{
+  position:absolute!important;
+  z-index:0!important;
+  left:34.1%!important;
+  top:26.5%!important;
+  width:57.1%!important;
+  height:auto!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  transform:translate(-50%,-50%) rotate(13deg)!important;
+  transform-origin:50% 50%!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+
+.kit-stage>.kit-art-plane>.bass-drum-art{
+  position:absolute!important;
+  z-index:1!important;
+  left:47.56%!important;
+  top:34.48%!important;
+  width:37.69%!important;
+  height:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  transform:translateX(-50%)!important;
+  transform-origin:50% 50%!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+
+.kit-stage>.kit-art-plane>.kit-art{
+  position:absolute!important;
+  z-index:2!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:none!important;
+  pointer-events:none!important;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .kit-stage>.kit-art-plane{
+    top:0!important;
+    height:100%!important;
+  }
+  .kit-stage>.kit-art-plane>.bass-drum-art{
+    left:47.74%!important;
+    top:39.20%!important;
+    width:37.10%!important;
+  }
+}

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111e">
+<title>DruMaster Setup Visual Directions</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#050912;color:#eef4fb;font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{overflow:auto}
+.labbar{position:fixed;z-index:30;left:18px;top:18px;display:flex;gap:7px;align-items:center;padding:8px;border:1px solid rgba(160,186,212,.18);border-radius:14px;background:rgba(4,9,16,.72);backdrop-filter:blur(14px);box-shadow:0 10px 28px rgba(0,0,0,.28)}
+.labbar button{border:1px solid rgba(145,169,195,.28);border-radius:10px;background:#0b1320;color:#9eacbd;padding:8px 12px;font:800 10px/1 system-ui;letter-spacing:.1em;cursor:pointer}
+.labbar button.active{color:#fff;border-color:rgba(193,222,245,.62);box-shadow:0 0 13px rgba(111,202,255,.18);background:#162234}
+.labnote{position:fixed;z-index:30;right:18px;top:18px;padding:9px 12px;border-radius:10px;background:rgba(4,9,16,.66);border:1px solid rgba(160,186,212,.14);color:#738296;font-size:10px;letter-spacing:.08em;backdrop-filter:blur(12px)}
+.stage{--bg0:#080b11;--bg1:#0d121b;--bg2:#1d2e45;--panel:#111721;--panel2:#0b111a;--border:#2d3745;--text:#f4f7fb;--sub:#929cab;--muted:#7f8996;--blue:#38a9ff;--logo-dru:#778493;--logo-master1:#f0f6fc;--logo-master2:#a7d8ff;position:relative;min-height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:54px 24px 30px;background:radial-gradient(circle at 50% 30%,var(--bg2) 0,var(--bg1) 35%,var(--bg0) 75%);transition:background .35s ease}
+.stage::before,.stage::after{content:"";position:absolute;pointer-events:none;opacity:0;transition:opacity .35s ease}
+.stage>*{position:relative;z-index:2}
+.stage.theme-a{--bg0:#020916;--bg1:#07111e;--bg2:#102238;--panel:rgba(8,17,30,.72);--panel2:rgba(5,11,20,.84);--border:rgba(77,104,132,.52);--text:#eef4fb;--sub:#b6c1d2;--muted:#7b879a;--blue:#61b8f5;--logo-dru:#6a778b;--logo-master1:#edf7ff;--logo-master2:#9fd7ff;background:radial-gradient(circle at 50% 25%,rgba(72,129,190,.22),transparent 31%),radial-gradient(circle at 22% 82%,rgba(177,104,255,.13),transparent 36%),radial-gradient(circle at 68% 84%,rgba(72,190,225,.08),transparent 35%),linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%)}
+.stage.theme-a::before{inset:-35%;opacity:1;background:conic-gradient(from 20deg,transparent,rgba(113,232,255,.045),transparent 18%,rgba(208,122,255,.04),transparent 36%,rgba(255,235,157,.035),transparent 54%);filter:blur(20px);animation:aura 14s linear infinite}
+.stage.theme-a::after{inset:0;opacity:1;background:linear-gradient(90deg,transparent 0 11%,rgba(147,112,232,.04) 18%,transparent 28%,rgba(87,176,235,.055) 39%,transparent 47%,rgba(100,221,255,.045) 57%,transparent 66%,rgba(158,104,232,.04) 78%,transparent 90%);filter:blur(12px)}
+.stage.theme-b{--bg0:#030a14;--bg1:#081321;--bg2:#0d1b2e;--panel:rgba(9,18,31,.78);--panel2:rgba(5,12,21,.88);--border:rgba(65,95,124,.55);--text:#ecf2f8;--sub:#aab6c7;--muted:#6f7d91;--blue:#6ecbff;--logo-dru:#728197;--logo-master1:#eef7ff;--logo-master2:#a3d6ff;background:radial-gradient(circle at 50% 26%,rgba(61,122,179,.20),transparent 32%),radial-gradient(circle at 65% 85%,rgba(83,175,226,.07),transparent 36%),linear-gradient(180deg,#0c1725 0%,#050b14 72%,#030a14 100%)}
+.stage.theme-b::after{inset:0;opacity:1;background:linear-gradient(90deg,transparent 0 24%,rgba(76,167,229,.045) 38%,transparent 48%,rgba(112,184,236,.04) 66%,transparent 78%);filter:blur(16px)}
+.stage.theme-c{--bg0:#030713;--bg1:#0a1020;--bg2:#10162a;--panel:rgba(12,14,31,.73);--panel2:rgba(7,9,21,.88);--border:rgba(91,83,137,.52);--text:#f0f3fa;--sub:#b8b9ce;--muted:#85879e;--blue:#89caff;--logo-dru:#7c7896;--logo-master1:#f6f2ff;--logo-master2:#b5c9ff;background:radial-gradient(circle at 50% 24%,rgba(89,116,202,.19),transparent 32%),radial-gradient(circle at 22% 80%,rgba(163,104,244,.18),transparent 38%),radial-gradient(circle at 75% 76%,rgba(81,214,255,.07),transparent 34%),linear-gradient(180deg,#10162a 0%,#080b18 67%,#030713 100%)}
+.stage.theme-c::before{inset:-35%;opacity:1;background:conic-gradient(from 12deg,transparent,rgba(214,162,255,.052),transparent 18%,rgba(124,223,255,.045),transparent 39%,rgba(240,189,216,.042),transparent 58%);filter:blur(18px);animation:aura 15s linear infinite reverse}
+@keyframes aura{to{transform:rotate(360deg)}}
+.brand{margin-bottom:6px;line-height:.86;letter-spacing:-.07em;white-space:nowrap;transform:translateX(-3px)}
+.brand .dru{font-size:65px;font-weight:300;color:var(--logo-dru);transition:color .3s}
+.brand .master{font-size:67px;font-weight:900;color:transparent;background:linear-gradient(180deg,var(--logo-master1),var(--logo-master2));background-clip:text;-webkit-background-clip:text;filter:drop-shadow(0 0 8px rgba(123,201,255,.08))}
+.tagline{margin:0 0 24px;font-size:10px;letter-spacing:.34em;color:var(--muted)}
+.stack{width:min(480px,88vw);display:flex;flex-direction:column;gap:14px}
+.panel{border:1px solid var(--border);border-radius:17px;background:var(--panel);box-shadow:inset 0 1px 0 rgba(235,247,255,.025),0 14px 32px rgba(0,0,0,.16);backdrop-filter:blur(9px);transition:background .3s,border-color .3s}
+.song{display:grid;grid-template-columns:1fr auto;gap:14px;padding:19px 22px 18px}
+.song h1{margin:0;font-size:25px;color:var(--text)}
+.song p{margin:4px 0 10px;color:var(--sub);font-size:15px}
+.bpm{align-self:start;margin-top:15px;font-size:25px;font-weight:900;color:var(--text)}
+.select{grid-column:1/-1;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border:1px solid rgba(110,139,167,.45);border-radius:8px;background:var(--panel2);color:#dce5ef;font-size:12px;font-weight:700}
+.options{padding:12px 20px}
+.row{min-height:38px;display:flex;align-items:center;border-top:1px solid rgba(255,255,255,.075)}
+.row:first-child{border-top:0}
+.row>span:first-child{flex:1;font-size:16px;color:var(--text)}
+.modebox{min-width:136px;height:28px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(110,139,167,.42);border-radius:8px;background:var(--panel2);font-size:11px}
+.toggle{width:48px;height:26px;border-radius:999px;background:#394657;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+.toggle::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#f4f7fb;box-shadow:0 2px 4px rgba(0,0,0,.28)}
+.toggle.on{background:var(--blue);box-shadow:0 0 12px color-mix(in srgb,var(--blue) 22%,transparent)}
+.toggle.on::after{left:25px}
+.state{width:34px;margin-left:9px;color:var(--muted);font-size:10px;font-weight:800}
+.control{padding:17px 20px 15px}
+.control-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:15px}.control-head strong{font-size:15px}.control.volume .control-head span{font-size:11px;font-weight:900;letter-spacing:.06em}.control.volume .control-head strong{color:var(--sub)}
+.track{height:7px;border-radius:999px;border:1px solid rgba(210,228,240,.48);background:linear-gradient(90deg,var(--blue) 0 var(--value),rgba(122,119,111,.55) var(--value));position:relative}
+.knob{position:absolute;top:50%;left:var(--value);width:15px;height:15px;transform:translate(-50%,-50%);border-radius:50%;background:var(--blue);box-shadow:0 0 9px color-mix(in srgb,var(--blue) 22%,transparent)}
+.scale{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:10px}
+.ready{text-align:center;margin:3px 0 0;color:#8c98aa;font-size:11px}
+.start-wrap{display:flex;justify-content:center;margin-top:-3px}.start{min-width:192px;height:54px;border-radius:999px;border:1px solid rgba(147,185,207,.72);background:linear-gradient(180deg,rgba(30,42,54,.88),rgba(23,31,40,.95));color:#fff;font-weight:900;font-size:17px;letter-spacing:.12em;box-shadow:inset 0 1px 0 rgba(225,240,250,.20),0 10px 25px rgba(0,0,0,.24)}
+.hint{text-align:center;margin:0;color:#5f6b7c;font-size:9px}
+.palette{position:fixed;z-index:30;left:18px;bottom:18px;display:flex;gap:6px;padding:7px;border-radius:12px;border:1px solid rgba(160,186,212,.14);background:rgba(4,9,16,.66);backdrop-filter:blur(12px)}
+.swatch{width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.25)}
+.swatch:nth-child(1){background:#f2beda}.swatch:nth-child(2){background:#e4d66d}.swatch:nth-child(3){background:#7de5ff}.swatch:nth-child(4){background:#79b7ff}.swatch:nth-child(5){background:#c18cff}
+.theme-current .palette{opacity:.35}
+@media(max-width:700px){.labbar{left:10px;top:10px;right:10px;justify-content:center}.labbar button{padding:7px 9px}.labnote,.palette{display:none}.stage{padding-top:78px;justify-content:flex-start}.brand .dru{font-size:48px}.brand .master{font-size:50px}.stack{width:min(460px,94vw)}}
+</style>
+</head>
+<body>
+<nav class="labbar" aria-label="テーマ切替">
+<button data-theme="current" class="active">CURRENT</button>
+<button data-theme="a">A / RESULT MATCH</button>
+<button data-theme="b">B / COOL</button>
+<button data-theme="c">C / VIOLET</button>
+</nav>
+<div class="labnote">PREVIEW ONLY / 本番未適用</div>
+<div class="palette" aria-label="result accent palette"><i class="swatch"></i><i class="swatch"></i><i class="swatch"></i><i class="swatch"></i><i class="swatch"></i></div>
+<main class="stage theme-current" id="stage">
+  <div class="brand"><span class="dru">Dru</span><span class="master">Master</span></div>
+  <p class="tagline">DRUM RHYTHM GAME</p>
+  <div class="stack">
+    <section class="panel song">
+      <div><h1>なないろ</h1><p>BUMP OF CHICKEN</p></div><div class="bpm">♪＝125</div>
+      <div class="select"><span>なないろ — BUMP OF CHICKEN</span><b>⌄</b></div>
+    </section>
+    <section class="panel options">
+      <div class="row"><span>Vocal</span><i class="toggle on"></i><b class="state">ON</b></div>
+      <div class="row"><span>Guide Drums</span><i class="toggle"></i><b class="state">OFF</b></div>
+      <div class="row"><span>Auto</span><i class="toggle on"></i><b class="state">ON</b></div>
+      <div class="row"><span>演奏モード</span><span class="modebox"><b>通常</b><b>⌄</b></span></div>
+    </section>
+    <section class="panel control">
+      <div class="control-head"><span>TEMPO</span><strong>100%</strong></div>
+      <div class="track" style="--value:50%"><i class="knob"></i></div>
+      <div class="scale"><span>80%</span><span>100%</span><span>120%</span></div>
+    </section>
+    <section class="panel control volume">
+      <div class="control-head"><span>VOLUME</span><strong>60%</strong></div>
+      <div class="track" style="--value:60%"><i class="knob"></i></div>
+      <div class="scale"><span>0%</span><span>50%</span><span>100%</span></div>
+    </section>
+    <p class="ready">準備完了・1,757 notes</p>
+    <div class="start-wrap"><button class="start" type="button">START</button></div>
+    <p class="hint">最初のタップで音声を有効にします</p>
+  </div>
+</main>
+<script>
+(()=>{
+ const stage=document.querySelector('#stage');
+ const buttons=[...document.querySelectorAll('[data-theme]')];
+ function apply(name){
+   stage.className='stage theme-'+name;
+   buttons.forEach(b=>b.classList.toggle('active',b.dataset.theme===name));
+ }
+ buttons.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.theme)));
+})();
+</script>
+</body>
+</html>

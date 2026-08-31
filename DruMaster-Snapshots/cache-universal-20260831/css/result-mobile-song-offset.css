@@ -1,0 +1,17 @@
+/* Smartphone result: keep song metadata clear of the forced-landscape safe edge. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  /* Normal result: position offset that survives the reveal transform. */
+  #result:not(.autoplay)>h2,
+  #result:not(.autoplay)>.result-song-sub{
+    position:relative!important;
+    top:18px!important;
+    translate:none!important;
+  }
+
+  /* AUTO PLAY uses absolute positioning from pause-result-readability.css.
+     Override its anchor offsets directly; generic translate is overwritten there. */
+  #result.autoplay{
+    --dm-autoplay-title-y:-164px!important;
+    --dm-autoplay-artist-y:-99px!important;
+  }
+}

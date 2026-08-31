@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#080b11">
+  <title>DruMaster Score Playback Preview</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080b11}
+    iframe{display:block;width:100%;height:100%;border:0;background:#080b11}
+  </style>
+</head>
+<body>
+  <iframe id="preview" src="./?v=20260827-playbackhud1" allow="autoplay; microphone"></iframe>
+  <script>
+  (()=>{
+    const frame=document.querySelector('#preview');
+    let timer=0,entered=false;
+    function enter(){
+      if(entered)return true;
+      const w=frame.contentWindow,d=w?.document;if(!d)return false;
+      const setup=d.querySelector('#setup'),mode=d.querySelector('#performanceModeSelect'),start=d.querySelector('#start');
+      if(setup)setup.style.visibility='hidden';
+      if(!mode||!start)return false;
+      if(mode.value!=='score'){
+        mode.value='score';
+        mode.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      if(start.disabled||typeof start.onclick!=='function')return false;
+      entered=true;
+      clearInterval(timer);
+      start.click();
+      const reveal=setInterval(()=>{
+        const game=d.querySelector('#game');
+        if(game&&!game.classList.contains('hidden')){
+          clearInterval(reveal);
+          if(setup)setup.style.visibility='';
+        }
+      },25);
+      setTimeout(()=>{clearInterval(reveal);if(setup)setup.style.visibility=''},20000);
+      return true;
+    }
+    frame.addEventListener('load',()=>{
+      entered=false;
+      clearInterval(timer);
+      timer=setInterval(enter,35);
+      setTimeout(()=>clearInterval(timer),25000);
+    });
+  })();
+  </script>
+</body>
+</html>

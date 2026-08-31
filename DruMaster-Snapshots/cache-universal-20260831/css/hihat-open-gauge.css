@@ -1,0 +1,60 @@
+/* Hi-hat opening gauge.
+   It lives inside #hitLayer, the same calibrated 1280x854 plane as the hi-hat,
+   so artwork scaling and mobile stage scaling cannot separate them. */
+#hhOpenGauge{
+  position:absolute;
+  z-index:8;
+  left:-1.3%;
+  top:45.35%;
+  width:1.2%;
+  height:20%;
+  min-width:4px;
+  overflow:visible;
+  pointer-events:none;
+  border-radius:0;
+  background:linear-gradient(90deg,
+    #444b52 5%,
+    #2c3136 18%,
+    #ababab 36%,
+    #666e75 47%,
+    #5d656c 62%,
+    #0d0909 86%,
+    #3f464d 92%
+  );
+  box-shadow:
+    inset 1px 0 0 rgba(255,255,255,0.10),
+    inset -1px 0 0 rgba(0,0,0,0.34),
+    0 1px 2px rgba(0,0,0,.38);
+}
+#hhOpenGaugeFill{
+  position:absolute;
+  z-index:1;
+  left:0;
+  right:0;
+  bottom:0;
+  height:100%;
+  min-height:0;
+  transform-origin:50% 100%;
+  transform:scaleY(var(--hh-open-gauge-scale,0));
+  opacity:var(--hh-open-gauge-opacity,.3);
+  background:#52dfcf;
+  box-shadow:0 0 8px rgba(82,223,207,.42),0 0 18px rgba(82,223,207,.24);
+  will-change:transform,opacity;
+}
+#hhOpenGaugeHandle{
+  position:absolute;
+  z-index:2;
+  left:50%;
+  width:180%;
+  height:4%;
+  min-height:5px;
+  transform:translate(-50%,50%);
+  border-radius:0;
+  background:#666d74;
+  border-top:1px solid rgba(177,184,190,.52);
+  border-bottom:1px solid rgba(31,36,41,.78);
+  border-left:1px solid rgba(46,52,58,.65);
+  border-right:1px solid rgba(46,52,58,.65);
+  box-shadow:0 1px 2px rgba(0,0,0,.42);
+  will-change:bottom;
+}

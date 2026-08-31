@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070b11">
+<title>Hover Animation Editor v4 | DruMaster</title>
+<link rel="stylesheet" href="css/glass-hover-animation-editor-v4.css">
+</head>
+<body>
+<main class="lab">
+<header class="lab-head"><p>DRUMASTER / UI MATERIAL LAB</p><h1>Hover Animation Editor</h1><small>本番UIには未適用。基礎ホバーは常時表示し、アニメーション要素だけを編集します。</small><span class="version">EDITOR v4 / HARD-CODED CONTROLS</span></header>
+
+<section class="preview-panel">
+  <div class="preview-label">LIVE PREVIEW</div>
+  <div class="stage-wrap">
+    <div class="demo" id="demo">
+      <i class="drop-glow"></i>
+      <button class="glass-btn" type="button"><i class="face-sheen fx-face-sheen"></i><i class="face-flash fx-face-flash"></i><i class="face-line fx-face-line"></i><span>ホーム</span></button>
+      <svg class="rim-svg" viewBox="0 0 140 34" preserveAspectRatio="none" aria-hidden="true">
+        <rect class="rim-base" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+        <rect class="rim-run fx-rim-run-1" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+        <rect class="rim-run fx-rim-run-2" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+        <rect class="edge-glint fx-edge-glint-1" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+        <rect class="edge-glint fx-edge-glint-2" pathLength="100" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+        <rect class="rim-pulse fx-rim-pulse" x="1.25" y="1.25" width="137.5" height="31.5" rx="16"/>
+      </svg>
+    </div>
+  </div>
+  <div class="transport"><button id="replay" type="button">今すぐ再生</button><label><input id="autoReplay" type="checkbox" checked> 自動再生</label><label>間隔 <input id="interval" type="range" min="3" max="12" step=".5" value="5"><output id="intervalOut">5.0s</output></label></div>
+</section>
+
+<section class="preview-panel">
+  <div class="preview-label">GLOBAL</div>
+  <div class="global-grid"><label class="global-control"><span>虹グラデ角度</span><output id="angleOut">335°</output><input id="spectralAngle" type="range" min="0" max="360" step=".25" value="335"></label><p class="help">0〜360°。本番採用値335°から開始します。</p></div>
+</section>
+
+<section class="preview-panel">
+<div class="preview-label">ANIMATION ELEMENTS / v4</div>
+<p class="panel-note">新項目をHTMLに直接配置しています。青枠が今回追加した項目です。「輪郭を走る1/2」の終了タイミングと「面全体フラッシュ」のフラッシュ幅が必ず画面に表示されます。</p>
+<div class="controls" id="elementControls">
+
+<article class="element-card" data-element="rimRun1">
+<label class="element-title"><input id="rimRun1-enabled" type="checkbox" checked><span><strong>輪郭を走る1</strong><small>開始位置0/100</small></span></label>
+<label class="field"><span>最大透明度</span><output id="rimRun1-opacity-out">0.3</output><input id="rimRun1-opacity" type="range" min="0" max="1" step=".01" value="0.3"></label>
+<label class="field"><span>速度</span><output id="rimRun1-speed-out">150%</output><input id="rimRun1-speed" type="range" min="10" max="300" step="5" value="150"></label>
+<label class="field"><span>Fade In</span><output id="rimRun1-fadeIn-out">1300ms</output><input id="rimRun1-fadeIn" type="range" min="0" max="4000" step="50" value="1300"></label>
+<label class="field"><span>Fade Out</span><output id="rimRun1-fadeOut-out">2500ms</output><input id="rimRun1-fadeOut" type="range" min="0" max="5000" step="50" value="2500"></label>
+<label class="field"><span>開始Delay</span><output id="rimRun1-delay-out">150ms</output><input id="rimRun1-delay" type="range" min="0" max="5000" step="50" value="150"></label>
+<label class="field new-field"><span>終了タイミング</span><output id="rimRun1-endAt-out">4000ms</output><input id="rimRun1-endAt" type="range" min="500" max="10000" step="100" value="4000"></label>
+</article>
+
+<article class="element-card" data-element="rimRun2">
+<label class="element-title"><input id="rimRun2-enabled" type="checkbox" checked><span><strong>輪郭を走る2</strong><small>1の正反対・開始位置50/100</small></span></label>
+<label class="field"><span>最大透明度</span><output id="rimRun2-opacity-out">0.3</output><input id="rimRun2-opacity" type="range" min="0" max="1" step=".01" value="0.3"></label>
+<label class="field"><span>速度</span><output id="rimRun2-speed-out">150%</output><input id="rimRun2-speed" type="range" min="10" max="300" step="5" value="150"></label>
+<label class="field"><span>Fade In</span><output id="rimRun2-fadeIn-out">1300ms</output><input id="rimRun2-fadeIn" type="range" min="0" max="4000" step="50" value="1300"></label>
+<label class="field"><span>Fade Out</span><output id="rimRun2-fadeOut-out">2500ms</output><input id="rimRun2-fadeOut" type="range" min="0" max="5000" step="50" value="2500"></label>
+<label class="field"><span>開始Delay</span><output id="rimRun2-delay-out">150ms</output><input id="rimRun2-delay" type="range" min="0" max="5000" step="50" value="150"></label>
+<label class="field new-field"><span>終了タイミング</span><output id="rimRun2-endAt-out">4000ms</output><input id="rimRun2-endAt" type="range" min="500" max="10000" step="100" value="4000"></label>
+</article>
+
+<article class="element-card" data-element="edge1">
+<label class="element-title"><input id="edge1-enabled" type="checkbox"><span><strong>短い縁光1</strong><small>短いエッジグリント</small></span></label>
+<label class="field"><span>最大透明度</span><output id="edge1-opacity-out">1</output><input id="edge1-opacity" type="range" min="0" max="1" step=".01" value="1"></label>
+<label class="field"><span>速度</span><output id="edge1-speed-out">100%</output><input id="edge1-speed" type="range" min="10" max="300" step="5" value="100"></label>
+<label class="field"><span>Fade In</span><output id="edge1-fadeIn-out">150ms</output><input id="edge1-fadeIn" type="range" min="0" max="4000" step="50" value="150"></label>
+<label class="field"><span>Fade Out</span><output id="edge1-fadeOut-out">200ms</output><input id="edge1-fadeOut" type="range" min="0" max="5000" step="50" value="200"></label>
+<label class="field"><span>開始Delay</span><output id="edge1-delay-out">0ms</output><input id="edge1-delay" type="range" min="0" max="5000" step="50" value="0"></label>
+</article>
+
+<article class="element-card" data-element="edge2">
+<label class="element-title"><input id="edge2-enabled" type="checkbox"><span><strong>短い縁光2</strong><small>1の正反対</small></span></label>
+<label class="field"><span>最大透明度</span><output id="edge2-opacity-out">1</output><input id="edge2-opacity" type="range" min="0" max="1" step=".01" value="1"></label>
+<label class="field"><span>速度</span><output id="edge2-speed-out">100%</output><input id="edge2-speed" type="range" min="10" max="300" step="5" value="100"></label>
+<label class="field"><span>Fade In</span><output id="edge2-fadeIn-out">150ms</output><input id="edge2-fadeIn" type="range" min="0" max="4000" step="50" value="150"></label>
+<label class="field"><span>Fade Out</span><output id="edge2-fadeOut-out">200ms</output><input id="edge2-fadeOut" type="range" min="0" max="5000" step="50" value="200"></label>
+<label class="field"><span>開始Delay</span><output id="edge2-delay-out">0ms</output><input id="edge2-delay" type="range" min="0" max="5000" step="50" value="0"></label>
+</article>
+
+<article class="element-card" data-element="faceSheen">
+<label class="element-title"><input id="faceSheen-enabled" type="checkbox" checked><span><strong>細い斜めの光帯</strong><small>面を横切る反射</small></span></label>
+<label class="field"><span>最大透明度</span><output id="faceSheen-opacity-out">0.7</output><input id="faceSheen-opacity" type="range" min="0" max="1" step=".01" value="0.7"></label>
+<label class="field"><span>速度</span><output id="faceSheen-speed-out">100%</output><input id="faceSheen-speed" type="range" min="10" max="300" step="5" value="100"></label>
+<label class="field"><span>Fade In</span><output id="faceSheen-fadeIn-out">1000ms</output><input id="faceSheen-fadeIn" type="range" min="0" max="4000" step="50" value="1000"></label>
+<label class="field"><span>Fade Out</span><output id="faceSheen-fadeOut-out">1000ms</output><input id="faceSheen-fadeOut" type="range" min="0" max="5000" step="50" value="1000"></label>
+<label class="field"><span>開始Delay</span><output id="faceSheen-delay-out">0ms</output><input id="faceSheen-delay" type="range" min="0" max="5000" step="50" value="0"></label>
+</article>
+
+<article class="element-card" data-element="faceFlash">
+<label class="element-title"><input id="faceFlash-enabled" type="checkbox" checked><span><strong>面全体フラッシュ</strong><small>乳白色の面発光</small></span></label>
+<label class="field"><span>最大透明度</span><output id="faceFlash-opacity-out">0.25</output><input id="faceFlash-opacity" type="range" min="0" max="1" step=".01" value="0.25"></label>
+<label class="field"><span>速度</span><output id="faceFlash-speed-out">100%</output><input id="faceFlash-speed" type="range" min="10" max="300" step="5" value="100"></label>
+<label class="field"><span>Fade In</span><output id="faceFlash-fadeIn-out">1000ms</output><input id="faceFlash-fadeIn" type="range" min="0" max="4000" step="50" value="1000"></label>
+<label class="field"><span>Fade Out</span><output id="faceFlash-fadeOut-out">400ms</output><input id="faceFlash-fadeOut" type="range" min="0" max="5000" step="50" value="400"></label>
+<label class="field"><span>開始Delay</span><output id="faceFlash-delay-out">0ms</output><input id="faceFlash-delay" type="range" min="0" max="5000" step="50" value="0"></label>
+<label class="field new-field"><span>フラッシュ幅</span><output id="faceFlash-width-out">100%</output><input id="faceFlash-width" type="range" min="50" max="300" step="5" value="100"></label>
+</article>
+
+<article class="element-card" data-element="faceLine">
+<label class="element-title"><input id="faceLine-enabled" type="checkbox"><span><strong>細い面反射</strong><small>細く鋭い斜め光線</small></span></label>
+<label class="field"><span>最大透明度</span><output id="faceLine-opacity-out">1</output><input id="faceLine-opacity" type="range" min="0" max="1" step=".01" value="1"></label>
+<label class="field"><span>速度</span><output id="faceLine-speed-out">20%</output><input id="faceLine-speed" type="range" min="10" max="300" step="5" value="20"></label>
+<label class="field"><span>Fade In</span><output id="faceLine-fadeIn-out">200ms</output><input id="faceLine-fadeIn" type="range" min="0" max="4000" step="50" value="200"></label>
+<label class="field"><span>Fade Out</span><output id="faceLine-fadeOut-out">300ms</output><input id="faceLine-fadeOut" type="range" min="0" max="5000" step="50" value="300"></label>
+<label class="field"><span>開始Delay</span><output id="faceLine-delay-out">0ms</output><input id="faceLine-delay" type="range" min="0" max="5000" step="50" value="0"></label>
+</article>
+
+<article class="element-card" data-element="rimPulse">
+<label class="element-title"><input id="rimPulse-enabled" type="checkbox"><span><strong>輪郭全体フラッシュ</strong><small>輪郭全体を白く発光</small></span></label>
+<label class="field"><span>最大透明度</span><output id="rimPulse-opacity-out">1</output><input id="rimPulse-opacity" type="range" min="0" max="1" step=".01" value="1"></label>
+<label class="field"><span>速度</span><output id="rimPulse-speed-out">100%</output><input id="rimPulse-speed" type="range" min="10" max="300" step="5" value="100"></label>
+<label class="field"><span>Fade In</span><output id="rimPulse-fadeIn-out">100ms</output><input id="rimPulse-fadeIn" type="range" min="0" max="4000" step="50" value="100"></label>
+<label class="field"><span>Fade Out</span><output id="rimPulse-fadeOut-out">350ms</output><input id="rimPulse-fadeOut" type="range" min="0" max="5000" step="50" value="350"></label>
+<label class="field"><span>開始Delay</span><output id="rimPulse-delay-out">0ms</output><input id="rimPulse-delay" type="range" min="0" max="5000" step="50" value="0"></label>
+</article>
+</div>
+<div class="copy-row"><button id="copySettings" type="button">設定値をコピー</button><span id="copyStatus"></span></div>
+</section>
+<p class="note">EDITOR v4。新項目はHTMLへ直接埋め込んでいます。本番アプリのアニメーションには未反映です。</p>
+</main>
+<script src="js/glass-hover-animation-editor-v4.js"></script>
+</body>
+</html>

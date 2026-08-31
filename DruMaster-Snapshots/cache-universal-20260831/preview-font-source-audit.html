@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Font Source Audit</title>
+<style>
+:root{color-scheme:dark;--bg:#070b11;--panel:#101722;--panel2:#0c131d;--line:#28384a;--text:#edf4fb;--muted:#8c9bab;--cyan:#67d8ff;--green:#6ee0b3}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{min-height:100vh;background:radial-gradient(circle at 12% 0%,rgba(67,139,201,.15),transparent 32%),radial-gradient(circle at 88% 10%,rgba(153,92,205,.10),transparent 28%),#070b11}
+main{width:min(1500px,96vw);margin:0 auto;padding:28px 0 70px}
+h1{margin:0;font-size:28px;letter-spacing:.03em}.lead{margin:8px 0 6px;color:#9cabb9;font-size:13px;line-height:1.7}.note{margin:0 0 26px;color:#6f8091;font-size:11px}
+.section{margin-top:30px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:12px}.section h2{margin:0;font-size:20px}.count{color:#718294;font-size:11px}
+.audit-list{display:grid;gap:12px}.audit{border:1px solid var(--line);border-radius:15px;background:linear-gradient(180deg,rgba(18,29,42,.92),rgba(10,16,25,.96));overflow:hidden}.audit-top{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(500px,1.9fr) 168px;gap:16px;align-items:stretch;padding:14px}.meta{min-width:0}.meta h3{margin:0 0 7px;font-size:14px}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border:1px solid #33475a;border-radius:999px;color:#aebdca;background:#0a1119;font:700 10px/1.1 ui-monospace,SFMono-Regular,Consolas,monospace}.source{margin-top:9px;color:#6f8192;font-size:10px;line-height:1.45}.previews{display:flex;gap:9px;overflow-x:auto;padding-bottom:2px}.sample{flex:1 0 160px;min-width:160px;border:1px solid #27384a;border-radius:11px;background:#081019;overflow:hidden}.sample-label{padding:5px 7px;border-bottom:1px solid #223141;color:#748699;font-size:9px}.sample-stage{min-height:72px;padding:10px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 20%,rgba(76,141,205,.12),transparent 58%),#09111a}.toggle-control{display:flex;align-items:center;justify-content:center;border-left:1px solid #253648}.toggle-control label{display:flex;align-items:center;gap:9px;color:#b7c5d2;font-size:11px;cursor:pointer}.toggle-control input{width:20px;height:20px;accent-color:#55c9ff}.audit.on{border-color:#47748d;box-shadow:0 0 0 1px rgba(82,198,255,.08)}.audit.on .toggle-control{background:rgba(60,177,229,.045)}
+/* Mini UI shapes */
+.mini-option{width:150px;padding:8px 10px;border:1px solid #324457;border-radius:9px;background:rgba(220,240,255,.06);display:flex;align-items:center;gap:8px}.mini-option .name{flex:1}.mini-option .switch{width:34px;height:18px;border:1px solid #71889a;border-radius:99px}.mini-option .state{color:#8c9aaa}
+.mini-hud{width:170px;height:42px;padding:6px 9px;background:linear-gradient(90deg,#101823ed,#080c13f5);display:grid;grid-template-columns:1fr auto;align-items:center}.mini-hud .song b,.mini-hud .song small{display:block}.mini-hud .bpm{color:#aab8c8}.mini-result{width:170px;padding:9px 11px;background:linear-gradient(180deg,#0d1723,#070b11);text-align:center}.mini-result .ey{color:#98a7ba;letter-spacing:.25em}.mini-result .sub{color:#77879a;letter-spacing:.12em}.mini-load{padding:8px 12px;border-radius:8px;background:#0d151f;color:#9ba6b5}.mini-volume{width:170px;padding:10px 12px;border:1px solid #2d3745;border-radius:10px;background:rgba(220,240,255,.06)}.mini-volume .row{display:flex;justify-content:space-between}.mini-volume .bar{height:5px;margin-top:9px;border-radius:99px;background:linear-gradient(90deg,#66d5ff,#8c8aff 55%,#ffffff2d 55%)}.mini-rank{width:180px;border:1px solid #283748;border-radius:9px;background:#0b141e}.mini-rank .head,.mini-rank .row{display:grid;grid-template-columns:34px 1fr 56px;align-items:center;padding:5px 7px}.mini-rank .head{color:#697788;border-bottom:1px solid #ffffff12}.mini-rank .row{color:#dce6ef}.mini-hint{width:170px}.mini-hint .scale{display:flex;justify-content:space-between;color:#7f8996}.mini-hint .hint{margin-top:7px;text-align:center;color:#67717f}.mini-dropdown{width:170px;border:1px solid #3a5169;border-radius:8px;background:#0d1824;padding:8px 10px;color:#e7eef7}.mini-button{min-width:126px;height:34px;border:1px solid rgba(22,39,48,.88);border-radius:999px;background:rgba(7,17,24,.27);display:grid;place-items:center;color:#eef3f7}.mini-mic-step{width:150px;padding:8px;border:1px solid #283748;border-radius:10px;background:#0c141e;text-align:center}.mini-mic-step .num{display:grid;place-items:center;width:20px;height:20px;margin:0 auto 4px;border:1px solid #46596e;border-radius:50%;color:#9aa9ba}.mini-mic-action{min-width:140px;height:36px;border:1px solid #586a7d;border-radius:999px;background:#131e2b;display:grid;place-items:center}.mini-score-label{text-align:center;color:#8d9caf;letter-spacing:.32em}.mini-note{color:#8190a2}.mini-fingerprint{width:150px;padding:10px;border:1px solid #2b3a49;border-radius:11px;background:#0b141e;text-align:center}.mini-key{min-width:24px;height:22px;padding:0 5px;border:1px solid #ffffff90;border-radius:6px;background:#080c12b8;display:grid;place-items:center}.mini-acoustic{width:170px;padding:10px;border:1px solid #324557;border-radius:12px;background:#08101a;text-align:center}.mini-badge{display:inline-flex;align-items:center;height:17px;padding:0 6px;border:1px solid #6d7d8e;border-radius:999px;background:#121b25}.mini-mono{padding:7px 9px;border:1px solid #314455;border-radius:7px;background:#071019;color:#b9c7d7}.mini-song-card{width:180px;padding:10px 12px;border:1px solid #2d3745;border-radius:11px;background:rgba(220,240,255,.06);position:relative}.mini-song-card h4{margin:0}.mini-song-card .bpm{position:absolute;right:11px;top:9px}.mini-mode-row{width:170px;padding:8px 10px;border:1px solid #324457;border-radius:9px;background:rgba(220,240,255,.06)}.mini-score{width:150px;padding:7px 10px;background:#0b121b;text-align:right}.mini-score small{display:block;color:#8793a0}.mini-score strong{display:block}.mini-judge{font-weight:900;background:linear-gradient(105deg,#fff8ff,#69e9ff,#fff2a3,#d18cff);background-clip:text;-webkit-background-clip:text;color:transparent}.mini-loading{color:#8996a5;letter-spacing:.04em}.mini-option-row{padding:5px 10px;border-radius:6px;background:#29465d;color:#fff;width:150px}
+.output{margin-top:30px;padding:16px;border:1px solid #2a3c4e;border-radius:14px;background:#0b121b}.output h2{margin:0 0 8px;font-size:15px}.output p{margin:0 0 9px;color:#7f90a1;font-size:11px}.output textarea{width:100%;min-height:300px;resize:vertical;border:1px solid #314558;border-radius:9px;background:#060b11;color:#dce7f1;padding:12px;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.actions{display:flex;gap:8px;margin-top:9px}.actions button{border:1px solid #38516a;border-radius:8px;background:#122131;color:#e8f2fa;padding:8px 12px;font-weight:700;cursor:pointer}
+@media(max-width:900px){.audit-top{grid-template-columns:1fr}.toggle-control{border-left:0;border-top:1px solid #253648;padding:10px}.previews{min-width:0}}
+</style>
+</head>
+<body>
+<main>
+<h1>Font / Font-size Commonization Audit</h1>
+<p class="lead">PC版・スマホ版を別々に監査し、現在の最終CSSで <b>font-family と font-size が一致</b>しているのに、別セレクタ／別ファイルで個別指定されている候補だけを並べています。</p>
+<p class="note">font-weight、line-height、letter-spacing、色、余白、形状は判定条件に含めていません。共通化する場合もその差は残す前提です。チェック状態はこのブラウザに保存されます。</p>
+<section class="section"><div class="section-head"><h2>PC版</h2><span class="count" id="pcCount"></span></div><div class="audit-list" id="pcList"></div></section>
+<section class="section"><div class="section-head"><h2>スマホ版</h2><span class="count" id="mobileCount"></span></div><div class="audit-list" id="mobileList"></div></section>
+<section class="output"><h2>選択結果 JSON</h2><p>共通化したいものをONにして、このJSONをそのままチャットへ貼ってください。</p><textarea id="jsonOut" readonly></textarea><div class="actions"><button id="copyBtn">JSONをコピー</button><button id="resetBtn">すべてOFF</button></div></section>
+</main>
+<script>
+const DATA=[
+{platform:'pc',id:'pc-inherited-26-song-title-bpm',label:'曲カード：曲名 ↔ BPM',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'26px',source:'base.css / song-ui.css',samples:[['song-title','曲名'],['song-bpm','BPM']]},
+{platform:'pc',id:'pc-inherited-11-ui-meta',label:'11px UIメタ情報',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'11px',source:'base.css / game-visual.css / result-podium-key-tune.css',samples:[['toggle-state','トグル状態'],['hud-sub','ゲームHUD アーティスト'],['result-eyebrow','RESULT'],['result-sub','リザルト曲サブ情報']]},
+{platform:'pc',id:'pc-inherited-12-state-ranking',label:'12px 状態・数値・ランキング',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'12px',source:'base.css / mode-ui.css / result-podium-key-tune.css',samples:[['load-state','読み込み状態'],['volume-label','VOLUME'],['volume-value','VOLUME数値'],['ranking-row','ランキング行']]},
+{platform:'pc',id:'pc-inherited-10-helper',label:'10px 補助情報',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'10px',source:'base.css / result-ui.css',samples:[['scale','スライダー目盛'],['hint','ヒント'],['ranking-empty','ランキング空表示']]},
+{platform:'pc',id:'pc-inherited-9-ranking-meta',label:'ランキング：9px メタ情報',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'9px',source:'result-ui.css / result-podium-key-tune.css',samples:[['ranking-title-meta','ランキング補足'],['ranking-head','ランキング見出し']]},
+{platform:'pc',id:'pc-system-12-controls',label:'system-ui 12px：操作・HUD',family:'system-ui, sans-serif',size:'12px',source:'setup-visual-final.css / game-ui.css / result-actions-fix.css',samples:[['dropdown','曲名プルダウン'],['hud-bpm','HUD BPM'],['result-button','リザルトボタン']]},
+{platform:'pc',id:'pc-system-11-labels-actions',label:'system-ui 11px：ラベル・操作',family:'system-ui, sans-serif',size:'11px',source:'result-podium-key-tune.css / mic-calibration.css',samples:[['score-label','SCOREラベル'],['mic-step-title','マイク調整ステップ'],['mic-action','マイク調整ボタン']]},
+{platform:'pc',id:'pc-system-10-detail',label:'system-ui 10px：詳細・注記',family:'system-ui, sans-serif',size:'10px',source:'result-podium-key-tune.css / mic-calibration.css / mic-fingerprint.css / game-visual.css',samples:[['result-note','No Score注記'],['mic-detail','マイク詳細'],['fingerprint-num','指紋テスト番号'],['fingerprint-state','指紋テスト状態'],['key-badge','キー表示']]},
+{platform:'pc',id:'pc-system-9-micro-label',label:'system-ui 9px：小見出し',family:'system-ui, sans-serif',size:'9px',source:'mic-calibration.css / acoustic-calibration.css / mic-fingerprint.css',samples:[['mic-eyebrow','マイク調整見出し'],['mic-step-num','マイク調整番号'],['acoustic-eyebrow','音響調整見出し'],['fingerprint-small','指紋テスト説明']]},
+{platform:'pc',id:'pc-system-8-badges',label:'system-ui 8px：バッジ・補助',family:'system-ui, sans-serif',size:'8px',source:'mic-calibration.css / result-ui.css / result-podium-key-tune.css',samples:[['mic-step-caption','マイク調整補助'],['best-badge','BESTバッジ'],['podium-badge','順位バッジ']]},
+{platform:'pc',id:'pc-mono-10-calibration',label:'monospace 10px：計測値',family:'ui-monospace, SFMono-Regular, Consolas, monospace',size:'10px',source:'mic-calibration.css / acoustic-calibration.css',samples:[['mic-candidate','マイク候補値'],['acoustic-value','音響計測値']]},
+
+{platform:'mobile',id:'mobile-inherited-12-meta',label:'12px UIメタ情報',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'12px',source:'mode-ui.css / base.css / result-ui.css',samples:[['mode-label','演奏モード'],['load-state','読み込み状態'],['result-eyebrow','RESULT'],['result-sub','リザルト曲サブ情報']]},
+{platform:'mobile',id:'mobile-inherited-11-setup-meta',label:'11px セットアップ補助',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'11px',source:'setup-mobile-tune.css / base.css',samples:[['song-artist','曲カード アーティスト'],['toggle-state','トグル状態']]},
+{platform:'mobile',id:'mobile-inherited-10-helper',label:'10px セットアップ補助情報',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'10px',source:'base.css',samples:[['scale','スライダー目盛'],['hint','ヒント']]},
+{platform:'mobile',id:'mobile-inherited-9-small-meta',label:'9px 小型メタ情報',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'9px',source:'setup-mobile-tune.css / game-visual.css',samples:[['setup-eyebrow','DRUM RHYTHM GAME'],['hud-sub','ゲームHUD アーティスト']]},
+{platform:'mobile',id:'mobile-inherited-16-numbers',label:'16px セットアップ数値 ↔ ゲームSCORE',family:'Inter, "Noto Sans JP", system-ui, sans-serif',size:'16px',source:'setup-mobile-tune.css / mobile-game.css',samples:[['setup-bpm16','BPM / TEMPO'],['game-score','ゲームSCORE']]},
+{platform:'mobile',id:'mobile-system-12-controls',label:'system-ui 12px：操作・状態',family:'system-ui, sans-serif',size:'12px',source:'setup-mobile-tune.css / result-ui.css / result-actions-fix.css / mic-calibration.css',samples:[['dropdown','曲名プルダウン'],['score-label','SCOREラベル'],['result-button','リザルトボタン'],['mic-instruction','マイク調整指示']]},
+{platform:'mobile',id:'mobile-system-13-dropdown-options',label:'プルダウン項目：曲名 ↔ 演奏モード',family:'system-ui, sans-serif',size:'13px',source:'song-ui.css',samples:[['song-option','曲名項目'],['mode-option','演奏モード項目']]},
+{platform:'mobile',id:'mobile-system-9-feedback-calibration',label:'system-ui 9px：判定・調整UI',family:'system-ui, sans-serif',size:'9px',source:'judgement.css / mic-calibration.css / mic-fingerprint.css',samples:[['judge','判定文字'],['mic-step-title','マイク調整ステップ'],['fingerprint-title','指紋テスト見出し'],['fingerprint-action','指紋テストボタン']]},
+{platform:'mobile',id:'mobile-system-8-status-detail',label:'system-ui 8px：状態・詳細',family:'system-ui, sans-serif',size:'8px',source:'score-playback.css / mic-calibration.css',samples:[['score-loading','楽譜読み込み表示'],['mic-detail','マイク詳細']]},
+{platform:'mobile',id:'mobile-system-7-step-number',label:'system-ui 7px：ステップ番号',family:'system-ui, sans-serif',size:'7px',source:'mic-calibration.css / mic-fingerprint.css',samples:[['mic-step-num','マイク調整番号'],['fingerprint-num','指紋テスト番号']]},
+{platform:'mobile',id:'mobile-mono-8-measurement',label:'monospace 8px：計測・時間',family:'ui-monospace, SFMono-Regular, Consolas, monospace',size:'8px',source:'mic-calibration.css / acoustic-calibration.css / score-playback.css',samples:[['mic-candidate','マイク候補値'],['acoustic-value','音響計測値'],['seek-time','楽譜再生時間']]}
+];
+const KEY='drumaster-font-commonization-audit-v1';
+let saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+function sampleHTML(kind,label,size,family){const ff=family;const s=`font-family:${ff};font-size:${size}`;switch(kind){
+case 'toggle-state':return `<div class="mini-option"><span class="name">Auto</span><i class="switch"></i><b class="state" style="${s}">OFF</b></div>`;
+case 'hud-sub':return `<div class="mini-hud"><div class="song"><b>なないろ</b><small style="${s}">BUMP OF CHICKEN</small></div></div>`;
+case 'result-eyebrow':return `<div class="mini-result"><div class="ey" style="${s}">RESULT</div><b>なないろ</b></div>`;
+case 'result-sub':return `<div class="mini-result"><b>なないろ</b><div class="sub" style="${s}">BUMP OF CHICKEN</div></div>`;
+case 'load-state':return `<div class="mini-load" style="${s}">準備完了</div>`;
+case 'volume-label':return `<div class="mini-volume"><div class="row"><span style="${s};font-weight:700">VOLUME</span><strong>80%</strong></div><div class="bar"></div></div>`;
+case 'volume-value':return `<div class="mini-volume"><div class="row"><span>VOLUME</span><strong style="${s}">80%</strong></div><div class="bar"></div></div>`;
+case 'ranking-row':return `<div class="mini-rank"><div class="row" style="${s}"><b>1</b><b>983420</b><span>08/28</span></div></div>`;
+case 'scale':return `<div class="mini-hint"><div class="scale" style="${s}"><span>80%</span><span>100%</span><span>120%</span></div></div>`;
+case 'hint':return `<div class="mini-hint"><div class="hint" style="${s}">最初のタップで音声を有効にします</div></div>`;
+case 'ranking-empty':return `<div class="mini-rank"><div style="padding:12px;text-align:center;color:#657386;${s}">記録はまだありません</div></div>`;
+case 'ranking-title-meta':return `<div class="mini-rank"><div style="padding:7px;display:flex;justify-content:space-between"><b>LOCAL RANKING</b><span style="${s};color:#6f7d8e">TOP 10</span></div></div>`;
+case 'ranking-head':return `<div class="mini-rank"><div class="head" style="${s}"><span>RANK</span><span>SCORE</span><span>DATE</span></div></div>`;
+case 'dropdown':return `<div class="mini-dropdown" style="${s};font-weight:700">なないろ — BUMP OF CHICKEN⌄</div>`;
+case 'hud-bpm':return `<div class="mini-hud"><div class="song"><b>なないろ</b><small>BUMP OF CHICKEN</small></div><span class="bpm" style="${s};font-weight:800">♪＝125</span></div>`;
+case 'result-button':return `<div class="mini-button" style="${s};font-weight:900">リトライ</div>`;
+case 'score-label':return `<div class="mini-score-label" style="${s};font-weight:800">SCORE</div>`;
+case 'mic-step-title':return `<div class="mini-mic-step"><span class="num">1</span><b style="${s};font-weight:850">環境音</b></div>`;
+case 'mic-action':return `<div class="mini-mic-action" style="${s};font-weight:900">測定開始</div>`;
+case 'result-note':return `<div class="mini-note" style="${s};font-weight:700">NO SCORE MODE</div>`;
+case 'mic-detail':return `<div style="color:#8392a4;${s}">入力レベルと閾値を確認しています</div>`;
+case 'fingerprint-num':return `<div class="mini-fingerprint"><span class="num" style="${s};font-weight:900">2</span><b>SNARE</b></div>`;
+case 'fingerprint-state':return `<div class="mini-fingerprint"><b>SNARE</b><em style="display:block;margin-top:6px;color:#78a7c4;${s};font-weight:850">READY</em></div>`;
+case 'key-badge':return `<kbd class="mini-key" style="${s};font-weight:800">A</kbd>`;
+case 'mic-eyebrow':return `<div class="mini-acoustic"><div style="color:#8090a3;letter-spacing:.22em;${s};font-weight:800">MIC CALIBRATION</div></div>`;
+case 'mic-step-num':return `<div class="mini-mic-step"><span class="num" style="${s};font-weight:900">1</span><b>STEP</b></div>`;
+case 'acoustic-eyebrow':return `<div class="mini-acoustic"><div style="color:#75889b;letter-spacing:.20em;${s};font-weight:800">ACOUSTIC CALIBRATION</div></div>`;
+case 'fingerprint-small':return `<div class="mini-fingerprint"><b>SNARE</b><small style="display:block;margin-top:7px;color:#748292;${s}">音の特徴を記録します</small></div>`;
+case 'mic-step-caption':return `<div class="mini-mic-step"><b>環境音</b><em style="display:block;margin-top:4px;color:#687789;${s};font-weight:700">WAIT</em></div>`;
+case 'best-badge':return `<span class="mini-badge" style="${s};font-weight:900;color:#fff2ad">BEST</span>`;
+case 'podium-badge':return `<span class="mini-badge" style="${s};font-weight:900;color:#fff0a2">1ST</span>`;
+case 'mic-candidate':return `<div class="mini-mono" style="${s};font-weight:850">threshold: 0.024</div>`;
+case 'acoustic-value':return `<div class="mini-mono" style="${s};font-weight:800">latency 18.4 ms</div>`;
+case 'song-title':return `<div class="mini-song-card"><h4 style="${s}">なないろ</h4><small>BUMP OF CHICKEN</small></div>`;
+case 'song-bpm':return `<div class="mini-song-card"><h4>なないろ</h4><span class="bpm" style="${s};font-weight:700">♪＝125</span><small>BUMP OF CHICKEN</small></div>`;
+case 'mode-label':return `<div class="mini-mode-row"><span style="${s}">演奏モード</span></div>`;
+case 'song-artist':return `<div class="mini-song-card"><h4>なないろ</h4><small style="${s}">BUMP OF CHICKEN</small></div>`;
+case 'setup-eyebrow':return `<div style="letter-spacing:.24em;color:#7f8b9a;${s}">DRUM RHYTHM GAME</div>`;
+case 'setup-bpm16':return `<div class="mini-volume"><div class="row"><span>TEMPO</span><strong style="${s}">100%</strong></div><div style="margin-top:4px;text-align:right;${s};font-weight:700">♪＝125</div></div>`;
+case 'game-score':return `<div class="mini-score"><small>SCORE</small><strong style="${s}">083420</strong></div>`;
+case 'mic-instruction':return `<div class="mini-acoustic"><b style="${s};font-weight:800">スネアを3回叩いてください</b></div>`;
+case 'song-option':return `<div class="mini-option-row" style="${s};font-weight:700">なないろ — BUMP OF CHICKEN</div>`;
+case 'mode-option':return `<div class="mini-option-row" style="${s};font-weight:700">通常</div>`;
+case 'judge':return `<div class="mini-judge" style="${s};font-weight:900">PERFECT</div>`;
+case 'fingerprint-title':return `<div class="mini-fingerprint"><b style="${s};font-weight:900">SNARE</b><small>READY</small></div>`;
+case 'fingerprint-action':return `<div class="mini-mic-action" style="${s};font-weight:900">再測定</div>`;
+case 'score-loading':return `<div class="mini-loading" style="${s};font-weight:700">譜面を読み込み中…</div>`;
+case 'seek-time':return `<div class="mini-mono" style="${s};font-weight:800">01:24 / 04:11</div>`;
+default:return `<span style="${s}">${label}</span>`}}
+function render(platform){const root=document.getElementById(platform==='pc'?'pcList':'mobileList');const items=DATA.filter(x=>x.platform===platform);document.getElementById(platform==='pc'?'pcCount':'mobileCount').textContent=`${items.length} groups`;root.innerHTML=items.map(item=>{const checked=!!saved[item.id];return `<article class="audit${checked?' on':''}" data-id="${item.id}"><div class="audit-top"><div class="meta"><h3>${item.label}</h3><div class="chips"><span class="chip">${item.size}</span><span class="chip">${item.family}</span></div><div class="source">現在の参照元：${item.source}</div></div><div class="previews">${item.samples.map(([kind,label])=>`<div class="sample"><div class="sample-label">${label}</div><div class="sample-stage">${sampleHTML(kind,label,item.size,item.family)}</div></div>`).join('')}</div><div class="toggle-control"><label><input type="checkbox" ${checked?'checked':''}> 共通化する</label></div></div></article>`}).join('');root.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.addEventListener('change',e=>{const card=e.target.closest('.audit');saved[card.dataset.id]=e.target.checked;card.classList.toggle('on',e.target.checked);persist()}))}
+function output(){const arr=DATA.map(x=>({id:x.id,platform:x.platform,label:x.label,fontFamily:x.family,fontSize:x.size,commonize:!!saved[x.id]}));document.getElementById('jsonOut').value=JSON.stringify({fontCommonization:arr},null,2)}
+function persist(){localStorage.setItem(KEY,JSON.stringify(saved));output()}
+render('pc');render('mobile');output();
+document.getElementById('copyBtn').onclick=async()=>{const t=document.getElementById('jsonOut');try{await navigator.clipboard.writeText(t.value);document.getElementById('copyBtn').textContent='コピーしました';setTimeout(()=>document.getElementById('copyBtn').textContent='JSONをコピー',1200)}catch(e){t.select();document.execCommand('copy')}};
+document.getElementById('resetBtn').onclick=()=>{saved={};localStorage.removeItem(KEY);render('pc');render('mobile');output()};
+</script>
+</body>
+</html>

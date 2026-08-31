@@ -1,0 +1,459 @@
+/* DruMaster design-system commonization layer.
+   Approved audit items only. spacing-scale and disabled-states remain component-owned.
+   Standard radius choice: 8px (second preview sample).
+   Shared utility typography choice: rightmost preview sample = 600 / 1.5 / 0. */
+:root{
+  /* Geometry */
+  --dm-radius-standard:8px;
+  --dm-radius-pill:999px;
+  --dm-radius-round:50%;
+  --dm-border-default:1px;
+  --dm-border-touch:.75px;
+  --dm-border-focus:2px;
+
+  --dm-transport-pc:42px;
+  --dm-transport-mobile:26px;
+  --dm-transport-icon-pc:18px;
+  --dm-transport-icon-mobile:14px;
+
+  --dm-toggle-pc-w:50px;
+  --dm-toggle-pc-h:28px;
+  --dm-toggle-pc-thumb:20px;
+  --dm-toggle-pc-shift:22px;
+  --dm-toggle-mobile-w:43px;
+  --dm-toggle-mobile-h:24px;
+  --dm-toggle-mobile-thumb:16px;
+  --dm-toggle-mobile-shift:20px;
+  --dm-toggle-inset:3px;
+
+  --dm-dropdown-pc-trigger-h:36px;
+  --dm-dropdown-pc-option-h:32px;
+  --dm-dropdown-pc-pad-y:7px;
+  --dm-dropdown-pc-pad-x:11px;
+  --dm-dropdown-pc-arrow:7px;
+  --dm-dropdown-mobile-trigger-h:31px;
+  --dm-dropdown-mobile-option-h:39px;
+  --dm-dropdown-mobile-pad-y:5px;
+  --dm-dropdown-mobile-pad-x:9px;
+  --dm-dropdown-mobile-arrow:8px;
+
+  --dm-action-pc-w:140px;
+  --dm-action-pc-h:38px;
+  --dm-action-mobile-w:126px;
+  --dm-action-mobile-h:34px;
+
+  --dm-touch-hit-area:44px;
+
+  /* Semantic stacking order. Values preserve the current visual order. */
+  --dm-z-background:0;
+  --dm-z-content:2;
+  --dm-z-hit:4;
+  --dm-z-chart:8;
+  --dm-z-hud:12;
+  --dm-z-feedback:20;
+  --dm-z-overlay:30;
+  --dm-z-top-effect:40;
+  --dm-z-dropdown:1000;
+  --dm-z-dropdown-menu:1001;
+  --dm-z-dropdown-host:1002;
+
+  /* Forced-landscape mobile bases. */
+  --dm-mobile-screen-inset:28px;
+  --dm-mobile-game-safe-left:32px;
+  --dm-mobile-setup-safe-left:36px;
+  --dm-mobile-game-header-h:32px;
+  --dm-mobile-chart-h:calc(15% + 8px);
+  --dm-mobile-chart-right:14px;
+  --dm-mobile-setup-left-nudge:12px;
+
+  /* Focus */
+  --dm-focus-color:var(--dm-dropdown-accent,#63c3ff);
+  --dm-focus-width:2px;
+  --dm-focus-offset:3px;
+
+  /* Motion: semantic timings only; gameplay/result spectacle animations are excluded. */
+  --dm-motion-fast:.12s;
+  --dm-motion-standard:.20s;
+  --dm-motion-slow:.25s;
+  --dm-ease-standard:ease;
+
+  /* Elevation */
+  --dm-shadow-control-elevation:0 8px 20px rgba(0,0,0,.34);
+  --dm-shadow-popup:0 8px 18px rgba(0,0,0,.42);
+  --dm-shadow-panel:0 12px 30px rgba(0,0,0,.28);
+  --dm-shadow-overlay:0 20px 52px rgba(0,0,0,.38);
+
+  /* Rightmost typography-style preview. Display/logo/score/judgement are excluded. */
+  --dm-ui-weight:600;
+  --dm-ui-line-height:1.5;
+  --dm-ui-letter-spacing:0;
+}
+
+/* Radius scale: one standard rounded rectangle + explicit pill/round exceptions. */
+.setup .song-card,
+.setup .options,
+.setup .tempo-box,
+.setup .volume-box,
+.setup .mobile-custom-select-trigger,
+.setup .mobile-custom-select-menu,
+.setup .mobile-custom-select-option,
+.ranking-panel,
+.mic-calibration-card,
+.mic-cal-steps>div{
+  border-radius:var(--dm-radius-standard)!important;
+}
+.setup .option>i,
+.setup .option>i::before,
+#start,
+#pausePanel button,
+.result-actions button,
+.mic-cal-actions button,
+.best-badge,
+.podium-badge,
+#scoreSeekWrap{
+  border-radius:var(--dm-radius-pill)!important;
+}
+.setup .option>i::after,
+#scoreSeek::-webkit-slider-thumb,
+#scoreSeek::-moz-range-thumb{
+  border-radius:var(--dm-radius-round)!important;
+}
+
+/* Transport geometry: pause and score-playback transport are one component size source. */
+#game header #pause,
+body[data-score-playback="1"] #scorePlaybackControls>button,
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap,
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>button{
+  width:var(--dm-transport-pc)!important;
+  min-width:var(--dm-transport-pc)!important;
+  max-width:var(--dm-transport-pc)!important;
+  height:var(--dm-transport-pc)!important;
+  min-height:var(--dm-transport-pc)!important;
+  max-height:var(--dm-transport-pc)!important;
+  flex:0 0 var(--dm-transport-pc)!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:var(--dm-radius-standard)!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>.glass-hover-drop{
+  inset:0!important;
+  width:var(--dm-transport-pc)!important;
+  height:var(--dm-transport-pc)!important;
+  transform:none!important;
+  border-radius:var(--dm-radius-standard)!important;
+}
+#game header #pause>.pause-white-icon,
+body[data-score-playback="1"] .transport-icon{
+  width:var(--dm-transport-icon-pc)!important;
+  height:var(--dm-transport-icon-pc)!important;
+}
+body[data-score-playback="1"] #scorePlaybackControls .glass-hover-rim-svg,
+body[data-score-playback="1"] #scorePlaybackControls button{
+  border-radius:var(--dm-radius-standard)!important;
+}
+
+/* Toggle geometry */
+.setup .option>i{
+  width:var(--dm-toggle-pc-w)!important;
+  height:var(--dm-toggle-pc-h)!important;
+}
+.setup .option>i::after{
+  width:var(--dm-toggle-pc-thumb)!important;
+  height:var(--dm-toggle-pc-thumb)!important;
+  left:var(--dm-toggle-inset)!important;
+  top:var(--dm-toggle-inset)!important;
+}
+.setup .option input:checked+i::after{transform:translateX(var(--dm-toggle-pc-shift))!important}
+
+/* Dropdown geometry. Width remains context-owned; all internal geometry is shared per platform. */
+@media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
+  .setup .song-custom-select>.mobile-custom-select-trigger,
+  .setup .mode-custom-select>.mobile-custom-select-trigger{
+    min-height:var(--dm-dropdown-pc-trigger-h)!important;
+    height:var(--dm-dropdown-pc-trigger-h)!important;
+    padding:var(--dm-dropdown-pc-pad-y) 32px var(--dm-dropdown-pc-pad-y) var(--dm-dropdown-pc-pad-x)!important;
+    border-radius:var(--dm-radius-standard)!important;
+  }
+  .setup .song-custom-select .mobile-custom-select-option,
+  .setup .mode-custom-select .mobile-custom-select-option{
+    min-height:var(--dm-dropdown-pc-option-h)!important;
+    padding:var(--dm-dropdown-pc-pad-y) var(--dm-dropdown-pc-pad-x)!important;
+    border-radius:var(--dm-radius-standard)!important;
+  }
+  .setup .song-custom-select .mobile-custom-select-arrow,
+  .setup .mode-custom-select .mobile-custom-select-arrow{
+    width:var(--dm-dropdown-pc-arrow)!important;
+    height:var(--dm-dropdown-pc-arrow)!important;
+  }
+  .setup .song-custom-select>.mobile-custom-select-menu,
+  .setup .mode-custom-select>.mobile-custom-select-menu{
+    border-radius:var(--dm-radius-standard)!important;
+    box-shadow:var(--dm-shadow-popup)!important;
+  }
+}
+
+/* Semantic z-index layer map. */
+.setup>.setup-moving-lights{z-index:var(--dm-z-background)!important}
+.setup>*:not(.setup-moving-lights){z-index:var(--dm-z-content)}
+.setup .mobile-custom-select.open{z-index:var(--dm-z-dropdown)!important}
+.setup .mobile-custom-select-menu{z-index:var(--dm-z-dropdown-menu)!important}
+.setup .mobile-select-host-open{z-index:var(--dm-z-dropdown-host)!important}
+.game header{z-index:var(--dm-z-hud)!important}
+#chartWrap{z-index:var(--dm-z-chart)!important}
+.dim-layer{z-index:var(--dm-z-content)!important}
+#hitLayer{z-index:var(--dm-z-hit)!important}
+#scorePlaybackBusy{z-index:var(--dm-z-hud)!important}
+#scoreHeaderLoading,
+#scoreSeekWrap,
+.game header .rank span,
+#game header #pause>.pause-white-icon,
+body[data-score-playback="1"] .transport-icon{z-index:var(--dm-z-feedback)!important}
+#pausePanel{z-index:var(--dm-z-overlay)!important}
+body.hidden-mode .hidden-header-judge{z-index:var(--dm-z-top-effect)!important}
+
+/* Borders */
+.setup .song-card,
+.setup .options,
+.setup .tempo-box,
+.setup .volume-box,
+.setup .option>i,
+.setup .mobile-custom-select-trigger,
+.setup .mobile-custom-select-menu,
+.ranking-panel,
+.mic-calibration-card{
+  border-width:var(--dm-border-default)!important;
+}
+
+/* Focus ring: one source, shape follows each control. */
+#start:focus-visible,
+#pause:focus-visible,
+#scorePlaybackControls button:focus-visible,
+#pausePanel button:focus-visible,
+.result-actions button:focus-visible,
+.mic-cal-actions button:focus-visible,
+.setup .mobile-custom-select-trigger:focus-visible,
+.setup #songSelect:focus-visible,
+.setup #performanceModeSelect:focus-visible{
+  outline:var(--dm-focus-width) solid var(--dm-focus-color)!important;
+  outline-offset:var(--dm-focus-offset)!important;
+}
+.setup .mobile-custom-select-trigger:focus-visible,
+.setup #songSelect:focus-visible,
+.setup #performanceModeSelect:focus-visible{
+  box-shadow:none!important;
+}
+
+/* Action-button geometry: result / calibration / pause actions share one source. */
+#result .result-actions #retry,
+#result .result-actions #home,
+.mic-cal-actions button,
+#pausePanel button{
+  box-sizing:border-box!important;
+  width:var(--dm-action-pc-w)!important;
+  min-width:var(--dm-action-pc-w)!important;
+  max-width:var(--dm-action-pc-w)!important;
+  height:var(--dm-action-pc-h)!important;
+  min-height:var(--dm-action-pc-h)!important;
+  padding:0 18px!important;
+  flex:0 0 var(--dm-action-pc-w)!important;
+  border-radius:var(--dm-radius-pill)!important;
+}
+
+/* Elevation sources. Spectral/glass rings remain material-owned. */
+.setup .mobile-custom-select-menu{box-shadow:var(--dm-shadow-popup)!important}
+.ranking-panel{box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),var(--dm-shadow-panel)!important}
+.mic-calibration-card{box-shadow:var(--dm-shadow-overlay),inset 0 1px 0 rgba(255,255,255,.035)!important}
+
+/* Shared non-display typography style: rightmost audit preview.
+   Decorative eyebrows/headings, logo, score numerals and judgement text stay component-owned. */
+.setup .song-card p,
+.setup .option>span,
+.setup .option b,
+.setup .performance-mode-option>span,
+.setup #loadState,
+.setup .hint,
+.setup .scale,
+.setup .mobile-custom-select-trigger,
+.setup .mobile-custom-select-option,
+.game .song-hud small,
+.game .song-hud .hud-bpm,
+.game .score small,
+#scoreHeaderLoading,
+#scorePlaybackBusy,
+#scoreSeekTime,
+#hitLayer kbd,
+.result-song-sub,
+.result-score-label,
+.result-score-note,
+.result-summary span,
+.ranking-title span,
+.ranking-head,
+.best-badge,
+.podium-badge,
+#result .result-actions button,
+.mic-cal-instruction,
+.mic-cal-steps span,
+.mic-cal-steps b,
+.mic-cal-steps em,
+.mic-cal-candidate,
+.mic-cal-detail,
+.mic-cal-actions button{
+  font-weight:var(--dm-ui-weight)!important;
+  line-height:var(--dm-ui-line-height)!important;
+  letter-spacing:var(--dm-ui-letter-spacing)!important;
+}
+
+/* Shared motion timings for controls only. */
+.setup .option>i,
+.setup .option>i::after,
+.setup .option>i::before,
+.setup .mobile-custom-select-arrow,
+.ranking-panel{
+  transition-duration:var(--dm-motion-standard)!important;
+  transition-timing-function:var(--dm-ease-standard)!important;
+}
+.setup .mobile-custom-select-arrow{transition-duration:var(--dm-motion-fast)!important}
+#start,
+#pause,
+#scorePlaybackControls button,
+#pausePanel button,
+.result-actions button,
+.mic-cal-actions button{
+  transition:
+    --glass-hover-fade var(--dm-motion-standard) var(--dm-ease-standard),
+    transform var(--dm-motion-standard) var(--dm-ease-standard),
+    color var(--dm-motion-standard) var(--dm-ease-standard),
+    text-shadow var(--dm-motion-standard) var(--dm-ease-standard)!important;
+}
+.glass-hover-drop,
+.glass-inner-stack{
+  transition:opacity var(--dm-motion-standard) var(--dm-ease-standard)!important;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  /* Forced-landscape coordinate sources. */
+  #app{
+    width:100vh;
+    height:100vw;
+  }
+  .screen{
+    width:calc(100% - var(--dm-mobile-screen-inset))!important;
+    margin-left:var(--dm-mobile-screen-inset)!important;
+  }
+  .setup{
+    padding-left:max(var(--dm-mobile-setup-safe-left),env(safe-area-inset-bottom))!important;
+  }
+  .setup>.brand,
+  .setup>.eyebrow,
+  .setup>.song-card,
+  .setup>.hint{
+    left:var(--dm-mobile-setup-left-nudge)!important;
+  }
+  .game header{
+    height:var(--dm-mobile-game-header-h)!important;
+    padding-left:max(var(--dm-mobile-game-safe-left),env(safe-area-inset-bottom))!important;
+  }
+  .game #chartWrap,
+  #chartWrap{
+    top:var(--dm-mobile-game-header-h)!important;
+    left:max(var(--dm-mobile-game-safe-left),env(safe-area-inset-bottom))!important;
+    right:var(--dm-mobile-chart-right)!important;
+    height:var(--dm-mobile-chart-h)!important;
+  }
+  #kit{
+    top:calc(var(--dm-mobile-game-header-h) + 15% + 8px)!important;
+  }
+  body.hidden-mode #kit{top:var(--dm-mobile-game-header-h)!important}
+  .result{padding-left:max(var(--dm-mobile-game-safe-left),env(safe-area-inset-bottom))!important}
+
+  /* Transport */
+  #game header #pause,
+  body[data-score-playback="1"] #scorePlaybackControls>button,
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap,
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>button{
+    width:var(--dm-transport-mobile)!important;
+    min-width:var(--dm-transport-mobile)!important;
+    max-width:var(--dm-transport-mobile)!important;
+    height:var(--dm-transport-mobile)!important;
+    min-height:var(--dm-transport-mobile)!important;
+    max-height:var(--dm-transport-mobile)!important;
+    flex:0 0 var(--dm-transport-mobile)!important;
+    border-radius:var(--dm-radius-standard)!important;
+  }
+  body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>.glass-hover-drop{
+    width:var(--dm-transport-mobile)!important;
+    height:var(--dm-transport-mobile)!important;
+    border-radius:var(--dm-radius-standard)!important;
+  }
+  #game header #pause>.pause-white-icon,
+  body[data-score-playback="1"] .transport-icon{
+    width:var(--dm-transport-icon-mobile)!important;
+    height:var(--dm-transport-icon-mobile)!important;
+  }
+  body[data-score-playback="1"] #scorePlaybackControls .glass-hover-rim-svg,
+  body[data-score-playback="1"] #scorePlaybackControls button{
+    border-radius:var(--dm-radius-standard)!important;
+  }
+
+  /* Toggle */
+  .setup .option>i{
+    width:var(--dm-toggle-mobile-w)!important;
+    height:var(--dm-toggle-mobile-h)!important;
+  }
+  .setup .option>i::after{
+    width:var(--dm-toggle-mobile-thumb)!important;
+    height:var(--dm-toggle-mobile-thumb)!important;
+    left:var(--dm-toggle-inset)!important;
+    top:var(--dm-toggle-inset)!important;
+  }
+  .setup .option input:checked+i::after{transform:translateX(var(--dm-toggle-mobile-shift))!important}
+
+  /* Dropdown */
+  .setup .song-custom-select>.mobile-custom-select-trigger,
+  .setup .mode-custom-select>.mobile-custom-select-trigger{
+    min-height:var(--dm-dropdown-mobile-trigger-h)!important;
+    height:var(--dm-dropdown-mobile-trigger-h)!important;
+    padding:var(--dm-dropdown-mobile-pad-y) 30px var(--dm-dropdown-mobile-pad-y) var(--dm-dropdown-mobile-pad-x)!important;
+    border-radius:var(--dm-radius-standard)!important;
+  }
+  .setup .song-custom-select .mobile-custom-select-option,
+  .setup .mode-custom-select .mobile-custom-select-option{
+    min-height:var(--dm-dropdown-mobile-option-h)!important;
+    padding:7px 10px!important;
+    border-radius:var(--dm-radius-standard)!important;
+  }
+  .setup .song-custom-select .mobile-custom-select-arrow,
+  .setup .mode-custom-select .mobile-custom-select-arrow{
+    width:var(--dm-dropdown-mobile-arrow)!important;
+    height:var(--dm-dropdown-mobile-arrow)!important;
+  }
+  .setup .song-custom-select>.mobile-custom-select-menu,
+  .setup .mode-custom-select>.mobile-custom-select-menu{
+    border-radius:var(--dm-radius-standard)!important;
+    box-shadow:var(--dm-shadow-popup)!important;
+  }
+
+  /* Touch optical border source. */
+  #start,
+  #pause,
+  #scorePlaybackControls button,
+  #pausePanel button,
+  .result-actions button,
+  .mic-cal-actions button{
+    border-width:var(--dm-border-touch)!important;
+  }
+
+  /* Action buttons */
+  #result .result-actions #retry,
+  #result .result-actions #home,
+  .mic-cal-actions button,
+  #pausePanel button{
+    width:var(--dm-action-mobile-w)!important;
+    min-width:var(--dm-action-mobile-w)!important;
+    max-width:var(--dm-action-mobile-w)!important;
+    height:var(--dm-action-mobile-h)!important;
+    min-height:var(--dm-action-mobile-h)!important;
+    flex:0 0 var(--dm-action-mobile-w)!important;
+    padding:0 16px!important;
+  }
+}

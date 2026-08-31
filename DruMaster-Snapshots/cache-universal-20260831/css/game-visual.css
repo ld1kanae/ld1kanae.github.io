@@ -1,0 +1,267 @@
+/* Additional gameplay visual polish. */
+
+/* Slightly larger song metadata in the gameplay HUD. */
+.game .song-hud b{font-size:18px;line-height:1.05}
+.game .song-hud small{font-size:11px;line-height:1.05;margin-top:5px}
+
+/* User-supplied bass drum artwork sits behind the calibrated kit artwork. */
+.kit-stage{isolation:isolate}
+.kit-stage .bass-drum-art{
+  position:absolute!important;
+  z-index:0!important;
+  left:calc(50% - 9px)!important;
+  top:calc(35.5% + 10px)!important;
+  width:18.5%!important;
+  height:auto!important;
+  transform:translateX(-50%)!important;
+  transform-origin:50% 50%!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+.kit-stage .kit-art{z-index:1}
+.kit-stage #hitLayer{z-index:4}
+
+/* Bass-drum strike flash shared by normal play and AUTO mode. */
+#kickFx{
+  display:block!important;
+  position:absolute!important;
+  z-index:3!important;
+  left:48.8%!important;
+  right:auto!important;
+  top:72.6%!important;
+  bottom:auto!important;
+  width:7%!important;
+  height:auto!important;
+  aspect-ratio:1!important;
+  transform:translate(-50%,-50%) scale(.7)!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,rgba(255,255,255,.86) 0 8%,rgba(220,228,235,.53) 24%,rgba(198,211,220,.20) 43%,transparent 69%)!important;
+  box-shadow:0 0 34px rgba(220,232,240,.72),0 0 58px rgba(194,213,226,.32)!important;
+  opacity:0;
+  pointer-events:none;
+  mix-blend-mode:screen;
+}
+#kickFx.hit,
+#kickFx.auto-hit{animation:kickDrumFlash .24s ease-out!important}
+@keyframes kickDrumFlash{
+  0%{opacity:.8;transform:translate(-50%,-50%) scale(.4)!important}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)!important}
+}
+
+/* Smartphone tap feedback is rendered outside the rotated app using physical
+   pointer coordinates. The flash itself is circular, so it visually matches
+   the bass-drum flash regardless of the forced landscape transform. */
+#mobileTapFxLayer{display:none}
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  #mobileTapFxLayer{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .mobile-tap-hit-fx{
+    position:absolute;
+    width:48px;
+    height:48px;
+    margin:0;
+    border:0;
+    border-radius:50%;
+    transform:translate(-50%,-50%) scale(.4);
+    transform-origin:50% 50%;
+    background:radial-gradient(circle,rgba(255,255,255,.86) 0 8%,rgba(220,228,235,.53) 24%,rgba(198,211,220,.20) 43%,transparent 69%);
+    box-shadow:0 0 34px rgba(220,232,240,.72),0 0 58px rgba(194,213,226,.32);
+    mix-blend-mode:screen;
+    opacity:0;
+    pointer-events:none;
+    animation:mobileTapDrumFlash .24s ease-out forwards;
+  }
+  @keyframes mobileTapDrumFlash{
+    0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}
+  }
+
+  .game .song-hud b{font-size:14px}
+  .game .song-hud small{font-size:9px;margin-top:1px}
+}
+
+/* Desktop-only bass-drum placement adjustment. */
+@media (hover:hover) and (pointer:fine){
+  .kit-stage .bass-drum-art{
+    left:calc(50% - 23px)!important;
+    top:calc(35.5% - 15px)!important;
+  }
+  #kickFx{top:calc(72.6% + 10px)!important}
+  #hitLayer .key-badges{gap:2px}
+  #hitLayer .key-badges kbd{min-width:20px;height:22px;padding:0 4px;font-size:10px}
+}
+
+/* Italic/skewed AUTO PLAY used to clip the upper-right corner of the Y. */
+#finalScore{
+  width:max-content;
+  max-width:calc(100% - 1rem);
+  margin-left:auto;
+  margin-right:auto;
+  padding:.08em .20em .10em .10em;
+  box-sizing:content-box;
+  overflow:visible;
+}
+.result.autoplay #finalScore{white-space:nowrap}
+
+/* Circular DruMaster D badge: drum-head rim, cyan light and oversized D.
+   Deliberately omits the drumstick from the visual reference. */
+.game header .rank{
+  position:relative;
+  isolation:isolate;
+  flex:0 0 auto;
+  width:46px;
+  height:46px;
+  margin:0 15px 0 3px;
+  display:grid;
+  place-items:center;
+  box-sizing:border-box;
+  transform:none;
+  overflow:visible;
+  border:2px solid #d8ecfa;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 5%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    radial-gradient(circle at 95% 50%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    radial-gradient(circle at 50% 95%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    radial-gradient(circle at 5% 50%,#f7fdff 0 2px,#7897ad 2.4px 3.3px,#172b3c 3.6px 4.5px,transparent 4.8px),
+    repeating-linear-gradient(90deg,transparent 0 18%,rgba(54,205,255,.11) 18.5% 20%,transparent 20.5% 32%),
+    radial-gradient(circle,#17324a 0 48%,#0c1d2d 49% 63%,#06111c 64% 100%);
+  box-shadow:
+    inset 0 0 0 2px #102b42,
+    inset 0 0 0 4px rgba(94,225,255,.58),
+    inset 0 0 11px rgba(42,205,255,.38),
+    0 0 0 1px #38566b,
+    0 0 10px rgba(60,217,255,.65);
+  color:#f7fbff;
+  font:900 39px/.86 "Arial Black",Impact,system-ui,sans-serif;
+  letter-spacing:-.07em;
+  padding-right:.05em;
+  text-shadow:
+    0 1px 0 #8cb5ce,
+    0 -1px 0 #fff,
+    0 0 3px #fff,
+    0 0 7px #59ddff;
+}
+.game header .rank::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:4px;
+  border:1px solid rgba(151,238,255,.9);
+  border-radius:50%;
+  box-shadow:inset 0 0 8px rgba(49,218,255,.55),0 0 5px rgba(49,218,255,.45);
+  pointer-events:none;
+}
+.game header .rank::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:5px 7px 23px 7px;
+  border-radius:50% 50% 45% 45%;
+  background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0));
+  pointer-events:none;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game header .rank{
+    width:28px;
+    height:28px;
+    margin:0 7px 0 2px;
+    border-width:1px;
+    font-size:24px;
+    background:
+      radial-gradient(circle at 50% 5%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      radial-gradient(circle at 95% 50%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      radial-gradient(circle at 50% 95%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      radial-gradient(circle at 5% 50%,#f7fdff 0 1px,#7897ad 1.3px 2px,transparent 2.2px),
+      repeating-linear-gradient(90deg,transparent 0 18%,rgba(54,205,255,.12) 18.5% 20%,transparent 20.5% 32%),
+      radial-gradient(circle,#17324a 0 48%,#0c1d2d 49% 63%,#06111c 64% 100%);
+    box-shadow:inset 0 0 0 1px #102b42,inset 0 0 0 2px rgba(94,225,255,.62),0 0 6px rgba(60,217,255,.65);
+    text-shadow:0 0 2px #fff,0 0 4px #59ddff;
+  }
+  .game header .rank::before{inset:2px;border-width:1px}
+  .game header .rank::after{inset:3px 4px 14px}
+}
+
+/* Gameplay background = result background, full replacement.
+   The only intentional difference from the result screen is that its rotating
+   conic aura is replaced by a soft horizontal Aurora Curtain. */
+.game{
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 28%,rgba(72,129,190,.22),transparent 34%),
+    radial-gradient(circle at 25% 75%,rgba(177,104,255,.12),transparent 38%),
+    linear-gradient(180deg,#0d1723 0%,#070b11 70%)!important;
+}
+.game::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:-18% -8%;
+  pointer-events:none;
+  background:linear-gradient(
+    112deg,
+    transparent 8%,
+    rgba(99,198,255,.13) 24%,
+    rgba(130,132,255,.18) 39%,
+    rgba(192,119,255,.13) 52%,
+    transparent 68%
+  );
+  filter:blur(24px);
+  opacity:.88;
+  will-change:transform;
+  animation:gameAuroraCurtain 7s ease-in-out infinite alternate;
+}
+@keyframes gameAuroraCurtain{
+  0%{transform:translate3d(-15%,0,0) skewX(-5deg)}
+  100%{transform:translate3d(15%,0,0) skewX(5deg)}
+}
+
+/* The previous gameplay-specific dark backgrounds obscured the shared result
+   background. Remove them so the same background spans chart + kit continuously.
+   Chart gets only a light translucent veil for note readability. */
+.game #chartWrap{
+  background:rgba(5,10,17,.30)!important;
+  box-shadow:0 7px 20px rgba(0,0,0,.38)!important;
+}
+.game #kit{
+  background:transparent!important;
+}
+
+/* All gameplay elements already have their required positioning; only lift
+   them above the shared background layer. */
+.game>header{z-index:12}
+.game>#chartWrap{z-index:8}
+.game>#kit{z-index:1}
+.game>#kickFx{z-index:7}
+.game>#pausePanel{z-index:30}
+
+/* Smartphone gameplay uses exactly the same static background as the setup
+   screen. The desktop Aurora Curtain stays enabled. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game{
+    background:
+      radial-gradient(circle at 50% 25%,rgba(72,129,190,.23),transparent 31%),
+      radial-gradient(circle at 22% 82%,rgba(177,104,255,.14),transparent 36%),
+      radial-gradient(circle at 68% 84%,rgba(72,190,225,.09),transparent 35%),
+      linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%)!important;
+  }
+  .game::before{
+    content:none!important;
+    display:none!important;
+    animation:none!important;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .game::before{animation:none;transform:none}
+}

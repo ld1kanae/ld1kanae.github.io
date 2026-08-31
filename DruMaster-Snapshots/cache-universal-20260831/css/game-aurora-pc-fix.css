@@ -1,0 +1,92 @@
+/* Desktop gameplay Aurora Curtain correction.
+   Keep the result-derived dark background visible. The aurora is a pair of
+   translucent travelling curtains with large transparent gaps, not a full-
+   screen colour wash. Smartphone remains static in game-visual.css. */
+@media (min-width:901px){
+  .game::before{
+    content:""!important;
+    display:block!important;
+    position:absolute!important;
+    z-index:0!important;
+    top:-24%!important;
+    bottom:-24%!important;
+    left:-20%!important;
+    right:-20%!important;
+    pointer-events:none!important;
+    background:
+      linear-gradient(
+        112deg,
+        transparent 0%,
+        transparent 9%,
+        rgba(99,198,255,.12) 17%,
+        rgba(116,164,255,.19) 24%,
+        rgba(165,126,255,.14) 31%,
+        transparent 40%,
+        transparent 100%
+      ),
+      linear-gradient(
+        104deg,
+        transparent 0%,
+        transparent 48%,
+        rgba(104,188,255,.10) 57%,
+        rgba(151,131,255,.18) 65%,
+        rgba(192,119,255,.13) 72%,
+        transparent 81%,
+        transparent 100%
+      )!important;
+    background-size:100% 100%!important;
+    background-position:center!important;
+    background-repeat:no-repeat!important;
+    filter:blur(30px)!important;
+    opacity:.86!important;
+    will-change:transform,opacity!important;
+    animation:gameAuroraCurtainWide 5s ease-in-out infinite alternate!important;
+  }
+
+  /* Vignette + temporal dithering. The noise is intentionally subtle but a
+     little stronger on desktop, where the large dark gradient exposes banding
+     most clearly. Moving the tile by only a few pixels provides temporal
+     dithering without reading as visible film grain. */
+  .game::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    inset:0;
+    pointer-events:none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' seed='17' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(
+        ellipse at 50% 48%,
+        transparent 0%,
+        transparent 34%,
+        rgba(0,0,0,.06) 52%,
+        rgba(0,0,0,.20) 72%,
+        rgba(0,0,0,.42) 88%,
+        rgba(0,0,0,.58) 100%
+      );
+    background-size:128px 128px,100% 100%;
+    background-repeat:repeat,no-repeat;
+    background-position:0 0,center;
+    will-change:background-position;
+    animation:gameDitherShift 1.4s steps(1,end) infinite;
+  }
+}
+
+@keyframes gameAuroraCurtainWide{
+  0%{transform:translate3d(-5%,0,0) skewX(-2deg) scaleX(1.03);opacity:.72}
+  100%{transform:translate3d(5%,0,0) skewX(2deg) scaleX(1.03);opacity:.92}
+}
+
+@keyframes gameDitherShift{
+  0%{background-position:0 0,center}
+  20%{background-position:1px -1px,center}
+  40%{background-position:-1px 1px,center}
+  60%{background-position:2px 1px,center}
+  80%{background-position:-2px -1px,center}
+  100%{background-position:0 0,center}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .game::before{animation:none!important;transform:none!important;opacity:.82!important}
+  .game::after{animation:none!important;background-position:0 0,center!important}
+}

@@ -1,0 +1,43 @@
+/* Score playback seekbar spectrum — approved editor values.
+   Spectrum: width 100%, center 50%, no edge fade, opacity/brightness/saturation 100%.
+   Horizontal gap 1: disabled.
+   Horizontal gap 2: center 45%, height 22%, transparency 32%, softness 60%.
+   Implementation values are rounded where visually equivalent.
+   Unreached lightness: 20%. Base: #171E26. */
+#scoreSeek{
+  --score-unreached:hsl(210 12% 20%)!important;
+  --score-base:#171E26;
+  --score-gap-overlay:linear-gradient(180deg,
+    rgba(23,30,38,.14) 0%,
+    rgba(23,30,38,.32) 34%,
+    rgba(23,30,38,.32) 56%,
+    rgba(23,30,38,.09) 100%);
+}
+
+#scoreSeek::-webkit-slider-runnable-track{
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      transparent var(--score-range-progress),
+      var(--score-unreached) var(--score-range-progress),
+      var(--score-unreached) 100%),
+    var(--score-gap-overlay),
+    var(--score-spectrum),
+    var(--score-base)!important;
+  background-size:100% 100%,100% 100%,100% 100%,100% 100%!important;
+  background-repeat:no-repeat!important;
+}
+
+#scoreSeek::-moz-range-track{
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      transparent var(--score-range-progress),
+      var(--score-unreached) var(--score-range-progress),
+      var(--score-unreached) 100%),
+    var(--score-gap-overlay),
+    var(--score-spectrum),
+    var(--score-base)!important;
+  background-size:100% 100%,100% 100%,100% 100%,100% 100%!important;
+  background-repeat:no-repeat!important;
+}

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Color Source Audit</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#070b11;
+  --panel:#101722;
+  --panel2:#0b1119;
+  --line:#293545;
+  --text:#edf4fb;
+  --muted:#8e9cac;
+  --cyan:#65d9ff;
+  --ok:#77e2b8;
+  --warn:#ffd37a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{min-height:100vh;background:
+  radial-gradient(circle at 14% 0%,rgba(67,139,201,.15),transparent 31%),
+  radial-gradient(circle at 88% 11%,rgba(153,92,205,.10),transparent 28%),
+  #070b11}
+main{width:min(1280px,calc(100% - 32px));margin:0 auto;padding:30px 0 54px}
+header{display:flex;gap:24px;align-items:flex-start;justify-content:space-between;margin-bottom:26px}
+h1{margin:0 0 8px;font-size:clamp(24px,3vw,38px);letter-spacing:.01em}
+.lead{max-width:850px;margin:0;color:#a9b6c5;font-size:13px;line-height:1.75}
+.status{flex:0 0 auto;padding:10px 13px;border:1px solid #304154;border-radius:10px;background:#0b121b;color:#a8b6c7;font-size:12px}
+.status b{color:#fff;font-size:17px;margin-right:4px}
+.section{margin-top:30px}
+.section-head{display:flex;align-items:end;gap:13px;margin-bottom:12px}
+.section h2{margin:0;font-size:20px}
+.section-head p{margin:0 0 1px;color:var(--muted);font-size:12px}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid #3c4d60;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.05em;color:#b7c4d1}
+.badge.same{border-color:rgba(119,226,184,.36);color:#9be7c8;background:rgba(62,171,130,.08)}
+.badge.diff{border-color:rgba(255,211,122,.34);color:#ffd996;background:rgba(193,137,39,.08)}
+.item{display:grid;grid-template-columns:minmax(190px,.75fr) minmax(0,2.3fr) 160px;gap:16px;align-items:stretch;padding:16px;margin:10px 0;border:1px solid #273445;border-radius:15px;background:linear-gradient(180deg,rgba(17,24,35,.94),rgba(10,16,24,.94));box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.item-title h3{margin:0 0 7px;font-size:15px}
+.item-title p{margin:0;color:#8998aa;font-size:11px;line-height:1.65}
+.paths{margin-top:9px;color:#6f8093;font:10px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}
+.variant{min-width:0;border:1px solid #263342;border-radius:11px;overflow:hidden;background:#080d14}
+.variant-head{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-bottom:1px solid #253140;color:#a9b6c3;font-size:10px;font-weight:800;letter-spacing:.06em}
+.variant-head code{color:#7f91a4;font:9px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right;white-space:normal}
+.demo{height:122px;display:grid;place-items:center;position:relative;overflow:hidden;background:#0a1018}
+.choice{display:flex;align-items:center;justify-content:center;border-left:1px solid #263342}
+.choice label{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;color:#9eacba;font-size:11px;text-align:center}
+.choice input{appearance:none;width:48px;height:26px;margin:0;border:1px solid #4a5a6b;border-radius:999px;background:#202a35;position:relative;transition:.18s}
+.choice input::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#c7d0da;transition:.18s}
+.choice input:checked{background:#1d6b5c;border-color:#52c9ad;box-shadow:0 0 14px rgba(82,201,173,.20)}
+.choice input:checked::after{transform:translateX(22px);background:#f4ffff}
+.choice strong{color:#e8f0f7;font-size:12px}
+/* preview shapes */
+.bg-setup-mobile,.bg-game-mobile{background:
+  radial-gradient(circle at 50% 25%,rgba(72,129,190,.23),transparent 31%),
+  radial-gradient(circle at 22% 82%,rgba(177,104,255,.14),transparent 36%),
+  radial-gradient(circle at 68% 84%,rgba(72,190,225,.09),transparent 35%),
+  linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%)}
+.bg-result,.bg-game-pc-base{background:
+  radial-gradient(circle at 50% 28%,rgba(72,129,190,.22),transparent 34%),
+  radial-gradient(circle at 25% 75%,rgba(177,104,255,.12),transparent 38%),
+  linear-gradient(180deg,#0d1723 0%,#070b11 70%)}
+.bg-game-pc-base::after{content:"PC側は実際にはAurora / vignette / ditherを追加";position:absolute;left:10px;right:10px;bottom:8px;color:#9eb0bf;font-size:9px;text-align:center}
+.arrow-box{width:184px;height:36px;border:1px solid #3a5169;border-radius:8px;background:#0d1824;display:flex;align-items:center;padding:0 38px 0 11px;color:#e7eef7;font-weight:700;font-size:13px;position:relative}
+.arrow-box::after{content:"";position:absolute;right:12px;top:50%;width:8px;height:8px;border-right:2px solid var(--arrow);border-bottom:2px solid var(--arrow);transform:translateY(-68%) rotate(45deg)}
+.arrow-pc{--arrow:#aebdca}.arrow-mobile{--arrow:#9fabb9}
+.focus-box{width:184px;height:36px;border:1px solid var(--accent);border-radius:8px;background:#0d1824;display:grid;place-items:center;color:#e7eef7;font-size:12px;font-weight:700;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 14%,transparent)}
+.focus-pc{--accent:#5ebdff}.focus-mobile{--accent:#68c8ff}
+.chart-demo{width:88%;height:68px;position:relative;border-radius:0 0 10px 10px;background:linear-gradient(to bottom,transparent 0 29.33%,rgba(255,255,255,.02) 29.33% 58.66%,transparent 58.66% 88%,rgba(255,255,255,.02) 88% 100%);box-shadow:0 7px 20px rgba(0,0,0,.38)}
+.chart-pc{border-bottom:1px solid rgba(176,182,190,.30)}
+.chart-mobile{border:1px solid rgba(176,182,190,.34)}
+.chart-pc::after{content:"";position:absolute;inset:0;background:linear-gradient(130deg,rgba(255,255,255,.055),transparent 20%,transparent 76%,rgba(124,219,255,.022));mix-blend-mode:screen}
+.d-badge{position:relative;width:64px;height:64px;display:grid;place-items:center}
+.d-badge::before{content:"";position:absolute;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle closest-side at center,rgba(170,255,244,.76) 0%,rgba(142,248,235,.72) 12%,rgba(104,234,219,.60) 28%,rgba(74,218,205,.44) 46%,rgba(58,201,199,.28) 64%,rgba(52,190,204,.15) 80%,rgba(52,190,204,.06) 92%,transparent 100%);opacity:var(--dop)}
+.d-badge span{position:relative;font-family:"Arial Black",Impact,sans-serif;font-size:46px;font-style:italic;font-weight:1000;line-height:.9;color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.82);background:linear-gradient(105deg,#f8fbff 0%,#ff7bd3 13%,#15c9f4 29%,#ffd04a 44%,#9d48ed 62%,#16c7e3 81%,#f8fbff 100%);background-clip:text;-webkit-background-clip:text;transform:skewX(-4deg) scaleX(1.04)}
+.d-pc{--dop:.82}.d-mobile{--dop:.78;transform:scale(.66)}
+.glass-btn{width:128px;height:38px;border:1px solid rgba(22,39,48,.88);border-radius:999px;color:#eef3f7;display:grid;place-items:center;font-size:11px;font-weight:900;letter-spacing:.08em;background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(255,255,255,.10)),rgba(7,17,24,.27);box-shadow:inset 0 1px 0 rgba(203,230,245,.92),inset 0 -1px 0 rgba(184,209,225,.88),0 0 0 1px rgba(0,8,13,.88),0 0 0 var(--ring1) rgba(0,49,57,var(--ra)),0 0 0 var(--ring2) rgba(8,16,62,var(--rb)),0 8px 20px rgba(0,0,0,.34)}
+.glass-pc{--ring1:2px;--ring2:3px;--ra:.10;--rb:.065}.glass-mobile{--ring1:1.6px;--ring2:2.4px;--ra:.09;--rb:.055}
+.edge-note{position:absolute;bottom:7px;font-size:9px;color:#8797a9}
+#jsonBox{width:100%;min-height:170px;margin-top:22px;padding:14px;border:1px solid #2c3949;border-radius:12px;background:#080d13;color:#b8c7d6;font:11px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+button{border:1px solid #3c4b5c;border-radius:9px;background:#121b26;color:#e9f1f8;padding:8px 12px;font-weight:800;cursor:pointer}
+button:hover{background:#192432}
+.note{margin-top:10px;color:#6f8092;font-size:10px;line-height:1.6}
+@media(max-width:820px){
+  .item{grid-template-columns:1fr}.choice{border-left:0;border-top:1px solid #263342;padding-top:13px}.compare{grid-template-columns:1fr}header{flex-direction:column}.status{align-self:flex-start}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div>
+    <h1>色参照の共通化チェック</h1>
+    <p class="lead">本番CSSのうち、PC／スマホや画面間で「同じ役割なのに共通変数を参照していない」候補だけを並べています。ここでのON/OFFは比較ページ内の選択記録だけで、本番には反映しません。</p>
+  </div>
+  <div class="status"><b id="selectedCount">0</b>件を共通化候補に選択</div>
+</header>
+
+<section class="section">
+  <div class="section-head"><h2>1. 現状の色は同じ</h2><span class="badge same">見た目変更なしで共通化可能</span></div>
+  <div class="section-head"><p>同じ値を別々のCSSへ直接書いているため、将来片方だけ変更するとズレる可能性があるもの。</p></div>
+
+  <article class="item" data-id="mobile-setup-game-bg" data-label="スマホ：開始画面背景 ↔ ゲーム背景">
+    <div class="item-title"><h3>スマホ：開始画面背景 ↔ ゲーム背景</h3><p>4層の背景グラデーションが同一ですが、別セレクタへ同じ値をコピペしています。</p><div class="paths">setup-visual-final.css / game-visual.css</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>開始画面</span><code>同一4-layer gradient</code></div><div class="demo bg-setup-mobile"></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホゲーム</span><code>同一4-layer gradient</code></div><div class="demo bg-game-mobile"></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>OFF = 現状維持</span></label></div>
+  </article>
+
+  <article class="item" data-id="pc-game-result-bg" data-label="PC：ゲーム基本背景 ↔ リザルト基本背景">
+    <div class="item-title"><h3>PC：ゲーム基本背景 ↔ リザルト基本背景</h3><p>ベースの3層背景は同じ値です。PCゲーム側だけ、この上にAurora・vignette・ditherが追加されます。</p><div class="paths">game-visual.css / result-ui.css</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>リザルト</span><code>.22 / .12 / #0d1723 → #070b11</code></div><div class="demo bg-result"></div></div>
+      <div class="variant"><div class="variant-head"><span>PCゲーム基本層</span><code>同一base gradient</code></div><div class="demo bg-game-pc-base"></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>OFF = 現状維持</span></label></div>
+  </article>
+</section>
+
+<section class="section">
+  <div class="section-head"><h2>2. 現状の色も違う</h2><span class="badge diff">共通化時に採用値の判断が必要</span></div>
+  <div class="section-head"><p>PC／スマホで見た目の差があるもの。ONは「共通化したい」という意思だけを記録し、どちらの値へ寄せるかは後で決める想定です。</p></div>
+
+  <article class="item" data-id="dropdown-arrow" data-label="プルダウン矢印">
+    <div class="item-title"><h3>プルダウン矢印</h3><p>曲名／演奏モード本体は共通変数化済みですが、▼の線色だけPCとスマホで別です。</p><div class="paths">PC #A E B D C A / mobile #9FABB9</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>PC</span><code>#AEBDCA</code></div><div class="demo"><div class="arrow-box arrow-pc">パッド（標準）</div></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホ</span><code>#9FABB9</code></div><div class="demo"><div class="arrow-box arrow-mobile">パッド（標準）</div></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>OFF = 現状維持</span></label></div>
+  </article>
+
+  <article class="item" data-id="dropdown-interaction" data-label="プルダウン操作時アクセント">
+    <div class="item-title"><h3>プルダウン操作時アクセント</h3><p>PCのフォーカス枠とスマホの押下枠が別の水色です。操作状態そのものも別ルールです。</p><div class="paths">PC focus #5EBDFF / mobile active #68C8FF</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>PC focus</span><code>#5EBDFF</code></div><div class="demo"><div class="focus-box focus-pc">FOCUS</div></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホ active</span><code>#68C8FF</code></div><div class="demo"><div class="focus-box focus-mobile">ACTIVE</div></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>OFF = 現状維持</span></label></div>
+  </article>
+
+  <article class="item" data-id="chart-outline" data-label="譜面背景の輪郭線">
+    <div class="item-title"><h3>譜面背景の輪郭線</h3><p>RGBは同じ薄いグレーですが、PCはalpha .30の下辺のみ、スマホはalpha .34の全周です。</p><div class="paths">PC rgba(176,182,190,.30) / mobile rgba(176,182,190,.34)</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>PC</span><code>bottom / α .30 + edge sheen</code></div><div class="demo"><div class="chart-demo chart-pc"></div></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホ</span><code>all sides / α .34</code></div><div class="demo"><div class="chart-demo chart-mobile"></div></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>色だけ共通化も可</span></label></div>
+  </article>
+
+  <article class="item" data-id="game-background-platform" data-label="ゲーム背景 PC ↔ スマホ">
+    <div class="item-title"><h3>ゲーム背景 PC ↔ スマホ</h3><p>PCはリザルト由来の暗い3層ベース、スマホは開始画面と同じ4層ベースです。現在は意図的に別設計です。</p><div class="paths">PC .22/.12 base + Aurora / mobile .23/.14/.09 static</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>PC base</span><code>result-derived</code></div><div class="demo bg-game-pc-base"></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホ</span><code>setup-derived</code></div><div class="demo bg-game-mobile"></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>現在は意図的差分</span></label></div>
+  </article>
+
+  <article class="item" data-id="d-badge-glow" data-label="ゲームHUDのDマーク発光強度">
+    <div class="item-title"><h3>ゲームHUDのDマーク発光強度</h3><p>色相はほぼ共通ですが、PC／スマホで発光レイヤーのopacityを別指定しています。</p><div class="paths">PC glow opacity .82 / mobile .78</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>PC</span><code>opacity .82</code></div><div class="demo"><div class="d-badge d-pc"><span>D</span></div></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホ</span><code>opacity .78</code></div><div class="demo"><div class="d-badge d-mobile"><span>D</span></div></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>サイズ差は維持可能</span></label></div>
+  </article>
+
+  <article class="item" data-id="glass-button-rings" data-label="ガラスボタン外周リング">
+    <div class="item-title"><h3>ガラスボタン外周リング</h3><p>本体色は共通ですが、スマホだけ外周2層の濃度を少し弱めています。</p><div class="paths">PC cyan .10 / violet .065　mobile cyan .09 / violet .055</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>PC</span><code>.10 / .065</code></div><div class="demo"><div class="glass-btn glass-pc">ホーム</div></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホ</span><code>.09 / .055</code></div><div class="demo"><div class="glass-btn glass-mobile">ホーム</div></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>線幅差は別管理可</span></label></div>
+  </article>
+
+  <article class="item" data-id="chart-edge-sheen" data-label="譜面背景のエッジハイライト">
+    <div class="item-title"><h3>譜面背景のエッジハイライト</h3><p>PCは白〜シアンのごく薄いエッジハイライトあり、スマホは発光感を避けるため無効です。</p><div class="paths">PC rgba(255,255,255,.055) + rgba(124,219,255,.022) / mobile none</div></div>
+    <div class="compare">
+      <div class="variant"><div class="variant-head"><span>PC</span><code>edge sheen ON</code></div><div class="demo"><div class="chart-demo chart-pc"></div></div></div>
+      <div class="variant"><div class="variant-head"><span>スマホ</span><code>display:none</code></div><div class="demo"><div class="chart-demo chart-mobile"></div></div></div>
+    </div>
+    <div class="choice"><label><input type="checkbox"><strong>共通化する</strong><span>現在は意図的差分</span></label></div>
+  </article>
+</section>
+
+<textarea id="jsonBox" readonly></textarea>
+<div class="actions"><button id="clearBtn" type="button">全てOFF</button><button id="copyBtn" type="button">選択内容をコピー</button></div>
+<p class="note">チェック状態はこのブラウザのlocalStorageに保存します。選択内容をコピーしてチャットへ貼れば、そのON/OFFを基準に本番の共通化作業へ進められます。</p>
+</main>
+<script>
+(()=>{
+  const key='drumaster-color-source-audit-v1';
+  const items=[...document.querySelectorAll('.item')];
+  const box=document.getElementById('jsonBox');
+  const count=document.getElementById('selectedCount');
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch(_){saved={}}
+  for(const item of items){
+    const cb=item.querySelector('input[type=checkbox]');
+    cb.checked=!!saved[item.dataset.id];
+    cb.addEventListener('change',update);
+  }
+  function update(){
+    const state={};
+    const selected=[];
+    for(const item of items){
+      const checked=item.querySelector('input[type=checkbox]').checked;
+      state[item.dataset.id]=checked;
+      selected.push({id:item.dataset.id,label:item.dataset.label,commonize:checked});
+    }
+    localStorage.setItem(key,JSON.stringify(state));
+    count.textContent=selected.filter(x=>x.commonize).length;
+    box.value=JSON.stringify({colorCommonization:selected},null,2);
+  }
+  document.getElementById('clearBtn').addEventListener('click',()=>{for(const item of items)item.querySelector('input').checked=false;update()});
+  document.getElementById('copyBtn').addEventListener('click',async e=>{
+    try{await navigator.clipboard.writeText(box.value);e.currentTarget.textContent='コピーしました';setTimeout(()=>e.currentTarget.textContent='選択内容をコピー',1200)}catch(_){box.select()}
+  });
+  update();
+})();
+</script>
+</body>
+</html>

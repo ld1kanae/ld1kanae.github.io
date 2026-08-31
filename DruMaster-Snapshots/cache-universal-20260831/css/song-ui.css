@@ -1,0 +1,196 @@
+/* Song selector shared by PC and smartphone setup screens. */
+.song-card{position:relative;z-index:18;overflow:visible}
+.song-card>div:first-child{min-width:0;flex:1}
+.song-card .setup-bpm{
+  position:absolute;
+  right:22px;
+  top:18px;
+  transform:translateY(-50%);
+  white-space:nowrap;
+  color:inherit;
+  font-family:inherit;
+  font-size:26px;
+  font-weight:700;
+  line-height:1.2;
+  letter-spacing:normal;
+}
+.song-hud .hud-bpm{
+  grid-column:2;
+  grid-row:1 / span 2;
+  align-self:center;
+  white-space:nowrap;
+  color:inherit;
+  font-family:inherit;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.05;
+  letter-spacing:normal;
+  opacity:1;
+}
+#songSelect{
+  display:block;
+  width:100%;
+  margin-top:9px;
+  padding:10px 30px 10px 11px;
+  border:1px solid #344354;
+  border-radius:8px;
+  background:#0b1119;
+  color:#dfe9f4;
+  font:700 12px/1.2 system-ui,sans-serif;
+  letter-spacing:.03em;
+  outline:none;
+}
+#songSelect option{font-size:12px}
+#songSelect option:checked,
+#performanceModeSelect option:checked{background:#2a4458;color:#fff}
+#songSelect:focus{border-color:#5ebdff;box-shadow:0 0 0 2px #38a9ff22}
+#songSelect option:disabled{color:#627080}
+
+.mobile-custom-select{display:none}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .song-card .setup-bpm{right:16px;font-size:22px}
+  .song-hud .hud-bpm{font-size:14px;line-height:1.05}
+
+  /* Native Android select popups ignore #app's forced 90deg transform, so the
+     real select stays only as the data/control source and a DOM menu is shown. */
+  #songSelect{margin-top:4px;padding:8px 26px 8px 10px;font-size:14px;border-radius:7px}
+  #songSelect option{font-size:15px}
+  #songSelect.mobile-native-select-hidden,
+  #performanceModeSelect.mobile-native-select-hidden{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    overflow:hidden!important;
+  }
+
+  .mobile-custom-select{
+    position:relative;
+    display:block;
+    min-width:0;
+  }
+  .song-custom-select{width:100%;margin-top:4px}
+  .mode-custom-select{width:184px;max-width:184px;flex:0 0 184px;margin-left:auto}
+  .mobile-custom-select.open{z-index:1000}
+
+  .mobile-custom-select-trigger{
+    position:relative;
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:38px;
+    padding:8px 34px 8px 11px;
+    border:1px solid #3b4b5d;
+    border-radius:8px;
+    background:linear-gradient(180deg,#101823,#0a1119);
+    color:#edf5fd;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 3px 10px rgba(0,0,0,.18);
+    text-align:left;
+    font:750 14px/1.22 system-ui,sans-serif;
+    letter-spacing:.025em;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+  .mobile-custom-select-trigger:active{border-color:#68c8ff;background:#111d29}
+  .mobile-custom-select-value{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mobile-custom-select-arrow{
+    position:absolute;
+    right:12px;
+    top:50%;
+    width:9px;
+    height:9px;
+    border-right:2px solid #9fabb9;
+    border-bottom:2px solid #9fabb9;
+    transform:translateY(-68%) rotate(45deg);
+    transition:transform .12s ease;
+  }
+  .mobile-custom-select.open .mobile-custom-select-arrow{transform:translateY(-30%) rotate(225deg)}
+
+  .mobile-custom-select-menu{
+    position:absolute;
+    left:0;
+    right:0;
+    top:calc(100% + 6px);
+    z-index:1001;
+    max-height:180px;
+    overflow:auto;
+    padding:5px;
+    border:1px solid #46596e;
+    border-radius:11px;
+    background:#111820f7;
+    box-shadow:0 14px 34px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.045);
+    backdrop-filter:blur(9px);
+    scrollbar-width:thin;
+  }
+  .mobile-custom-select.open-up .mobile-custom-select-menu{
+    top:auto;
+    bottom:calc(100% + 6px);
+  }
+  .mobile-custom-select-menu[hidden]{display:none!important}
+  .mobile-custom-select-option{
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:45px;
+    padding:9px 12px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:#e9f1fa;
+    text-align:left;
+    font:700 15px/1.25 system-ui,sans-serif;
+    letter-spacing:.018em;
+    white-space:normal;
+  }
+  .mobile-custom-select-option-label{min-width:0;flex:1}
+  .mobile-custom-select-mic{
+    display:inline-grid;
+    place-items:center;
+    width:18px;
+    height:18px;
+    margin-left:8px;
+    flex:0 0 18px;
+    color:#d7e4ee;
+    opacity:.92;
+  }
+  .mobile-custom-select-mic svg{width:100%;height:100%;overflow:visible}
+  .mobile-custom-select-mic rect,
+  .mobile-custom-select-mic path{
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  /* Keep every row independently rounded; the previous radius reset made the
+     top edge of selected rows look clipped. */
+  .mobile-custom-select-option+.mobile-custom-select-option{border-top:1px solid rgba(255,255,255,.07)}
+  .mobile-custom-select-option.selected{
+    background:#2a4458;
+    color:#fff;
+    box-shadow:none;
+  }
+  .mobile-custom-select-option:active{background:rgba(92,194,255,.20)}
+  .mobile-custom-select-option:disabled{color:#667382;opacity:.55}
+
+  .mode-custom-select .mobile-custom-select-trigger{
+    min-height:34px;
+    padding:6px 30px 6px 9px;
+    font-size:12.5px;
+  }
+  .mode-custom-select .mobile-custom-select-option{
+    min-height:39px;
+    padding:7px 10px;
+    font-size:13px;
+  }
+  .song-custom-select .mobile-custom-select-option{
+    min-height:39px;
+    padding:7px 10px;
+    font-size:13px;
+  }
+}

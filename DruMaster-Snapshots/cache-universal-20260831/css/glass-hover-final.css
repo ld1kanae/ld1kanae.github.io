@@ -1,0 +1,342 @@
+/* Approved production PC hover values from the live editor. */
+@media (hover:hover) and (pointer:fine){
+  .glass-hover-wrap{
+    --ig-width:10px;
+    --ig-core:1;
+    --ig-shoulder:.21;
+    --ig-tail:.04;
+    --ig-shoulder-stop:18%;
+    --ig-tail-stop:64%;
+    --ig-blur:3px;
+    --halo-y:0px;
+    --halo-height:22px;
+    --halo-blur:12px;
+    --halo-opacity:.51;
+    --halo-expand-x:0px;
+    --spectral-angle:337.5deg;
+    position:relative;
+    isolation:isolate;
+    display:inline-grid;
+    place-items:center;
+    overflow:visible;
+  }
+  .glass-hover-wrap.start-wrap{--halo-height:26px;grid-area:start}
+  /* Pause remains the header's real flex item; all hover layers use its exact
+     box instead of a generated wrapper with a different coordinate space. */
+  #pause.glass-hover-inline{
+    --ig-width:10px;
+    --ig-core:1;
+    --ig-shoulder:.21;
+    --ig-tail:.04;
+    --ig-shoulder-stop:18%;
+    --ig-tail-stop:64%;
+    --ig-blur:3px;
+    --spectral-angle:337.5deg;
+    position:relative!important;
+    z-index:1!important;
+    isolation:isolate!important;
+    overflow:hidden!important;
+  }
+
+  #start:hover:not(:disabled),
+  #pause:hover,
+  #scorePlaybackControls button:hover,
+  #pausePanel button:hover,
+  .result-actions button:hover,
+  .mic-cal-actions button:hover:not(:disabled){--glass-hover-fade:0!important}
+
+  #scorePlaybackControls>.glass-hover-wrap{
+    width:42px;min-width:42px;max-width:42px;
+    height:42px;min-height:42px;max-height:42px;
+  }
+  #scorePlaybackControls>.glass-hover-wrap>button{
+    width:42px!important;min-width:42px!important;max-width:42px!important;
+    height:42px!important;min-height:42px!important;max-height:42px!important;
+  }
+  .result-actions>.glass-hover-wrap{width:140px;min-width:140px;flex:0 0 140px}
+  .result-actions>.glass-hover-wrap>button{width:140px;min-width:140px}
+
+  .glass-hover-drop{
+    position:absolute;
+    z-index:0;
+    pointer-events:none;
+    left:calc(-1 * var(--halo-expand-x));
+    right:calc(-1 * var(--halo-expand-x));
+    top:50%;
+    height:var(--halo-height);
+    transform:translateY(var(--halo-y));
+    border-radius:999px;
+    background:linear-gradient(var(--spectral-angle),
+      rgba(215,89,168,.90) 0%,
+      rgba(197,177,83,.74) 27%,
+      rgba(71,201,190,.86) 52%,
+      rgba(64,149,207,.88) 70%,
+      rgba(194,92,197,.88) 100%);
+    filter:blur(var(--halo-blur)) saturate(105%);
+    opacity:0;
+    transition:opacity .20s ease;
+  }
+
+  .glass-hover-wrap>button{position:relative!important;z-index:1!important;overflow:hidden!important}
+  .glass-hover-wrap>button::before,
+  .glass-hover-wrap>button::after{content:none!important}
+
+  .glass-inner-stack{
+    position:absolute;
+    z-index:1;
+    left:0;right:0;
+    height:var(--ig-width);
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .20s ease;
+    overflow:visible;
+  }
+  .glass-inner-stack.top{top:0}
+  .glass-inner-stack.bottom{bottom:0}
+  .glass-inner-stack>i{
+    position:absolute;
+    left:-2%;right:-2%;
+    display:block;
+    pointer-events:none;
+    background:linear-gradient(var(--spectral-angle),#d759a8 0%,#cf6f8b 9%,#bfbc4b 27%,#6bb77e 42%,#47c9be 52%,#4095cf 67%,#4d65be 82%,#c25cc5 100%);
+    background-size:104% 100%;
+    background-position:center;
+  }
+  .glass-inner-stack.top>i{top:0}
+  .glass-inner-stack.bottom>i{bottom:0}
+  .glass-inner-stack .tail{height:100%;opacity:var(--ig-tail);filter:blur(calc(var(--ig-blur) * 2.35)) saturate(106%)}
+  .glass-inner-stack .shoulder{height:var(--ig-tail-stop);opacity:var(--ig-shoulder);filter:blur(var(--ig-blur)) saturate(110%)}
+  .glass-inner-stack .core{height:var(--ig-shoulder-stop);opacity:var(--ig-core);filter:blur(calc(var(--ig-blur) * .42)) saturate(116%)}
+
+  /* Original editor animation layers. No v3/v4 end-position or width controls. */
+  .glass-hover-face-sheen,
+  .glass-hover-face-flash{
+    position:absolute!important;
+    z-index:2!important;
+    pointer-events:none!important;
+    display:block!important;
+    opacity:0;
+  }
+  .glass-hover-face-sheen{
+    top:-40%!important;
+    bottom:-40%!important;
+    left:-58%;
+    width:38%;
+    transform:skewX(-22deg);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),rgba(255,255,255,.72),rgba(190,242,255,.24),transparent);
+    filter:blur(.6px);
+  }
+  .glass-hover-face-flash{
+    inset:0!important;
+    background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(222,246,255,.16) 46%,rgba(255,255,255,.32));
+    mix-blend-mode:screen;
+  }
+
+  .glass-hover-rim-svg{
+    position:absolute;
+    z-index:4;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    overflow:visible;
+  }
+  .glass-hover-rim-svg rect{fill:none;vector-effect:non-scaling-stroke}
+  .glass-hover-rim-run{
+    stroke:#fff;
+    stroke-width:1.35;
+    stroke-linecap:round;
+    stroke-dasharray:6 94;
+    opacity:0;
+    filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(144,226,255,.88));
+  }
+
+  .glass-hover-wrap>button>*:not(.glass-inner-stack):not(.glass-hover-face-sheen):not(.glass-hover-face-flash),
+  #pause.glass-hover-inline>*:not(.glass-inner-stack):not(.glass-hover-face-sheen):not(.glass-hover-face-flash):not(.glass-hover-rim-svg){position:relative;z-index:5}
+
+  .glass-hover-wrap:hover .glass-hover-drop{opacity:var(--halo-opacity)}
+  .glass-hover-wrap:hover .glass-inner-stack,
+  #pause.glass-hover-inline:hover .glass-inner-stack{opacity:1}
+  .glass-hover-wrap:hover>button:not(:disabled),
+  #pause.glass-hover-inline:hover:not(:disabled){
+    filter:brightness(1.02)!important;
+    box-shadow:
+      inset 0 1px 0 rgba(223,225,227,.90),
+      inset 0 -1px 0 rgba(228,230,232,.95),
+      inset 1px 0 0 rgba(154,161,168,.58),
+      inset -1px 0 0 rgba(154,161,168,.58),
+      0 6px 14px rgba(0,0,0,.18)!important;
+  }
+
+  /* Pause has no layout wrapper. Build the complete external material on the
+     button itself so the glow cannot be hidden behind the header or displaced. */
+  #pause.glass-hover-inline:hover:not(:disabled){
+    --glass-hover-fade:1!important;
+    box-shadow:
+      inset 0 1px 0 rgba(223,225,227,.96),
+      inset 0 -1px 0 rgba(228,230,232,.98),
+      inset 1px 0 0 rgba(154,161,168,.66),
+      inset -1px 0 0 rgba(154,161,168,.66),
+      -9px 0 17px rgba(215,89,168,.42),
+      9px 0 17px rgba(64,149,207,.48),
+      0 7px 18px rgba(71,201,190,.28),
+      0 6px 14px rgba(0,0,0,.20)!important;
+  }
+}
+
+
+/* Smartphone: replay the complete PC hover material once on button tap. */
+@media (hover:none) and (pointer:coarse){
+  .glass-hover-wrap{
+    --ig-width:10px;
+    --ig-core:1;
+    --ig-shoulder:.21;
+    --ig-tail:.04;
+    --ig-shoulder-stop:18%;
+    --ig-tail-stop:64%;
+    --ig-blur:3px;
+    --halo-y:0px;
+    --halo-height:22px;
+    --halo-blur:12px;
+    --halo-opacity:.51;
+    --halo-expand-x:0px;
+    --spectral-angle:337.5deg;
+    position:relative;
+    isolation:isolate;
+    display:inline-grid;
+    place-items:center;
+    overflow:visible;
+  }
+  .glass-hover-wrap.start-wrap{--halo-height:26px;grid-area:start}
+  #pause.glass-hover-inline{
+    --ig-width:10px;
+    --ig-core:1;
+    --ig-shoulder:.21;
+    --ig-tail:.04;
+    --ig-shoulder-stop:18%;
+    --ig-tail-stop:64%;
+    --ig-blur:3px;
+    --spectral-angle:337.5deg;
+    position:relative!important;
+    z-index:1!important;
+    isolation:isolate!important;
+    overflow:hidden!important;
+  }
+  .glass-hover-drop{
+    position:absolute;
+    z-index:0;
+    pointer-events:none;
+    left:calc(-1 * var(--halo-expand-x));
+    right:calc(-1 * var(--halo-expand-x));
+    top:50%;
+    height:var(--halo-height);
+    transform:translateY(var(--halo-y));
+    border-radius:999px;
+    background:linear-gradient(var(--spectral-angle),
+      rgba(215,89,168,.90) 0%,
+      rgba(197,177,83,.74) 27%,
+      rgba(71,201,190,.86) 52%,
+      rgba(64,149,207,.88) 70%,
+      rgba(194,92,197,.88) 100%);
+    filter:blur(var(--halo-blur)) saturate(105%);
+    opacity:0;
+    transition:opacity .20s ease;
+  }
+  .glass-hover-wrap>button{position:relative!important;z-index:1!important;overflow:hidden!important}
+  .glass-hover-wrap>button::before,
+  .glass-hover-wrap>button::after{content:none!important}
+  .glass-inner-stack{
+    position:absolute;
+    z-index:1;
+    left:0;right:0;
+    height:var(--ig-width);
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .20s ease;
+    overflow:visible;
+  }
+  .glass-inner-stack.top{top:0}
+  .glass-inner-stack.bottom{bottom:0}
+  .glass-inner-stack>i{
+    position:absolute;
+    left:-2%;right:-2%;
+    display:block;
+    pointer-events:none;
+    background:linear-gradient(var(--spectral-angle),#d759a8 0%,#cf6f8b 9%,#bfbc4b 27%,#6bb77e 42%,#47c9be 52%,#4095cf 67%,#4d65be 82%,#c25cc5 100%);
+    background-size:104% 100%;
+    background-position:center;
+  }
+  .glass-inner-stack.top>i{top:0}
+  .glass-inner-stack.bottom>i{bottom:0}
+  .glass-inner-stack .tail{height:100%;opacity:var(--ig-tail);filter:blur(calc(var(--ig-blur) * 2.35)) saturate(106%)}
+  .glass-inner-stack .shoulder{height:var(--ig-tail-stop);opacity:var(--ig-shoulder);filter:blur(var(--ig-blur)) saturate(110%)}
+  .glass-inner-stack .core{height:var(--ig-shoulder-stop);opacity:var(--ig-core);filter:blur(calc(var(--ig-blur) * .42)) saturate(116%)}
+  .glass-hover-face-sheen,
+  .glass-hover-face-flash{
+    position:absolute!important;
+    z-index:2!important;
+    pointer-events:none!important;
+    display:block!important;
+    opacity:0;
+  }
+  .glass-hover-face-sheen{
+    top:-40%!important;
+    bottom:-40%!important;
+    left:-58%;
+    width:38%;
+    transform:skewX(-22deg);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),rgba(255,255,255,.72),rgba(190,242,255,.24),transparent);
+    filter:blur(.6px);
+  }
+  .glass-hover-face-flash{
+    inset:0!important;
+    background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(222,246,255,.16) 46%,rgba(255,255,255,.32));
+    mix-blend-mode:screen;
+  }
+  .glass-hover-rim-svg{
+    position:absolute;
+    z-index:4;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    overflow:visible;
+  }
+  .glass-hover-rim-svg rect{fill:none;vector-effect:non-scaling-stroke}
+  .glass-hover-rim-run{
+    stroke:#fff;
+    stroke-width:1.35;
+    stroke-linecap:round;
+    stroke-dasharray:6 94;
+    opacity:0;
+    filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(144,226,255,.88));
+  }
+  .glass-hover-wrap>button>*:not(.glass-inner-stack):not(.glass-hover-face-sheen):not(.glass-hover-face-flash),
+  #pause.glass-hover-inline>*:not(.glass-inner-stack):not(.glass-hover-face-sheen):not(.glass-hover-face-flash):not(.glass-hover-rim-svg){position:relative;z-index:5}
+  .glass-hover-wrap.glass-tap-active .glass-hover-drop{opacity:var(--halo-opacity)}
+  .glass-hover-wrap.glass-tap-active .glass-inner-stack,
+  #pause.glass-hover-inline.glass-tap-active .glass-inner-stack{opacity:1}
+  .glass-hover-wrap.glass-tap-active>button:not(:disabled){
+    filter:brightness(1.02)!important;
+    box-shadow:
+      inset 0 1px 0 rgba(223,225,227,.90),
+      inset 0 -1px 0 rgba(228,230,232,.95),
+      inset 1px 0 0 rgba(154,161,168,.58),
+      inset -1px 0 0 rgba(154,161,168,.58),
+      0 0 0 1px rgba(128,134,140,.84),
+      0 6px 14px rgba(0,0,0,.18)!important;
+  }
+  #pause.glass-hover-inline.glass-tap-active:not(:disabled){
+    --glass-hover-fade:1!important;
+    box-shadow:
+      inset 0 1px 0 rgba(223,225,227,.96),
+      inset 0 -1px 0 rgba(228,230,232,.98),
+      inset 1px 0 0 rgba(154,161,168,.66),
+      inset -1px 0 0 rgba(154,161,168,.66),
+      0 0 0 1px rgba(175,205,222,.92),
+      -9px 0 17px rgba(215,89,168,.42),
+      9px 0 17px rgba(64,149,207,.48),
+      0 7px 18px rgba(71,201,190,.28),
+      0 6px 14px rgba(0,0,0,.20)!important;
+  }
+}

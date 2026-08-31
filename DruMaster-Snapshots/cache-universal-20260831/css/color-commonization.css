@@ -1,0 +1,125 @@
+/* Authoritative color-commonization layer.
+   Only items explicitly approved in preview-color-source-audit are unified here.
+   Geometry, opacity differences, animation and platform-specific effects remain separate. */
+:root{
+  /* Smartphone setup <-> smartphone gameplay: same static base background. */
+  --dm-mobile-setup-game-bg:
+    radial-gradient(circle at 50% 25%,rgba(72,129,190,.23),transparent 31%),
+    radial-gradient(circle at 22% 82%,rgba(177,104,255,.14),transparent 36%),
+    radial-gradient(circle at 68% 84%,rgba(72,190,225,.09),transparent 35%),
+    linear-gradient(180deg,#0d1723 0%,#070b11 70%,#020916 100%);
+
+  /* Desktop gameplay <-> result: same dark base background.
+     Their aurora/aura/vignette layers remain independent. */
+  --dm-pc-game-result-bg:
+    radial-gradient(circle at 50% 28%,rgba(72,129,190,.22),transparent 34%),
+    radial-gradient(circle at 25% 75%,rgba(177,104,255,.12),transparent 38%),
+    linear-gradient(180deg,#0d1723 0%,#070b11 70%);
+
+  /* Midpoints between the former desktop/mobile dropdown colors. */
+  --dm-dropdown-arrow:#a7b4c2;
+  --dm-dropdown-accent:#63c3ff;
+  --dm-dropdown-accent-rgb:99 195 255;
+
+  /* D-mark glow color ramp. Desktop/mobile opacity remains independent. */
+  --dm-d-glow-gradient:radial-gradient(circle closest-side at center,
+    rgba(170,255,244,.76) 0%,
+    rgba(142,248,235,.72) 12%,
+    rgba(104,234,219,.60) 28%,
+    rgba(74,218,205,.44) 46%,
+    rgba(58,201,199,.28) 64%,
+    rgba(52,190,204,.15) 80%,
+    rgba(52,190,204,.06) 92%,
+    transparent 100%);
+
+  /* Shared RGB sources for glass-button outer rings.
+     Desktop/mobile keep their own alpha/line-width optical compensation. */
+  --dm-glass-ring-dark-rgb:0 8 13;
+  --dm-glass-ring-cyan-rgb:0 49 57;
+  --dm-glass-ring-violet-rgb:8 16 62;
+}
+
+/* 1) Smartphone setup background <-> smartphone gameplay background. */
+.setup{
+  background:var(--dm-mobile-setup-game-bg)!important;
+}
+
+/* 2) Desktop gameplay base <-> result base. */
+.game,
+.result{
+  background:var(--dm-pc-game-result-bg)!important;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game{
+    background:var(--dm-mobile-setup-game-bg)!important;
+  }
+}
+
+/* 3) Dropdown arrow: one color on song/mode and desktop/mobile. */
+.setup .mobile-custom-select-arrow{
+  border-right-color:var(--dm-dropdown-arrow)!important;
+  border-bottom-color:var(--dm-dropdown-arrow)!important;
+}
+
+/* 4) Dropdown interaction accent: midpoint color shared across platforms. */
+.setup #songSelect:focus,
+.setup #performanceModeSelect:focus,
+.setup .mobile-custom-select-trigger:focus-visible,
+.setup .mobile-custom-select-trigger:active{
+  border-color:var(--dm-dropdown-accent)!important;
+}
+
+.setup #songSelect:focus,
+.setup #performanceModeSelect:focus,
+.setup .mobile-custom-select-trigger:focus-visible{
+  box-shadow:0 0 0 2px rgb(var(--dm-dropdown-accent-rgb) / .13)!important;
+}
+
+.setup .mobile-custom-select-option:active:not(.selected){
+  background:rgb(var(--dm-dropdown-accent-rgb) / .20)!important;
+}
+
+/* 5) D-mark: common color ramp only. Desktop/mobile glow strength stays .82/.78. */
+.game header .rank::before{
+  background:var(--dm-d-glow-gradient)!important;
+}
+
+/* 6) Glass-button outer ring RGBs are shared. Keep the existing alpha difference
+      between desktop and touch layouts. The final elevation term comes from the
+      design-system shadow token when that layer is loaded. */
+#start,
+#pause,
+#scorePlaybackControls button,
+#pausePanel button,
+.result-actions button,
+.mic-cal-actions button{
+  box-shadow:
+    inset 0 1px 0 rgba(203,230,245,.92),
+    inset 0 -1px 0 rgba(184,209,225,.88),
+    inset 1px 0 0 rgba(8,20,27,.54),
+    inset -1px 0 0 rgba(8,20,27,.54),
+    0 0 0 1px rgb(var(--dm-glass-ring-dark-rgb) / .88),
+    0 0 0 2px rgb(var(--dm-glass-ring-cyan-rgb) / .10),
+    0 0 0 3px rgb(var(--dm-glass-ring-violet-rgb) / .065),
+    var(--dm-shadow-control-elevation,0 8px 20px rgba(0,0,0,.34))!important;
+}
+
+@media (hover:none) and (pointer:coarse){
+  #start,
+  #pause,
+  #scorePlaybackControls button,
+  #pausePanel button,
+  .result-actions button,
+  .mic-cal-actions button{
+    box-shadow:
+      inset 0 .75px 0 rgba(203,230,245,.92),
+      inset 0 -.75px 0 rgba(184,209,225,.88),
+      inset .75px 0 0 rgba(8,20,27,.54),
+      inset -.75px 0 0 rgba(8,20,27,.54),
+      0 0 0 .75px rgb(var(--dm-glass-ring-dark-rgb) / .88),
+      0 0 0 1.6px rgb(var(--dm-glass-ring-cyan-rgb) / .09),
+      0 0 0 2.4px rgb(var(--dm-glass-ring-violet-rgb) / .055),
+      var(--dm-shadow-control-elevation,0 8px 20px rgba(0,0,0,.34))!important;
+  }
+}

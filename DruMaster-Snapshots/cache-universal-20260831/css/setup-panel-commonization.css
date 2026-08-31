@@ -1,0 +1,108 @@
+/* PC setup setting-panel geometry.
+   TEMPO and VOLUME are one component frame in both normal and compact desktop layouts.
+   Smartphone setup alignment also lives here as a late, narrow override. */
+:root{
+  --dm-setup-setting-panel-width:min(480px,90vw);
+  --dm-setup-setting-panel-margin-top:14px;
+  --dm-setup-setting-panel-padding-y:14px;
+  --dm-setup-setting-panel-padding-x:20px;
+
+  --dm-setup-setting-panel-compact-width:min(430px,44vw);
+  --dm-setup-setting-panel-compact-margin:0;
+  --dm-setup-setting-panel-compact-padding-y:8px;
+  --dm-setup-setting-panel-compact-padding-x:16px;
+
+  /* Small optical correction for the forced-landscape smartphone setup UI. */
+  --dm-mobile-setup-global-nudge:8px;
+}
+
+@media (min-width:901px), (hover:hover) and (pointer:fine), (any-hover:hover) and (any-pointer:fine){
+  .setup .tempo-box,
+  .setup .volume-box{
+    width:var(--dm-setup-setting-panel-width)!important;
+    margin-top:var(--dm-setup-setting-panel-margin-top)!important;
+    padding:var(--dm-setup-setting-panel-padding-y) var(--dm-setup-setting-panel-padding-x)!important;
+    border-width:var(--dm-border-default,1px)!important;
+    border-radius:var(--dm-radius-standard,8px)!important;
+  }
+}
+
+/* Short desktop viewports compress both panels identically. */
+@media (max-height:520px) and (hover:hover) and (pointer:fine){
+  .setup .tempo-box,
+  .setup .volume-box{
+    width:var(--dm-setup-setting-panel-compact-width)!important;
+    margin:var(--dm-setup-setting-panel-compact-margin)!important;
+    padding:var(--dm-setup-setting-panel-compact-padding-y) var(--dm-setup-setting-panel-compact-padding-x)!important;
+  }
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  /* Shift the complete setup content right while retaining the previously
+     approved additional +12px balance correction on the left column. */
+  .setup>*:not(.setup-moving-lights){
+    left:var(--dm-mobile-setup-global-nudge)!important;
+  }
+  .setup>.brand,
+  .setup>.eyebrow,
+  .setup>.song-card,
+  .setup>.hint{
+    left:calc(var(--dm-mobile-setup-left-nudge,12px) + var(--dm-mobile-setup-global-nudge))!important;
+  }
+}
+
+
+/* TEMPO is the canonical meter component. VOLUME shares the same typography,
+   header rhythm, scale labels and range spacing through these joint selectors. */
+:root{
+  --dm-setup-meter-label-size:16px;
+  --dm-setup-meter-value-size:16px;
+  --dm-setup-meter-scale-size:10px;
+  --dm-setup-meter-line-height:1.2;
+  --dm-setup-meter-range-margin:13px 0 2px;
+}
+.setup :is(.tempo-box,.volume-box)>div:first-child{
+  display:flex!important;
+  align-items:baseline!important;
+  justify-content:space-between!important;
+}
+.setup :is(.tempo-box,.volume-box)>div:first-child>span{
+  font-family:inherit!important;
+  font-size:var(--dm-setup-meter-label-size)!important;
+  font-weight:400!important;
+  line-height:var(--dm-setup-meter-line-height)!important;
+  letter-spacing:normal!important;
+  color:inherit!important;
+}
+.setup :is(.tempo-box,.volume-box)>div:first-child>strong{
+  font-family:inherit!important;
+  font-size:var(--dm-setup-meter-value-size)!important;
+  font-weight:700!important;
+  line-height:var(--dm-setup-meter-line-height)!important;
+  letter-spacing:normal!important;
+  color:inherit!important;
+  font-variant-numeric:normal!important;
+}
+.setup :is(.tempo-box,.volume-box)>input[type="range"]{
+  display:block!important;
+  width:100%!important;
+  margin:var(--dm-setup-meter-range-margin)!important;
+}
+.setup :is(.tempo-box,.volume-box)>.scale{
+  display:flex!important;
+  justify-content:space-between!important;
+  font-family:inherit!important;
+  font-size:var(--dm-setup-meter-scale-size)!important;
+  font-weight:400!important;
+  line-height:1.2!important;
+  letter-spacing:normal!important;
+  color:#7f8996!important;
+}
+
+@media (max-height:520px) and (hover:hover) and (pointer:fine),
+       (hover:none) and (pointer:coarse) and (max-width:900px){
+  :root{
+    --dm-setup-meter-value-size:15.5px;
+    --dm-setup-meter-range-margin:7px 0 0;
+  }
+}

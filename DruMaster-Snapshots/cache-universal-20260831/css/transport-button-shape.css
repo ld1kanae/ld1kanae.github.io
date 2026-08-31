@@ -1,0 +1,21 @@
+/* One geometry source for every gameplay transport control.
+   Hover rims read the computed button radius, so this also synchronizes
+   the animated outline with the physical button. */
+:root{
+  --dm-transport-control-radius:12px;
+}
+
+#game header #pause,
+body[data-score-playback="1"] #scorePlaybackControls>button,
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap,
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>button,
+body[data-score-playback="1"] #scorePlaybackControls>.glass-hover-wrap>.glass-hover-drop,
+body[data-score-playback="1"] #scorePlaybackControls .glass-hover-rim-svg{
+  border-radius:var(--dm-transport-control-radius)!important;
+}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  :root{
+    --dm-transport-control-radius:6px;
+  }
+}

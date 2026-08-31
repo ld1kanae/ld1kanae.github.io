@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DruMaster Gameplay Background Lab</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#05080d;color:#eef5fc;font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{overflow:auto}
+.toolbar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;background:rgba(4,8,14,.9);border-bottom:1px solid rgba(150,180,205,.14);backdrop-filter:blur(14px)}
+.toolbar b{font-size:11px;letter-spacing:.12em;color:#91a4b8;margin-right:4px}.mode{border:1px solid rgba(144,173,198,.26);border-radius:999px;background:#0c1420;color:#94a7ba;padding:8px 11px;font:800 10px/1 system-ui;letter-spacing:.06em;cursor:pointer}.mode.active{color:#fff;background:#172538;border-color:rgba(190,220,242,.58);box-shadow:0 0 14px rgba(111,205,255,.14)}.note{margin-left:auto;max-width:560px;font-size:10px;line-height:1.45;color:#8294a8}
+.stage-wrap{display:grid;place-items:center;padding:24px 12px 40px}.stage{position:relative;isolation:isolate;overflow:hidden;width:min(1180px,96vw);aspect-ratio:16/9;background:linear-gradient(180deg,#0d1723 0%,#070b11 70%,#05080d 100%);box-shadow:0 20px 54px rgba(0,0,0,.35)}
+.bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}.bg::before,.bg::after,.aura{content:"";position:absolute;pointer-events:none}
+/* TEST ONLY: base light roughly 5x stronger */
+.bg::before{inset:0;background:radial-gradient(circle at 50% 28%,rgba(72,129,190,.88),transparent 34%),radial-gradient(circle at 25% 75%,rgba(177,104,255,.60),transparent 38%)}
+.stage.static .bg::after{inset:0;background:radial-gradient(ellipse at 62% 72%,rgba(91,206,255,.275),transparent 40%)}
+/* 2 / Wide Drift: 3x speed + exaggerated travel/opacity for motion inspection */
+.stage.drift .bg::after{width:82%;height:78%;left:4%;top:8%;border-radius:50%;filter:blur(28px);background:radial-gradient(ellipse,rgba(101,218,255,.68),rgba(113,139,255,.44) 35%,rgba(188,119,255,.38) 58%,transparent 76%);animation:drift 4.67s ease-in-out infinite alternate}
+@keyframes drift{0%{opacity:.22;transform:translate3d(-22%,8%,0) scale(.90)}42%{opacity:1;transform:translate3d(8%,-9%,0) scale(1.14)}100%{opacity:.38;transform:translate3d(34%,10%,0) scale(.94)}}
+/* 3 / Breathing Aurora: 3x speed + very large luminance swing */
+.stage.breathe .bg::after{inset:-12%;filter:blur(36px);background:radial-gradient(ellipse at 46% 28%,rgba(87,185,255,.72),transparent 42%),radial-gradient(ellipse at 34% 78%,rgba(178,111,255,.64),transparent 44%),radial-gradient(ellipse at 72% 62%,rgba(79,222,255,.48),transparent 38%);animation:breathe 2.93s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.12;transform:scale(.90) translateY(4%)}50%{opacity:1;transform:scale(1.14) translateY(-3%)}}
+/* 4 / Moving Lights: 3x speed + larger paths + opacity contrast */
+.stage.lights .aura{display:block;inset:0}.light{display:none;position:absolute;border-radius:50%;filter:blur(38px);mix-blend-mode:screen}.stage.lights .light{display:block}
+.light.cyan{width:49%;aspect-ratio:1;left:20%;top:4%;background:radial-gradient(circle,rgba(106,226,255,.82),rgba(106,226,255,.34) 42%,transparent 72%);animation:l1 4.33s ease-in-out infinite alternate}
+.light.blue{width:44%;aspect-ratio:1;left:43%;top:20%;background:radial-gradient(circle,rgba(90,147,255,.74),rgba(90,147,255,.30) 42%,transparent 73%);animation:l2 5s ease-in-out infinite alternate}
+.light.violet{width:47%;aspect-ratio:1;left:4%;top:40%;background:radial-gradient(circle,rgba(188,124,255,.72),rgba(188,124,255,.30) 41%,transparent 73%);animation:l3 4.67s ease-in-out infinite alternate}
+@keyframes l1{0%{opacity:.18;transform:translate(-18%,10%) scale(.90)}100%{opacity:1;transform:translate(30%,-18%) scale(1.18)}}
+@keyframes l2{0%{opacity:1;transform:translate(16%,-18%) scale(1.14)}100%{opacity:.16;transform:translate(-30%,22%) scale(.88)}}
+@keyframes l3{0%{opacity:.20;transform:translate(-16%,20%) scale(.92)}100%{opacity:1;transform:translate(34%,-16%) scale(1.16)}}
+/* 5 / Aurora Curtain: 3x speed + large lateral sweep */
+.stage.curtain .bg::after{inset:-22% -14%;filter:blur(22px);background:linear-gradient(112deg,transparent 7%,rgba(99,198,255,.34) 22%,rgba(130,132,255,.52) 39%,rgba(192,119,255,.36) 54%,transparent 69%);animation:curtain 4s ease-in-out infinite alternate}
+@keyframes curtain{0%{opacity:.18;transform:translateX(-30%) skewX(-12deg) scaleX(.92)}50%{opacity:1;transform:translateX(0) skewX(5deg) scaleX(1.12)}100%{opacity:.30;transform:translateX(34%) skewX(12deg) scaleX(.95)}}
+/* Gameplay mock */
+.game-ui{position:absolute;inset:0;z-index:5;display:grid;grid-template-rows:52px 34% 1fr}header{display:flex;align-items:center;padding:7px 15px;background:rgba(6,10,16,.80);border-bottom:1px solid rgba(96,113,133,.32);backdrop-filter:blur(4px)}.rank{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid #5b6979;color:#c6d2df;font-weight:900}.song{margin-left:12px}.song b,.song small{display:block}.song small{font-size:9px;color:#7f8997}.score{margin-left:auto;text-align:right}.score small{display:block;color:#718095;font-size:8px;letter-spacing:.15em}.score strong{font-size:21px;letter-spacing:.08em}.pause{margin-left:16px;width:42px;height:34px;border:0;border-radius:999px;background:rgba(18,30,43,.8);color:white;font-size:18px}
+.chart{position:relative;background:rgba(7,13,21,.72);border-bottom:1px solid rgba(107,130,153,.38);overflow:hidden}.lane{position:absolute;left:8%;right:0;height:1px;background:rgba(255,255,255,.055)}.lane:nth-child(1){top:25%}.lane:nth-child(2){top:50%}.lane:nth-child(3){top:75%}.hitline{position:absolute;left:9%;top:0;bottom:0;width:2px;background:#6fdcff;box-shadow:0 0 10px rgba(111,220,255,.35)}.notechip{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #c9d6e3;background:#223047}.notechip.n1{left:44%;top:21%}.notechip.n2{left:62%;top:46%}.notechip.n3{left:76%;top:70%}.notechip.n4{left:28%;top:46%}
+.kit{position:relative;overflow:hidden;background:radial-gradient(ellipse at center,rgba(33,40,51,.42) 0,rgba(12,16,22,.34) 68%)}.kit img{position:absolute;left:50%;bottom:-3%;transform:translateX(-50%);width:86%;max-height:105%;object-fit:contain;opacity:.86;filter:drop-shadow(0 18px 28px rgba(0,0,0,.56))}.fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,10,16,.06),rgba(2,5,10,.16))}.caption{width:min(1180px,96vw);margin:14px auto 0;padding:12px 14px;border:1px solid rgba(145,174,199,.16);background:#09111b;border-radius:13px;color:#95a8bc;font-size:11px;line-height:1.55}.caption b{color:#e4edf7}@media(max-width:760px){.note{width:100%;max-width:none;margin-left:0}.stage-wrap{padding-top:12px}.caption{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="toolbar"><b>GAME BACKGROUND / MOTION DEBUG</b><button class="mode active" data-mode="static">1 静止</button><button class="mode" data-mode="drift">2 Wide Drift</button><button class="mode" data-mode="breathe">3 Breathing Aurora</button><button class="mode" data-mode="lights">4 Moving Lights</button><button class="mode" data-mode="curtain">5 Aurora Curtain</button><div class="note">テスト専用：光量は強調したまま、アニメーション速度を約3倍・移動量と明暗差も大幅に増加。本番値ではありません。</div></div>
+<div class="stage-wrap"><div id="stage" class="stage static"><div class="bg"><i class="aura"></i><i class="light cyan"></i><i class="light blue"></i><i class="light violet"></i></div><div class="game-ui"><header><div class="rank">D</div><div class="song"><b>なないろ</b><small>BUMP OF CHICKEN　♪＝125</small></div><div class="score"><small>SCORE</small><strong>004280</strong></div><button class="pause">Ⅱ</button></header><div class="chart"><i class="lane"></i><i class="lane"></i><i class="lane"></i><i class="hitline"></i><i class="notechip n1"></i><i class="notechip n2"></i><i class="notechip n3"></i><i class="notechip n4"></i></div><div class="kit"><img src="assets/drum-kit.webp" alt=""><div class="fade"></div></div></div></div><div id="caption" class="caption"><b>1 / 静止：</b>比較基準。アニメーションなし。</div></div>
+<script>
+const stage=document.getElementById('stage'),caption=document.getElementById('caption');const desc={static:'<b>1 / 静止：</b>比較基準。アニメーションなし。',drift:'<b>2 / Wide Drift：</b>速度約3倍。移動距離と明暗差も大きくしたデバッグ表示。',breathe:'<b>3 / Breathing Aurora：</b>速度約3倍。暗→明の差と膨張量を大きくしたデバッグ表示。',lights:'<b>4 / Moving Lights：</b>速度約3倍。3光源の移動距離と明暗差を大きくしたデバッグ表示。',curtain:'<b>5 / Aurora Curtain：</b>速度約3倍。左右への移動距離と濃淡差を大きくしたデバッグ表示。'};document.querySelectorAll('[data-mode]').forEach(btn=>btn.onclick=()=>{const m=btn.dataset.mode;stage.className='stage '+m;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b===btn));caption.innerHTML=desc[m]});
+</script>
+</body></html>

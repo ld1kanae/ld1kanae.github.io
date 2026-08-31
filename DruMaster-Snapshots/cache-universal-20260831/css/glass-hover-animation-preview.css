@@ -1,0 +1,82 @@
+*{box-sizing:border-box}
+:root{color-scheme:dark;--bg:#070b11;--text:#eef3f7;--muted:#788695}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans JP",system-ui,sans-serif}
+body{padding:34px 22px;background:radial-gradient(ellipse at 50% 12%,rgba(28,52,67,.14),transparent 34%),linear-gradient(180deg,#0a1017,#06090e 76%)}
+.lab{width:min(1080px,96vw);margin:auto}.lab-head{text-align:center;margin-bottom:26px}.lab-head p{margin:0 0 7px;color:#7c8b9a;font:800 10px/1 system-ui;letter-spacing:.26em}.lab-head h1{margin:0;font-size:28px}.lab-head small{display:block;margin-top:8px;color:var(--muted);font-size:11px}
+.preview-panel{margin-top:20px;padding:26px;border:1px solid rgba(125,145,160,.14);border-radius:22px;background:rgba(3,7,11,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 24px 70px rgba(0,0,0,.34)}
+.preview-label{text-align:center;color:#6e7d8d;font:800 9px/1 system-ui;letter-spacing:.2em}.panel-note{max-width:780px;margin:8px auto 22px;text-align:center;color:#708091;font-size:10px;line-height:1.65}
+.variant-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.variant-card{padding:17px;border:1px solid rgba(130,148,162,.12);border-radius:16px;background:rgba(1,5,9,.34);display:grid;gap:20px;justify-items:center;overflow:visible}.variant-meta{width:100%;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:9px}.variant-meta b{grid-row:1/span 2;font:900 21px/1 system-ui;color:#e1e9ef}.variant-meta span{font:800 9px/1.2 system-ui;letter-spacing:.12em;color:#91a1af}.variant-meta small{margin-top:3px;font-size:10px;color:#677686}
+
+/* Approved production base values. */
+.hover-demo{
+  --ig-width:10px;--ig-core:1;--ig-shoulder:.21;--ig-tail:.04;--ig-shoulder-stop:18%;--ig-tail-stop:64%;--ig-blur:3px;
+  --halo-y:0px;--halo-height:22px;--halo-blur:12px;--halo-opacity:.51;--halo-expand-x:0px;
+  position:relative;isolation:isolate;display:grid;place-items:center;width:140px;height:34px;overflow:visible;outline:none
+}
+.drop-glow{position:absolute;z-index:0;pointer-events:none;left:calc(-1 * var(--halo-expand-x));right:calc(-1 * var(--halo-expand-x));top:50%;height:var(--halo-height);transform:translateY(var(--halo-y));border-radius:999px;background:linear-gradient(90deg,rgba(215,89,168,.90) 0%,rgba(197,177,83,.74) 27%,rgba(71,201,190,.86) 52%,rgba(64,149,207,.88) 70%,rgba(194,92,197,.88) 100%);filter:blur(var(--halo-blur)) saturate(105%);opacity:0;transition:opacity .20s ease}
+.glass-btn{position:relative;z-index:1;isolation:isolate;width:140px;height:34px;min-width:140px;padding:0 20px;overflow:hidden;border:1px solid rgba(22,39,48,.88);border-radius:999px;color:#eef3f7;background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(255,255,255,.08)),rgba(7,17,24,.27);box-shadow:inset 0 1px 0 rgba(203,230,245,.92),inset 0 -1px 0 rgba(184,209,225,.88),inset 1px 0 0 rgba(8,20,27,.54),inset -1px 0 0 rgba(8,20,27,.54),0 0 0 1px rgba(0,8,13,.88),0 8px 20px rgba(0,0,0,.34);font:900 12px/1 system-ui;letter-spacing:.08em;cursor:pointer;transition:filter .18s ease,box-shadow .18s ease}
+.glass-btn>span{position:relative;z-index:8}
+
+/* Continuous rainbow inner glow. */
+.glass-btn::before{content:"";position:absolute;z-index:1;pointer-events:none;inset:0;opacity:0;filter:blur(var(--ig-blur)) saturate(112%);background:
+  linear-gradient(90deg,rgba(215,89,168,var(--ig-tail)) 0%,rgba(207,111,139,var(--ig-tail)) 9%,rgba(191,188,75,var(--ig-tail)) 27%,rgba(107,183,126,var(--ig-tail)) 42%,rgba(71,201,190,var(--ig-tail)) 52%,rgba(64,149,207,var(--ig-tail)) 67%,rgba(77,101,190,var(--ig-tail)) 82%,rgba(194,92,197,var(--ig-tail)) 100%) top/100% var(--ig-width) no-repeat,
+  linear-gradient(90deg,rgba(215,89,168,var(--ig-tail)) 0%,rgba(207,111,139,var(--ig-tail)) 9%,rgba(191,188,75,var(--ig-tail)) 27%,rgba(107,183,126,var(--ig-tail)) 42%,rgba(71,201,190,var(--ig-tail)) 52%,rgba(64,149,207,var(--ig-tail)) 67%,rgba(77,101,190,var(--ig-tail)) 82%,rgba(194,92,197,var(--ig-tail)) 100%) bottom/100% var(--ig-width) no-repeat,
+  linear-gradient(90deg,rgba(215,89,168,var(--ig-shoulder)) 0%,rgba(207,111,139,var(--ig-shoulder)) 9%,rgba(191,188,75,var(--ig-shoulder)) 27%,rgba(107,183,126,var(--ig-shoulder)) 42%,rgba(71,201,190,var(--ig-shoulder)) 52%,rgba(64,149,207,var(--ig-shoulder)) 67%,rgba(77,101,190,var(--ig-shoulder)) 82%,rgba(194,92,197,var(--ig-shoulder)) 100%) top/100% calc(var(--ig-width) * .64) no-repeat,
+  linear-gradient(90deg,rgba(215,89,168,var(--ig-shoulder)) 0%,rgba(207,111,139,var(--ig-shoulder)) 9%,rgba(191,188,75,var(--ig-shoulder)) 27%,rgba(107,183,126,var(--ig-shoulder)) 42%,rgba(71,201,190,var(--ig-shoulder)) 52%,rgba(64,149,207,var(--ig-shoulder)) 67%,rgba(77,101,190,var(--ig-shoulder)) 82%,rgba(194,92,197,var(--ig-shoulder)) 100%) bottom/100% calc(var(--ig-width) * .64) no-repeat,
+  linear-gradient(90deg,rgba(215,89,168,var(--ig-core)) 0%,rgba(207,111,139,var(--ig-core)) 9%,rgba(191,188,75,var(--ig-core)) 27%,rgba(107,183,126,var(--ig-core)) 42%,rgba(71,201,190,var(--ig-core)) 52%,rgba(64,149,207,var(--ig-core)) 67%,rgba(77,101,190,var(--ig-core)) 82%,rgba(194,92,197,var(--ig-core)) 100%) top/100% calc(var(--ig-width) * .18) no-repeat,
+  linear-gradient(90deg,rgba(215,89,168,var(--ig-core)) 0%,rgba(207,111,139,var(--ig-core)) 9%,rgba(191,188,75,var(--ig-core)) 27%,rgba(107,183,126,var(--ig-core)) 42%,rgba(71,201,190,var(--ig-core)) 52%,rgba(64,149,207,var(--ig-core)) 67%,rgba(77,101,190,var(--ig-core)) 82%,rgba(194,92,197,var(--ig-core)) 100%) bottom/100% calc(var(--ig-width) * .18) no-repeat;transition:opacity .18s ease}
+
+/* Base pseudo-hover state, driven by JS every 3 seconds. */
+.hover-demo.demo-active .drop-glow,.hover-demo:hover .drop-glow,.hover-demo:focus-visible .drop-glow{opacity:var(--halo-opacity)}
+.hover-demo.demo-active .glass-btn::before,.hover-demo:hover .glass-btn::before,.hover-demo:focus-visible .glass-btn::before{opacity:1}
+.hover-demo.demo-active .glass-btn,.hover-demo:hover .glass-btn,.hover-demo:focus-visible .glass-btn{filter:brightness(1.02);box-shadow:inset 0 1px 0 rgba(223,225,227,.90),inset 0 -1px 0 rgba(228,230,232,.95),inset 1px 0 0 rgba(154,161,168,.58),inset -1px 0 0 rgba(154,161,168,.58),0 0 0 1px rgba(128,134,140,.84),0 6px 14px rgba(0,0,0,.18)}
+
+.rim-svg{position:absolute;z-index:4;inset:0;width:140px;height:34px;pointer-events:none;overflow:visible}
+.rim-svg rect{fill:none;vector-effect:non-scaling-stroke}
+.rim-base{stroke:rgba(255,255,255,.08);stroke-width:1}
+.rim-spark,.rim-glint{stroke:#fff;stroke-width:1.35;stroke-linecap:round;opacity:0;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(144,226,255,.88))}
+.rim-spark{stroke-dasharray:18 294}
+.rim-glint{stroke-dasharray:34 278}
+.rim-spark-a{stroke-dashoffset:10}.rim-spark-b{stroke-dashoffset:-146}
+.rim-glint-a{stroke-dashoffset:-10}.rim-glint-b{stroke-dashoffset:-166}
+.face-sheen,.face-flash,.face-line{position:absolute;z-index:5;pointer-events:none;display:block;opacity:0}
+.face-sheen{top:-40%;bottom:-40%;left:-58%;width:38%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),rgba(255,255,255,.72),rgba(190,242,255,.24),transparent);filter:blur(.6px)}
+.face-flash{inset:0;background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(222,246,255,.16) 46%,rgba(255,255,255,.32));mix-blend-mode:screen}
+.face-line{top:-25%;bottom:-25%;left:-32%;width:18%;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),#fff,rgba(209,246,255,.32),transparent);filter:blur(.25px)}
+
+/* A: two equal sparks remain half a perimeter apart, with explicit fade in/out. */
+.anim-a.demo-active .rim-spark-a,.anim-a:hover .rim-spark-a,.anim-a:focus-visible .rim-spark-a{animation:rimChaseA 1.02s cubic-bezier(.18,.72,.26,1) .10s both}
+.anim-a.demo-active .rim-spark-b,.anim-a:hover .rim-spark-b,.anim-a:focus-visible .rim-spark-b{animation:rimChaseB 1.02s cubic-bezier(.18,.72,.26,1) .10s both}
+@keyframes rimChaseA{0%{opacity:0;stroke-dashoffset:10}14%{opacity:.92}38%{opacity:1}78%{opacity:.88}100%{opacity:0;stroke-dashoffset:-142}}
+@keyframes rimChaseB{0%{opacity:0;stroke-dashoffset:-146}14%{opacity:.92}38%{opacity:1}78%{opacity:.88}100%{opacity:0;stroke-dashoffset:-298}}
+
+/* B: paired short glints remain opposite and fade at both ends. */
+.anim-b.demo-active .rim-glint-a,.anim-b:hover .rim-glint-a,.anim-b:focus-visible .rim-glint-a{animation:edgeGlintA .84s cubic-bezier(.18,.78,.24,1) .12s both}
+.anim-b.demo-active .rim-glint-b,.anim-b:hover .rim-glint-b,.anim-b:focus-visible .rim-glint-b{animation:edgeGlintB .84s cubic-bezier(.18,.78,.24,1) .12s both}
+@keyframes edgeGlintA{0%{opacity:0;stroke-dashoffset:-10}18%{opacity:.96}45%{opacity:1}80%{opacity:.90}100%{opacity:0;stroke-dashoffset:-126}}
+@keyframes edgeGlintB{0%{opacity:0;stroke-dashoffset:-166}18%{opacity:.96}45%{opacity:1}80%{opacity:.90}100%{opacity:0;stroke-dashoffset:-282}}
+
+/* C: diagonal glass reflection, ~25% slower than the first preview. */
+.anim-c.demo-active .face-sheen,.anim-c:hover .face-sheen,.anim-c:focus-visible .face-sheen{animation:faceSweep .92s cubic-bezier(.16,.72,.22,1) .12s both}
+@keyframes faceSweep{0%{opacity:0;left:-58%}12%{opacity:.90}68%{opacity:.72}100%{opacity:0;left:122%}}
+
+/* D: whole-face soft flash. */
+.anim-d.demo-active .face-flash,.anim-d:hover .face-flash,.anim-d:focus-visible .face-flash{animation:softFlash .66s ease-out .10s both}
+@keyframes softFlash{0%{opacity:0}18%{opacity:.72}42%{opacity:.34}100%{opacity:0}}
+
+/* E: paired edge cue, then the slower face sweep. */
+.anim-e.demo-active .rim-glint-a,.anim-e:hover .rim-glint-a,.anim-e:focus-visible .rim-glint-a{animation:edgeGlintAShort .66s ease-out .04s both}
+.anim-e.demo-active .rim-glint-b,.anim-e:hover .rim-glint-b,.anim-e:focus-visible .rim-glint-b{animation:edgeGlintBShort .66s ease-out .04s both}
+.anim-e.demo-active .face-sheen,.anim-e:hover .face-sheen,.anim-e:focus-visible .face-sheen{animation:faceSweep .92s cubic-bezier(.16,.72,.22,1) .24s both}
+@keyframes edgeGlintAShort{0%{opacity:0;stroke-dashoffset:-10}18%{opacity:1}52%{opacity:.94}100%{opacity:0;stroke-dashoffset:-116}}
+@keyframes edgeGlintBShort{0%{opacity:0;stroke-dashoffset:-166}18%{opacity:1}52%{opacity:.94}100%{opacity:0;stroke-dashoffset:-272}}
+
+/* F: narrow streak slowed ~25%, plus a brief whole-rim lift. */
+.anim-f.demo-active .face-line,.anim-f:hover .face-line,.anim-f:focus-visible .face-line{animation:crispSweep .66s cubic-bezier(.12,.74,.2,1) .12s both}
+.anim-f.demo-active .rim-whole,.anim-f:hover .rim-whole,.anim-f:focus-visible .rim-whole{animation:rimPulse .52s ease-out .10s both}
+@keyframes crispSweep{0%{opacity:0;left:-32%}12%{opacity:1}75%{opacity:.75}100%{opacity:0;left:116%}}
+@keyframes rimPulse{0%{stroke:rgba(255,255,255,.08);stroke-width:1;filter:none}20%{stroke:#fff;stroke-width:1.45;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px rgba(149,232,255,.82))}100%{stroke:rgba(255,255,255,.08);stroke-width:1;filter:none}}
+
+.timing-panel{padding-block:18px}.timing-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 16px;margin-top:14px;color:#788797;font-size:10px}.timing-row b{color:#e0e8ef}.timing-row button{margin-left:8px;padding:8px 13px;border:1px solid #607284;border-radius:9px;background:#101923;color:#eaf1f6;font:800 10px/1 system-ui;cursor:pointer}.note{text-align:center;color:#667482;font-size:10px;margin:20px 0}
+@media(max-width:860px){.variant-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.variant-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.hover-demo *{animation-duration:.001ms!important;animation-iteration-count:1!important}.drop-glow,.glass-btn,.glass-btn::before{transition:none!important}}

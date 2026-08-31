@@ -1,0 +1,42 @@
+/* Score playback transport marks: keep every glyph geometrically centered.
+   This file only affects the four top-right playback buttons. */
+body[data-score-playback="1"] #scorePlaybackControls button{
+  position:relative!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  line-height:0!important;
+  text-align:center!important;
+}
+
+body[data-score-playback="1"] #scorePlaybackControls button > .transport-icon{
+  position:absolute!important;
+  inset:auto!important;
+  left:50%!important;
+  top:50%!important;
+  width:20px!important;
+  height:20px!important;
+  margin:0!important;
+  padding:0!important;
+  transform:translate(-50%,-50%)!important;
+  transform-origin:center center!important;
+  flex:none!important;
+  pointer-events:none!important;
+}
+
+body[data-score-playback="1"] #scorePlaybackControls #pause > .pause-white-icon{
+  position:absolute!important;
+  inset:auto!important;
+  left:50%!important;
+  top:50%!important;
+  margin:0!important;
+  transform:translate(-50%,-50%)!important;
+  transform-origin:center center!important;
+}
+
+@media (hover:none) and (pointer:coarse){
+  body[data-score-playback="1"] #scorePlaybackControls button > .transport-icon{
+    width:14px!important;
+    height:14px!important;
+  }
+}

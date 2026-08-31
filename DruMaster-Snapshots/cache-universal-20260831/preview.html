@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#080b11">
+  <title>DruMaster UI Preview</title>
+  <link rel="stylesheet" href="css/base.css?v=20260826-maint1">
+  <link rel="stylesheet" href="css/game-ui.css?v=20260826-bpm1">
+  <link rel="stylesheet" href="css/mobile-game.css?v=20260826-offsets3">
+  <link rel="stylesheet" href="css/judgement.css?v=20260826-judgeright1">
+  <link rel="stylesheet" href="css/kit-layout.css?v=20260826-maint1">
+  <link rel="stylesheet" href="css/mobile-offset.css?v=20260826-judgealign1">
+  <link rel="stylesheet" href="css/score-pulse.css?v=20260826-maint1">
+  <link rel="stylesheet" href="css/game-visual.css?v=20260826-kick80">
+  <link rel="stylesheet" href="css/hit-effect-tune.css?v=20260826-logo-hitfx15">
+</head>
+<body>
+  <main id="app">
+    <section id="game" class="screen game">
+      <header>
+        <div class="rank"><span>D</span></div>
+        <div class="song-hud"><b>なないろ</b><small>MIDI loading…</small><span class="hud-bpm">♪＝125</span></div>
+        <div class="score"><small>SCORE</small><strong id="score">AUTO</strong></div>
+        <button id="pause" aria-label="プレビューを停止">Ⅱ</button>
+      </header>
+      <div id="chartWrap"><canvas id="chart"></canvas><div id="judgementFx"><div class="shock"></div><div class="particles"></div><div id="judge"></div></div></div>
+      <div id="kit" aria-label="ドラムセット">
+        <img class="bass-drum-art" src="assets/bass-drum.webp?v=20260826-maint1" alt="" draggable="false">
+        <img class="kit-art" src="assets/drum-kit.webp" alt="" draggable="false">
+        <div class="dim-layer"></div>
+        <div id="hitLayer">
+          <button class="hit crash left" data-part="crash" data-key="W"><kbd>W</kbd></button>
+          <button class="hit crash right" data-part="crash" data-key="Y"><kbd>Y</kbd></button>
+          <button class="hit hh" data-part="hh" data-key="A"><kbd>A</kbd></button>
+          <button class="hit ride" data-part="ride" data-key="J"><kbd>J</kbd></button>
+          <button class="hit high" data-part="highTom" data-key="D"><kbd>D</kbd></button>
+          <button class="hit mid" data-part="midTom" data-key="G"><kbd>G</kbd></button>
+          <button class="hit snare" data-part="snare" data-key="Z"><kbd>Z</kbd></button>
+          <button class="hit floor" data-part="floorTom" data-key="B"><kbd>B</kbd></button>
+        </div>
+      </div>
+      <div id="kickFx"></div>
+      <div id="pausePanel" class="hidden"><p>PAUSED</p><button id="resume">再開</button><button id="quit">最初から</button></div>
+    </section>
+  </main>
+  <script src="js/note-search.js?v=20260826-perfopt1"></script>
+  <script src="js/chart-core.js?v=20260826-measureline1"></script>
+  <script src="js/preview.js?v=20260826-kicklane2"></script>
+  <script src="js/controls.js?v=20260826-rawscore1"></script>
+  <script src="js/hit-flash-performance.js?v=20260826-hitstrong2"></script>
+  <script src="js/preview-kick-effect.js?v=20260826-kick80"></script>
+  <script src="js/score-pulse.js?v=20260826-perfopt1"></script>
+  <script src="js/judgement.js?v=20260826-perfopt1"></script>
+  <script src="js/mobile-lane-alignment.js?v=20260826-perfopt1"></script>
+</body>
+</html>

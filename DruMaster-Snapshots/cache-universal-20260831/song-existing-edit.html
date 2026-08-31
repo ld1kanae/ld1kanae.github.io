@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070b11">
+<title>DruMaster Existing Song Editor</title>
+<link rel="stylesheet" href="css/song-tool-cyan-violet-theme.css?v=20260829-theme3">
+<style>
+:root{color-scheme:dark;--bg:#070b11;--panel:#101720;--line:#2d3d4e;--text:#eef5fb;--muted:#8b9aab}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.5 Inter,"Noto Sans JP",system-ui,sans-serif}main{width:min(600px,calc(100% - 28px));margin:34px auto 60px}header{text-align:center;margin-bottom:20px}.eyebrow{font-size:9px;font-weight:800;letter-spacing:.18em;color:#7c8fa3;margin:0 0 5px}h1{margin:0;font-size:28px}.sub{margin:6px 0 0;color:var(--muted);font-size:11px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}.field{display:grid;gap:7px}.field span{font-size:11px;color:#9fadc0;font-weight:700}select{width:100%;height:40px;border:1px solid #34485d;border-radius:8px;background:#080e15;color:var(--text);padding:0 11px;outline:none}.songmeta{margin:10px 0 0;text-align:center;color:#7f91a4;font:10px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:16px}.actions{display:flex;justify-content:center;margin-top:16px}.actions button{height:42px;min-width:190px;border:1px solid rgba(100,199,218,.72);border-radius:9px;background:linear-gradient(115deg,rgba(31,165,177,.34),rgba(72,132,211,.34) 52%,rgba(113,83,218,.38));color:#eafdff;font-weight:800;letter-spacing:.05em;cursor:pointer}.actions button:disabled{opacity:.4;cursor:not-allowed}.status{text-align:center;color:#7f91a4;font-size:10px;margin-top:12px;min-height:18px}.bad{color:#ff7d8d}.ok{color:#72d6a6}@media(max-width:560px){main{width:min(100% - 18px,600px);margin-top:22px}}
+</style>
+</head>
+<body><main>
+<header><p class="eyebrow">DRUMASTER / CONTENT TOOL</p><h1 id="heading">登録済み楽曲を編集</h1><p id="sub" class="sub">登録済み曲から編集対象を選択します。</p></header>
+<section class="panel">
+<label class="field"><span>編集する楽曲</span><select id="song" disabled></select></label>
+<div id="songmeta" class="songmeta">楽曲一覧を読み込み中…</div>
+<div class="actions"><button id="start" type="button" disabled>編集を開始</button></div>
+<div id="status" class="status"></div>
+</section>
+</main>
+<script src="js/song-publisher-draft-catalog.js?v=20260829-catalogfix1"></script>
+<script>
+(()=>{
+"use strict";
+const DB_NAME="drumasterSongPublishV1",STORE="sessions",DB_VERSION=1;
+const tool=new URLSearchParams(location.search).get("tool")==="volume"?"volume":"timing";
+const BUILTIN={
+ nanairo:{id:"nanairo",title:"なないろ",artist:"BUMP OF CHICKEN",duration:263.05,bpm:125,chart:{pixelsPerQuarter:80},playback:{stemOffsetSec:0,midiOffsetSec:0},midi:"songs/nanairo/chart.mid",midiGzip:"songs/nanairo/chart.mid.gz?v=20260826-midi2",stems:{base:{path:"songs/nanairo/offvocal.mp3"},vocals:{path:"songs/nanairo/vocals.mp3"},drums:{path:"songs/nanairo/drums.mp3"}}},
+ ray:{id:"ray",title:"Ray",artist:"BUMP OF CHICKEN",duration:305.544,bpm:132,chart:{pixelsPerQuarter:75,desktopPixelsPerQuarter:100},playback:{stemOffsetSec:.005,midiOffsetSec:0},midi:"songs/ray/chart.mid",midiGzip:"songs/ray/chart.mid.gz?v=20260826-midi2",mix:{base:.70,vocals:.60,drums:.70},stems:{base:{path:"songs/ray/offvocal.mp3"},vocals:{path:"songs/ray/vocals.mp3"},drums:{path:"songs/ray/drums.mp3"}}}
+};
+const $=id=>document.getElementById(id),sel=$("song"),start=$("start"),status=$("status"),meta=$("songmeta");let catalog={};
+$("heading").textContent=tool==="timing"?"Timing Correction":"音量バランス調整";
+$("sub").textContent=tool==="timing"?"登録済み曲のタイミング補正を編集します。":"登録済み曲の音量バランスを編集します。";
+function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:"sessionId"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||Error("編集セッションDBを開けませんでした"))})}
+async function storeSession(value){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(value);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||Error("編集セッションを保存できませんでした"))}})}
+async function jsonMaybe(path){const r=await fetch(`${path}${path.includes("?")?"&":"?"}t=${Date.now()}`,{cache:"no-store"});if(r.status===404)return null;if(!r.ok)throw Error(`${path} を取得できません（HTTP ${r.status}）`);return r.json()}
+function cleanPath(path){return String(path||"").replace(/^\.\//,"").split(/[?#]/)[0]}
+function parseMidi(ab){const d=new DataView(ab);let p=0;const need=(n,end=d.byteLength)=>{if(p+n>end)throw Error("MIDIが途中で切れています")},str=n=>{need(n);let s="";while(n--)s+=String.fromCharCode(d.getUint8(p++));return s},u32=()=>{need(4);const v=d.getUint32(p);p+=4;return v},u16=()=>{need(2);const v=d.getUint16(p);p+=2;return v},vlq=end=>{let v=0,b,c=0;do{need(1,end);b=d.getUint8(p++);v=(v<<7)|(b&127);if(++c>4)throw Error("MIDI VLQ error")}while(b&128);return v};if(str(4)!=="MThd")throw Error("MIDIヘッダーが不正です");const hl=u32();u16();const tracks=u16(),division=u16();if(division&0x8000)throw Error("SMPTE MIDIには未対応です");p=8+hl;let noteCount=0;const tempos=[],sigs=[];for(let tr=0;tr<tracks;tr++){if(str(4)!=="MTrk")throw Error("MIDIトラックが不正です");const len=u32(),end=p+len;let tick=0,run=0;while(p<end){tick+=vlq(end);let first=d.getUint8(p++),statusCode;if(first<128){if(!run)throw Error("MIDI running status error");statusCode=run;p--}else{statusCode=first;if(statusCode<240)run=statusCode}if(statusCode===255){const type=d.getUint8(p++),n=vlq(end);if(type===81&&n===3)tempos.push({tick,us:(d.getUint8(p)<<16)|(d.getUint8(p+1)<<8)|d.getUint8(p+2)});if(type===88&&n>=2)sigs.push({tick,numerator:d.getUint8(p),denominator:2**d.getUint8(p+1)});p+=n;continue}if(statusCode===240||statusCode===247){run=0;p+=vlq(end);continue}const hi=statusCode&240,ch=statusCode&15,bytes=(hi===192||hi===208)?1:2;need(bytes,end);d.getUint8(p++);const b=bytes===2?d.getUint8(p++):0;if(hi===144&&b>0&&ch===9)noteCount++}p=end}tempos.sort((a,b)=>a.tick-b.tick);sigs.sort((a,b)=>a.tick-b.tick);const tempo=tempos.find(x=>x.tick===0)||tempos[0]||{us:500000},sig=sigs.find(x=>x.tick===0)||sigs[0]||{numerator:4,denominator:4};return {division,noteCount,bpm:60000000/tempo.us,timeSignature:{numerator:sig.numerator,denominator:sig.denominator}}}
+async function loadCatalog(){let reg={};try{reg=await jsonMaybe("songs/registry.json")||{}}catch(e){console.warn(e)}let drafts={};try{drafts=await globalThis.DruMasterDraftCatalog?.discover(reg)||{}}catch(e){console.warn(e)}catalog={...BUILTIN,...drafts,...reg};const values=Object.values(catalog).sort((a,b)=>(Number(a.order??999)-Number(b.order??999))||String(a.title).localeCompare(String(b.title),"ja"));sel.replaceChildren();for(const song of values){const o=document.createElement("option");o.value=song.id;o.textContent=`${song.title} — ${song.artist}`;sel.appendChild(o)}sel.disabled=!values.length;start.disabled=!values.length;if(values.length){sel.value=values[0].id;syncMeta()}else meta.textContent="登録済み楽曲がありません"}
+function syncMeta(){const s=catalog[sel.value];meta.textContent=s?`${s.id} / ${Number(s.bpm||0).toFixed(3)} BPM / ${Number(s.duration||0).toFixed(3)} s`:""}
+async function begin(){start.disabled=true;status.className="status";status.textContent="編集データを準備しています…";try{const base=catalog[sel.value];if(!base)throw Error("楽曲を選択してください");let detail=null;try{detail=await jsonMaybe(`songs/${base.id}/song.json`)}catch(e){console.warn(e)}const draft={...base,...(detail||{})};draft.id=base.id;draft.title=draft.title||base.title;draft.artist=draft.artist||base.artist;draft.playback={stemOffsetSec:0,midiMeasureOffset:0,midiOffsetSec:0,...(draft.playback||{})};draft.chart={pixelsPerQuarter:80,...(draft.chart||{})};draft.stems={...(draft.stems||{})};draft.sourceMode=draft.sourceMode||((draft.stems.fullmix&&!draft.stems.base)?"fullmix":"base");draft.fullMixOnly=draft.fullMixOnly===true||!!draft.stems.fullmix&&!draft.stems.base;draft.midi=draft.midi||`songs/${draft.id}/chart.mid`;const mr=await fetch(`${cleanPath(draft.midi)}?t=${Date.now()}`,{cache:"no-store"});if(!mr.ok)throw Error(`MIDIを取得できません（HTTP ${mr.status}）`);const midiAb=await mr.arrayBuffer(),mi=parseMidi(midiAb);draft.bpm=Number.isFinite(Number(draft.bpm))?Number(draft.bpm):mi.bpm;draft.timeSignature=draft.timeSignature||mi.timeSignature;draft.division=Number(draft.division)||mi.division;draft.noteCount=Number.isFinite(Number(draft.noteCount))?Number(draft.noteCount):mi.noteCount;draft.schemaVersion=Math.max(3,Number(draft.schemaVersion)||0);draft.state="editing";const sessionId=`${draft.id}-edit-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;await storeSession({sessionId,id:draft.id,createdAt:Date.now(),mode:"existing-edit",draft,originals:{},midiBlob:new Blob([midiAb],{type:"audio/midi"}),uploadItems:[]});status.className="status ok";status.textContent="編集画面を開きます。";parent.postMessage({type:"dm-existing-editor-ready",tool,id:draft.id,sessionId,at:Date.now()},location.origin)}catch(e){console.error(e);status.className="status bad";status.textContent=e.message||String(e);start.disabled=false}}
+sel.addEventListener("change",syncMeta);start.addEventListener("click",begin);loadCatalog().catch(e=>{console.error(e);status.className="status bad";status.textContent=e.message||String(e)});
+})();
+</script>
+</body></html>

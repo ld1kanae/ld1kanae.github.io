@@ -1,0 +1,81 @@
+@import url("game-logo-d.css?v=20260828-dmark1");
+/* Gameplay-only visual layer. Touch geometry is intentionally transparent. */
+.game header{height:58px;padding:6px 13px;background:linear-gradient(90deg,#101823ed,#080c13f5);z-index:12;box-shadow:0 5px 18px #0008}
+.rank{width:42px;height:42px;display:grid;place-items:center;transform:rotate(45deg);border:2px solid #9a82ff;background:#211b3c;box-shadow:0 0 16px #8b6cff88;color:#dcd4ff;font-size:22px;margin:0 18px 0 6px}
+.song-hud{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:14px;align-items:center;min-width:0}
+.song-hud b,.song-hud small{display:block;grid-column:1;min-width:0}
+.song-hud b{grid-row:1}
+.song-hud small{grid-row:2}
+.song-hud .hud-bpm{grid-column:2;grid-row:1 / span 2;align-self:center;white-space:nowrap;color:#aab8c8;font:800 12px/1 system-ui,sans-serif;letter-spacing:.05em;opacity:.92}
+.score{padding-right:14px}
+.score strong{text-shadow:0 0 10px #71c8ff99}
+.game header #pause{width:46px;height:42px;border:2px solid #cfd7e4;border-radius:9px;background:linear-gradient(#f8f9fd,#cbd2df);color:#424a66;font-size:20px;font-weight:900;box-shadow:0 0 0 4px #ffffff22}
+#chartWrap{height:35%;z-index:8;background:linear-gradient(90deg,#090e16,#15172a 48%,#090e16);box-shadow:0 7px 20px #0009}
+#judgementFx{position:absolute;left:9%;bottom:0;width:min(34vw,340px);height:74%;transform:translateX(-50%);pointer-events:none;opacity:0;overflow:visible}
+#judgementFx.play{animation:fxfade .46s ease-out}
+.shock{position:absolute;left:50%;bottom:17%;width:88%;height:32%;transform:translate(-50%,50%);border:3px solid #d8efff;border-radius:50%;background:radial-gradient(ellipse,#fff9 0,#71d9ff4d 18%,#8a70ff30 42%,transparent 68%);box-shadow:0 0 18px 6px #7a78ff}
+.particles{position:absolute;inset:0;background-image:radial-gradient(circle,#fff 0 2px,transparent 3px),radial-gradient(circle,#75e8ff 0 2px,transparent 3px),radial-gradient(circle,#b394ff 0 3px,transparent 4px);background-size:47px 61px,69px 53px,83px 71px;background-position:9px 7px,24px 13px,41px 29px;mask-image:radial-gradient(ellipse,#000,transparent 72%)}
+#judge{left:50%;top:auto;bottom:5%;transform:translateX(-50%);font-size:clamp(24px,4.4vw,46px);letter-spacing:.03em;white-space:nowrap;opacity:1;background:linear-gradient(90deg,#fff,#68eaff,#c99aff,#fff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 13px #775cff)}
+@keyframes fxfade{0%{opacity:0;transform:translateX(-50%) scale(.55)}
+16%{opacity:1;transform:translateX(-50%) scale(1.08)}
+58%{opacity:.94}
+100%{opacity:0;transform:translateX(-50%) scale(1.28)}
+}
+#kit{top:calc(35% + 58px);background:radial-gradient(ellipse at 50% 10%,#31343a,#080b10 78%)}
+.kit-art{position:absolute;width:100%;height:118%;left:0;top:-8%;object-fit:cover;object-position:center 39%;user-select:none;pointer-events:none}
+.dim-layer{position:absolute;inset:0;z-index:2;pointer-events:none}
+.dim-layer i{display:none;position:absolute;background:#02050ab8;box-shadow:inset 0 0 28px #000;border-radius:50%}
+.dim-layer i.on{display:block}
+.dim-layer [data-shade=crash]{width:100%;height:43%;left:0;top:-16%;border-radius:0;background:radial-gradient(ellipse at 12% 42%,#02050abd 0 12%,transparent 13%),radial-gradient(ellipse at 88% 42%,#02050abd 0 12%,transparent 13%);box-shadow:none}
+.dim-layer [data-shade=hh]{width:26%;height:43%;left:-3%;top:31%}
+.dim-layer [data-shade=ride]{width:31%;height:53%;right:-4%;top:23%}
+.dim-layer [data-shade=highTom]{width:25%;height:45%;left:25%;top:0}
+.dim-layer [data-shade=midTom]{width:25%;height:45%;right:25%;top:0}
+.dim-layer [data-shade=snare]{width:33%;height:55%;left:16%;bottom:-4%}
+.dim-layer [data-shade=floorTom]{width:33%;height:55%;right:14%;bottom:-5%}
+#hitLayer{position:absolute;inset:0;z-index:4}
+#hitLayer .hit{position:absolute;border:0;background:transparent;border-radius:50%;touch-action:none;user-select:none;max-width:none;max-height:none}
+#hitLayer .hit:active{filter:none;background:#b6eaff22;box-shadow:inset 0 0 28px #d7f5ff99,0 0 20px #5ecaff55}
+#hitLayer .crash{width:29%;height:43%;top:-16%}
+#hitLayer .crash.left{left:-2%}
+#hitLayer .crash.right{right:-2%}
+#hitLayer .hh{width:26%;height:43%;left:-3%;top:31%}
+#hitLayer .ride{width:31%;height:53%;right:-4%;top:23%}
+#hitLayer .high{width:25%;height:45%;left:25%;top:0}
+#hitLayer .mid{width:25%;height:45%;right:25%;top:0}
+#hitLayer .snare{width:33%;height:55%;left:16%;bottom:-4%}
+#hitLayer .floor{width:33%;height:55%;right:14%;bottom:-5%}
+#hitLayer .special{width:12%;height:20%;left:44%;top:38%;border-radius:12px}
+#hitLayer .special span{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);display:grid;place-items:center;width:34px;height:24px;border:1px solid #9da7b5;border-radius:5px;background:#6f7680;color:#e7ecf2;font-weight:900;box-shadow:0 4px 12px #0009;pointer-events:none}
+#hitLayer .inactive{pointer-events:none;filter:none}
+#pausePanel{position:absolute;z-index:30;inset:0;background:#04070cdd;backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+#pausePanel p{font-weight:900;font-size:clamp(34px,8vw,72px);letter-spacing:.18em;margin:0 0 15px;text-shadow:0 0 24px #6b8fff}
+#pausePanel button{min-width:180px;border:1px solid #8290a5;border-radius:99px;padding:12px 25px;background:#172130;color:white}
+#pausePanel #resume{background:#43b6ff;color:#04111c;border:0;font-weight:900}
+
+/* The old screen-edge bass-drum pulse is intentionally disabled. */
+#kickFx{display:none!important}
+
+/* Hit targets stay invisible; only the key badge and a short strike flash render. */
+#hitLayer .hit{overflow:visible}
+#hitLayer .hit:active{background:transparent;box-shadow:none}
+#hitLayer .hit::after{content:"";position:absolute;left:50%;top:50%;width:42%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%) scale(.7);opacity:0;pointer-events:none;background:radial-gradient(circle,#fff 0 8%,#9ce8ff88 24%,transparent 67%);box-shadow:0 0 28px #6cd7ff}
+#hitLayer .hit.struck::after{animation:drumFlash .24s ease-out}
+#hitLayer kbd{position:absolute;left:50%;top:50%;z-index:2;transform:translate(-50%,-50%);min-width:24px;height:24px;padding:0 6px;display:grid;place-items:center;border:1px solid #ffffff90;border-radius:6px;background:#080c12b8;color:#fff;font:800 12px/1 system-ui,sans-serif;box-shadow:0 2px 7px #000b,0 0 9px #6fcfff55;pointer-events:none;transition:transform .06s,background .06s}
+#hitLayer .hit.pressed kbd{transform:translate(-50%,-50%) scale(.9);background:#dff7ff;color:#101721}
+#hitLayer .inactive kbd{opacity:.25;filter:grayscale(1)}
+@keyframes drumFlash{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
+
+#judgementFx[data-grade="perfect"] #judge{background-image:linear-gradient(90deg,#fff,#68eaff,#c99aff,#fff)}
+#judgementFx[data-grade="great"] #judge{background-image:linear-gradient(90deg,#fff,#75f4c5,#a1ffdc,#fff)}
+#judgementFx[data-grade="good"] #judge{background-image:linear-gradient(90deg,#fff,#ffd866,#ff9f5e,#fff)}
+#judgementFx[data-grade="miss"] #judge{background-image:linear-gradient(90deg,#e9ecf2,#9aa3b2,#e9ecf2);filter:drop-shadow(0 0 8px #5d6677)}
+#judgementFx[data-grade="miss"] .shock{border-color:#8e98a7;background:radial-gradient(ellipse,#fff4 0,#9da8b529 24%,transparent 68%);box-shadow:0 0 14px #758092}
+#judgementFx[data-grade="auto"] #judge{background-image:linear-gradient(90deg,#fff,#80d7ff,#fff);font-size:clamp(18px,3.2vw,34px)}
+.result.autoplay .grades{display:none}
+.result.autoplay #finalScore{font-size:clamp(42px,9vw,82px)}
+
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .song-hud{column-gap:8px}
+  .song-hud .hud-bpm{font-size:8px;letter-spacing:.02em}
+}

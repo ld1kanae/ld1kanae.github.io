@@ -1,0 +1,78 @@
+/* Production chart glass material copied from preview-chart-glass-editor.
+   Requested values:
+   underlay #030507 alpha 0;
+   glass #DCF0FF alpha 0;
+   backdrop blur 0px; saturation 100%;
+   edge highlight .22; chromatic edge disabled;
+   outer shadow .38; alternating lanes .020; border .30. */
+.game #chartWrap{
+  isolation:isolate;
+  overflow:hidden;
+  background:rgba(220,240,255,0)!important;
+  -webkit-backdrop-filter:blur(0) saturate(100%);
+  backdrop-filter:blur(0) saturate(100%);
+  border-bottom:1px solid rgba(176,182,190,.30)!important;
+  box-shadow:0 7px 20px rgba(0,0,0,.38)!important;
+}
+
+/* Alternating lane tone (.020), inverted so lanes 2 and 4 are bright.
+   Canvas geometry is 3 equal main lanes within the top 88%, plus a 12% KICK
+   lane. Match those real boundaries instead of dividing the chart into 25% bands. */
+.game #chartWrap::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(
+    to bottom,
+    transparent 0 29.3333%,
+    rgba(255,255,255,.020) 29.3333% 58.6667%,
+    transparent 58.6667% 88%,
+    rgba(255,255,255,.020) 88% 100%
+  );
+}
+
+/* Edge highlight strength .22. Chromatic edge intentionally omitted. */
+.game #chartWrap::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(
+    130deg,
+    rgba(255,255,255,.055),
+    transparent 20%,
+    transparent 76%,
+    rgba(124,219,255,.022)
+  );
+  mix-blend-mode:screen;
+}
+
+.game #chart{
+  position:relative!important;
+  z-index:2!important;
+  background:transparent!important;
+}
+.game #judgementFx{z-index:3!important}
+
+/* Smartphone: mobile-game.css owns chart placement. Do not override its
+   absolute positioning from this material layer. Use a neutral, non-glowing
+   outline and suppress the optical edge sheen that reads as emission at this
+   small scale. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  .game #chartWrap{
+    position:absolute!important;
+    top:32px!important;
+    left:max(32px,env(safe-area-inset-bottom))!important;
+    right:14px!important;
+    width:auto!important;
+    height:calc(15% + 8px)!important;
+    min-height:0!important;
+    border:1px solid rgba(176,182,190,.34)!important;
+    border-radius:0 0 10px 10px!important;
+    box-shadow:0 6px 18px rgba(0,0,0,.38)!important;
+  }
+  .game #chartWrap::after{display:none!important}
+}

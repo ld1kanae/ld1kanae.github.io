@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0e13">
+<title>Hi-Hat Metal Gradient Editor</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,"Noto Sans JP",system-ui,sans-serif;background:#0b0e13;color:#e9edf2}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0b0e13}.app{max-width:1180px;margin:0 auto;padding:28px 22px 40px}.head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px}.head h1{font-size:22px;margin:0 0 5px;letter-spacing:.02em}.head p{margin:0;color:#8f98a4;font-size:13px}.layout{display:grid;grid-template-columns:minmax(300px,.8fr) minmax(420px,1.2fr);gap:18px}.panel{background:#12171e;border:1px solid #252c35;padding:18px}.panel h2{font-size:13px;letter-spacing:.08em;color:#aeb7c2;margin:0 0 14px}.preview-stage{height:470px;display:grid;place-items:center;background:#080b10;border:1px solid #202731;position:relative;overflow:hidden}.kit-lines{position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 45%,rgba(255,255,255,.025) 45.2% 45.5%,transparent 45.7% 100%),linear-gradient(70deg,transparent 0 66%,rgba(255,255,255,.02) 66.2% 66.4%,transparent 66.6% 100%)}.gauge-wrap{position:relative;width:90px;height:360px;display:grid;place-items:center}.gauge{position:absolute;width:28px;height:300px;left:31px;top:30px;border-radius:0;background:linear-gradient(90deg,#2c3136 0%,#444b52 16%,#666e75 31%,#858c92 48%,#5d656c 66%,#3f464d 84%,#272c31 100%);box-shadow:inset 1px 0 0 rgba(255,255,255,.10),inset -1px 0 0 rgba(0,0,0,.34),0 2px 5px rgba(0,0,0,.5)}.fill{position:absolute;left:0;right:0;bottom:0;height:58%;background:#52dfcf;opacity:.3;box-shadow:0 0 12px rgba(82,223,207,.42),0 0 26px rgba(82,223,207,.24)}.handle{position:absolute;z-index:2;left:50%;bottom:58%;width:180%;height:14px;transform:translate(-50%,50%);border-radius:0;background:#666d74;border-top:1px solid rgba(177,184,190,.52);border-bottom:1px solid rgba(31,36,41,.78);border-left:1px solid rgba(46,52,58,.65);border-right:1px solid rgba(46,52,58,.65);box-shadow:0 2px 4px rgba(0,0,0,.42)}.readout{position:absolute;right:14px;bottom:12px;font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:#7f8a96}.row{display:grid;grid-template-columns:28px 1fr 82px 82px;gap:8px;align-items:center;margin-bottom:8px}.row .idx{font:11px ui-monospace,SFMono-Regular,Consolas,monospace;color:#77818d}.row input[type=color]{width:28px;height:28px;border:0;padding:0;background:none}.row input[type=text],.row input[type=number],.mini input[type=number]{width:100%;height:30px;border:1px solid #303844;background:#0d1117;color:#e5e9ee;padding:0 8px;font:12px ui-monospace,SFMono-Regular,Consolas,monospace;border-radius:0}.row input[type=range]{width:100%}.stop-range{grid-column:2/4}.stop-pos{grid-column:4}.subgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid #252c35}.mini label{display:block;color:#89939e;font-size:11px;margin-bottom:5px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}button{border:1px solid #343d48;background:#1b222b;color:#e9edf2;padding:9px 13px;font-weight:650;cursor:pointer;border-radius:0}button:hover{background:#242d38}.primary{background:#dfe6ed;color:#11161c;border-color:#dfe6ed}.primary:hover{background:#cbd4dd}.code{margin-top:18px}.code textarea{width:100%;min-height:220px;resize:vertical;background:#090d12;color:#bfc9d4;border:1px solid #29313b;padding:13px;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;border-radius:0}.note{font-size:11px;color:#7f8995;margin-top:8px}@media(max-width:820px){.layout{grid-template-columns:1fr}.preview-stage{height:380px}.gauge-wrap{transform:scale(.82)}.head{align-items:start;flex-direction:column}.row{grid-template-columns:28px 1fr 72px 70px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head"><div><h1>HI-HAT METAL GRADIENT EDITOR</h1><p>ゲージ背景のスチール質感だけを調整します。ツマミは単色のままです。</p></div></div>
+  <div class="layout">
+    <section class="panel">
+      <h2>PREVIEW</h2>
+      <div class="preview-stage">
+        <div class="kit-lines"></div>
+        <div class="gauge-wrap">
+          <div class="gauge" id="gauge"><div class="fill"></div><div class="handle"></div></div>
+        </div>
+        <div class="readout" id="readout"></div>
+      </div>
+      <div class="subgrid">
+        <div class="mini"><label for="hi">左ハイライト α</label><input id="hi" type="number" min="0" max="1" step="0.01" value="0.10"></div>
+        <div class="mini"><label for="shadow">右暗部 α</label><input id="shadow" type="number" min="0" max="1" step="0.01" value="0.34"></div>
+      </div>
+      <div class="actions"><button id="reset">現行値に戻す</button><button id="dark">暗めプリセット</button><button id="flat">コントラスト弱め</button></div>
+    </section>
+    <section class="panel">
+      <h2>GRADIENT STOPS</h2>
+      <div id="stops"></div>
+      <div class="code">
+        <h2>CSS OUTPUT</h2>
+        <textarea id="css" readonly spellcheck="false"></textarea>
+        <div class="actions"><button class="primary" id="copy">CSSをコピー</button></div>
+        <div class="note">`#hhOpenGauge` の background / box-shadow 部分を出力します。角丸は出力しません。</div>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+(()=>{
+  const CURRENT=[['#2c3136',0],['#444b52',16],['#666e75',31],['#858c92',48],['#5d656c',66],['#3f464d',84],['#272c31',100]];
+  let data=CURRENT.map(v=>[...v]);
+  const stops=document.getElementById('stops'),gauge=document.getElementById('gauge'),css=document.getElementById('css'),readout=document.getElementById('readout'),hi=document.getElementById('hi'),shadow=document.getElementById('shadow');
+  const normHex=v=>/^#[0-9a-f]{6}$/i.test(v)?v.toLowerCase():null;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
+  function renderRows(){
+    stops.innerHTML='';
+    data.forEach((s,i)=>{
+      const row=document.createElement('div');row.className='row';
+      row.innerHTML=`<span class="idx">${String(i+1).padStart(2,'0')}</span><input type="color" value="${s[0]}"><input type="text" value="${s[0]}"><span></span><input class="stop-range" type="range" min="0" max="100" step="1" value="${s[1]}"><input class="stop-pos" type="number" min="0" max="100" step="1" value="${s[1]}">`;
+      const [picker,text,,range,pos]=row.children;
+      picker.addEventListener('input',()=>{data[i][0]=picker.value;text.value=picker.value;update()});
+      text.addEventListener('change',()=>{const v=normHex(text.value);if(v){data[i][0]=v;picker.value=v}else text.value=data[i][0];update()});
+      const setPos=v=>{data[i][1]=clamp(v,0,100);range.value=data[i][1];pos.value=data[i][1];update()};
+      range.addEventListener('input',()=>setPos(range.value));pos.addEventListener('change',()=>setPos(pos.value));
+      stops.appendChild(row);
+    });
+  }
+  function update(){
+    const ordered=data.map((v,i)=>({color:v[0],pos:v[1],i})).sort((a,b)=>a.pos-b.pos||a.i-b.i);
+    const grad=`linear-gradient(90deg, ${ordered.map(v=>`${v.color} ${v.pos}%`).join(', ')})`;
+    const h=clamp(hi.value,0,1),sh=clamp(shadow.value,0,1);
+    gauge.style.background=grad;
+    gauge.style.boxShadow=`inset 1px 0 0 rgba(255,255,255,${h}), inset -1px 0 0 rgba(0,0,0,${sh}), 0 2px 5px rgba(0,0,0,.5)`;
+    readout.textContent=`highlight ${h.toFixed(2)} / shadow ${sh.toFixed(2)}`;
+    css.value=`background:linear-gradient(90deg,\n${ordered.map((v,i)=>`  ${v.color} ${v.pos}%${i<ordered.length-1?',':''}`).join('\n')}\n);\nbox-shadow:\n  inset 1px 0 0 rgba(255,255,255,${h.toFixed(2)}),\n  inset -1px 0 0 rgba(0,0,0,${sh.toFixed(2)}),\n  0 1px 2px rgba(0,0,0,.38);`;
+  }
+  hi.addEventListener('input',update);shadow.addEventListener('input',update);
+  document.getElementById('reset').addEventListener('click',()=>{data=CURRENT.map(v=>[...v]);hi.value=.10;shadow.value=.34;renderRows();update()});
+  document.getElementById('dark').addEventListener('click',()=>{data=[['#20252a',0],['#353b41',16],['#50575e',31],['#70777d',48],['#4b5259',66],['#343a40',84],['#1d2227',100]];hi.value=.08;shadow.value=.38;renderRows();update()});
+  document.getElementById('flat').addEventListener('click',()=>{data=[['#343a40',0],['#42484e',16],['#555c62',31],['#646b71',48],['#555c62',66],['#42484e',84],['#343a40',100]];hi.value=.07;shadow.value=.27;renderRows();update()});
+  document.getElementById('copy').addEventListener('click',async e=>{try{await navigator.clipboard.writeText(css.value);const b=e.currentTarget,old=b.textContent;b.textContent='コピーしました';setTimeout(()=>b.textContent=old,1200)}catch{css.select();document.execCommand('copy')}});
+  renderRows();update();
+})();
+</script>
+</body>
+</html>
