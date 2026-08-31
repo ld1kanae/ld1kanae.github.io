@@ -5,7 +5,7 @@
     !!globalThis.matchMedia?.("(any-pointer:coarse)")?.matches||
     !!globalThis.matchMedia?.("(pointer:coarse)")?.matches;
 
-  document.documentElement.dataset.dmPerfTest="pass5";
+  document.documentElement.dataset.dmPerfTest="pass6";
 
   const stats={
     renderRequests:0,
@@ -58,7 +58,7 @@
 
   if(isTouch){
     const style=document.createElement("style");
-    style.dataset.dmPerfPass="5";
+    style.dataset.dmPerfPass="6";
     style.textContent=`
       @media (hover:none) and (pointer:coarse) and (max-width:900px){
         .game #chartWrap{
@@ -97,7 +97,7 @@
   }
 
   globalThis.DruMasterPerfTest={
-    version:"20260901-pass5",
+    version:"20260901-pass6",
     stats,
     snapshot(){
       const elapsed=Math.max(.001,(performance.now()-stats.startedAt)/1000);
@@ -130,6 +130,9 @@
         noteVisualRequests:core?.stats?.noteVisualRequests??null,
         noteVisualMisses:core?.stats?.noteVisualMisses??null,
         simultaneousOffsetCalls:core?.stats?.simultaneousOffsetCalls??null,
+        topologyBuilds:core?.stats?.topologyBuilds??null,
+        offsetLookups:core?.stats?.offsetLookups??null,
+        activeSlotChecks:core?.stats?.activeSlotChecks??null,
         staticBackgroundBuilds:core?.stats?.staticBuilds??null,
         staticBackgroundBlits:core?.stats?.staticBlits??null,
         canvasDpr:globalThis.DruMasterPerfCanvasPass4?.dpr??(canvas?.clientWidth?canvas.width/canvas.clientWidth:null),
@@ -154,12 +157,13 @@
       const s=globalThis.DruMasterPerfTest.snapshot();
       const voices=s.audio?.activeVoices??"-";
       overlay.textContent=[
-        `PASS5  song ${s.songSec??"-"}s`,
+        `PASS6  song ${s.songSec??"-"}s`,
         `render ${s.renderRate}/s  >50 ${s.frameGapOver50}  max ${s.maxRenderGapMs}ms`,
         `ticker ${s.tickerFrameRate??"-"}/s  tasks ${s.tickerTaskCount??"-"}  max ${s.tickerMaxBatchMs??"-"}ms`,
         `voices ${voices}  peak ${s.peakActiveVoices}`,
         `long ${s.longTasks}  max ${s.maxLongTaskMs}ms`,
-        `heap ${s.jsHeapUsedMB??"-"}/${s.jsHeapTotalMB??"-"} MB`
+        `heap ${s.jsHeapUsedMB??"-"}/${s.jsHeapTotalMB??"-"} MB`,
+        `topology ${s.topologyBuilds??"-"}  offset calls ${s.simultaneousOffsetCalls??"-"}`
       ].join("\n");
     };
     refresh();
