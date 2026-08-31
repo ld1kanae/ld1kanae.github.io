@@ -8,7 +8,8 @@
   const DESKTOP_NOTE_WIDTH_SCALE=1.5;
   const visualCache=new Map();
   const originalNoteVisual=api.noteVisual.bind(api);
-  const stats={noteVisualRequests:0,noteVisualMisses:0,simultaneousOffsetCalls:0};
+  const stats={noteVisualRequests:0,noteVisualMisses:0,simultaneousOffsetCalls:0,staticBuilds:0,staticBlits:0};
+  let staticCanvas=null,staticCtx=null,staticKey="";
 
   function cachedNoteVisual(type,group,scale=1){
     stats.noteVisualRequests++;
@@ -62,22 +63,64 @@
     return {start:0,end:notes.length};
   }
 
+  function ensureStaticBackground(canvas,w,h,mainH,kickH,laneH,labelFont){
+    const dpr=Math.max(1,canvas.clientWidth?canvas.width/canvas.clientWidth:1);
+    const bw=Math.max(1,Math.round(w*dpr)),bh=Math.max(1,Math.round(h*dpr));
+    const key=`${bw}x${bh}|${w}x${h}|${dpr.toFixed(4)}|${mainH.toFixed(3)}|${laneH.toFixed(3)}|${labelFont.toFixed(3)}`;
+    if(staticCanvas&&staticKey===key)return;
+
+    staticCanvas=document.createElement("canvas");
+    staticCanvas.width=bw;
+    staticCanvas.height=bh;
+    staticCtx=staticCanvas.getContext("2d");
+    staticCtx.setTransform(dpr,0,0,dpr,0,0);
+
+    const labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
+    staticCtx.fillStyle="#030507";
+    staticCtx.fillRect(0,0,w,h);
+    for(let i=0;i<3;i++){
+      if(i>0){
+        staticCtx.strokeStyle="#53677d";
+        staticCtx.lineWidth=1.2;
+        staticCtx.beginPath();
+        staticCtx.moveTo(0,laneH*i+.5);
+        staticCtx.lineTo(w,laneH*i+.5);
+        staticCtx.stroke();
+      }
+      staticCtx.fillStyle="#8b97a6";
+      staticCtx.font=`700 ${labelFont}px system-ui,sans-serif`;
+      staticCtx.textAlign="left";
+      staticCtx.textBaseline="top";
+      staticCtx.fillText(labels[i],7,laneH*i+6);
+    }
+    staticCtx.strokeStyle="#5b6d82";
+    staticCtx.lineWidth=1.2;
+    staticCtx.beginPath();
+    staticCtx.moveTo(0,mainH+.5);
+    staticCtx.lineTo(w,mainH+.5);
+    staticCtx.stroke();
+    staticCtx.fillStyle="#687483";
+    staticCtx.font=`700 ${labelFont}px system-ui,sans-serif`;
+    staticCtx.textAlign="left";
+    staticCtx.textBaseline="middle";
+    staticCtx.fillText("KICK · AUTO",7,mainH+kickH/2);
+
+    staticKey=key;
+    stats.staticBuilds++;
+  }
+
   function optimizedDraw({ctx,canvas,notes,currentSec,timing,groupMap,skipHit=true,hiddenTypes=null}){
     const w=canvas.clientWidth,h=canvas.clientHeight;
     const beatNow=api.secondsToBeat(currentSec,timing),division=timing.division||480;
     const judgeX=api.judgementX(w),judgeZoneW=api.judgementZoneWidth(w),kickH=Math.max(16,h*.12),mainH=h-kickH,laneH=mainH/3;
-    const labelFont=Math.max(9,laneH*.13),labels=["CYMBAL","HI-HAT / RIDE / OTHER","SNARE / TOMS"];
+    const labelFont=Math.max(9,laneH*.13);
     const noteWidthScale=api.isMobileLayout()?1:DESKTOP_NOTE_WIDTH_SCALE;
 
-    ctx.clearRect(0,0,w,h);ctx.fillStyle="#030507";ctx.fillRect(0,0,w,h);
-    for(let i=0;i<3;i++){
-      ctx.fillStyle="#030507";ctx.fillRect(0,laneH*i,w,laneH);
-      if(i>0){ctx.strokeStyle="#53677d";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,laneH*i+.5);ctx.lineTo(w,laneH*i+.5);ctx.stroke()}
-      ctx.fillStyle="#8b97a6";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(labels[i],7,laneH*i+6);
-    }
-    ctx.fillStyle="#030507";ctx.fillRect(0,mainH,w,kickH);
-    ctx.strokeStyle="#5b6d82";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,mainH+.5);ctx.lineTo(w,mainH+.5);ctx.stroke();
-    ctx.fillStyle="#687483";ctx.font=`700 ${labelFont}px system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("KICK · AUTO",7,mainH+kickH/2);
+    ensureStaticBackground(canvas,w,h,mainH,kickH,laneH,labelFont);
+    ctx.clearRect(0,0,w,h);
+    ctx.drawImage(staticCanvas,0,0,staticCanvas.width,staticCanvas.height,0,0,w,h);
+    stats.staticBlits++;
+
     api.drawMeasureLines(ctx,w,h,judgeX,beatNow,timing,PPQ);
     ctx.fillStyle="#eef6ff10";ctx.fillRect(judgeX-judgeZoneW/2,0,judgeZoneW,h);
     ctx.strokeStyle="#f3f8ff";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(judgeX,0);ctx.lineTo(judgeX,h);ctx.stroke();
@@ -109,8 +152,9 @@
   api.draw=optimizedDraw;
 
   globalThis.DruMasterPerfChartCorePass3={
-    version:"20260901-pass3",
+    version:"20260901-pass4",
     stats,
-    get cacheSize(){return visualCache.size}
+    get cacheSize(){return visualCache.size},
+    invalidateStatic(){staticKey="";staticCanvas=null;staticCtx=null}
   };
 })();
