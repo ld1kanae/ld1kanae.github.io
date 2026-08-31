@@ -11,11 +11,12 @@
   <script>
   (()=>{
     const state=document.getElementById('perfBootstrapState');
-    fetch('index.html?perf-base=20260901-pass7',{cache:'no-store'})
+    fetch('index.html?perf-base=20260901-pass8',{cache:'no-store'})
       .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.text()})
       .then(html=>{
         html=html.replace('<title>DruMaster</title>','<title>DruMaster Performance Test</title>');
         html=html.replace(/(<script src="js\/result-fanfare\.js\?v=[^\"]+"><\/script>)/,'$1<script src="perf-test/perf-ticker.js?v=20260901-pass7"></scr'+'ipt>');
+        html=html.replace(/js\/audio\.js\?v=[^\"]+/,'perf-test/audio.js?v=20260901-pass8');
         html=html.replace(/js\/auto-kick-effect\.js\?v=[^\"]+/,'perf-test/auto-kick-effect.js?v=20260901-pass5');
         html=html.replace(/js\/hit-flash-performance\.js\?v=[^\"]+/,'perf-test/hit-flash-performance.js?v=20260901-pass7');
         html=html.replace(/js\/judgement\.js\?v=[^\"]+/,'perf-test/judgement.js?v=20260901-pass5');
@@ -24,7 +25,7 @@
         html=html.replace(/js\/chart-resize\.js\?v=[^\"]+/,'perf-test/chart-resize.js?v=20260901-pass4');
         html=html.replace(/(<script src="js\/chart-core\.js\?v=[^\"]+"><\/script>)/,'$1<script src="perf-test/perf-pass3-chart-core.js?v=20260901-pass6"></scr'+'ipt>');
         html=html.replace(/(<script src="js\/game-chart\.js\?v=[^\"]+"><\/script>)/,'$1<script src="perf-test/perf-pass2-chart.js?v=20260901-pass2"></scr'+'ipt>');
-        html=html.replace('</body>','<script src="perf-test/perf-animation-pool.js?v=20260901-pass7"></scr'+'ipt><script src="perf-test/perf-pass1.js?v=20260901-pass7"></scr'+'ipt></body>');
+        html=html.replace('</body>','<script src="perf-test/perf-animation-pool.js?v=20260901-pass7"></scr'+'ipt><script src="perf-test/perf-pass1.js?v=20260901-pass8"></scr'+'ipt></body>');
         document.open();
         document.write(html);
         document.close();
