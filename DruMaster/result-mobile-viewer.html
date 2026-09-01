@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja" class="dm-layout-centered">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#080b11">
+<title>DruMaster Mobile Result Viewer</title>
+<link rel="stylesheet" href="css/base.css?v=20260826-maint1">
+<link rel="stylesheet" href="css/mobile-game.css?v=20260826-offsets3">
+<link rel="stylesheet" href="css/result-ui.css?v=20260830-ranking-title2">
+<link rel="stylesheet" href="css/result-actions-fix.css?v=20260826-resultactions2">
+<link rel="stylesheet" href="css/result-podium-key-tune.css?v=20260827-resultpodium2">
+<link rel="stylesheet" href="css/glass-buttons.css?v=20260828-hoverfullrestore1">
+<link rel="stylesheet" href="css/pause-result-readability.css?v=20260830-pc-offsets1">
+<link rel="stylesheet" href="css/mobile-centered-layout.css?v=20260828-panelceiling1">
+<link rel="stylesheet" href="css/result-mobile-song-offset.css?v=20260902-desktop-only1">
+<link rel="stylesheet" href="css/result-mobile-centering-v2.css?v=20260902-single-engine2">
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000!important}
+body{min-height:100dvh}
+#result{user-select:none;-webkit-user-select:none}
+#result::before{animation:none!important}
+.viewer-switch{position:absolute;z-index:9999;right:8px;bottom:8px;display:flex;gap:4px;padding:4px;border:1px solid rgba(127,151,176,.55);border-radius:999px;background:rgba(5,9,14,.88);box-shadow:0 8px 28px #000a;backdrop-filter:blur(8px)}
+.viewer-switch button{height:32px;padding:0 14px;border:0;border-radius:999px;background:#111d2a;color:#c6d4e2;font:800 10px/1 system-ui,sans-serif}
+.viewer-switch button.active{background:#dcecff;color:#07111c}
+@media (hover:hover) and (pointer:fine){body{display:grid;place-items:center}#app{position:relative!important;width:844px!important;height:390px!important;transform:none!important}.screen{width:100%!important;height:100%!important;margin-left:0!important}}
+</style>
+</head>
+<body>
+<main id="app">
+<section id="result" class="screen result">
+  <h2>Ray</h2>
+  <p class="result-song-sub">BUMP OF CHICKEN</p>
+  <p class="result-score-label">SCORE</p>
+  <strong id="finalScore">985,420</strong>
+  <div class="result-summary" aria-label="判定内訳">
+    <p><span>PERFECT</span><b>428</b></p><p><span>GREAT</span><b>37</b></p><p><span>GOOD</span><b>9</b></p><p><span>MISS</span><b>2</b></p>
+  </div>
+  <section class="ranking-panel" aria-label="過去のスコアランキング">
+    <div class="ranking-title"><h3>RECORD RANKING</h3><span>NEW BEST</span></div>
+    <div class="ranking-head"><span>RANK</span><span>SCORE</span><span style="text-align:right">DATE</span></div>
+    <div class="ranking-list">
+      <div class="ranking-row current best-record"><span class="rank-no">1</span><span class="rank-score-cell"><span class="rank-score">985,420</span><span class="best-badge">BEST</span></span><span class="rank-date">2026.09.01</span></div>
+      <div class="ranking-row"><span class="rank-no">2</span><span class="rank-score-cell"><span class="rank-score">973,180</span></span><span class="rank-date">2026.08.31</span></div>
+      <div class="ranking-row"><span class="rank-no">3</span><span class="rank-score-cell"><span class="rank-score">961,730</span></span><span class="rank-date">2026.08.30</span></div>
+    </div>
+  </section>
+  <div class="result-actions"><button id="retry" type="button">RETRY</button><button id="home" type="button">HOME</button></div>
+</section>
+<nav class="viewer-switch" id="viewerSwitch" aria-label="表示切替">
+  <button type="button" data-mode="normal" class="active">NORMAL</button>
+  <button type="button" data-mode="auto">AUTO PLAY</button>
+</nav>
+</main>
+<script>
+(()=>{'use strict';
+const root=document.documentElement,result=document.getElementById('result'),score=document.getElementById('finalScore'),sw=document.getElementById('viewerSwitch');
+function mobileStage(){const q=matchMedia('(hover:none) and (pointer:coarse) and (max-width:900px)');if(!q.matches)return;const vv=visualViewport,w=Math.max(1,Math.round(vv?vv.width:innerWidth)),h=Math.max(1,Math.round(vv?vv.height:innerHeight));root.style.setProperty('--dm-mobile-stage-w',h+'px');root.style.setProperty('--dm-mobile-stage-h',w+'px')}
+function setMode(mode){const isAuto=mode==='auto';result.classList.toggle('autoplay',isAuto);score.textContent=isAuto?'AUTO PLAY':'985,420';sw.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));const u=new URL(location.href);u.searchParams.set('mode',mode);history.replaceState(null,'',u)}
+sw.onclick=e=>{const b=e.target.closest('button[data-mode]');if(b)setMode(b.dataset.mode)};
+addEventListener('resize',mobileStage,{passive:true});addEventListener('orientationchange',()=>setTimeout(mobileStage,50),{passive:true});visualViewport?.addEventListener('resize',mobileStage,{passive:true});mobileStage();setMode(new URLSearchParams(location.search).get('mode')==='auto'?'auto':'normal');
+})();
+</script>
+</body>
+</html>
