@@ -31,7 +31,6 @@
     container-type:normal!important;
   }
 
-  /* Reset every direct result item to one coordinate system. */
   html.dm-layout-centered #app #result>h2,
   html.dm-layout-centered #app #result>.result-song-sub,
   html.dm-layout-centered #app #result>.result-score-label,
@@ -47,7 +46,6 @@
     flex:none!important;
   }
 
-  /* NORMAL: text/score group is centered in the left half. */
   html.dm-layout-centered #app #result:not(.autoplay)>h2,
   html.dm-layout-centered #app #result:not(.autoplay)>.result-song-sub,
   html.dm-layout-centered #app #result:not(.autoplay)>.result-score-label,
@@ -74,12 +72,12 @@
     gap:0!important;
   }
 
-  /* NORMAL ranking is centered in the right half. */
+  /* Keep the right edge fixed, but give ranking contents 10px more room on the left. */
   html.dm-layout-centered #app #result:not(.autoplay)>.ranking-panel{
-    left:75%!important;
+    left:calc(75% - 5px)!important;
     top:var(--dm-result-normal-ranking-y)!important;
-    width:43%!important;
-    max-width:43%!important;
+    width:calc(43% + 10px)!important;
+    max-width:calc(43% + 10px)!important;
     height:70%!important;
     min-height:0!important;
     max-height:70%!important;
@@ -94,8 +92,6 @@
     overflow-x:hidden!important;
   }
 
-  /* AUTO PLAY: each text block is self-sized then centered once at 50%.
-     There is no pre-subtracted half-width, so double-centering is impossible. */
   html.dm-layout-centered #app #result.autoplay>h2,
   html.dm-layout-centered #app #result.autoplay>.result-song-sub,
   html.dm-layout-centered #app #result.autoplay>.result-score-label,
@@ -111,8 +107,6 @@
   html.dm-layout-centered #app #result.autoplay>.result-score-label{top:var(--dm-result-auto-score-label-y)!important;}
   html.dm-layout-centered #app #result.autoplay>#finalScore{top:var(--dm-result-auto-text-y)!important;}
 
-  /* Buttons are a single full-screen-centered group. Children are always
-     static grid items; no old per-button absolute coordinates may survive. */
   html.dm-layout-centered #app #result:not(.autoplay)>.result-actions,
   html.dm-layout-centered #app #result.autoplay>.result-actions{
     left:50%!important;
