@@ -5,6 +5,9 @@ fn close_app(app: tauri::AppHandle) {
 
 #[tauri::command]
 fn start_window_drag(window: tauri::Window) -> Result<(), String> {
+    if window.is_fullscreen().map_err(|error| error.to_string())? {
+        window.set_fullscreen(false).map_err(|error| error.to_string())?;
+    }
     window.start_dragging().map_err(|error| error.to_string())
 }
 
