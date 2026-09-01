@@ -37,15 +37,16 @@
 const M=globalThis.DruMasterResultLayout,$=id=>document.getElementById(id),KEY='drumasterMobileResultYEditorV1';
 const groups={normal:[['title','曲名'],['artist','アーティスト'],['scoreLabel','SCORE'],['score','スコア'],['summary','判定'],['ranking','ランキング'],['buttons','RETRY / HOME']],auto:[['title','曲名'],['artist','アーティスト'],['scoreLabel','SCORE'],['autoText','AUTO PLAY'],['buttons','RETRY / HOME']]};
 let data=M.clone(M.base.mobile),screen='normal',selected='title',scale=1,drag=null;
-try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw){for(const mode of ['normal','auto'])for(const [key] of groups[mode]){const y=raw?.[mode]?.[key];if(Number.isFinite(+y))setGroupY(mode,key,+y)}}}catch{}
 function keysFor(mode,key){return key==='buttons'?['retry','home']:[key]}
 function groupY(mode,key){const k=keysFor(mode,key)[0];return M.obj(data[mode][k]).y}
 function setGroupY(mode,key,y){y=Math.round(Math.max(-120,Math.min(500,Number(y)||0)));for(const k of keysFor(mode,key)){if(!data[mode]?.[k])continue;const v=M.obj(data[mode][k]);v.y=y;data[mode][k]=M.arr(v)}}
+try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw){for(const mode of ['normal','auto'])for(const [key] of groups[mode]){const y=raw?.[mode]?.[key];if(Number.isFinite(+y))setGroupY(mode,key,+y)}}}catch{}
 function payload(){const out={version:1,unit:'844x390 design px',normal:{},auto:{}};for(const mode of ['normal','auto'])for(const [key] of groups[mode])out[mode][key]=groupY(mode,key);return out}
 function save(){localStorage.setItem(KEY,JSON.stringify(payload()))}
 function fit(){const w=$('viewport').clientWidth;scale=w/844;$('viewport').style.height=(390*scale)+'px';$('shell').style.transform=`scale(${scale})`}
-function render(){M.lockMobileCenters({mobile:data});const p=$('preview');p.innerHTML='<i class="guide g25"></i><i class="guide g50"></i><i class="guide g75"></i>';for(const [key,def] of Object.entries(M.defs[screen])){const group=(key==='retry'||key==='home')?'buttons':key;p.appendChild(M.makeElement(key,def,M.obj(data[screen][key]),group===selected))}buildChips();$('selectedName').textContent=groups[screen].find(x=>x[0]===selected)?.[1]||selected;$('yValue').value=groupY(screen,selected);$('output').value=JSON.stringify(payload());fit()}
-function buildChips(){const c=$('chips');c.innerHTML='';for(const [key,label] of groups[screen]){const b=document.createElement('button');b.className='chip'+(key===selected?' active':'');b.textContent=label;b.onclick=()=>{selected=key;render()};c.appendChild(b)}}
+function syncControls(){buildChips();$('selectedName').textContent=groups[screen].find(x=>x[0]===selected)?.[1]||selected;$('yValue').value=groupY(screen,selected);$('output').value=JSON.stringify(payload());$('preview').querySelectorAll('.rl-el').forEach(el=>{const g=(el.dataset.key==='retry'||el.dataset.key==='home')?'buttons':el.dataset.key;el.classList.toggle('selected',g===selected)})}
+function render(){M.lockMobileCenters({mobile:data});const p=$('preview');p.innerHTML='<i class="guide g25"></i><i class="guide g50"></i><i class="guide g75"></i>';for(const [key,def] of Object.entries(M.defs[screen])){const group=(key==='retry'||key==='home')?'buttons':key;p.appendChild(M.makeElement(key,def,M.obj(data[screen][key]),group===selected))}syncControls();fit()}
+function buildChips(){const c=$('chips');c.innerHTML='';for(const [key,label] of groups[screen]){const b=document.createElement('button');b.className='chip'+(key===selected?' active':'');b.textContent=label;b.onclick=()=>{selected=key;syncControls()};c.appendChild(b)}}
 function move(dy){setGroupY(screen,selected,groupY(screen,selected)+dy);save();render()}
 $('screenSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;screen=b.dataset.screen;selected=groups[screen][0][0];$('screenSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));render()};
 $('yValue').onchange=()=>{setGroupY(screen,selected,$('yValue').value);save();render()};
@@ -54,8 +55,8 @@ $('resetScreen').onclick=()=>{if(!confirm((screen==='normal'?'NORMAL':'AUTO PLAY
 function groupYBase(mode,key){const k=keysFor(mode,key)[0];return M.obj(M.base.mobile[mode][k]).y}
 $('copyValues').onclick=async()=>{const text=JSON.stringify(payload());$('output').value=text;try{await navigator.clipboard.writeText(text)}catch{$('output').focus();$('output').select();document.execCommand('copy')}toast('値をコピーしました')};
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1300)}
-$('preview').addEventListener('pointerdown',e=>{const el=e.target.closest('.rl-el');if(!el)return;e.preventDefault();const key=(el.dataset.key==='retry'||el.dataset.key==='home')?'buttons':el.dataset.key;selected=key;drag={id:e.pointerId,start:e.clientY,y:groupY(screen,key)};el.setPointerCapture(e.pointerId);render()});
-$('preview').addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dy=Math.round((e.clientY-drag.start)/scale);setGroupY(screen,selected,drag.y+dy);render()});
+$('preview').addEventListener('pointerdown',e=>{const el=e.target.closest('.rl-el');if(!el)return;e.preventDefault();const key=(el.dataset.key==='retry'||el.dataset.key==='home')?'buttons':el.dataset.key;selected=key;syncControls();drag={id:e.pointerId,start:e.clientY,y:groupY(screen,key)};el.setPointerCapture(e.pointerId)});
+$('preview').addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dy=Math.round((e.clientY-drag.start)/scale),y=drag.y+dy;setGroupY(screen,selected,y);for(const k of keysFor(screen,selected)){const node=$('preview').querySelector(`.rl-el[data-key="${k}"]`);if(node)node.style.top=groupY(screen,selected)+'px'}$('yValue').value=groupY(screen,selected);$('output').value=JSON.stringify(payload())});
 function end(e){if(!drag||e.pointerId!==drag.id)return;drag=null;save();render()}
 $('preview').addEventListener('pointerup',end);$('preview').addEventListener('pointercancel',end);
 addEventListener('resize',fit);render();
