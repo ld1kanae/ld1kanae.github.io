@@ -1,65 +1,89 @@
 <!doctype html>
-<html lang="ja">
+<html lang="ja" class="dm-layout-centered">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#070b11">
-<title>DruMaster Mobile Result Y Editor</title>
-<link rel="stylesheet" href="css/result-layout-preview.css?v=20260902-centerlock1">
+<meta name="theme-color" content="#080b11">
+<title>DruMaster Mobile Result Editor</title>
+<link rel="stylesheet" href="css/base.css?v=20260826-maint1">
+<link rel="stylesheet" href="css/mobile-game.css?v=20260826-offsets3">
+<link rel="stylesheet" href="css/result-ui.css?v=20260830-ranking-title2">
+<link rel="stylesheet" href="css/result-actions-fix.css?v=20260826-resultactions2">
+<link rel="stylesheet" href="css/result-podium-key-tune.css?v=20260827-resultpodium2">
+<link rel="stylesheet" href="css/glass-buttons.css?v=20260828-hoverfullrestore1">
+<link rel="stylesheet" href="css/pause-result-readability.css?v=20260830-pc-offsets1">
+<link rel="stylesheet" href="css/mobile-centered-layout.css?v=20260828-panelceiling1">
+<link rel="stylesheet" href="css/result-mobile-song-offset.css?v=20260902-editor-fit1">
+<link rel="stylesheet" href="css/result-mobile-centering-v2.css?v=20260902-v1">
 <style>
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#060a10;color:#eaf3fc;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}.app{width:min(100%,980px);margin:0 auto;padding:10px 10px max(22px,env(safe-area-inset-bottom))}.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.title{font-size:13px;font-weight:800;letter-spacing:.12em;color:#d9e9f8}.seg{display:flex;gap:4px;padding:4px;border:1px solid #334356;border-radius:999px;background:#09111b}.seg button,.chip,.nudge,.action{border:1px solid transparent;background:#101a27;color:#b8c7d6;border-radius:999px;min-height:36px;padding:0 12px;font-weight:800}.seg button.active,.chip.active{background:#dcecff;color:#07111c}.preview-frame{position:relative;width:100%;overflow:hidden;border:1px solid #26384a;border-radius:12px;background:#05080d;box-shadow:0 10px 30px #0008}.preview-viewport{position:relative;width:100%;overflow:hidden}.canvas-shell{position:absolute;left:0;top:0;width:844px;height:390px;transform-origin:0 0}.rl-canvas{width:844px;height:390px}.guide{position:absolute;z-index:1;top:0;bottom:0;width:1px;background:rgba(113,220,255,.18);pointer-events:none}.guide.g25{left:25%}.guide.g50{left:50%;background:rgba(255,255,255,.22)}.guide.g75{left:75%;background:rgba(202,132,255,.2)}.rl-el{touch-action:none}.rl-el.selected{outline:2px solid #70dcff!important;outline-offset:2px}.hintbar{padding:7px 2px 2px;font-size:11px;line-height:1.45;color:#8597aa}.panel{margin-top:9px;padding:10px;border:1px solid #27384a;border-radius:12px;background:#0a111b}.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;min-height:34px;padding:0 11px;font-size:12px}.editrow{display:grid;grid-template-columns:minmax(110px,1fr) 90px;gap:8px;align-items:center;margin-top:8px}.selected-name{font-size:14px;font-weight:900}.ybox{display:flex;align-items:center;border:1px solid #3a4d61;border-radius:9px;background:#050a10;overflow:hidden}.ybox input{width:100%;height:40px;border:0;outline:0;background:transparent;color:#fff;text-align:right;font-weight:900;font-size:16px;padding:0 8px}.ybox span{padding-right:8px;font-size:11px;color:#8193a7}.nudges{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}.nudge{min-width:0;padding:0 4px;border-color:#304255;font-size:12px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.action{border-radius:9px;border-color:#3a4d61}.action.primary{background:#dcecff;color:#07111c;border-color:#dcecff}.output{width:100%;height:96px;margin-top:8px;padding:9px;border:1px solid #27384a;border-radius:9px;background:#05080d;color:#a9bad0;font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;resize:none}.toast{position:fixed;z-index:30;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;padding:9px 14px;border:1px solid #526b82;border-radius:999px;background:#101a27;color:#fff;font-size:12px;transition:.18s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media (min-width:700px){.app{padding:16px}.preview-frame{max-width:844px;margin:auto}.panel{max-width:844px;margin-left:auto;margin-right:auto}}
+html,body{background:#000!important}
+#result{user-select:none;-webkit-user-select:none}
+#result::before{animation:none!important}
+#result .dm-edit-selected{outline:2px solid #71dcff!important;outline-offset:3px!important;box-shadow:0 0 0 1px #001018,0 0 12px #71dcff77!important}
+#result>.result-actions.dm-edit-selected{outline-offset:5px!important}
+.editor-hud{position:absolute;z-index:9999;right:8px;bottom:8px;width:min(356px,42%);padding:7px;border:1px solid rgba(127,151,176,.55);border-radius:13px;background:rgba(5,9,14,.88);box-shadow:0 8px 28px #000a;backdrop-filter:blur(8px);color:#eef6ff;font-family:Inter,system-ui,sans-serif;touch-action:manipulation}
+.editor-row{display:flex;align-items:center;gap:5px}.editor-row+.editor-row{margin-top:5px}.editor-seg{display:flex;flex:1;gap:3px;padding:3px;border:1px solid #34475a;border-radius:999px;background:#08111b}.editor-seg button,.editor-hud button,.editor-hud select{height:29px;border:1px solid #3c5064;background:#111d2a;color:#d5e2ee;border-radius:8px;font:800 10px/1 system-ui,sans-serif}.editor-seg button{flex:1;border:0;border-radius:999px}.editor-seg button.active{background:#dcecff;color:#07111c}.editor-hud select{flex:1;min-width:0;padding:0 7px}.editor-hud .nudge{width:38px;flex:0 0 38px;padding:0}.editor-hud .copy{flex:1;background:#dcecff;color:#07111c;border-color:#dcecff}.editor-value{width:64px;flex:0 0 64px;text-align:center;font:800 10px/1 ui-monospace,monospace;color:#9fb3c7}.editor-note{margin-top:5px;font:10px/1.25 system-ui,sans-serif;color:#8295a8;text-align:center}.editor-toast{position:absolute;z-index:10000;left:50%;top:8px;translate:-50% 0;padding:7px 12px;border:1px solid #526a80;border-radius:999px;background:#101a27;color:#fff;font:700 10px/1 system-ui,sans-serif;opacity:0;pointer-events:none;transition:.15s}.editor-toast.show{opacity:1}
+@media (hover:hover) and (pointer:fine){body{display:grid;place-items:center}#app{position:relative!important;width:844px!important;height:390px!important;transform:none!important}.screen{width:100%!important;height:100%!important;margin-left:0!important}.editor-hud{width:340px}}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="top">
-    <div class="title">MOBILE RESULT Y EDITOR</div>
-    <div class="seg" id="screenSeg"><button data-screen="normal" class="active">NORMAL</button><button data-screen="auto">AUTO PLAY</button></div>
+<main id="app">
+<section id="result" class="screen result">
+  <h2>Ray</h2>
+  <p class="result-song-sub">BUMP OF CHICKEN</p>
+  <p class="result-score-label">SCORE</p>
+  <strong id="finalScore">985,420</strong>
+  <div class="result-summary" aria-label="判定内訳">
+    <p><span>PERFECT</span><b>428</b></p><p><span>GREAT</span><b>37</b></p><p><span>GOOD</span><b>9</b></p><p><span>MISS</span><b>2</b></p>
   </div>
-  <div class="preview-frame"><div class="preview-viewport" id="viewport"><div class="canvas-shell" id="shell"><div class="rl-canvas" id="preview"></div></div></div></div>
-  <div class="hintbar">横位置は固定です。NORMAL＝左カラム25% / RANKING 75%、AUTO PLAY＝50%、RETRY/HOME＝画面全体50%。要素を直接上下ドラッグするか、下の数値でYだけ調整してください。</div>
-  <section class="panel">
-    <div class="chips" id="chips"></div>
-    <div class="editrow"><div class="selected-name" id="selectedName">曲名</div><label class="ybox"><input id="yValue" inputmode="numeric" type="number" step="1"><span>px</span></label></div>
-    <div class="nudges">
-      <button class="nudge" data-dy="-10">-10</button><button class="nudge" data-dy="-5">-5</button><button class="nudge" data-dy="-1">-1</button>
-      <button class="nudge" data-dy="1">+1</button><button class="nudge" data-dy="5">+5</button><button class="nudge" data-dy="10">+10</button>
+  <section class="ranking-panel" aria-label="過去のスコアランキング">
+    <div class="ranking-title"><h3>RECORD RANKING</h3><span>NEW BEST</span></div>
+    <div class="ranking-head"><span>RANK</span><span>SCORE</span><span style="text-align:right">DATE</span></div>
+    <div class="ranking-list">
+      <div class="ranking-row current best-record"><span class="rank-no">1</span><span class="rank-score-cell"><span class="rank-score">985,420</span><span class="best-badge">BEST</span></span><span class="rank-date">2026.09.01</span></div>
+      <div class="ranking-row"><span class="rank-no">2</span><span class="rank-score-cell"><span class="rank-score">973,180</span></span><span class="rank-date">2026.08.31</span></div>
+      <div class="ranking-row"><span class="rank-no">3</span><span class="rank-score-cell"><span class="rank-score">961,730</span></span><span class="rank-date">2026.08.30</span></div>
     </div>
-    <div class="actions"><button class="action" id="resetScreen">この画面を初期化</button><button class="action primary" id="copyValues">値をコピー</button></div>
-    <textarea class="output" id="output" readonly></textarea>
   </section>
+  <div class="result-actions"><button id="retry" type="button">RETRY</button><button id="home" type="button">HOME</button></div>
+</section>
+<div class="editor-hud" id="editorHud">
+  <div class="editor-row"><div class="editor-seg" id="modeSeg"><button data-mode="normal" class="active">NORMAL</button><button data-mode="auto">AUTO PLAY</button></div></div>
+  <div class="editor-row"><select id="elementSelect" aria-label="調整する要素"></select><button class="nudge" data-dy="-5">−5</button><button class="nudge" data-dy="-1">−1</button><button class="nudge" data-dy="1">+1</button><button class="nudge" data-dy="5">+5</button></div>
+  <div class="editor-row"><span class="editor-value" id="valueText"></span><button class="copy" id="copyValues">値をコピー</button></div>
+  <div class="editor-note">本番と同じ横画面・同じCSSです。要素を直接上下ドラッグできます。</div>
 </div>
-<div class="toast" id="toast"></div>
-<script src="js/result-layout-shared.js?v=20260902-centerlock1"></script>
+<div class="editor-toast" id="toast">COPIED</div>
+</main>
 <script>
 (()=>{'use strict';
-const M=globalThis.DruMasterResultLayout,$=id=>document.getElementById(id),KEY='drumasterMobileResultYEditorV1';
-const groups={normal:[['title','曲名'],['artist','アーティスト'],['scoreLabel','SCORE'],['score','スコア'],['summary','判定'],['ranking','ランキング'],['buttons','RETRY / HOME']],auto:[['title','曲名'],['artist','アーティスト'],['scoreLabel','SCORE'],['autoText','AUTO PLAY'],['buttons','RETRY / HOME']]};
-let data=M.clone(M.base.mobile),screen='normal',selected='title',scale=1,drag=null;
-function keysFor(mode,key){return key==='buttons'?['retry','home']:[key]}
-function groupY(mode,key){const k=keysFor(mode,key)[0];return M.obj(data[mode][k]).y}
-function setGroupY(mode,key,y){y=Math.round(Math.max(-120,Math.min(500,Number(y)||0)));for(const k of keysFor(mode,key)){if(!data[mode]?.[k])continue;const v=M.obj(data[mode][k]);v.y=y;data[mode][k]=M.arr(v)}}
-try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw){for(const mode of ['normal','auto'])for(const [key] of groups[mode]){const y=raw?.[mode]?.[key];if(Number.isFinite(+y))setGroupY(mode,key,+y)}}}catch{}
-function payload(){const out={version:1,unit:'844x390 design px',normal:{},auto:{}};for(const mode of ['normal','auto'])for(const [key] of groups[mode])out[mode][key]=groupY(mode,key);return out}
-function save(){localStorage.setItem(KEY,JSON.stringify(payload()))}
-function fit(){const w=$('viewport').clientWidth;scale=w/844;$('viewport').style.height=(390*scale)+'px';$('shell').style.transform=`scale(${scale})`}
-function syncControls(){buildChips();$('selectedName').textContent=groups[screen].find(x=>x[0]===selected)?.[1]||selected;$('yValue').value=groupY(screen,selected);$('output').value=JSON.stringify(payload());$('preview').querySelectorAll('.rl-el').forEach(el=>{const g=(el.dataset.key==='retry'||el.dataset.key==='home')?'buttons':el.dataset.key;el.classList.toggle('selected',g===selected)})}
-function render(){M.lockMobileCenters({mobile:data});const p=$('preview');p.innerHTML='<i class="guide g25"></i><i class="guide g50"></i><i class="guide g75"></i>';for(const [key,def] of Object.entries(M.defs[screen])){const group=(key==='retry'||key==='home')?'buttons':key;p.appendChild(M.makeElement(key,def,M.obj(data[screen][key]),group===selected))}syncControls();fit()}
-function buildChips(){const c=$('chips');c.innerHTML='';for(const [key,label] of groups[screen]){const b=document.createElement('button');b.className='chip'+(key===selected?' active':'');b.textContent=label;b.onclick=()=>{selected=key;syncControls()};c.appendChild(b)}}
-function move(dy){setGroupY(screen,selected,groupY(screen,selected)+dy);save();render()}
-$('screenSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;screen=b.dataset.screen;selected=groups[screen][0][0];$('screenSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));render()};
-$('yValue').onchange=()=>{setGroupY(screen,selected,$('yValue').value);save();render()};
-document.querySelectorAll('[data-dy]').forEach(b=>b.onclick=()=>move(+b.dataset.dy));
-$('resetScreen').onclick=()=>{if(!confirm((screen==='normal'?'NORMAL':'AUTO PLAY')+'のY位置を初期値に戻しますか？'))return;for(const [key] of groups[screen])setGroupY(screen,key,groupYBase(screen,key));save();render();toast('初期値に戻しました')};
-function groupYBase(mode,key){const k=keysFor(mode,key)[0];return M.obj(M.base.mobile[mode][k]).y}
-$('copyValues').onclick=async()=>{const text=JSON.stringify(payload());$('output').value=text;try{await navigator.clipboard.writeText(text)}catch{$('output').focus();$('output').select();document.execCommand('copy')}toast('値をコピーしました')};
-function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1300)}
-$('preview').addEventListener('pointerdown',e=>{const el=e.target.closest('.rl-el');if(!el)return;e.preventDefault();const key=(el.dataset.key==='retry'||el.dataset.key==='home')?'buttons':el.dataset.key;selected=key;syncControls();drag={id:e.pointerId,start:e.clientY,y:groupY(screen,key)};el.setPointerCapture(e.pointerId)});
-$('preview').addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dy=Math.round((e.clientY-drag.start)/scale),y=drag.y+dy;setGroupY(screen,selected,y);for(const k of keysFor(screen,selected)){const node=$('preview').querySelector(`.rl-el[data-key="${k}"]`);if(node)node.style.top=groupY(screen,selected)+'px'}$('yValue').value=groupY(screen,selected);$('output').value=JSON.stringify(payload())});
-function end(e){if(!drag||e.pointerId!==drag.id)return;drag=null;save();render()}
-$('preview').addEventListener('pointerup',end);$('preview').addEventListener('pointercancel',end);
-addEventListener('resize',fit);render();
+const root=document.documentElement,app=document.getElementById('app'),result=document.getElementById('result'),select=document.getElementById('elementSelect'),valueText=document.getElementById('valueText');
+const defs={
+ normal:{title:['曲名','--dm-result-normal-title-y','h2'],artist:['アーティスト','--dm-result-normal-artist-y','.result-song-sub'],scoreLabel:['SCORE','--dm-result-normal-score-label-y','.result-score-label'],score:['スコア','--dm-result-normal-score-y','#finalScore'],summary:['判定','--dm-result-normal-summary-y','.result-summary'],ranking:['ランキング','--dm-result-normal-ranking-y','.ranking-panel'],buttons:['RETRY / HOME','--dm-result-normal-buttons-y','.result-actions']},
+ auto:{title:['曲名','--dm-result-auto-title-y','h2'],artist:['アーティスト','--dm-result-auto-artist-y','.result-song-sub'],scoreLabel:['SCORE','--dm-result-auto-score-label-y','.result-score-label'],autoText:['AUTO PLAY','--dm-result-auto-text-y','#finalScore'],buttons:['RETRY / HOME','--dm-result-auto-buttons-y','.result-actions']}
+};
+const defaults={normal:{title:12.0513,artist:23.5897,scoreLabel:33.3333,score:38.4615,summary:57.9487,ranking:5.6410,buttons:82.0513},auto:{title:12.0513,artist:26.9231,scoreLabel:39.4872,autoText:46.9231,buttons:73.3333}};
+let values=JSON.parse(JSON.stringify(defaults)),mode='normal',selected='title',drag=null;
+try{const saved=JSON.parse(localStorage.getItem('dm-result-y-editor-v2')||'null');if(saved?.normal&&saved?.auto){for(const m of ['normal','auto'])for(const k of Object.keys(defaults[m]))if(Number.isFinite(+saved[m][k]))values[m][k]=+saved[m][k]}}catch{}
+function mobileStage(){const q=matchMedia('(hover:none) and (pointer:coarse) and (max-width:900px)');if(!q.matches)return;const vv=visualViewport,w=Math.max(1,Math.round(vv?vv.width:innerWidth)),h=Math.max(1,Math.round(vv?vv.height:innerHeight));root.style.setProperty('--dm-mobile-stage-w',h+'px');root.style.setProperty('--dm-mobile-stage-h',w+'px')}
+function apply(){for(const m of ['normal','auto'])for(const [k,d] of Object.entries(defs[m]))result.style.setProperty(d[1],values[m][k].toFixed(4)+'%');localStorage.setItem('dm-result-y-editor-v2',JSON.stringify(values));valueText.textContent=values[mode][selected].toFixed(2)+'%'}
+function buildSelect(){select.innerHTML='';for(const [k,d] of Object.entries(defs[mode])){const o=document.createElement('option');o.value=k;o.textContent=d[0];o.selected=k===selected;select.appendChild(o)}}
+function selectedNode(){return result.querySelector(defs[mode][selected][2])}
+function highlight(){result.querySelectorAll('.dm-edit-selected').forEach(n=>n.classList.remove('dm-edit-selected'));selectedNode()?.classList.add('dm-edit-selected')}
+function setMode(next){mode=next;result.classList.toggle('autoplay',mode==='auto');document.getElementById('finalScore').textContent=mode==='auto'?'AUTO PLAY':'985,420';document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));selected=Object.keys(defs[mode])[0];buildSelect();apply();highlight()}
+function pointLocal(e){const t=getComputedStyle(app).transform;if(!t||t==='none')return new DOMPoint(e.clientX,e.clientY);try{return new DOMPoint(e.clientX,e.clientY).matrixTransform(new DOMMatrix(t).inverse())}catch{return new DOMPoint(e.clientX,e.clientY)}}
+function clamp(v){return Math.max(-20,Math.min(120,v))}
+function move(deltaPct){values[mode][selected]=clamp(values[mode][selected]+deltaPct);apply();highlight()}
+function selectFromTarget(target){for(const [k,d] of Object.entries(defs[mode])){const node=result.querySelector(d[2]);if(node&&(target===node||node.contains(target))){selected=k;select.value=k;apply();highlight();return true}}return false}
+document.getElementById('modeSeg').onclick=e=>{const b=e.target.closest('button[data-mode]');if(b)setMode(b.dataset.mode)};
+select.onchange=()=>{selected=select.value;apply();highlight()};
+document.querySelectorAll('[data-dy]').forEach(b=>b.onclick=()=>move((+b.dataset.dy/result.clientHeight)*100));
+result.addEventListener('pointerdown',e=>{if(e.target.closest('#editorHud'))return;if(!selectFromTarget(e.target))return;e.preventDefault();const p=pointLocal(e),node=selectedNode();drag={id:e.pointerId,startY:p.y,startValue:values[mode][selected],node};node?.setPointerCapture?.(e.pointerId)});
+result.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.preventDefault();const p=pointLocal(e),delta=((p.y-drag.startY)/result.clientHeight)*100;values[mode][selected]=clamp(drag.startValue+delta);apply();highlight()});
+function endDrag(e){if(!drag||e.pointerId!==drag.id)return;drag=null;apply()}
+result.addEventListener('pointerup',endDrag);result.addEventListener('pointercancel',endDrag);
+document.getElementById('copyValues').onclick=async()=>{const payload={version:2,unit:'percent of actual mobile #result height',normal:{},auto:{}};for(const m of ['normal','auto'])for(const k of Object.keys(defs[m]))payload[m][k]=+values[m][k].toFixed(4);const text=JSON.stringify(payload);try{await navigator.clipboard.writeText(text)}catch{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}const toast=document.getElementById('toast');toast.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toast.classList.remove('show'),1000)};
+addEventListener('resize',mobileStage,{passive:true});addEventListener('orientationchange',()=>setTimeout(mobileStage,50),{passive:true});visualViewport?.addEventListener('resize',mobileStage,{passive:true});mobileStage();buildSelect();setMode('normal');
 })();
 </script>
 </body>
