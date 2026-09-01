@@ -1,17 +1,25 @@
 /* Smartphone result: keep song metadata clear of the forced-landscape safe edge. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  /* Normal result: position offset that survives the reveal transform. */
-  #result:not(.autoplay)>h2,
-  #result:not(.autoplay)>.result-song-sub{
+  /* Normal result: relative adjustments from the currently approved positions. */
+  #result:not(.autoplay)>h2{
     position:relative!important;
-    top:18px!important;
+    top:28px!important;
     translate:none!important;
   }
+  #result:not(.autoplay)>.result-song-sub{
+    position:relative!important;
+    top:23px!important;
+    translate:none!important;
+  }
+  #result:not(.autoplay)>.result-score-label{
+    position:relative!important;
+    top:3px!important;
+  }
 
-  /* AUTO PLAY uses absolute positioning from pause-result-readability.css.
-     Override its anchor offsets directly; generic translate is overwritten there. */
+  /* AUTO PLAY uses absolute positioning from pause-result-readability.css. */
   #result.autoplay{
-    --dm-autoplay-title-y:-164px!important;
-    --dm-autoplay-artist-y:-99px!important;
+    --dm-autoplay-title-y:-154px!important;
+    --dm-autoplay-artist-y:-94px!important;
+    --dm-autoplay-score-y:-54px!important;
   }
 }
