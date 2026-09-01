@@ -107,6 +107,23 @@
   html.dm-layout-centered #app #result.autoplay>.result-score-label{top:var(--dm-result-auto-score-label-y)!important;}
   html.dm-layout-centered #app #result.autoplay>#finalScore{top:var(--dm-result-auto-text-y)!important;}
 
+  /* Android/Chrome rounds sub-pixel text strokes to a device pixel, so 0.4px
+     and 0.2px can still look identical. Remove the stroke entirely on mobile.
+     Symmetric inline padding gives the skewed gradient glyphs room so their
+     left/right edges are not clipped by the element's paint box. */
+  html.dm-layout-centered #app #result>#finalScore{
+    -webkit-text-stroke:0!important;
+    paint-order:normal!important;
+    padding-left:5px!important;
+    padding-right:5px!important;
+    overflow:visible!important;
+    color:transparent!important;
+    -webkit-text-fill-color:transparent!important;
+    background-clip:text!important;
+    -webkit-background-clip:text!important;
+    filter:drop-shadow(0 0 8px rgba(95,226,255,.58))!important;
+  }
+
   html.dm-layout-centered #app #result:not(.autoplay)>.result-actions,
   html.dm-layout-centered #app #result.autoplay>.result-actions{
     left:50%!important;
