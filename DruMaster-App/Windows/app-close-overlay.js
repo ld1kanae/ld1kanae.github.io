@@ -10,7 +10,8 @@
   Object.assign(button.style, {
     position: 'fixed',
     top: '0',
-    right: '0',
+    left: '50%',
+    transform: 'translateX(-50%)',
     width: `${BUTTON_SIZE_PX}px`,
     height: `${BUTTON_SIZE_PX}px`,
     padding: '0',
