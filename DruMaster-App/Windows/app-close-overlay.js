@@ -1,6 +1,12 @@
 (() => {
   const HOT_ZONE_PX = 50;
   const BUTTON_SIZE_PX = 50;
+  const DRAG_THRESHOLD_PX = 4;
+
+  let pendingDrag = false;
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
 
   const button = document.createElement('button');
   button.type = 'button';
@@ -39,23 +45,47 @@
     button.style.pointerEvents = visible ? 'auto' : 'none';
   };
 
-  document.addEventListener('mousemove', (event) => {
-    setVisible(event.clientY >= 0 && event.clientY <= HOT_ZONE_PX);
-  }, { passive: true });
-
-  document.addEventListener('mouseleave', () => setVisible(false));
-
-  document.addEventListener('mousedown', async (event) => {
+  document.addEventListener('mousedown', (event) => {
     if (event.button !== 0) return;
     if (event.clientY < 0 || event.clientY > HOT_ZONE_PX) return;
     if (button.contains(event.target)) return;
 
+    pendingDrag = true;
+    dragging = false;
+    dragStartX = event.screenX;
+    dragStartY = event.screenY;
+  });
+
+  document.addEventListener('mousemove', async (event) => {
+    setVisible(event.clientY >= 0 && event.clientY <= HOT_ZONE_PX);
+
+    if (!pendingDrag || dragging || (event.buttons & 1) !== 1) return;
+
+    const dx = event.screenX - dragStartX;
+    const dy = event.screenY - dragStartY;
+    if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+
+    pendingDrag = false;
+    dragging = true;
     event.preventDefault();
+
     try {
       await window.__TAURI__?.core?.invoke('start_window_drag');
     } catch (error) {
       console.error('Failed to start DruMaster window drag:', error);
+    } finally {
+      dragging = false;
     }
+  });
+
+  document.addEventListener('mouseup', () => {
+    pendingDrag = false;
+    dragging = false;
+  }, { passive: true });
+
+  document.addEventListener('mouseleave', () => {
+    setVisible(false);
+    if (!dragging) pendingDrag = false;
   });
 
   button.addEventListener('mousedown', (event) => {
