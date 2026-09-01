@@ -1,6 +1,6 @@
 /* Smartphone result: keep song metadata clear of the forced-landscape safe edge. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  /* Normal result: restore the state from before the AUTO PLAY-only fine tuning. */
+  /* Normal result: keep the pre-AUTO fine-tuning positions. */
   #result:not(.autoplay)>h2,
   #result:not(.autoplay)>.result-song-sub{
     position:relative!important;
@@ -10,18 +10,32 @@
   #result:not(.autoplay)>h2{
     font-size:30px!important;
   }
+  /* Artist: about 2pt smaller than the current 16px mobile size. */
+  #result:not(.autoplay)>.result-song-sub{
+    font-size:13px!important;
+  }
   #result:not(.autoplay)>.result-score-label{
     position:static!important;
     top:auto!important;
   }
+  /* Score digits: about 5pt smaller than 58px, then move visually downward. */
+  #result:not(.autoplay)>#finalScore{
+    position:relative!important;
+    top:5px!important;
+    font-size:51px!important;
+  }
 
-  /* AUTO PLAY only: title +10px, artist +5px, SCORE +3px from the prior approved positions. */
+  /* AUTO PLAY only: move title another 10px down. Keep artist/SCORE positions. */
   #result.autoplay{
-    --dm-autoplay-title-y:-154px!important;
+    --dm-autoplay-title-y:-144px!important;
     --dm-autoplay-artist-y:-94px!important;
     --dm-autoplay-score-y:-54px!important;
   }
   #result.autoplay>h2{
     font-size:33px!important;
+  }
+  /* Artist: about 2pt smaller than the current 21px mobile size. */
+  #result.autoplay>.result-song-sub{
+    font-size:18px!important;
   }
 }
