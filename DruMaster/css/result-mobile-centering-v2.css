@@ -1,9 +1,8 @@
-/* Mobile RESULT horizontal baseline, loaded after all legacy result CSS.
-   This layer intentionally owns only smartphone result geometry.
-   X is always centered by real stage width; Y is tuned in the exact
-   smartphone production coordinate system. */
+/* Smartphone RESULT geometry — single source of truth.
+   Loaded after legacy result CSS. No 844x390 virtual coordinates are used.
+   All placement is relative to the actual forced-landscape #result box. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  #result{
+  html.dm-layout-centered #app #result.screen.result{
     --dm-result-normal-title-y:13.4402%;
     --dm-result-normal-artist-y:23.5897%;
     --dm-result-normal-score-label-y:33.3333%;
@@ -16,76 +15,135 @@
     --dm-result-auto-score-label-y:39.4872%;
     --dm-result-auto-text-y:46.9231%;
     --dm-result-auto-buttons-y:73.3333%;
+
+    position:relative!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    justify-content:initial!important;
+    align-items:initial!important;
+    container-type:normal!important;
   }
 
-  /* NORMAL: left content = center of left half, ranking = center of right half. */
-  #result:not(.autoplay)>h2,
-  #result:not(.autoplay)>.result-song-sub,
-  #result:not(.autoplay)>.result-score-label,
-  #result:not(.autoplay)>#finalScore,
-  #result:not(.autoplay)>.result-summary{
-    left:25%!important;
-    right:auto!important;
-    translate:-50% 0!important;
-  }
-  #result:not(.autoplay)>.ranking-panel{
-    left:75%!important;
-    right:auto!important;
-    translate:-50% 0!important;
-  }
-
-  #result:not(.autoplay)>h2{top:var(--dm-result-normal-title-y)!important;}
-  #result:not(.autoplay)>.result-song-sub{top:var(--dm-result-normal-artist-y)!important;}
-  #result:not(.autoplay)>.result-score-label{top:var(--dm-result-normal-score-label-y)!important;}
-  #result:not(.autoplay)>#finalScore{top:var(--dm-result-normal-score-y)!important;}
-  #result:not(.autoplay)>.result-summary{top:var(--dm-result-normal-summary-y)!important;}
-  #result:not(.autoplay)>.ranking-panel{top:var(--dm-result-normal-ranking-y)!important;}
-
-  /* AUTO PLAY: every visible content block is centered to the full stage. */
-  #result.autoplay>h2,
-  #result.autoplay>.result-song-sub,
-  #result.autoplay>.result-score-label,
-  #result.autoplay>#finalScore{
-    left:50%!important;
-    right:auto!important;
-    translate:-50% 0!important;
-  }
-  #result.autoplay>h2{top:var(--dm-result-auto-title-y)!important;}
-  #result.autoplay>.result-song-sub{top:var(--dm-result-auto-artist-y)!important;}
-  #result.autoplay>.result-score-label{top:var(--dm-result-auto-score-label-y)!important;}
-  #result.autoplay>#finalScore{top:var(--dm-result-auto-text-y)!important;}
-
-  /* RETRY/HOME are one group centered against the whole stage. */
-  #result>.result-actions{
+  /* Reset every direct result item to one coordinate system. */
+  html.dm-layout-centered #app #result>h2,
+  html.dm-layout-centered #app #result>.result-song-sub,
+  html.dm-layout-centered #app #result>.result-score-label,
+  html.dm-layout-centered #app #result>#finalScore,
+  html.dm-layout-centered #app #result>.result-summary,
+  html.dm-layout-centered #app #result>.ranking-panel,
+  html.dm-layout-centered #app #result>.result-actions{
     position:absolute!important;
-    left:50%!important;
     right:auto!important;
+    bottom:auto!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    flex:none!important;
+  }
+
+  /* NORMAL: text/score group is centered in the left half. */
+  html.dm-layout-centered #app #result:not(.autoplay)>h2,
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-song-sub,
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-score-label,
+  html.dm-layout-centered #app #result:not(.autoplay)>#finalScore{
+    left:25%!important;
     width:max-content!important;
+    max-width:46%!important;
+    translate:-50% 0!important;
+    text-align:center!important;
+  }
+  html.dm-layout-centered #app #result:not(.autoplay)>h2{top:var(--dm-result-normal-title-y)!important;}
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-song-sub{top:var(--dm-result-normal-artist-y)!important;}
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-score-label{top:var(--dm-result-normal-score-label-y)!important;}
+  html.dm-layout-centered #app #result:not(.autoplay)>#finalScore{top:var(--dm-result-normal-score-y)!important;}
+
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-summary{
+    left:25%!important;
+    top:var(--dm-result-normal-summary-y)!important;
+    width:38%!important;
+    max-width:38%!important;
     height:auto!important;
+    translate:-50% 0!important;
+    justify-content:space-evenly!important;
+    gap:0!important;
+  }
+
+  /* NORMAL ranking is centered in the right half. */
+  html.dm-layout-centered #app #result:not(.autoplay)>.ranking-panel{
+    left:75%!important;
+    top:var(--dm-result-normal-ranking-y)!important;
+    width:43%!important;
+    max-width:43%!important;
+    height:70%!important;
+    min-height:0!important;
+    max-height:70%!important;
+    translate:-50% 0!important;
+    flex:none!important;
+  }
+  html.dm-layout-centered #app #result:not(.autoplay) .ranking-list{
+    height:calc(100% - 48px)!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+
+  /* AUTO PLAY: each text block is self-sized then centered once at 50%.
+     There is no pre-subtracted half-width, so double-centering is impossible. */
+  html.dm-layout-centered #app #result.autoplay>h2,
+  html.dm-layout-centered #app #result.autoplay>.result-song-sub,
+  html.dm-layout-centered #app #result.autoplay>.result-score-label,
+  html.dm-layout-centered #app #result.autoplay>#finalScore{
+    left:50%!important;
+    width:max-content!important;
+    max-width:92%!important;
+    translate:-50% 0!important;
+    text-align:center!important;
+  }
+  html.dm-layout-centered #app #result.autoplay>h2{top:var(--dm-result-auto-title-y)!important;}
+  html.dm-layout-centered #app #result.autoplay>.result-song-sub{top:var(--dm-result-auto-artist-y)!important;}
+  html.dm-layout-centered #app #result.autoplay>.result-score-label{top:var(--dm-result-auto-score-label-y)!important;}
+  html.dm-layout-centered #app #result.autoplay>#finalScore{top:var(--dm-result-auto-text-y)!important;}
+
+  /* Buttons are a single full-screen-centered group. Children are always
+     static grid items; no old per-button absolute coordinates may survive. */
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-actions,
+  html.dm-layout-centered #app #result.autoplay>.result-actions{
+    left:50%!important;
+    width:max-content!important;
     min-width:0!important;
     max-width:none!important;
+    height:auto!important;
     display:grid!important;
     grid-template-columns:repeat(2,126px)!important;
     align-items:center!important;
     justify-content:center!important;
     gap:10px!important;
-    margin:0!important;
     padding:0!important;
     translate:-50% 0!important;
     transform:none!important;
     z-index:4!important;
   }
-  #result:not(.autoplay)>.result-actions{top:var(--dm-result-normal-buttons-y)!important;}
-  #result.autoplay>.result-actions{top:var(--dm-result-auto-buttons-y)!important;}
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-actions{top:var(--dm-result-normal-buttons-y)!important;}
+  html.dm-layout-centered #app #result.autoplay>.result-actions{top:var(--dm-result-auto-buttons-y)!important;}
 
-  #result>.result-actions>#retry,
-  #result>.result-actions>#home{
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-actions>#retry,
+  html.dm-layout-centered #app #result:not(.autoplay)>.result-actions>#home,
+  html.dm-layout-centered #app #result.autoplay>.result-actions>#retry,
+  html.dm-layout-centered #app #result.autoplay>.result-actions>#home{
     position:static!important;
+    inset:auto!important;
     left:auto!important;
     right:auto!important;
     top:auto!important;
     bottom:auto!important;
     translate:none!important;
+    transform:none!important;
     width:126px!important;
     min-width:126px!important;
     max-width:126px!important;
@@ -93,6 +151,7 @@
     min-height:34px!important;
     margin:0!important;
     padding:0 18px!important;
+    flex:none!important;
     font-size:12px!important;
   }
 }
