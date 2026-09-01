@@ -13,8 +13,8 @@
 <link rel="stylesheet" href="css/glass-buttons.css?v=20260828-hoverfullrestore1">
 <link rel="stylesheet" href="css/pause-result-readability.css?v=20260830-pc-offsets1">
 <link rel="stylesheet" href="css/mobile-centered-layout.css?v=20260828-panelceiling1">
-<link rel="stylesheet" href="css/result-mobile-song-offset.css?v=20260902-editor-fit1">
-<link rel="stylesheet" href="css/result-mobile-centering-v2.css?v=20260902-v1">
+<link rel="stylesheet" href="css/result-mobile-song-offset.css?v=20260902-desktop-only1">
+<link rel="stylesheet" href="css/result-mobile-centering-v2.css?v=20260902-single-engine1">
 <style>
 html,body{background:#000!important}
 #result{user-select:none;-webkit-user-select:none}
@@ -51,7 +51,7 @@ html,body{background:#000!important}
   <div class="editor-row"><div class="editor-seg" id="modeSeg"><button data-mode="normal" class="active">NORMAL</button><button data-mode="auto">AUTO PLAY</button></div></div>
   <div class="editor-row"><select id="elementSelect" aria-label="調整する要素"></select><button class="nudge" data-dy="-5">−5</button><button class="nudge" data-dy="-1">−1</button><button class="nudge" data-dy="1">+1</button><button class="nudge" data-dy="5">+5</button></div>
   <div class="editor-row"><span class="editor-value" id="valueText"></span><button class="copy" id="copyValues">値をコピー</button></div>
-  <div class="editor-note">本番と同じ横画面・同じCSSです。要素を直接上下ドラッグできます。</div>
+  <div class="editor-note">本番と同じ横画面・同じCSSです。横位置は固定、上下だけ直接ドラッグできます。</div>
 </div>
 <div class="editor-toast" id="toast">COPIED</div>
 </main>
@@ -62,11 +62,11 @@ const defs={
  normal:{title:['曲名','--dm-result-normal-title-y','h2'],artist:['アーティスト','--dm-result-normal-artist-y','.result-song-sub'],scoreLabel:['SCORE','--dm-result-normal-score-label-y','.result-score-label'],score:['スコア','--dm-result-normal-score-y','#finalScore'],summary:['判定','--dm-result-normal-summary-y','.result-summary'],ranking:['ランキング','--dm-result-normal-ranking-y','.ranking-panel'],buttons:['RETRY / HOME','--dm-result-normal-buttons-y','.result-actions']},
  auto:{title:['曲名','--dm-result-auto-title-y','h2'],artist:['アーティスト','--dm-result-auto-artist-y','.result-song-sub'],scoreLabel:['SCORE','--dm-result-auto-score-label-y','.result-score-label'],autoText:['AUTO PLAY','--dm-result-auto-text-y','#finalScore'],buttons:['RETRY / HOME','--dm-result-auto-buttons-y','.result-actions']}
 };
-const defaults={normal:{title:12.0513,artist:23.5897,scoreLabel:33.3333,score:38.4615,summary:57.9487,ranking:5.6410,buttons:82.0513},auto:{title:12.0513,artist:26.9231,scoreLabel:39.4872,autoText:46.9231,buttons:73.3333}};
+const defaults={normal:{title:13.4402,artist:23.5897,scoreLabel:33.3333,score:38.4615,summary:57.9487,ranking:5.6410,buttons:82.0513},auto:{title:14.8291,artist:26.9231,scoreLabel:39.4872,autoText:46.9231,buttons:73.3333}};
 let values=JSON.parse(JSON.stringify(defaults)),mode='normal',selected='title',drag=null;
-try{const saved=JSON.parse(localStorage.getItem('dm-result-y-editor-v2')||'null');if(saved?.normal&&saved?.auto){for(const m of ['normal','auto'])for(const k of Object.keys(defaults[m]))if(Number.isFinite(+saved[m][k]))values[m][k]=+saved[m][k]}}catch{}
+try{const saved=JSON.parse(localStorage.getItem('dm-result-y-editor-v3')||'null');if(saved?.normal&&saved?.auto){for(const m of ['normal','auto'])for(const k of Object.keys(defaults[m]))if(Number.isFinite(+saved[m][k]))values[m][k]=+saved[m][k]}}catch{}
 function mobileStage(){const q=matchMedia('(hover:none) and (pointer:coarse) and (max-width:900px)');if(!q.matches)return;const vv=visualViewport,w=Math.max(1,Math.round(vv?vv.width:innerWidth)),h=Math.max(1,Math.round(vv?vv.height:innerHeight));root.style.setProperty('--dm-mobile-stage-w',h+'px');root.style.setProperty('--dm-mobile-stage-h',w+'px')}
-function apply(){for(const m of ['normal','auto'])for(const [k,d] of Object.entries(defs[m]))result.style.setProperty(d[1],values[m][k].toFixed(4)+'%');localStorage.setItem('dm-result-y-editor-v2',JSON.stringify(values));valueText.textContent=values[mode][selected].toFixed(2)+'%'}
+function apply(){for(const m of ['normal','auto'])for(const [k,d] of Object.entries(defs[m]))result.style.setProperty(d[1],values[m][k].toFixed(4)+'%');localStorage.setItem('dm-result-y-editor-v3',JSON.stringify(values));valueText.textContent=values[mode][selected].toFixed(2)+'%'}
 function buildSelect(){select.innerHTML='';for(const [k,d] of Object.entries(defs[mode])){const o=document.createElement('option');o.value=k;o.textContent=d[0];o.selected=k===selected;select.appendChild(o)}}
 function selectedNode(){return result.querySelector(defs[mode][selected][2])}
 function highlight(){result.querySelectorAll('.dm-edit-selected').forEach(n=>n.classList.remove('dm-edit-selected'));selectedNode()?.classList.add('dm-edit-selected')}
@@ -82,7 +82,7 @@ result.addEventListener('pointerdown',e=>{if(e.target.closest('#editorHud'))retu
 result.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.preventDefault();const p=pointLocal(e),delta=((p.y-drag.startY)/result.clientHeight)*100;values[mode][selected]=clamp(drag.startValue+delta);apply();highlight()});
 function endDrag(e){if(!drag||e.pointerId!==drag.id)return;drag=null;apply()}
 result.addEventListener('pointerup',endDrag);result.addEventListener('pointercancel',endDrag);
-document.getElementById('copyValues').onclick=async()=>{const payload={version:2,unit:'percent of actual mobile #result height',normal:{},auto:{}};for(const m of ['normal','auto'])for(const k of Object.keys(defs[m]))payload[m][k]=+values[m][k].toFixed(4);const text=JSON.stringify(payload);try{await navigator.clipboard.writeText(text)}catch{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}const toast=document.getElementById('toast');toast.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toast.classList.remove('show'),1000)};
+document.getElementById('copyValues').onclick=async()=>{const payload={version:3,unit:'percent of actual mobile #result height',normal:{},auto:{}};for(const m of ['normal','auto'])for(const k of Object.keys(defs[m]))payload[m][k]=+values[m][k].toFixed(4);const text=JSON.stringify(payload);try{await navigator.clipboard.writeText(text)}catch{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}const toast=document.getElementById('toast');toast.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toast.classList.remove('show'),1000)};
 addEventListener('resize',mobileStage,{passive:true});addEventListener('orientationchange',()=>setTimeout(mobileStage,50),{passive:true});visualViewport?.addEventListener('resize',mobileStage,{passive:true});mobileStage();buildSelect();setMode('normal');
 })();
 </script>
