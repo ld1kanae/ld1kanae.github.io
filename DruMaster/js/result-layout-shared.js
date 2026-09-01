@@ -10,8 +10,8 @@
       score:{label:"スコア値",cls:"final-score",text:"985,420",region:"left"},
       summary:{label:"判定",cls:"summary",region:"left"},
       ranking:{label:"ランキング",cls:"ranking",region:"right"},
-      retry:{label:"RETRY",cls:"result-btn",text:"RETRY",region:"right"},
-      home:{label:"HOME",cls:"result-btn",text:"HOME",region:"right"}
+      retry:{label:"RETRY",cls:"result-btn",text:"RETRY",region:"full"},
+      home:{label:"HOME",cls:"result-btn",text:"HOME",region:"full"}
     },
     auto:{
       title:{label:"曲名",cls:"song-title",text:"Ray",region:"full"},
@@ -25,7 +25,7 @@
   const base={
     pc:{
       normal:{
-        title:[180,76,280,58,48,1.05,1,1],artist:[160,145,320,34,24,1.15,1,1],scoreLabel:[230,208,180,28,21,1,7,1],score:[60,236,520,110,92,.9,1,1],summary:[85,348,470,78,16,1.1,1,1],ranking:[665,100,590,390,20,1.1,1,1],retry:[761,550,190,48,15,1.2,1,1],home:[969,550,190,48,15,1.2,1,1]
+        title:[180,76,280,58,48,1.05,1,1],artist:[160,145,320,34,24,1.15,1,1],scoreLabel:[230,208,180,28,21,1,7,1],score:[60,236,520,110,92,.9,1,1],summary:[85,348,470,78,16,1.1,1,1],ranking:[665,100,590,390,20,1.1,1,1],retry:[441,550,190,48,15,1.2,1,1],home:[649,550,190,48,15,1.2,1,1]
       },
       auto:{
         title:[500,70,280,58,48,1.05,1,1],artist:[500,165,300,36,24,1.15,1,1],scoreLabel:[560,235,160,30,21,1,7,1],autoText:[395,285,490,120,92,.9,1,1],retry:[438,455,190,48,15,1.2,1,1],home:[652,455,190,48,15,1.2,1,1]
@@ -33,7 +33,7 @@
     },
     mobile:{
       normal:{
-        title:[96,34,230,40,30,1,1,1],artist:[86,79,250,26,16,1.05,1,1],scoreLabel:[141,112,140,22,14,1,2,1],score:[41,139,340,72,58,.84,0,1],summary:[51,226,320,52,11,1,0,1],ranking:[458,22,350,274,16,1,0,1],retry:[501,315,126,42,13,1.2,1,1],home:[639,315,126,42,13,1.2,1,1]
+        title:[96,34,230,40,30,1,1,1],artist:[86,79,250,26,16,1.05,1,1],scoreLabel:[141,112,140,22,14,1,2,1],score:[41,139,340,72,58,.84,0,1],summary:[51,226,320,52,11,1,0,1],ranking:[458,22,350,274,16,1,0,1],retry:[290,315,126,42,13,1.2,1,1],home:[428,315,126,42,13,1.2,1,1]
       },
       auto:{
         title:[292,47,260,42,36,1,1,1],artist:[297,105,250,26,21,1.05,1,1],scoreLabel:[367,154,110,22,18,1,3,1],autoText:[264,183,315,80,58,.9,1,1],retry:[283,286,126,42,13,1.2,1,1],home:[435,286,126,42,13,1.2,1,1]
