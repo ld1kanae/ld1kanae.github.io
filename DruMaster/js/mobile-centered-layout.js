@@ -10,6 +10,17 @@
 
   root.classList.add('dm-layout-centered');
 
+  /* Load the smartphone result geometry after every legacy result stylesheet.
+     Appending here guarantees the centering layer wins the cascade without
+     disturbing PC result CSS. */
+  if(!document.querySelector('link[data-dm-result-mobile-centering]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='css/result-mobile-centering-v2.css?v=20260902-v1';
+    link.dataset.dmResultMobileCentering='1';
+    document.head.appendChild(link);
+  }
+
   const mobileQuery=matchMedia('(hover:none) and (pointer:coarse) and (max-width:900px)');
   const correctionKey='dm-mobile-center-correction-v1';
   let raf=0;
