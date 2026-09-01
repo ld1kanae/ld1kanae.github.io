@@ -26,19 +26,19 @@ button{color:var(--text)}
 .preview-shell.mobile{width:844px;height:390px}
 .preview{position:absolute;inset:0;overflow:hidden;background:radial-gradient(circle at 48% 29%,rgba(62,124,190,.22),transparent 36%),radial-gradient(circle at 25% 77%,rgba(177,104,255,.14),transparent 40%),linear-gradient(180deg,#0d1723 0%,#070b11 72%)}
 .preview:before{content:"";position:absolute;inset:-35%;background:conic-gradient(from 24deg,transparent,rgba(113,232,255,.05),transparent 18%,rgba(208,122,255,.05),transparent 36%,rgba(255,235,157,.04),transparent 54%);filter:blur(20px)}
-.element{position:absolute;display:flex;align-items:center;justify-content:center;user-select:none;cursor:move;border:1px solid transparent;white-space:nowrap;z-index:2}
+.element{position:absolute;display:flex;align-items:center;justify-content:center;user-select:none;cursor:move;border:1px solid transparent;white-space:nowrap;z-index:2;touch-action:none}
 .element:hover{border-color:rgba(115,223,255,.32)}
 .element.selected{border-color:var(--accent);box-shadow:0 0 0 1px rgba(115,223,255,.22),0 0 14px rgba(115,223,255,.2)}
-.element .label-box{pointer-events:none;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-.song-title{font-weight:700;font-style:italic;letter-spacing:.04em}
+.element .label-box{pointer-events:none;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:inherit}
+.song-title{font-weight:700;font-style:italic;letter-spacing:.04em;color:#f1f6fb}
 .artist{color:#8491a1;letter-spacing:.04em}
 .score-label{color:#8e9cad;font-weight:700;letter-spacing:.18em}
 .final-score,.autoplay-text{font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-style:italic;font-weight:900;color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:1px #fff;background:linear-gradient(105deg,#fff,#ffd8f6 15%,#6cecff 32%,#fff1a0 46%,#d18cff 64%,#72edff 82%,#fff);background-clip:text;-webkit-background-clip:text;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 8px rgba(95,226,255,.58));letter-spacing:.02em}
-.summary{display:grid!important;grid-template-columns:repeat(4,1fr);gap:10px;white-space:normal!important}
+.summary{display:grid!important;grid-template-columns:repeat(4,1fr);gap:10px;white-space:normal!important;color:#eef5fd}
 .summary .summary-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
 .summary small{color:#8d9caf;font-weight:700;letter-spacing:.08em}
-.summary b{font-size:1.6em}
-.ranking{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;padding:10px 14px!important;border:1px solid rgba(148,169,194,.26)!important;border-radius:16px!important;background:rgba(9,15,23,.7)!important;overflow:hidden!important;white-space:normal!important}
+.summary b{font-size:1.6em;color:#fff}
+.ranking{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;padding:10px 14px!important;border:1px solid rgba(148,169,194,.26)!important;border-radius:16px!important;background:rgba(9,15,23,.7)!important;overflow:hidden!important;white-space:normal!important;color:#edf5fd}
 .ranking .rtitle{text-align:center;font-weight:500;letter-spacing:.12em;margin-bottom:6px}
 .ranking .rhead,.ranking .rrow{display:grid;grid-template-columns:48px 1fr 96px;align-items:center;min-height:26px;padding:0 8px}
 .ranking .rhead{color:#7f8d9d;font-size:.72em;border-bottom:1px solid rgba(255,255,255,.08)}
@@ -124,63 +124,43 @@ button{color:var(--text)}
 'use strict';
 const STORAGE='drumasterResultLayoutEditorV1';
 const viewport={pc:{w:1280,h:720},mobile:{w:844,h:390}};
-const defs={
- normal:{
-  title:{label:'曲名',cls:'song-title',text:'Ray'},artist:{label:'アーティスト',cls:'artist',text:'BUMP OF CHICKEN'},scoreLabel:{label:'SCORE',cls:'score-label',text:'SCORE'},score:{label:'スコア値',cls:'final-score',text:'985,420'},summary:{label:'判定',cls:'summary',html:'<div class="summary-cell"><small>PERFECT</small><b>428</b></div><div class="summary-cell"><small>GREAT</small><b>37</b></div><div class="summary-cell"><small>GOOD</small><b>9</b></div><div class="summary-cell"><small>MISS</small><b>2</b></div>'},ranking:{label:'ランキング',cls:'ranking',html:'<div class="rtitle">RECORD RANKING</div><div class="rhead"><span>RANK</span><span>SCORE</span><span class="right">DATE</span></div><div class="rrow best"><span>1</span><b>985,420</b><span class="right">2026.09.01</span></div><div class="rrow"><span>2</span><b>973,180</b><span class="right">2026.08.31</span></div><div class="rrow"><span>3</span><b>961,730</b><span class="right">2026.08.30</span></div>'},retry:{label:'RETRY',cls:'result-btn',text:'RETRY'},home:{label:'HOME',cls:'result-btn',text:'HOME'}
- },
- auto:{
-  title:{label:'曲名',cls:'song-title',text:'Ray'},artist:{label:'アーティスト',cls:'artist',text:'BUMP OF CHICKEN'},scoreLabel:{label:'SCORE',cls:'score-label',text:'SCORE'},autoText:{label:'AUTO PLAY',cls:'autoplay-text',text:'AUTO PLAY'},retry:{label:'RETRY',cls:'result-btn',text:'RETRY'},home:{label:'HOME',cls:'result-btn',text:'HOME'}
- }
-};
-const base={
- pc:{normal:{title:[70,76,280,58,48,1.05,1,1],artist:[72,145,320,34,24,1.15,1,1],scoreLabel:[72,208,180,28,21,1,7,1],score:[60,236,520,110,92,.9,1,1],summary:[70,348,470,78,16,1.1,1,1],ranking:[600,100,590,390,20,1.1,1,1],retry:[742,550,190,48,15,1.2,1,1],home:[950,550,190,48,15,1.2,1,1]},auto:{title:[500,70,280,58,48,1.05,1,1],artist:[500,165,300,36,24,1.15,1,1],scoreLabel:[560,235,160,30,21,1,7,1],autoText:[395,285,490,120,92,.9,1,1],retry:[438,455,190,48,15,1.2,1,1],home:[652,455,190,48,15,1.2,1,1]}},
- mobile:{normal:{title:[42,45,180,38,30,1,1,1],artist:[42,86,190,24,16,1.05,1,1],scoreLabel:[42,121,110,19,14,1,2,1],score:[34,140,260,68,58,.84,0,1],summary:[36,211,260,48,11,1,0,1],ranking:[305,14,270,310,16,1,1,1],retry:[595,205,126,42,13,1.2,1,1],home:[595,258,126,42,13,1.2,1,1]},auto:{title:[56,45,260,42,36,1,1,1],artist:[56,105,250,26,21,1.05,1,1],scoreLabel:[160,161,110,22,18,1,3,1],autoText:[270,150,315,80,58,.9,1,1],retry:[600,225,126,42,13,1.2,1,1],home:[600,278,126,42,13,1.2,1,1]}}
-};
+const defs={normal:{title:{label:'曲名',cls:'song-title',text:'Ray'},artist:{label:'アーティスト',cls:'artist',text:'BUMP OF CHICKEN'},scoreLabel:{label:'SCORE',cls:'score-label',text:'SCORE'},score:{label:'スコア値',cls:'final-score',text:'985,420'},summary:{label:'判定',cls:'summary',html:'<div class="summary-cell"><small>PERFECT</small><b>428</b></div><div class="summary-cell"><small>GREAT</small><b>37</b></div><div class="summary-cell"><small>GOOD</small><b>9</b></div><div class="summary-cell"><small>MISS</small><b>2</b></div>'},ranking:{label:'ランキング',cls:'ranking',html:'<div class="rtitle">RECORD RANKING</div><div class="rhead"><span>RANK</span><span>SCORE</span><span class="right">DATE</span></div><div class="rrow best"><span>1</span><b>985,420</b><span class="right">2026.09.01</span></div><div class="rrow"><span>2</span><b>973,180</b><span class="right">2026.08.31</span></div><div class="rrow"><span>3</span><b>961,730</b><span class="right">2026.08.30</span></div>'},retry:{label:'RETRY',cls:'result-btn',text:'RETRY'},home:{label:'HOME',cls:'result-btn',text:'HOME'}},auto:{title:{label:'曲名',cls:'song-title',text:'Ray'},artist:{label:'アーティスト',cls:'artist',text:'BUMP OF CHICKEN'},scoreLabel:{label:'SCORE',cls:'score-label',text:'SCORE'},autoText:{label:'AUTO PLAY',cls:'autoplay-text',text:'AUTO PLAY'},retry:{label:'RETRY',cls:'result-btn',text:'RETRY'},home:{label:'HOME',cls:'result-btn',text:'HOME'}}};
+const base={pc:{normal:{title:[70,76,280,58,48,1.05,1,1],artist:[72,145,320,34,24,1.15,1,1],scoreLabel:[72,208,180,28,21,1,7,1],score:[60,236,520,110,92,.9,1,1],summary:[70,348,470,78,16,1.1,1,1],ranking:[600,100,590,390,20,1.1,1,1],retry:[742,550,190,48,15,1.2,1,1],home:[950,550,190,48,15,1.2,1,1]},auto:{title:[500,70,280,58,48,1.05,1,1],artist:[500,165,300,36,24,1.15,1,1],scoreLabel:[560,235,160,30,21,1,7,1],autoText:[395,285,490,120,92,.9,1,1],retry:[438,455,190,48,15,1.2,1,1],home:[652,455,190,48,15,1.2,1,1]}},mobile:{normal:{title:[42,45,180,38,30,1,1,1],artist:[42,86,190,24,16,1.05,1,1],scoreLabel:[42,121,110,19,14,1,2,1],score:[34,140,260,68,58,.84,0,1],summary:[36,211,260,48,11,1,0,1],ranking:[305,14,270,310,16,1,1,1],retry:[595,205,126,42,13,1.2,1,1],home:[595,258,126,42,13,1.2,1,1]},auto:{title:[56,45,260,42,36,1,1,1],artist:[56,105,250,26,21,1.05,1,1],scoreLabel:[160,161,110,22,18,1,3,1],autoText:[270,150,315,80,58,.9,1,1],retry:[600,225,126,42,13,1.2,1,1],home:[600,278,126,42,13,1.2,1,1]}}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 let data=load(),screen='normal',device='pc',selected='title',scale=1,drag=null;
-const shell=document.getElementById('previewShell'),preview=document.getElementById('preview'),stage=document.getElementById('stageWrap'),list=document.getElementById('elementList');
-const inputs={x:xInput,y:yInput,w:wInput,h:hInput,font:fontInput,line:lineInput,letter:letterInput,opacity:opacityInput};
+const $=id=>document.getElementById(id);
+const shell=$('previewShell'),preview=$('preview'),stage=$('stageWrap'),list=$('elementList');
+const screenSeg=$('screenSeg'),deviceSeg=$('deviceSeg'),selectedTitle=$('selectedTitle'),fitBtn=$('fitBtn'),actualBtn=$('actualBtn'),saveBtn=$('saveBtn'),resetCurrentBtn=$('resetCurrentBtn'),resetAllBtn=$('resetAllBtn'),copyCssBtn=$('copyCssBtn'),cssOutput=$('cssOutput');
+const inputs={x:$('xInput'),y:$('yInput'),w:$('wInput'),h:$('hInput'),font:$('fontInput'),line:$('lineInput'),letter:$('letterInput'),opacity:$('opacityInput')};
 function load(){try{const p=JSON.parse(localStorage.getItem(STORAGE)||'null');if(p&&p.pc&&p.mobile)return p}catch{}return clone(base)}
 function save(){localStorage.setItem(STORAGE,JSON.stringify(data));toast('保存しました')}
 function arrObj(a){return{x:a[0],y:a[1],w:a[2],h:a[3],font:a[4],line:a[5],letter:a[6],opacity:a[7]}}
 function objArr(o){return[+o.x,+o.y,+o.w,+o.h,+o.font,+o.line,+o.letter,+o.opacity]}
 function current(){return arrObj(data[device][screen][selected])}
 function setCurrent(o){data[device][screen][selected]=objArr(o)}
-function render(){
- shell.className='preview-shell '+device; shell.style.transform=`scale(${scale})`;
- preview.innerHTML='<div class="mode-switch"><span class="on">NORMAL</span><span>AUTO PLAY</span></div>';
- const set=data[device][screen];
- Object.keys(defs[screen]).forEach(key=>{
-  const d=defs[screen][key],v=arrObj(set[key]);
-  const el=document.createElement('div');el.className=`element ${d.cls||''}${key===selected?' selected':''}`;el.dataset.key=key;
-  el.style.left=v.x+'px';el.style.top=v.y+'px';el.style.width=v.w+'px';el.style.height=v.h+'px';el.style.fontSize=v.font+'px';el.style.lineHeight=String(v.line);el.style.letterSpacing=v.letter+'px';el.style.opacity=v.opacity;
-  const box=document.createElement('div');box.className='label-box';if(d.html)box.innerHTML=d.html;else box.textContent=d.text;el.appendChild(box);
-  preview.appendChild(el);
- });
- buildList();fillInputs();generateCss();
-}
+function applyElementStyle(el,v){el.style.left=v.x+'px';el.style.top=v.y+'px';el.style.width=v.w+'px';el.style.height=v.h+'px';el.style.fontSize=v.font+'px';el.style.lineHeight=String(v.line);el.style.letterSpacing=v.letter+'px';el.style.opacity=v.opacity}
+function render(){shell.className='preview-shell '+device;shell.style.transform=`scale(${scale})`;preview.innerHTML='<div class="mode-switch"><span class="on">NORMAL</span><span>AUTO PLAY</span></div>';const set=data[device][screen];Object.keys(defs[screen]).forEach(key=>{const d=defs[screen][key],v=arrObj(set[key]),el=document.createElement('div');el.className=`element ${d.cls||''}${key===selected?' selected':''}`;el.dataset.key=key;applyElementStyle(el,v);const box=document.createElement('div');box.className='label-box';if(d.html)box.innerHTML=d.html;else box.textContent=d.text;el.appendChild(box);preview.appendChild(el)});buildList();fillInputs();generateCss()}
 function buildList(){list.innerHTML='';Object.entries(defs[screen]).forEach(([key,d])=>{const b=document.createElement('button');b.textContent=d.label;b.className=key===selected?'active':'';b.onclick=()=>{selected=key;render()};list.appendChild(b)})}
 function fillInputs(){const v=current();selectedTitle.textContent=defs[screen][selected].label;Object.keys(inputs).forEach(k=>inputs[k].value=v[k])}
 Object.entries(inputs).forEach(([k,input])=>input.addEventListener('input',()=>{const v=current();v[k]=Number(input.value);if(k==='w'||k==='h'||k==='font')v[k]=Math.max(1,v[k]);if(k==='opacity')v[k]=Math.max(0,Math.min(1,v[k]));setCurrent(v);render()}));
-preview.addEventListener('pointerdown',e=>{const el=e.target.closest('.element');if(!el)return;selected=el.dataset.key;const v=current();drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,x:v.x,y:v.y};el.setPointerCapture(e.pointerId);render()});
-preview.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const v=current();v.x=Math.round(drag.x+(e.clientX-drag.startX)/scale);v.y=Math.round(drag.y+(e.clientY-drag.startY)/scale);setCurrent(v);render()});
-preview.addEventListener('pointerup',e=>{if(drag&&e.pointerId===drag.id)drag=null});
+preview.addEventListener('pointerdown',e=>{const el=e.target.closest('.element');if(!el)return;e.preventDefault();selected=el.dataset.key;document.querySelectorAll('.element').forEach(n=>n.classList.toggle('selected',n===el));buildList();fillInputs();const v=current();drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,x:v.x,y:v.y,el};el.setPointerCapture(e.pointerId)});
+preview.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const v=current();v.x=Math.round(drag.x+(e.clientX-drag.startX)/scale);v.y=Math.round(drag.y+(e.clientY-drag.startY)/scale);setCurrent(v);applyElementStyle(drag.el,v);fillInputs();generateCss()});
+function endDrag(e){if(!drag||e.pointerId!==drag.id)return;drag=null}
+preview.addEventListener('pointerup',endDrag);preview.addEventListener('pointercancel',endDrag);
 window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const v=current(),n=e.shiftKey?10:1;if(e.key==='ArrowLeft')v.x-=n;if(e.key==='ArrowRight')v.x+=n;if(e.key==='ArrowUp')v.y-=n;if(e.key==='ArrowDown')v.y+=n;setCurrent(v);render()});
 function setSeg(id,key,value){document.querySelectorAll(`#${id} button`).forEach(b=>b.classList.toggle('active',b.dataset[key]===value))}
 screenSeg.onclick=e=>{const b=e.target.closest('button');if(!b)return;screen=b.dataset.screen;if(!defs[screen][selected])selected=Object.keys(defs[screen])[0];setSeg('screenSeg','screen',screen);render()};
-deviceSeg.onclick=e=>{const b=e.target.closest('button');if(!b)return;device=b.dataset.device;setSeg('deviceSeg','device',device);fit();render()};
+deviceSeg.onclick=e=>{const b=e.target.closest('button');if(!b)return;device=b.dataset.device;setSeg('deviceSeg','device',device);fit()};
 function fit(){const pad=52,availW=Math.max(100,stage.clientWidth-pad),availH=Math.max(100,stage.clientHeight-pad),v=viewport[device];scale=Math.min(1,availW/v.w,availH/v.h);render()}
-fitBtn.onclick=fit;actualBtn.onclick=()=>{scale=1;render()};
-saveBtn.onclick=save;
+fitBtn.onclick=fit;actualBtn.onclick=()=>{scale=1;render()};saveBtn.onclick=save;
 resetCurrentBtn.onclick=()=>{data[device][screen]=clone(base[device][screen]);render();toast('現在のビューを初期化しました')};
 resetAllBtn.onclick=()=>{if(!confirm('4レイアウトすべて初期化しますか？'))return;data=clone(base);localStorage.removeItem(STORAGE);render();toast('すべて初期化しました')};
-function selector(key,mode){const map={title:'#result>h2',artist:'#result>.result-song-sub',scoreLabel:'#result>.result-score-label',score:'#result>#finalScore',summary:'#result>.result-summary,ranking:'#result>.ranking-panel',retry:'#result>.result-actions>#retry',home:'#result>.result-actions>#home',autoText:'#result>#finalScore'};return map[key]}
-function rulesFor(dev,mode){let s='';const prefix=mode==='auto'?'#result.autoplay':'#result:not(.autoplay)';Object.keys(defs[mode]).forEach(key=>{const v=arrObj(data[dev][mode][key]);let sel=selector(key,mode);if(key==='autoText')sel='#result.autoplay>#finalScore';if(key==='retry'||key==='home')sel=prefix+sel.replace('#result','');else sel=prefix+sel.replace('#result','');s+=`${sel}{position:absolute!important;left:${v.x}px!important;top:${v.y}px!important;width:${v.w}px!important;height:${v.h}px!important;font-size:${v.font}px!important;line-height:${v.line}!important;letter-spacing:${v.letter}px!important;opacity:${v.opacity}!important;margin:0!important;}\n`});return s}
-function generateCss(){const css=`/* Generated by DruMaster Result Layout Editor */\n@media (hover:hover) and (pointer:fine){\n${rulesFor('pc','normal')}${rulesFor('pc','auto')}}\n\n@media (hover:none) and (pointer:coarse) and (max-width:900px){\n${rulesFor('mobile','normal')}${rulesFor('mobile','auto')}}\n`;cssOutput.value=css}
+function selector(key){const map={title:'#result>h2',artist:'#result>.result-song-sub',scoreLabel:'#result>.result-score-label',score:'#result>#finalScore',summary:'#result>.result-summary',ranking:'#result>.ranking-panel',retry:'#result>.result-actions>#retry',home:'#result>.result-actions>#home',autoText:'#result>#finalScore'};return map[key]}
+function rulesFor(dev,mode){let s='';const prefix=mode==='auto'?'#result.autoplay':'#result:not(.autoplay)';Object.keys(defs[mode]).forEach(key=>{const v=arrObj(data[dev][mode][key]);let sel=selector(key);if(key==='autoText')sel='#result>#finalScore';sel=prefix+sel.replace('#result','');s+=`${sel}{position:absolute!important;left:${v.x}px!important;top:${v.y}px!important;width:${v.w}px!important;height:${v.h}px!important;font-size:${v.font}px!important;line-height:${v.line}!important;letter-spacing:${v.letter}px!important;opacity:${v.opacity}!important;margin:0!important;}\n`});return s}
+function generateCss(){cssOutput.value=`/* Generated by DruMaster Result Layout Editor */\n@media (hover:hover) and (pointer:fine){\n${rulesFor('pc','normal')}${rulesFor('pc','auto')}}\n\n@media (hover:none) and (pointer:coarse) and (max-width:900px){\n${rulesFor('mobile','normal')}${rulesFor('mobile','auto')}}\n`}
 copyCssBtn.onclick=async()=>{generateCss();try{await navigator.clipboard.writeText(cssOutput.value);toast('CSSをコピーしました')}catch{cssOutput.select();document.execCommand('copy');toast('CSSをコピーしました')}};
-function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1500)}
-window.addEventListener('resize',()=>fit());
-fit();render();
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1500)}
+window.addEventListener('resize',fit);fit();
 })();
 </script>
 </body>
