@@ -1,0 +1,100 @@
+(() => {
+  const HOT_ZONE_PX = 50;
+  const BUTTON_SIZE_PX = 50;
+  const DRAG_THRESHOLD_PX = 4;
+
+  let pendingDrag = false;
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.setAttribute('aria-label', 'Close DruMaster');
+  button.textContent = '×';
+
+  Object.assign(button.style, {
+    position: 'fixed',
+    top: '0',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: `${BUTTON_SIZE_PX}px`,
+    height: `${BUTTON_SIZE_PX}px`,
+    padding: '0',
+    margin: '0',
+    border: '0',
+    outline: '0',
+    background: 'transparent',
+    color: '#fff',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontSize: '40px',
+    fontWeight: '300',
+    lineHeight: `${BUTTON_SIZE_PX - 2}px`,
+    textAlign: 'center',
+    cursor: 'pointer',
+    zIndex: '2147483647',
+    opacity: '0',
+    pointerEvents: 'none',
+    transition: 'opacity 100ms linear',
+    userSelect: 'none',
+    WebkitUserSelect: 'none'
+  });
+
+  const setVisible = (visible) => {
+    button.style.opacity = visible ? '1' : '0';
+    button.style.pointerEvents = visible ? 'auto' : 'none';
+  };
+
+  document.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    if (event.clientY < 0 || event.clientY > HOT_ZONE_PX) return;
+    if (button.contains(event.target)) return;
+    pendingDrag = true;
+    dragging = false;
+    dragStartX = event.screenX;
+    dragStartY = event.screenY;
+  });
+
+  document.addEventListener('mousemove', async (event) => {
+    setVisible(event.clientY >= 0 && event.clientY <= HOT_ZONE_PX);
+    if (!pendingDrag || dragging || (event.buttons & 1) !== 1) return;
+    const dx = event.screenX - dragStartX;
+    const dy = event.screenY - dragStartY;
+    if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+    pendingDrag = false;
+    dragging = true;
+    event.preventDefault();
+    try {
+      await window.__TAURI__?.core?.invoke('start_window_drag');
+    } catch (error) {
+      console.error('Failed to start DruMaster window drag:', error);
+    } finally {
+      dragging = false;
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    pendingDrag = false;
+    dragging = false;
+  }, { passive: true });
+
+  document.addEventListener('mouseleave', () => {
+    setVisible(false);
+    if (!dragging) pendingDrag = false;
+  });
+
+  button.addEventListener('mousedown', (event) => event.stopPropagation());
+  button.addEventListener('click', async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      await window.__TAURI__?.core?.invoke('close_app');
+    } catch (error) {
+      console.error('Failed to close DruMaster window:', error);
+    }
+  });
+
+  const mount = () => document.body.appendChild(button);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once: true });
+  else mount();
+})();
