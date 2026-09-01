@@ -36,8 +36,12 @@
             publicJson(`songs/${id}/song-draft.json`)
           ]);
           const song=published||draft,draftOnly=!published&&!!draft;
-          if(!song?.id||!song?.title||!song?.artist||!song?.midi||!song?.stems)return;
-          found[id]={...song,__draftOnly:draftOnly};
+          if(!song?.id||!song?.title||!song?.artist||!song?.stems)return;
+          const hasAudio=Object.values(song.stems||{}).some(stem=>!!stem?.path);
+          if(!hasAudio)return;
+          /* MIDI is intentionally NOT required here. An audio-only draft must
+             remain selectable so chart.mid can be added later from UPDATE. */
+          found[id]={...song,midi:song.midi||null,midiGzip:song.midiGzip||null,__draftOnly:draftOnly};
         }catch(e){console.warn("DruMaster draft catalog skip",id,e)}
       }));
     }catch(e){console.warn("DruMaster draft catalog unavailable",e)}
