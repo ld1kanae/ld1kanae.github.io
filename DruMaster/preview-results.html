@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080b11">
+<title>DruMaster Result Preview</title>
+<link rel="stylesheet" href="css/base.css?v=20260826-maint1">
+<link rel="stylesheet" href="css/result-ui.css?v=20260830-ranking-title2">
+<link rel="stylesheet" href="css/result-actions-fix.css?v=20260826-resultactions2">
+<link rel="stylesheet" href="css/hidden-mark.css?v=20260826-maint1">
+<link rel="stylesheet" href="css/result-podium-key-tune.css?v=20260827-resultpodium2">
+<link rel="stylesheet" href="css/glass-buttons.css?v=20260828-hoverfullrestore1">
+<link rel="stylesheet" href="css/pause-result-readability.css?v=20260830-pc-offsets1">
+<link rel="stylesheet" href="css/result-mobile-song-offset.css?v=20260901-autoplayonly1">
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b11}
+body{min-height:100dvh}
+#app{width:100%;height:100%}
+.result{display:flex!important;box-sizing:border-box;width:100%;height:100%;min-height:100%;flex-direction:column;align-items:center;justify-content:flex-start}
+.preview-switch{position:fixed;z-index:100;top:10px;right:10px;display:flex;gap:6px;padding:5px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(5,9,14,.72);backdrop-filter:blur(8px)}
+.preview-switch button{appearance:none;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:#172130;color:#dfeaf5;padding:7px 11px;font:700 10px/1 system-ui,sans-serif;letter-spacing:.06em;cursor:pointer}
+.preview-switch button[aria-pressed="true"]{background:#dfefff;color:#08111c}
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  #app{position:fixed;left:0;top:0;width:100vh;height:100vw;transform-origin:0 0;transform:translateY(100vh) rotate(-90deg)}
+  .preview-switch{top:auto;right:auto;left:8px;bottom:8px;transform-origin:left bottom;transform:rotate(-90deg) translateY(100%)}
+}
+</style>
+</head>
+<body>
+<main id="app">
+<section id="result" class="screen result result-reveal">
+  <h2 class="result-step result-step-1">Ray</h2>
+  <p class="result-song-sub result-step result-step-1">BUMP OF CHICKEN</p>
+  <p class="result-score-label result-step result-step-2">SCORE</p>
+  <strong id="finalScore" class="result-step result-step-score">985,420</strong>
+  <div class="result-summary result-step result-step-3" aria-label="判定内訳">
+    <p><span>PERFECT</span><b>428</b></p>
+    <p><span>GREAT</span><b>37</b></p>
+    <p><span>GOOD</span><b>9</b></p>
+    <p><span>MISS</span><b>2</b></p>
+  </div>
+  <section class="ranking-panel result-step result-step-4">
+    <div class="ranking-title"><h3>RECORD RANKING</h3><span>TOP 10</span></div>
+    <div class="ranking-head"><span>RANK</span><span>SCORE</span><span style="text-align:right">DATE</span></div>
+    <div class="ranking-list">
+      <div class="ranking-row current best-record"><span class="rank-no">1</span><span class="rank-score-cell"><span class="rank-score">985,420</span><span class="best-badge">BEST</span></span><span class="rank-date">2026.09.01</span></div>
+      <div class="ranking-row"><span class="rank-no">2</span><span class="rank-score-cell"><span class="rank-score">973,180</span></span><span class="rank-date">2026.08.31</span></div>
+      <div class="ranking-row"><span class="rank-no">3</span><span class="rank-score-cell"><span class="rank-score">961,730</span></span><span class="rank-date">2026.08.30</span></div>
+    </div>
+  </section>
+  <div class="result-actions result-step result-step-5">
+    <button id="retry" type="button">RETRY</button>
+    <button id="home" type="button">HOME</button>
+  </div>
+</section>
+</main>
+<nav class="preview-switch" aria-label="Result preview mode">
+  <button id="normalPreview" type="button" aria-pressed="true">NORMAL</button>
+  <button id="autoPreview" type="button" aria-pressed="false">AUTO PLAY</button>
+</nav>
+<script>
+(()=>{
+  const result=document.querySelector('#result');
+  const score=document.querySelector('#finalScore');
+  const summary=document.querySelector('.result-summary');
+  const ranking=document.querySelector('.ranking-panel');
+  const normal=document.querySelector('#normalPreview');
+  const auto=document.querySelector('#autoPreview');
+  function setMode(isAuto){
+    result.classList.toggle('autoplay',isAuto);
+    score.textContent=isAuto?'AUTO PLAY':'985,420';
+    summary.style.display=isAuto?'none':'';
+    ranking.style.display=isAuto?'none':'';
+    normal.setAttribute('aria-pressed',String(!isAuto));
+    auto.setAttribute('aria-pressed',String(isAuto));
+    const u=new URL(location.href);
+    u.searchParams.set('mode',isAuto?'auto':'normal');
+    history.replaceState(null,'',u);
+  }
+  normal.onclick=()=>setMode(false);
+  auto.onclick=()=>setMode(true);
+  setMode(new URLSearchParams(location.search).get('mode')==='auto');
+})();
+</script>
+</body>
+</html>
