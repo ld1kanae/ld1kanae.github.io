@@ -107,12 +107,10 @@
   html.dm-layout-centered #app #result.autoplay>.result-score-label{top:var(--dm-result-auto-score-label-y)!important;}
   html.dm-layout-centered #app #result.autoplay>#finalScore{top:var(--dm-result-auto-text-y)!important;}
 
-  /* Mobile score/AUTO PLAY treatment. Use a real 1px outline as requested.
-     The base font uses a tight .9 line-height, which clips the bottom of the
-     text background on Android. A normal line box plus bottom paint room keeps
-     the full gradient visible without changing the stored Y coordinate. */
+  /* Mobile score/AUTO PLAY treatment. Keep a subtle white outline while the
+     normal line box and bottom paint room prevent the gradient from clipping. */
   html.dm-layout-centered #app #result>#finalScore{
-    -webkit-text-stroke:1px #fff!important;
+    -webkit-text-stroke:.3px #fff!important;
     paint-order:stroke fill!important;
     line-height:1!important;
     padding-left:6px!important;
