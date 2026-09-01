@@ -1,0 +1,98 @@
+/* Mobile RESULT horizontal baseline, loaded after all legacy result CSS.
+   This layer intentionally owns only smartphone result geometry.
+   X is always centered by real stage width; Y starts from the approved
+   smartphone design ratios and can be tuned with the dedicated editor. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  #result{
+    --dm-result-normal-title-y:12.0513%;
+    --dm-result-normal-artist-y:23.5897%;
+    --dm-result-normal-score-label-y:33.3333%;
+    --dm-result-normal-score-y:38.4615%;
+    --dm-result-normal-summary-y:57.9487%;
+    --dm-result-normal-ranking-y:5.6410%;
+    --dm-result-normal-buttons-y:82.0513%;
+    --dm-result-auto-title-y:12.0513%;
+    --dm-result-auto-artist-y:26.9231%;
+    --dm-result-auto-score-label-y:39.4872%;
+    --dm-result-auto-text-y:46.9231%;
+    --dm-result-auto-buttons-y:73.3333%;
+  }
+
+  /* NORMAL: left content = center of left half, ranking = center of right half. */
+  #result:not(.autoplay)>h2,
+  #result:not(.autoplay)>.result-song-sub,
+  #result:not(.autoplay)>.result-score-label,
+  #result:not(.autoplay)>#finalScore,
+  #result:not(.autoplay)>.result-summary{
+    left:25%!important;
+    right:auto!important;
+    translate:-50% 0!important;
+  }
+  #result:not(.autoplay)>.ranking-panel{
+    left:75%!important;
+    right:auto!important;
+    translate:-50% 0!important;
+  }
+
+  #result:not(.autoplay)>h2{top:var(--dm-result-normal-title-y)!important;}
+  #result:not(.autoplay)>.result-song-sub{top:var(--dm-result-normal-artist-y)!important;}
+  #result:not(.autoplay)>.result-score-label{top:var(--dm-result-normal-score-label-y)!important;}
+  #result:not(.autoplay)>#finalScore{top:var(--dm-result-normal-score-y)!important;}
+  #result:not(.autoplay)>.result-summary{top:var(--dm-result-normal-summary-y)!important;}
+  #result:not(.autoplay)>.ranking-panel{top:var(--dm-result-normal-ranking-y)!important;}
+
+  /* AUTO PLAY: every visible content block is centered to the full stage. */
+  #result.autoplay>h2,
+  #result.autoplay>.result-song-sub,
+  #result.autoplay>.result-score-label,
+  #result.autoplay>#finalScore{
+    left:50%!important;
+    right:auto!important;
+    translate:-50% 0!important;
+  }
+  #result.autoplay>h2{top:var(--dm-result-auto-title-y)!important;}
+  #result.autoplay>.result-song-sub{top:var(--dm-result-auto-artist-y)!important;}
+  #result.autoplay>.result-score-label{top:var(--dm-result-auto-score-label-y)!important;}
+  #result.autoplay>#finalScore{top:var(--dm-result-auto-text-y)!important;}
+
+  /* RETRY/HOME are one group centered against the whole stage. */
+  #result>.result-actions{
+    position:absolute!important;
+    left:50%!important;
+    right:auto!important;
+    width:max-content!important;
+    height:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,126px)!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:10px!important;
+    margin:0!important;
+    padding:0!important;
+    translate:-50% 0!important;
+    transform:none!important;
+    z-index:4!important;
+  }
+  #result:not(.autoplay)>.result-actions{top:var(--dm-result-normal-buttons-y)!important;}
+  #result.autoplay>.result-actions{top:var(--dm-result-auto-buttons-y)!important;}
+
+  #result>.result-actions>#retry,
+  #result>.result-actions>#home{
+    position:static!important;
+    left:auto!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:auto!important;
+    translate:none!important;
+    width:126px!important;
+    min-width:126px!important;
+    max-width:126px!important;
+    height:34px!important;
+    min-height:34px!important;
+    margin:0!important;
+    padding:0 18px!important;
+    font-size:12px!important;
+  }
+}
