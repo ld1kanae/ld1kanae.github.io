@@ -4,43 +4,61 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DruMaster Result Layout Editor</title>
-<style>
-:root{color-scheme:dark;--bg:#070a0f;--panel:#0d141d;--line:#2b3949;--text:#edf5fd;--muted:#8291a4;--accent:#71dcff}
-*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}body{overflow:hidden}button,input,textarea{font:inherit;color:inherit}
-#app{height:100vh;display:grid;grid-template-columns:minmax(0,1fr) 330px}.workspace{min-width:0;display:flex;flex-direction:column;background:radial-gradient(circle at 50% 35%,#111a29,#06090f 72%)}
-.toolbar{height:58px;flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:0 14px;border-bottom:1px solid #202b39;background:#090e15}.title{font-weight:800;letter-spacing:.08em;margin-right:auto;white-space:nowrap}.seg{display:flex;padding:3px;border:1px solid var(--line);border-radius:11px;background:#0b1119}.seg button,.tool-btn{border:0;background:transparent;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer}.seg button.active{background:#dcecff;color:#07111c}.tool-btn{border:1px solid #314255;background:#111a25}
-.stage{flex:1;min-height:0;overflow:auto;display:grid;place-items:center;padding:24px}.shell{position:relative;flex:none;transform-origin:center;border:1px solid #3a4c60;box-shadow:0 28px 70px #0009;overflow:hidden;background:#070b11}.shell.pc{width:1280px;height:720px}.shell.mobile{width:844px;height:390px}.preview{position:absolute;inset:0;overflow:hidden;background:radial-gradient(circle at 48% 29%,#3e7cbe38,transparent 36%),radial-gradient(circle at 25% 77%,#b168ff24,transparent 40%),linear-gradient(#0d1723,#070b11 72%)}.preview:before{content:"";position:absolute;inset:-35%;background:conic-gradient(from 24deg,transparent,#71e8ff0d,transparent 18%,#d07aff0d,transparent 36%,#ffeb9d0b,transparent 54%);filter:blur(20px)}
-.el{position:absolute;z-index:2;display:flex;align-items:center;justify-content:center;user-select:none;cursor:move;touch-action:none;border:1px solid transparent;white-space:nowrap}.el:hover{border-color:#71dcff55}.el.selected{border-color:var(--accent);box-shadow:0 0 0 1px #71dcff33,0 0 14px #71dcff2e}.content{pointer-events:none;width:100%;height:100%;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
-.song-title{font-weight:700;font-style:italic;color:#f3f8fd}.artist{color:#8795a6}.score-label{color:#91a0b2;font-weight:700}.final-score,.autoplay-text{font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-style:italic;font-weight:900;color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:1px #fff;background:linear-gradient(105deg,#fff,#ffd8f6 15%,#6cecff 32%,#fff1a0 46%,#d18cff 64%,#72edff 82%,#fff);background-clip:text;-webkit-background-clip:text;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 8px #5fe2ff94)}
-.summary>.content{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.sum-cell{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.sum-cell small{display:block;color:#8d9caf;font-size:.62em;font-weight:700;letter-spacing:.05em;white-space:nowrap}.sum-cell b{display:block;color:#fff;font-size:1.55em;line-height:1.05}
-.ranking{padding:9px 12px!important;border:1px solid #94a9c242!important;border-radius:15px!important;background:#090f17b8!important;overflow:hidden!important}.ranking>.content{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;overflow:hidden;white-space:normal}.rtitle{flex:0 0 auto;text-align:center;font-weight:500;letter-spacing:.1em;line-height:1.15;margin-bottom:5px}.rhead,.rrow{flex:0 0 auto;width:100%;display:grid;grid-template-columns:42px minmax(0,1fr) 90px;align-items:center;min-height:25px;padding:0 6px;column-gap:4px}.rhead{color:#7e8c9e;font-size:.66em;border-bottom:1px solid #ffffff14}.rrow{font-size:.76em}.rrow.best{background:linear-gradient(90deg,#ffe8911f,#66e7ff20,#c789ff1c)}.rrow b{overflow:hidden;text-overflow:ellipsis}.right{text-align:right;white-space:nowrap}
-.result-btn{border:1px solid #7990a8!important;border-radius:999px!important;background:#0c131c8a!important;color:#fff!important;font-weight:600!important;letter-spacing:.08em!important}.mode-switch{position:absolute;z-index:1;left:18px;bottom:18px;display:flex;padding:5px;border:1px solid #7f97b040;border-radius:28px;background:#060a1099}.mode-switch span{padding:9px 13px;border-radius:19px;font-size:12px}.mode-switch .on{background:#d9ebff;color:#07111c}
-.sidebar{border-left:1px solid #202b39;background:#0b1017;overflow:auto;padding:15px}.sidebar h2{margin:0 0 12px;font-size:14px;letter-spacing:.12em}.card{margin-bottom:11px;padding:11px;border:1px solid #263546;border-radius:13px;background:#0f1620}.card-title{margin-bottom:9px;font-size:10px;color:#91a2b6;letter-spacing:.12em}.element-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}.element-list button,.actions button{border:1px solid #2a3949;background:#121b27;border-radius:8px;padding:8px 6px;font-size:11px;cursor:pointer}.element-list button.active{border-color:var(--accent);background:#172838}.form{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field{display:flex;flex-direction:column;gap:4px}.field label{font-size:9px;color:#8798ab;letter-spacing:.07em}.field input,.field textarea{width:100%;border:1px solid #2b3b4c;background:#090f16;color:#eaf2fb;border-radius:7px;padding:7px;outline:none}.field textarea{height:92px;resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:10px}.full{grid-column:1/-1}.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.actions .primary{background:#dceeff;color:#07111c;border-color:#dceeff;font-weight:700}.hint{margin:8px 0 0;font-size:10px;line-height:1.5;color:#7f8c9b}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:99;padding:9px 13px;border:1px solid #4a617b;background:#101823;border-radius:9px;opacity:0;pointer-events:none;transition:.2s;font-size:12px}.toast.show{opacity:1}
-@media(max-width:1100px){#app{grid-template-columns:minmax(0,1fr) 300px}.title{display:none}}
-</style>
+<link rel="stylesheet" href="css/result-layout-preview.css?v=20260901-v2">
+<link rel="stylesheet" href="css/result-layout-editor-v2.css?v=20260901-v2">
 </head>
 <body>
-<div id="app">
-<section class="workspace"><div class="toolbar"><div class="title">DruMaster RESULT LAYOUT EDITOR</div><div class="seg" id="screenSeg"><button data-screen="normal" class="active">NORMAL RESULT</button><button data-screen="auto">AUTO PLAY</button></div><div class="seg" id="deviceSeg"><button data-device="pc" class="active">PC</button><button data-device="mobile">SMARTPHONE</button></div><button class="tool-btn" id="fitBtn">FIT</button><button class="tool-btn" id="actualBtn">100%</button></div><div class="stage" id="stage"><div class="shell pc" id="shell"><div class="preview" id="preview"></div></div></div></section>
-<aside class="sidebar"><h2>LAYOUT CONTROLS</h2><div class="card"><div class="card-title">ELEMENT</div><div class="element-list" id="elementList"></div></div><div class="card"><div class="card-title" id="selectedTitle">SELECTED</div><div class="form"><div class="field"><label>X</label><input id="x" type="number"></div><div class="field"><label>Y</label><input id="y" type="number"></div><div class="field"><label>WIDTH</label><input id="w" type="number" min="1"></div><div class="field"><label>HEIGHT</label><input id="h" type="number" min="1"></div><div class="field"><label>FONT SIZE</label><input id="font" type="number" min="1"></div><div class="field"><label>LINE HEIGHT</label><input id="line" type="number" step="0.05" min="0.5"></div><div class="field"><label>LETTER SPACE</label><input id="letter" type="number" step="0.1"></div><div class="field"><label>OPACITY</label><input id="opacity" type="number" step="0.05" min="0" max="1"></div></div><p class="hint">ドラッグで移動。矢印キー=1px、Shift+矢印=10px。</p></div><div class="card"><div class="card-title">SAVE / EXPORT</div><div class="actions"><button class="primary" id="save">SAVE</button><button id="resetView">RESET VIEW</button><button id="resetAll">RESET ALL</button><button id="copy">COPY CSS</button></div><div class="field full" style="margin-top:9px"><label>GENERATED CSS</label><textarea id="css"></textarea></div></div></aside>
-</div><div class="toast" id="toast"></div>
-<script>
-(()=>{'use strict';
-const KEY='drumasterResultLayoutEditorV1',view={pc:{w:1280,h:720},mobile:{w:844,h:390}};
-const defs={normal:{title:['曲名','song-title','Ray'],artist:['アーティスト','artist','BUMP OF CHICKEN'],scoreLabel:['SCORE','score-label','SCORE'],score:['スコア値','final-score','985,420'],summary:['判定','summary',''],ranking:['ランキング','ranking',''],retry:['RETRY','result-btn','RETRY'],home:['HOME','result-btn','HOME']},auto:{title:['曲名','song-title','Ray'],artist:['アーティスト','artist','BUMP OF CHICKEN'],scoreLabel:['SCORE','score-label','SCORE'],autoText:['AUTO PLAY','autoplay-text','AUTO PLAY'],retry:['RETRY','result-btn','RETRY'],home:['HOME','result-btn','HOME']}};
-const base={pc:{normal:{title:[70,76,280,58,48,1.05,1,1],artist:[72,145,320,34,24,1.15,1,1],scoreLabel:[72,208,180,28,21,1,7,1],score:[60,236,520,110,92,.9,1,1],summary:[70,348,470,78,16,1.1,1,1],ranking:[600,100,590,390,20,1.1,1,1],retry:[742,550,190,48,15,1.2,1,1],home:[950,550,190,48,15,1.2,1,1]},auto:{title:[500,70,280,58,48,1.05,1,1],artist:[500,165,300,36,24,1.15,1,1],scoreLabel:[560,235,160,30,21,1,7,1],autoText:[395,285,490,120,92,.9,1,1],retry:[438,455,190,48,15,1.2,1,1],home:[652,455,190,48,15,1.2,1,1]}},mobile:{normal:{title:[42,45,180,38,30,1,1,1],artist:[42,86,190,24,16,1.05,1,1],scoreLabel:[42,121,110,19,14,1,2,1],score:[34,140,260,68,58,.84,0,1],summary:[36,211,260,48,11,1,0,1],ranking:[305,14,270,310,16,1,0,1],retry:[595,205,126,42,13,1.2,1,1],home:[595,258,126,42,13,1.2,1,1]},auto:{title:[56,45,260,42,36,1,1,1],artist:[56,105,250,26,21,1.05,1,1],scoreLabel:[160,161,110,22,18,1,3,1],autoText:[270,150,315,80,58,.9,1,1],retry:[600,225,126,42,13,1.2,1,1],home:[600,278,126,42,13,1.2,1,1]}}};
-const $=id=>document.getElementById(id),clone=o=>JSON.parse(JSON.stringify(o));let data=load(),screen='normal',device='pc',selected='title',scale=1,drag=null;
-const shell=$('shell'),preview=$('preview'),stage=$('stage'),list=$('elementList'),screenSeg=$('screenSeg'),deviceSeg=$('deviceSeg'),selectedTitle=$('selectedTitle'),cssOut=$('css');const inputs={x:$('x'),y:$('y'),w:$('w'),h:$('h'),font:$('font'),line:$('line'),letter:$('letter'),opacity:$('opacity')};
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&d.pc&&d.mobile)return d}catch{}return clone(base)}function obj(a){return{x:+a[0],y:+a[1],w:+a[2],h:+a[3],font:+a[4],line:+a[5],letter:+a[6],opacity:+a[7]}}function arr(o){return[o.x,o.y,o.w,o.h,o.font,o.line,o.letter,o.opacity]}function cur(){return obj(data[device][screen][selected])}function setCur(v){data[device][screen][selected]=arr(v)}
-function innerFor(key){if(key==='summary')return '<div class="sum-cell"><small>PERFECT</small><b>428</b></div><div class="sum-cell"><small>GREAT</small><b>37</b></div><div class="sum-cell"><small>GOOD</small><b>9</b></div><div class="sum-cell"><small>MISS</small><b>2</b></div>';if(key==='ranking')return '<div class="rtitle">RECORD RANKING</div><div class="rhead"><span>RANK</span><span>SCORE</span><span class="right">DATE</span></div><div class="rrow best"><span>1</span><b>985,420</b><span class="right">2026.09.01</span></div><div class="rrow"><span>2</span><b>973,180</b><span class="right">2026.08.31</span></div><div class="rrow"><span>3</span><b>961,730</b><span class="right">2026.08.30</span></div>';return null}
-function style(el,v){el.style.left=v.x+'px';el.style.top=v.y+'px';el.style.width=v.w+'px';el.style.height=v.h+'px';el.style.fontSize=v.font+'px';el.style.lineHeight=v.line;el.style.letterSpacing=v.letter+'px';el.style.opacity=v.opacity}
-function render(){shell.className='shell '+device;shell.style.transform=`scale(${scale})`;preview.innerHTML='<div class="mode-switch"><span class="on">NORMAL</span><span>AUTO PLAY</span></div>';for(const [key,d] of Object.entries(defs[screen])){const el=document.createElement('div'),c=document.createElement('div'),v=obj(data[device][screen][key]);el.className='el '+d[1]+(key===selected?' selected':'');el.dataset.key=key;c.className='content';const html=innerFor(key);if(html!==null)c.innerHTML=html;else c.textContent=d[2];el.appendChild(c);style(el,v);preview.appendChild(el)}buildList();fill();generate()}
-function buildList(){list.innerHTML='';for(const [key,d] of Object.entries(defs[screen])){const b=document.createElement('button');b.textContent=d[0];b.className=key===selected?'active':'';b.onclick=()=>{selected=key;render()};list.appendChild(b)}}function fill(){const v=cur();selectedTitle.textContent=defs[screen][selected][0];for(const k in inputs)inputs[k].value=v[k]}
-for(const [k,input] of Object.entries(inputs))input.oninput=()=>{const v=cur();v[k]=+input.value;if(['w','h','font'].includes(k))v[k]=Math.max(1,v[k]);if(k==='opacity')v[k]=Math.max(0,Math.min(1,v[k]));setCur(v);render()};
-preview.onpointerdown=e=>{const el=e.target.closest('.el');if(!el)return;e.preventDefault();selected=el.dataset.key;preview.querySelectorAll('.el').forEach(n=>n.classList.toggle('selected',n===el));buildList();fill();const v=cur();drag={id:e.pointerId,x0:e.clientX,y0:e.clientY,x:v.x,y:v.y,el};el.setPointerCapture(e.pointerId)};preview.onpointermove=e=>{if(!drag||drag.id!==e.pointerId)return;const v=cur();v.x=Math.round(drag.x+(e.clientX-drag.x0)/scale);v.y=Math.round(drag.y+(e.clientY-drag.y0)/scale);setCur(v);style(drag.el,v);fill();generate()};preview.onpointerup=preview.onpointercancel=e=>{if(drag&&drag.id===e.pointerId)drag=null};
-window.onkeydown=e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)||!e.key.startsWith('Arrow'))return;e.preventDefault();const v=cur(),n=e.shiftKey?10:1;if(e.key==='ArrowLeft')v.x-=n;if(e.key==='ArrowRight')v.x+=n;if(e.key==='ArrowUp')v.y-=n;if(e.key==='ArrowDown')v.y+=n;setCur(v);render()};
-function active(seg,name,val){seg.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset[name]===val))}screenSeg.onclick=e=>{const b=e.target.closest('button');if(!b)return;screen=b.dataset.screen;if(!defs[screen][selected])selected=Object.keys(defs[screen])[0];active(screenSeg,'screen',screen);render()};deviceSeg.onclick=e=>{const b=e.target.closest('button');if(!b)return;device=b.dataset.device;active(deviceSeg,'device',device);fit()};function fit(){const v=view[device],pad=48;scale=Math.min(1,(stage.clientWidth-pad)/v.w,(stage.clientHeight-pad)/v.h);render()}$('fitBtn').onclick=fit;$('actualBtn').onclick=()=>{scale=1;render()};$('save').onclick=()=>{localStorage.setItem(KEY,JSON.stringify(data));toast('保存しました')};$('resetView').onclick=()=>{data[device][screen]=clone(base[device][screen]);render();toast('現在のビューを初期化しました')};$('resetAll').onclick=()=>{if(!confirm('4レイアウトをすべて初期化しますか？'))return;data=clone(base);localStorage.removeItem(KEY);render();toast('すべて初期化しました')};
-function sel(key){return{title:'>h2',artist:'>.result-song-sub',scoreLabel:'>.result-score-label',score:'>#finalScore',summary:'>.result-summary',ranking:'>.ranking-panel',retry:'>.result-actions>#retry',home:'>.result-actions>#home',autoText:'>#finalScore'}[key]}function rules(dev,mode){let s='',pre=mode==='auto'?'#result.autoplay':'#result:not(.autoplay)';for(const key of Object.keys(defs[mode])){const v=obj(data[dev][mode][key]);s+=`${pre}${sel(key)}{position:absolute!important;left:${v.x}px!important;top:${v.y}px!important;width:${v.w}px!important;height:${v.h}px!important;font-size:${v.font}px!important;line-height:${v.line}!important;letter-spacing:${v.letter}px!important;opacity:${v.opacity}!important;margin:0!important;}\n`}return s}function generate(){cssOut.value=`/* Generated by DruMaster Result Layout Editor */\n@media (hover:hover) and (pointer:fine){\n${rules('pc','normal')}${rules('pc','auto')}}\n@media (hover:none) and (pointer:coarse) and (max-width:900px){\n${rules('mobile','normal')}${rules('mobile','auto')}}`}$('copy').onclick=async()=>{generate();try{await navigator.clipboard.writeText(cssOut.value)}catch{cssOut.select();document.execCommand('copy')}toast('CSSをコピーしました')};function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1400)}window.onresize=fit;fit();
-})();
-</script>
-</body></html>
+<div id="editorApp">
+  <section class="workspace">
+    <div class="toolbar">
+      <div class="title">DruMaster RESULT LAYOUT EDITOR</div>
+      <div class="seg" id="screenSeg"><button data-screen="normal" class="active">NORMAL RESULT</button><button data-screen="auto">AUTO PLAY</button></div>
+      <div class="seg" id="deviceSeg"><button data-device="pc" class="active">PC</button><button data-device="mobile">SMARTPHONE</button></div>
+      <button class="tool-btn" id="fit">FIT</button>
+      <button class="tool-btn" id="actual">100%</button>
+    </div>
+    <div class="stage" id="stage"><div class="shell pc" id="shell"><div class="rl-canvas" id="preview"></div></div></div>
+  </section>
+  <aside class="sidebar">
+    <h2>LAYOUT CONTROLS</h2>
+    <div class="card">
+      <div class="card-title">ELEMENT</div>
+      <p class="selection-note" id="selectionNote"></p>
+      <div class="element-list" id="elementList"></div>
+      <button class="wide-action" id="centerColumns">CENTER MOBILE COLUMNS</button>
+      <p class="hint">スマホNORMALは左半分＝結果、右半分＝RANKINGとして25% / 75%位置にセンターガイドを表示します。</p>
+    </div>
+    <div class="card">
+      <div class="card-title" id="selectedTitle">SELECTED</div>
+      <div class="form">
+        <div class="field"><label id="xLabel">X</label><input id="x" type="number"></div>
+        <div class="field"><label id="yLabel">Y</label><input id="y" type="number"></div>
+        <div class="field"><label>WIDTH</label><input id="w" type="number" min="1"></div>
+        <div class="field"><label>HEIGHT</label><input id="h" type="number" min="1"></div>
+        <div class="field"><label>FONT SIZE</label><input id="font" type="number" min="1"></div>
+        <div class="field"><label>LINE HEIGHT</label><input id="line" type="number" step="0.05" min="0.5"></div>
+        <div class="field"><label>LETTER SPACE</label><input id="letter" type="number" step="0.1"></div>
+        <div class="field"><label>OPACITY</label><input id="opacity" type="number" step="0.05" min="0" max="1"></div>
+      </div>
+      <p class="hint">Shift＋ドラッグで水平または垂直に固定。Ctrl/Cmd＋クリックで複数選択。複数選択時のX/Yは移動量（ΔX/ΔY）、その他の値は選択要素へ一括適用します。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">SAVE / EXPORT</div>
+      <div class="actions">
+        <button class="primary" id="save">SAVE</button>
+        <button id="resetView">RESET VIEW</button>
+        <button id="resetAll">RESET ALL</button>
+        <button id="copyCss">COPY CSS</button>
+        <button id="openViewer">OPEN VIEWER</button>
+        <button id="copyViewer">COPY VIEWER URL</button>
+      </div>
+      <div class="field full" style="margin-top:9px"><label>GENERATED CSS</label><textarea id="css" spellcheck="false"></textarea></div>
+      <p class="hint">VIEWER URLにはスマホNORMAL/AUTOの現在値を埋め込みます。スマホ側で同じlocalStorageを共有する必要はありません。</p>
+    </div>
+  </aside>
+</div>
+<div class="toast" id="toast"></div>
+<script src="js/result-layout-shared.js?v=20260901-v2"></script>
+<script src="js/result-layout-editor-v2.js?v=20260901-v2"></script>
+</body>
+</html>
