@@ -1,23 +1,21 @@
 /* Smartphone result: keep song metadata clear of the forced-landscape safe edge. */
 @media (hover:none) and (pointer:coarse) and (max-width:900px){
-  /* Normal result: relative adjustments from the currently approved positions. */
-  #result:not(.autoplay)>h2{
-    position:relative!important;
-    top:28px!important;
-    translate:none!important;
-    font-size:27px!important;
-  }
+  /* Normal result: restore the state from before the AUTO PLAY-only fine tuning. */
+  #result:not(.autoplay)>h2,
   #result:not(.autoplay)>.result-song-sub{
     position:relative!important;
-    top:23px!important;
+    top:18px!important;
     translate:none!important;
   }
+  #result:not(.autoplay)>h2{
+    font-size:30px!important;
+  }
   #result:not(.autoplay)>.result-score-label{
-    position:relative!important;
-    top:3px!important;
+    position:static!important;
+    top:auto!important;
   }
 
-  /* AUTO PLAY uses absolute positioning from pause-result-readability.css. */
+  /* AUTO PLAY only: title +10px, artist +5px, SCORE +3px from the prior approved positions. */
   #result.autoplay{
     --dm-autoplay-title-y:-154px!important;
     --dm-autoplay-artist-y:-94px!important;
