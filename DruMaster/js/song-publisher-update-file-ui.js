@@ -10,8 +10,8 @@
   function doc(){try{return frame.contentDocument}catch{return null}}
   function forceFileVisible(input){
     if(!input)return;
-    if(input.hidden)input.hidden=false;
-    if(input.disabled)input.disabled=false;
+    input.hidden=false;
+    input.disabled=false;
     if(input.hasAttribute("hidden"))input.removeAttribute("hidden");
     if(input.hasAttribute("disabled"))input.removeAttribute("disabled");
   }
@@ -24,6 +24,9 @@
       select.value=value;
       select.dispatchEvent(new Event("change",{bubbles:true}));
     }
+    /* update-mode's legacy change handler may hide/disable the file input.
+       The visible file picker is canonical now, so immediately restore it. */
+    forceFileVisible(input);
     requestAnimationFrame(()=>{
       forceFileVisible(input);
       syncAll();
@@ -80,10 +83,14 @@
 
     if(input.dataset.dmUpdateFileBound!=="1"){
       input.dataset.dmUpdateFileBound="1";
-      input.addEventListener("change",()=>{
-        if(input.files?.length)setInternalAction(select,input,"replace");
-        else if(select.value==="replace")setInternalAction(select,input,"keep");
-      });
+      const onFile=()=>{
+        /* File presence itself decides add/replace. Do not require the user to
+           operate the hidden legacy action select. This is especially
+           important for MIDI additions to draft songs. */
+        setInternalAction(select,input,input.files?.length?"replace":"keep");
+      };
+      input.addEventListener("change",onFile);
+      input.addEventListener("input",onFile);
     }
   }
 
@@ -129,7 +136,7 @@
     if(fallbackLoaded)return;
     fallbackLoaded=true;
     const s=document.createElement("script");
-    s.src="js/song-publisher-update-mode.js?v=20260829-inputfix-fallback1";
+    s.src="js/song-publisher-update-mode.js?v=20260902-midiupload1";
     s.dataset.dmUpdateFallback="1";
     document.head.appendChild(s);
   }
@@ -141,18 +148,27 @@
       if(d?.head&&d.body){
         bindDocument(d);
         const ready=syncAll(d);
-        if(ready&&d.querySelector(".dm-update-control")){
+        if(!ready&&d.getElementById("publish")&&pollCount===4)loadUpdateModeFallback();
+
+        /* Catalog discovery is asynchronous and can finish after the update UI
+           itself exists. loadSong() then puts inputs back into the legacy
+           disabled state. Keep this bounded poll alive until catalog loading
+           settles, so MIDI/audio file pickers remain usable. */
+        const chooser=d.getElementById("dmExistingSong");
+        const controls=[...d.querySelectorAll('.dm-update-control input[type="file"]')];
+        const catalogReady=!!chooser?.options?.length;
+        const controlsReady=controls.length>=5&&controls.every(input=>!input.disabled&&!input.hidden);
+        if(ready&&catalogReady&&controlsReady&&pollCount>=8){
           clearInterval(pollTimer);pollTimer=0;
-          setTimeout(()=>syncAll(d),150);
-          setTimeout(()=>syncAll(d),600);
+          setTimeout(()=>syncAll(d),500);
+          setTimeout(()=>syncAll(d),1500);
           return;
         }
-        if(!ready&&d.getElementById("publish")&&pollCount===10)loadUpdateModeFallback();
       }
-      if(++pollCount>=80){clearInterval(pollTimer);pollTimer=0}
+      if(++pollCount>=40){clearInterval(pollTimer);pollTimer=0}
     };
     tick();
-    if(!pollTimer)pollTimer=setInterval(tick,100);
+    if(!pollTimer)pollTimer=setInterval(tick,250);
   }
 
   frame.addEventListener("load",()=>setTimeout(startPolling,0));
