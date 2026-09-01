@@ -42,6 +42,33 @@
   };
   function obj(a){return{x:+a[0],y:+a[1],w:+a[2],h:+a[3],font:+a[4],line:+a[5],letter:+a[6],opacity:+a[7]}}
   function arr(o){return[+o.x,+o.y,+o.w,+o.h,+o.font,+o.line,+o.letter,+o.opacity]}
+  function centerPair(layout,a,b,center,gap){
+    const av=obj(layout[a]),bv=obj(layout[b]);
+    const total=av.w+gap+bv.w;
+    av.x=Math.round(center-total/2);
+    bv.x=Math.round(av.x+av.w+gap);
+    layout[a]=arr(av);layout[b]=arr(bv);
+  }
+  function lockMobileCenters(data){
+    const m=data?.mobile;if(!m)return data;
+    const leftCenter=view.mobile.w/4,rightCenter=view.mobile.w*3/4,screenCenter=view.mobile.w/2;
+    const n=m.normal;
+    if(n){
+      for(const key of ["title","artist","scoreLabel","score","summary"]){
+        if(!n[key])continue;const v=obj(n[key]);v.x=Math.round(leftCenter-v.w/2);n[key]=arr(v);
+      }
+      if(n.ranking){const v=obj(n.ranking);v.x=Math.round(rightCenter-v.w/2);n.ranking=arr(v)}
+      if(n.retry&&n.home)centerPair(n,"retry","home",screenCenter,12);
+    }
+    const a=m.auto;
+    if(a){
+      for(const key of ["title","artist","scoreLabel","autoText"]){
+        if(!a[key])continue;const v=obj(a[key]);v.x=Math.round(screenCenter-v.w/2);a[key]=arr(v);
+      }
+      if(a.retry&&a.home)centerPair(a,"retry","home",screenCenter,26);
+    }
+    return data;
+  }
   function innerFor(key,text){
     if(key==="summary")return '<div class="sum-cell"><small>PERFECT</small><b>428</b></div><div class="sum-cell"><small>GREAT</small><b>37</b></div><div class="sum-cell"><small>GOOD</small><b>9</b></div><div class="sum-cell"><small>MISS</small><b>2</b></div>';
     if(key==="ranking")return '<div class="rtitle">RECORD RANKING</div><div class="rhead"><span>RANK</span><span>SCORE</span><span class="right">DATE</span></div><div class="rrow best"><span>1</span><b>985,420</b><span class="right">2026.09.01</span></div><div class="rrow"><span>2</span><b>973,180</b><span class="right">2026.08.31</span></div><div class="rrow"><span>3</span><b>961,730</b><span class="right">2026.08.30</span></div>';
@@ -60,12 +87,14 @@
   }
   function normalizeData(raw){
     const out=clone(base);
-    if(!raw||typeof raw!=="object")return out;
-    for(const device of ["pc","mobile"])for(const screen of ["normal","auto"]){
-      const src=raw?.[device]?.[screen];if(!src)continue;
-      for(const key of Object.keys(defs[screen]))if(Array.isArray(src[key])&&src[key].length>=8)out[device][screen][key]=src[key].slice(0,8).map(Number);
+    if(raw&&typeof raw==="object"){
+      for(const device of ["pc","mobile"])for(const screen of ["normal","auto"]){
+        const src=raw?.[device]?.[screen];if(!src)continue;
+        for(const key of Object.keys(defs[screen]))if(Array.isArray(src[key])&&src[key].length>=8)out[device][screen][key]=src[key].slice(0,8).map(Number);
+      }
     }
-    return out;
+    return lockMobileCenters(out);
   }
-  globalThis.DruMasterResultLayout={clone,view,defs,base,obj,arr,innerFor,applyStyle,makeElement,normalizeData};
+  lockMobileCenters(base);
+  globalThis.DruMasterResultLayout={clone,view,defs,base,obj,arr,innerFor,applyStyle,makeElement,normalizeData,lockMobileCenters};
 })();
