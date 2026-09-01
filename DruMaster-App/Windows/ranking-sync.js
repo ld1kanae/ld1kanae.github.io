@@ -5,6 +5,7 @@
   const DB_VERSION = 1;
   const STORE = 'plays';
   const ENDPOINT_KEY = 'drumasterRankingEndpoint';
+  const DEFAULT_ENDPOINT = 'https://drumaster-ranking-api.aoka45utau.workers.dev';
   const PLAYER_ID_KEY = 'drumasterPlayerId';
   const PLAYER_NAME_KEY = 'drumasterPlayerName';
   const RETRY_MS = 30000;
@@ -36,7 +37,7 @@
   }
 
   function endpoint() {
-    return (localStorage.getItem(ENDPOINT_KEY) || '').trim().replace(/\/$/, '');
+    return (localStorage.getItem(ENDPOINT_KEY) || DEFAULT_ENDPOINT).trim().replace(/\/$/, '');
   }
 
   function openDb() {
@@ -198,7 +199,7 @@
     };
 
     await putPlay(play);
-    setStatus(endpoint() ? 'ランキング同期中…' : 'ランキング：ローカル保存済み');
+    setStatus('ランキング同期中…');
     syncPending().catch(console.error);
   }
 
