@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DruMaster Result Layout Editor</title>
-<link rel="stylesheet" href="css/result-layout-preview.css?v=20260901-v3">
-<link rel="stylesheet" href="css/result-layout-editor-v2.css?v=20260901-v3">
+<link rel="stylesheet" href="css/result-layout-preview.css?v=20260901-v4">
+<link rel="stylesheet" href="css/result-layout-editor-v2.css?v=20260901-v4">
 </head>
 <body>
 <div id="editorApp">
@@ -26,7 +26,7 @@
       <p class="selection-note" id="selectionNote"></p>
       <div class="element-list" id="elementList"></div>
       <button class="wide-action" id="centerColumns">CENTER NORMAL COLUMNS</button>
-      <p class="hint">NORMAL RESULTはPC/スマホとも左半分＝結果、右半分＝RANKINGとして25% / 75%位置にセンターガイドを表示します。</p>
+      <p class="hint">NORMAL RESULTはPC/スマホとも、左半分＝結果、右半分＝RANKING。RETRY / HOMEの2ボタンは画面全体の中央を基準にセンタリングします。</p>
     </div>
     <div class="card">
       <div class="card-title" id="selectedTitle">SELECTED</div>
@@ -40,7 +40,7 @@
         <div class="field"><label>LETTER SPACE</label><input id="letter" type="number" step="0.1"></div>
         <div class="field"><label>OPACITY</label><input id="opacity" type="number" step="0.05" min="0" max="1"></div>
       </div>
-      <p class="hint">Shift＋ドラッグで水平または垂直に固定。Ctrl/Cmd＋クリックで複数選択。複数選択時のX/Yは移動量（ΔX/ΔY）、その他の値は選択要素へ一括適用します。</p>
+      <p class="hint">Shift＋クリックで複数選択。Shift＋ドラッグで水平/垂直固定。Ctrl/Cmd＋ZでUndo、Ctrl/Cmd＋Shift＋ZまたはCtrl/Cmd＋YでRedo。複数選択時のX/Yは移動量（ΔX/ΔY）、その他の値は一括適用します。</p>
     </div>
     <div class="card">
       <div class="card-title">SAVE / EXPORT</div>
@@ -58,7 +58,7 @@
   </aside>
 </div>
 <div class="toast" id="toast"></div>
-<script src="js/result-layout-shared.js?v=20260901-v3"></script>
-<script src="js/result-layout-editor-v2.js?v=20260901-v3"></script>
+<script src="js/result-layout-shared.js?v=20260901-v4"></script>
+<script src="js/result-layout-editor-v2.js?v=20260901-v4"></script>
 </body>
 </html>
