@@ -16,7 +16,7 @@
   if(!document.querySelector('link[data-dm-result-mobile-centering]')){
     const link=document.createElement('link');
     link.rel='stylesheet';
-    link.href='css/result-mobile-centering-v2.css?v=20260902-score-outline03-bottomfix1';
+    link.href='css/result-mobile-centering-v2.css?v=20260902-title-up5px1';
     link.dataset.dmResultMobileCentering='1';
     document.head.appendChild(link);
   }
