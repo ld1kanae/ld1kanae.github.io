@@ -24,13 +24,20 @@
       select.value=value;
       select.dispatchEvent(new Event("change",{bubbles:true}));
     }
-    /* update-mode's legacy change handler may hide/disable the file input.
-       The visible file picker is canonical now, so immediately restore it. */
     forceFileVisible(input);
     requestAnimationFrame(()=>{
       forceFileVisible(input);
       syncAll();
     });
+  }
+
+  function syncRequirementLabels(d){
+    const midi=d.getElementById("midi"),badge=midi?.closest(".file-row")?.querySelector("i");
+    if(!badge)return;
+    const updating=d.body.classList.contains("dm-publisher-update");
+    setText(badge,updating?"変更時のみ":"必須");
+    badge.classList.toggle("req",!updating);
+    badge.classList.toggle("optional",updating);
   }
 
   function syncSummary(d){
@@ -83,12 +90,7 @@
 
     if(input.dataset.dmUpdateFileBound!=="1"){
       input.dataset.dmUpdateFileBound="1";
-      const onFile=()=>{
-        /* File presence itself decides add/replace. Do not require the user to
-           operate the hidden legacy action select. This is especially
-           important for MIDI additions to draft songs. */
-        setInternalAction(select,input,input.files?.length?"replace":"keep");
-      };
+      const onFile=()=>setInternalAction(select,input,input.files?.length?"replace":"keep");
       input.addEventListener("change",onFile);
       input.addEventListener("input",onFile);
     }
@@ -117,8 +119,34 @@
     if(!d?.head||!d.body)return false;
     injectStyle(d);
     d.querySelectorAll(".dm-update-control").forEach(w=>syncWrap(w,d));
+    syncRequirementLabels(d);
     syncSummary(d);
     return !!d.getElementById("dmPublisherMode");
+  }
+
+  function buildUpdateConfirmation(d){
+    const confirm=d.getElementById("dmUpdateConfirm"),list=d.getElementById("dmUpdateConfirmList");
+    if(!confirm||!list)return false;
+    list.replaceChildren();
+    let count=0;
+    for(const wrap of d.querySelectorAll(".dm-update-control")){
+      const select=wrap.querySelector(".dm-update-action"),input=wrap.querySelector('input[type="file"]'),meta=wrap.querySelector(".dm-update-meta");
+      if(!select)continue;
+      const key=select.dataset.key||"",label=LABEL[key]||key;
+      if(select.value==="delete"){
+        const li=d.createElement("li");li.textContent=`${label}: 削除`;list.appendChild(li);count++;
+      }else if(select.value==="replace"&&input?.files?.[0]){
+        const li=d.createElement("li");li.textContent=`${label}: ${registered(meta)?"差し替え":"追加"} → ${input.files[0].name}`;list.appendChild(li);count++;
+      }
+    }
+    const li=d.createElement("li");
+    li.textContent="曲名・アーティスト名・表示順を現在の入力値で保存";
+    list.appendChild(li);count++;
+    const warn=d.getElementById("dmMidiWarning");if(warn)warn.hidden=!d.getElementById("midi")?.files?.length;
+    confirm.hidden=false;
+    confirm.scrollIntoView({behavior:"smooth",block:"center"});
+    const log=d.getElementById("log");if(log){log.textContent="更新内容を確認し、「この内容で更新」を押してください。";log.className=""}
+    return count>0;
   }
 
   function bindDocument(d){
@@ -128,7 +156,17 @@
       if(e.target?.id==="dmExistingSong")setTimeout(()=>syncAll(d),0);
     },true);
     d.addEventListener("click",e=>{
-      if(e.target?.matches?.(".dm-mode-switch button"))setTimeout(()=>syncAll(d),0);
+      const target=e.target;
+      if(target?.id==="publish"&&d.body.classList.contains("dm-publisher-update")){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        syncAll(d);
+        if(!buildUpdateConfirmation(d)){
+          const log=d.getElementById("log");if(log){log.textContent="更新UIを初期化できませんでした。ページを再読み込みしてください。";log.className="bad"}
+        }
+        return;
+      }
+      if(target?.matches?.(".dm-mode-switch button"))setTimeout(()=>syncAll(d),0);
     },true);
   }
 
@@ -136,7 +174,7 @@
     if(fallbackLoaded)return;
     fallbackLoaded=true;
     const s=document.createElement("script");
-    s.src="js/song-publisher-update-mode.js?v=20260902-midiupload1";
+    s.src="js/song-publisher-update-mode.js?v=20260902-updatefix2";
     s.dataset.dmUpdateFallback="1";
     document.head.appendChild(s);
   }
@@ -150,10 +188,6 @@
         const ready=syncAll(d);
         if(!ready&&d.getElementById("publish")&&pollCount===4)loadUpdateModeFallback();
 
-        /* Catalog discovery is asynchronous and can finish after the update UI
-           itself exists. loadSong() then puts inputs back into the legacy
-           disabled state. Keep this bounded poll alive until catalog loading
-           settles, so MIDI/audio file pickers remain usable. */
         const chooser=d.getElementById("dmExistingSong");
         const controls=[...d.querySelectorAll('.dm-update-control input[type="file"]')];
         const catalogReady=!!chooser?.options?.length;
