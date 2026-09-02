@@ -27,7 +27,6 @@
   function say(s,cls="",d=doc()){const log=$("log",d);if(!log)return;log.textContent=s;log.className=cls}
   async function apiGet(path,t){const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,{headers:headers(t),cache:"no-store"});if(r.status===404)return null;if(!r.ok)throw Error(`GitHub API ${r.status}: ${path}`);return r.json()}
   async function publicJson(path){const r=await fetch(`${path}${path.includes("?")?"&":"?"}t=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw Error(`取得失敗: ${path} (${r.status})`);return r.json()}
-  async function publicBlob(path){const clean=String(path||"").replace(/^DruMaster\//,"").replace(/[?#].*$/,"");const r=await fetch(`${clean}?t=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw Error(`既存ファイルを取得できません: ${clean} (${r.status})`);return r.blob()}
   function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:"sessionId"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||Error("ローカルセッションDBを開けませんでした"))})}
   async function storeSession(value){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(value);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||Error("ローカル素材を保存できませんでした"))}})}
   async function sha256(ab){const h=await crypto.subtle.digest("SHA-256",ab);return [...new Uint8Array(h)].map(v=>v.toString(16).padStart(2,"0")).join("")}
@@ -37,6 +36,20 @@
   function floatTo16(src,start,count){const out=new Int16Array(count);for(let i=0;i<count;i++){const v=Math.max(-1,Math.min(1,src[start+i]||0));out[i]=v<0?v*32768:v*32767}return out}
   async function encodeMp3(file,targetDuration,progress){if(!globalThis.lamejs?.Mp3Encoder)throw Error("MP3変換ライブラリを読み込めませんでした");const ab=await file.arrayBuffer(),decoded=await getAC().decodeAudioData(ab.slice(0)),rendered=await resample(decoded,targetDuration||decoded.duration),left=rendered.getChannelData(0),right=rendered.numberOfChannels>1?rendered.getChannelData(1):left,enc=new lamejs.Mp3Encoder(2,44100,192),blocks=[],step=1152,total=Math.ceil(rendered.length/step);for(let at=0,i=0;at<rendered.length;at+=step,i++){const n=Math.min(step,rendered.length-at),l=floatTo16(left,at,n),r=floatTo16(right,at,n),buf=enc.encodeBuffer(l,r);if(buf.length)blocks.push(new Uint8Array(buf));if(i%96===0){progress?.(i/total);await new Promise(res=>setTimeout(res,0))}}const end=enc.flush();if(end.length)blocks.push(new Uint8Array(end));progress?.(1);return new Blob(blocks,{type:"audio/mpeg"})}
   function parseMidi(ab){const d=new DataView(ab);let p=0;const need=n=>{if(p+n>d.byteLength)throw Error("MIDIが途中で切れています")},str=n=>{need(n);let s="";while(n--)s+=String.fromCharCode(d.getUint8(p++));return s},u32=()=>{need(4);const v=d.getUint32(p);p+=4;return v},u16=()=>{need(2);const v=d.getUint16(p);p+=2;return v},vlq=end=>{let v=0,b,c=0;do{if(p>=end)throw Error("MIDI VLQ error");b=d.getUint8(p++);v=(v<<7)|(b&127);if(++c>4)throw Error("MIDI VLQ error")}while(b&128);return v};if(str(4)!=="MThd")throw Error("MIDIヘッダーが不正です");const header=u32();u16();const tracks=u16(),division=u16();if(division&0x8000)throw Error("SMPTE MIDIには未対応です");p=8+header;let notes=0;const tempos=[],sigs=[];for(let tr=0;tr<tracks;tr++){if(str(4)!=="MTrk")throw Error("MIDIトラックが不正です");const len=u32(),end=p+len;let tick=0,run=0;while(p<end){tick+=vlq(end);let first=d.getUint8(p++),status;if(first<128){if(!run)throw Error("MIDI running status error");status=run;p--}else{status=first;if(status<240)run=status}if(status===255){const type=d.getUint8(p++),n=vlq(end);if(type===81&&n===3)tempos.push({tick,us:(d.getUint8(p)<<16)|(d.getUint8(p+1)<<8)|d.getUint8(p+2)});if(type===88&&n>=2)sigs.push({tick,numerator:d.getUint8(p),denominator:2**d.getUint8(p+1)});p+=n;continue}if(status===240||status===247){run=0;p+=vlq(end);continue}const hi=status&240,ch=status&15,bytes=(hi===192||hi===208)?1:2;need(bytes);d.getUint8(p++);const b=bytes===2?d.getUint8(p++):0;if(hi===144&&b>0&&ch===9)notes++}p=end}tempos.sort((a,b)=>a.tick-b.tick);sigs.sort((a,b)=>a.tick-b.tick);const tempo=tempos.find(x=>x.tick===0)||tempos[0]||{us:500000},sig=sigs.find(x=>x.tick===0)||sigs[0]||{numerator:4,denominator:4};return {division,noteCount:notes,bpm:60000000/tempo.us,numerator:sig.numerator,denominator:sig.denominator}}
+
+  function storedOrder(song){
+    const raw=song?.order;
+    if(raw===null||raw===undefined||String(raw).trim()==="")return null;
+    const n=Number(raw);
+    return Number.isInteger(n)&&n>=0?n:null;
+  }
+  function readOrder(d=doc()){
+    const raw=$("order",d)?.value.trim()||"";
+    if(raw==="")return null;
+    const n=Number(raw);
+    if(!Number.isInteger(n)||n<0)throw Error("表示順は0以上の整数で入力してください");
+    return n;
+  }
 
   function injectStyle(d){
     if(d.getElementById("dmUpdateModeStyle"))return;
@@ -55,7 +68,7 @@
     let drafts={};try{drafts=await globalThis.DruMasterDraftCatalog?.discover(reg)||{}}catch(e){console.warn(e)}
     catalog={...clone(BUILTIN),...drafts,...(reg&&typeof reg==="object"?reg:{})};
     const sel=$("dmExistingSong",d);if(!sel)return;
-    const rank=s=>Number.isFinite(Number(s.order))?Number(s.order):999;
+    const rank=s=>storedOrder(s)??999;
     const values=Object.values(catalog).sort((a,b)=>rank(a)-rank(b)||String(a.title).localeCompare(String(b.title),"ja"));
     sel.replaceChildren();for(const song of values){const o=d.createElement("option");o.value=song.id;o.textContent=`${song.title} — ${song.artist}`;sel.appendChild(o)}
     if(values.length){sel.value=values[0].id;loadSong(values[0].id,d)}
@@ -75,7 +88,8 @@
 
   function loadSong(id,d=doc()){
     const song=catalog[id];if(!song)return;currentSong=clone(song);
-    $("title",d).value=song.title||"";$("artist",d).value=song.artist||"";$("songId",d).value=song.id||id;$("songId",d).readOnly=true;$("order",d).value=Number.isFinite(Number(song.order))?String(Number(song.order)):"";$("ppqVisual",d).value=String(song.chart?.pixelsPerQuarter||80);$("desktopPpqVisual",d).value=Number.isFinite(Number(song.chart?.desktopPixelsPerQuarter))?String(Number(song.chart.desktopPixelsPerQuarter)):"";
+    const order=storedOrder(song);
+    $("title",d).value=song.title||"";$("artist",d).value=song.artist||"";$("songId",d).value=song.id||id;$("songId",d).readOnly=true;$("order",d).value=order===null?"":String(order);$("ppqVisual",d).value=String(song.chart?.pixelsPerQuarter||80);$("desktopPpqVisual",d).value=Number.isFinite(Number(song.chart?.desktopPixelsPerQuarter))?String(Number(song.chart.desktopPixelsPerQuarter)):"";
     for(const spec of SOURCE){const meta=d.querySelector(`.dm-update-meta[data-key="${spec.key}"]`),path=song.stems?.[spec.key]?.path||"";if(meta)meta.textContent=path?`現在: ${path.split("/").pop()}`:"現在: 未登録";const action=d.querySelector(`.dm-update-action[data-key="${spec.key}"]`),del=action?.querySelector('option[value="delete"]');if(del)del.disabled=!path;setAction(spec.input,"keep",d)}
     const midiMeta=d.querySelector('.dm-update-meta[data-key="midi"]');if(midiMeta)midiMeta.textContent=song.midi?`現在: ${song.midi.split("/").pop().split("?")[0]}`:"現在: 未登録";setAction("midi","keep",d);
     $("publish",d).textContent="UPDATE";const h=d.querySelector("header h1");if(h)h.textContent="楽曲データ更新";const sub=d.querySelector("header .sub");if(sub)sub.textContent="変更した素材だけ差し替え、既存のタイミング・音量設定を引き継ぎます。";say("更新する項目を選択してください。変更なしの素材はそのまま維持されます。","",d);updateSummaryHint(d);
@@ -92,7 +106,14 @@
   function updateSummaryHint(d=doc()){if(mode!=="update"||!currentSong)return;const parts=[];for(const spec of SOURCE){const a=actionFor(spec.input,d);if(a!=="keep")parts.push(`${spec.label}: ${a==="replace"?"差し替え":"削除"}`)}const midiFile=$("midi",d)?.files?.[0];if(midiFile)parts.push(`MIDI: ${currentSong.midi?"差し替え":"追加"}`);const note=$("dmCurrentNote",d);if(note)note.textContent=parts.length?parts.join(" / "):"素材はすべて変更なし"}
 
   function validatePlan(d=doc()){
-    if(!currentSong)throw Error("更新する楽曲を選択してください");if(!$("title",d).value.trim())throw Error("曲名を入力してください");if(!$("artist",d).value.trim())throw Error("アーティスト名を入力してください");for(const spec of SOURCE){if(actionFor(spec.input,d)==="replace"&&!$(spec.input,d).files[0])throw Error(`${spec.label}の差し替えファイルを選択してください`)}const midiFile=$("midi",d)?.files?.[0];if(!currentSong.midi&&!midiFile)throw Error("MIDIが未登録です。MIDIファイルを選択してください");const hasBase=actionFor("offvocal",d)==="delete"?false:actionFor("offvocal",d)==="replace"?true:!!currentSong.stems?.base;const hasFull=actionFor("fullmix",d)==="delete"?false:actionFor("fullmix",d)==="replace"?true:!!currentSong.stems?.fullmix;if(!hasBase&&!hasFull)throw Error("原曲またはオフボーカルのどちらか1つ以上を残してください")
+    if(!currentSong)throw Error("更新する楽曲を選択してください");
+    if(!$("title",d).value.trim())throw Error("曲名を入力してください");
+    if(!$("artist",d).value.trim())throw Error("アーティスト名を入力してください");
+    readOrder(d);
+    for(const spec of SOURCE){if(actionFor(spec.input,d)==="replace"&&!$(spec.input,d).files[0])throw Error(`${spec.label}の差し替えファイルを選択してください`)}
+    const hasBase=actionFor("offvocal",d)==="delete"?false:actionFor("offvocal",d)==="replace"?true:!!currentSong.stems?.base;
+    const hasFull=actionFor("fullmix",d)==="delete"?false:actionFor("fullmix",d)==="replace"?true:!!currentSong.stems?.fullmix;
+    if(!hasBase&&!hasFull)throw Error("原曲またはオフボーカルのどちらか1つ以上を残してください");
   }
 
   function showConfirm(d=doc()){
@@ -100,25 +121,49 @@
     const list=$("dmUpdateConfirmList",d);list.replaceChildren();let count=0;
     for(const spec of SOURCE){const a=actionFor(spec.input,d);if(a==="keep")continue;const li=d.createElement("li");li.textContent=a==="replace"?`${spec.label}: ${currentPath(spec.key)?.split("/").pop()||"未登録"} → ${$(spec.input,d).files[0]?.name||""}`:`${spec.label}: ${currentPath(spec.key)?.split("/").pop()||"未登録"} → 削除`;list.appendChild(li);count++}
     const midiFile=$("midi",d)?.files?.[0];if(midiFile){const li=d.createElement("li");li.textContent=`MIDI: ${currentSong.midi?currentSong.midi.split("/").pop().split("?")[0]:"未登録"} → ${midiFile.name}`;list.appendChild(li);count++}
-    const metadataChanged=$("title",d).value.trim()!==(currentSong.title||"")||$("artist",d).value.trim()!==(currentSong.artist||"")||String($("order",d).value||"")!==(Number.isFinite(Number(currentSong.order))?String(Number(currentSong.order)):"");if(metadataChanged){const li=d.createElement("li");li.textContent="曲名・アーティスト名・表示順の変更を反映";list.appendChild(li);count++}if(!count){const li=d.createElement("li");li.textContent="素材変更なし（Timing Correction / 音量バランスの再確認のみ）";list.appendChild(li)}$("dmMidiWarning",d).hidden=!midiFile;$("dmUpdateConfirm",d).hidden=false;$("dmUpdateConfirm",d).scrollIntoView({behavior:"smooth",block:"center"})
+    const metadataChanged=$("title",d).value.trim()!==(currentSong.title||"")||$("artist",d).value.trim()!==(currentSong.artist||"")||readOrder(d)!==storedOrder(currentSong);if(metadataChanged){const li=d.createElement("li");li.textContent="曲名・アーティスト名・表示順の変更を反映";list.appendChild(li);count++}
+    if(!count){const li=d.createElement("li");li.textContent="素材・メタデータ変更なし";list.appendChild(li)}
+    $("dmMidiWarning",d).hidden=!midiFile;$("dmUpdateConfirm",d).hidden=false;$("dmUpdateConfirm",d).scrollIntoView({behavior:"smooth",block:"center"});
   }
 
   async function runUpdate(d=doc()){
     validatePlan(d);const t=token(d);if(!t)throw Error("GitHub tokenを入力してください");const btn=$("dmConfirmUpdate",d),mainBtn=$("publish",d);btn.disabled=true;mainBtn.disabled=true;
     try{
       $("dmUpdateConfirm",d).hidden=true;setProgress(1,"既存データ確認",d);say("既存ファイルを確認しています…","",d);
-      const id=currentSong.id,title=$("title",d).value.trim(),artist=$("artist",d).value.trim(),duration=Number(currentSong.duration)||0,draft=clone(currentSong),stems=clone(currentSong.stems||{}),uploadItems=[],originals={};const midiInputFile=$("midi",d)?.files?.[0]||null,changedMidi=!!midiInputFile;
+      const id=currentSong.id,title=$("title",d).value.trim(),artist=$("artist",d).value.trim(),duration=Number(currentSong.duration)||0,draft=clone(currentSong),stems=clone(currentSong.stems||{}),uploadItems=[],originals={};
+      const midiInputFile=$("midi",d)?.files?.[0]||null,changedMidi=!!midiInputFile;
       for(let i=0;i<SOURCE.length;i++){
         const spec=SOURCE[i],action=actionFor(spec.input,d),old=stems[spec.key],repoPath=old?.path?`DruMaster/${old.path.split(/[?#]/)[0]}`:`${ROOT}/${id}/${spec.filename}`;if(action==="keep")continue;const meta=await apiGet(repoPath,t);
         if(action==="delete"){if(meta?.sha)uploadItems.push({op:"delete",path:repoPath,sha:meta.sha,label:`${spec.filename} を削除`});delete stems[spec.key];continue}
         const file=$(spec.input,d).files[0],base=5+(i/SOURCE.length)*55,span=55/SOURCE.length,mp3=await encodeMp3(file,duration||null,p=>setProgress(base+p*span,`変換: ${spec.filename}`,d)),bytes=new Uint8Array(await mp3.arrayBuffer());stems[spec.key]={path:`songs/${id}/${spec.filename}`,bytes:bytes.byteLength,sha256:await sha256(bytes.buffer)};originals[spec.key]=file;uploadItems.push({path:`${ROOT}/${id}/${spec.filename}`,blob:mp3,sha:meta?.sha||null,label:`${spec.filename} を更新`})
       }
-      const midiPath=`${ROOT}/${id}/chart.mid`;let midiBlob,midiAb,midiGzip=currentSong.midiGzip||null;
-      if(changedMidi){midiBlob=midiInputFile;midiAb=await midiBlob.arrayBuffer();const midiMeta=await apiGet(midiPath,t);uploadItems.push({path:midiPath,blob:new Blob([midiAb],{type:"audio/midi"}),sha:midiMeta?.sha||null,label:currentSong.midi?"chart.mid を更新":"chart.mid を追加"});const gz=await gzip(midiAb),gzipPath=`${ROOT}/${id}/chart.mid.gz`,gzipMeta=await apiGet(gzipPath,t);if(gz){uploadItems.push({path:gzipPath,blob:new Blob([gz],{type:"application/gzip"}),sha:gzipMeta?.sha||null,label:gzipMeta?.sha?"chart.mid.gz を更新":"chart.mid.gz を追加"});midiGzip=`songs/${id}/chart.mid.gz?v=${Date.now()}`}else{if(gzipMeta?.sha)uploadItems.push({op:"delete",path:gzipPath,sha:gzipMeta.sha,label:"chart.mid.gz を削除"});midiGzip=null}}
-      else{midiBlob=await publicBlob(currentSong.midi);midiAb=await midiBlob.arrayBuffer()}
-      const midiInfo=parseMidi(midiAb),midiHash=await sha256(midiAb),orderRaw=$("order",d).value.trim(),chart={...(currentSong.chart||{}),pixelsPerQuarter:Number($("ppqVisual",d).value)||80},desktopRaw=$("desktopPpqVisual",d).value.trim();if(desktopRaw)chart.desktopPixelsPerQuarter=Number(desktopRaw);else delete chart.desktopPixelsPerQuarter;const fullMixOnly=!!stems.fullmix&&!stems.base,sourceMode=fullMixOnly?"fullmix":"base";
-      Object.assign(draft,{schemaVersion:Math.max(3,Number(draft.schemaVersion)||0),state:"updating",id,title,artist,order:orderRaw===""?null:Number(orderRaw),duration,bpm:Number(midiInfo.bpm.toFixed(6)),timeSignature:{numerator:midiInfo.numerator,denominator:midiInfo.denominator},division:midiInfo.division,noteCount:midiInfo.noteCount,chart,sourceMode,fullMixOnly,playback:{stemOffsetSec:Number(currentSong.playback?.stemOffsetSec)||0,midiMeasureOffset:Number(currentSong.playback?.midiMeasureOffset)||0,midiOffsetSec:Number(currentSong.playback?.midiOffsetSec)||0},midi:`songs/${id}/chart.mid`,midiGzip,midiBytes:midiAb.byteLength,midiSha256:midiHash,stems});if(draft.mix){draft.mix={...draft.mix};if(!stems.vocals)draft.mix.vocals=0;if(!stems.drums)draft.mix.drums=0}
-      const sessionId=`${id}-update-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;setProgress(96,"編集準備",d);say("更新内容を編集セッションへ引き継いでいます…","",d);await storeSession({sessionId,id,createdAt:Date.now(),mode:"update",draft,originals,midiBlob:new Blob([midiAb],{type:"audio/midi"}),uploadItems});setProgress(100,"編集準備完了",d);say(changedMidi?`${currentSong.midi?"MIDIを差し替え":"MIDIを追加"}しました。Timing Correctionでタイミングを再確認してください。`:"更新素材を準備しました。Timing Correctionで確認してください。","ok",d);parent.postMessage({type:"dm-song-editor-ready",token:t,repo:REPO,branch:BRANCH,id,sessionId,at:Date.now(),mode:"update"},location.origin)
+
+      let midiAb=null,midiGzip=currentSong.midiGzip||null,midiPatch=null;
+      if(changedMidi){
+        midiAb=await midiInputFile.arrayBuffer();
+        const midiPath=`${ROOT}/${id}/chart.mid`,midiMeta=await apiGet(midiPath,t);
+        uploadItems.push({path:midiPath,blob:new Blob([midiAb],{type:"audio/midi"}),sha:midiMeta?.sha||null,label:currentSong.midi?"chart.mid を更新":"chart.mid を追加"});
+        const gz=await gzip(midiAb),gzipPath=`${ROOT}/${id}/chart.mid.gz`,gzipMeta=await apiGet(gzipPath,t);
+        if(gz){uploadItems.push({path:gzipPath,blob:new Blob([gz],{type:"application/gzip"}),sha:gzipMeta?.sha||null,label:gzipMeta?.sha?"chart.mid.gz を更新":"chart.mid.gz を追加"});midiGzip=`songs/${id}/chart.mid.gz?v=${Date.now()}`}
+        else{if(gzipMeta?.sha)uploadItems.push({op:"delete",path:gzipPath,sha:gzipMeta.sha,label:"chart.mid.gz を削除"});midiGzip=null}
+        const midiInfo=parseMidi(midiAb),midiHash=await sha256(midiAb);
+        midiPatch={bpm:Number(midiInfo.bpm.toFixed(6)),timeSignature:{numerator:midiInfo.numerator,denominator:midiInfo.denominator},division:midiInfo.division,noteCount:midiInfo.noteCount,midi:`songs/${id}/chart.mid`,midiGzip,midiBytes:midiAb.byteLength,midiSha256:midiHash};
+      }
+
+      const order=readOrder(d),chart={...(currentSong.chart||{}),pixelsPerQuarter:Number($("ppqVisual",d).value)||80},desktopRaw=$("desktopPpqVisual",d).value.trim();
+      if(desktopRaw)chart.desktopPixelsPerQuarter=Number(desktopRaw);else delete chart.desktopPixelsPerQuarter;
+      const fullMixOnly=!!stems.fullmix&&!stems.base,sourceMode=fullMixOnly?"fullmix":"base";
+      Object.assign(draft,{schemaVersion:Math.max(3,Number(draft.schemaVersion)||0),state:"updating",id,title,artist,order,duration,chart,sourceMode,fullMixOnly,playback:{stemOffsetSec:Number(currentSong.playback?.stemOffsetSec)||0,midiMeasureOffset:Number(currentSong.playback?.midiMeasureOffset)||0,midiOffsetSec:Number(currentSong.playback?.midiOffsetSec)||0},stems});
+      if(midiPatch)Object.assign(draft,midiPatch);
+      else if(!currentSong.midi){draft.midi=null;draft.midiGzip=null;delete draft.midiBytes;delete draft.midiSha256}
+      if(draft.mix){draft.mix={...draft.mix};if(!stems.vocals)draft.mix.vocals=0;if(!stems.drums)draft.mix.drums=0}
+
+      const sessionId=`${id}-update-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+      setProgress(96,"編集準備",d);say("更新内容を編集セッションへ引き継いでいます…","",d);
+      await storeSession({sessionId,id,createdAt:Date.now(),mode:"update",draft,originals,midiBlob:changedMidi?new Blob([midiAb],{type:"audio/midi"}):null,uploadItems});
+      setProgress(100,"編集準備完了",d);
+      say(changedMidi?`${currentSong.midi?"MIDIを差し替え":"MIDIを追加"}しました。Timing Correctionでタイミングを再確認してください。`:"更新内容を準備しました。","ok",d);
+      parent.postMessage({type:"dm-song-editor-ready",token:t,repo:REPO,branch:BRANCH,id,sessionId,at:Date.now(),mode:"update"},location.origin)
     }finally{btn.disabled=false;mainBtn.disabled=false}
   }
 
