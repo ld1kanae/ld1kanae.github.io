@@ -186,8 +186,19 @@
   const select=document.querySelector("#songSelect");
   if(select){
     select.replaceChildren();
-    const rank=s=>Number.isFinite(Number(s.order))?Number(s.order):999;
-    const ordered=Object.values(songs).sort((a,b)=>rank(a)-rank(b));
+    const rank=s=>{
+      const raw=s?.order;
+      if(raw===null||raw===undefined||String(raw).trim()==="")return null;
+      const n=Number(raw);
+      return Number.isInteger(n)&&n>=1?n:null;
+    };
+    const ordered=Object.values(songs).sort((a,b)=>{
+      const ar=rank(a),br=rank(b);
+      if(ar===null&&br!==null)return 1;
+      if(ar!==null&&br===null)return -1;
+      if(ar!==null&&br!==null&&ar!==br)return ar-br;
+      return String(a.title||"").localeCompare(String(b.title||""),"ja")||String(a.id||"").localeCompare(String(b.id||""));
+    });
     for(const song of ordered){
       const opt=document.createElement("option");
       opt.value=song.id;
