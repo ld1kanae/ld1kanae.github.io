@@ -77,5 +77,6 @@
     finally{active.delete(msg.sessionId)}
   }
 
+  globalThis.DruMasterUpdateCommit=commitUpdate;
   addEventListener("message",e=>{if(e.origin!==location.origin||e.source!==registerView.contentWindow)return;const d=e.data;if(d?.type!=="dm-song-editor-ready"||d.mode!=="update"||!d.id||!d.sessionId)return;void commitUpdate(d)});
 })();
