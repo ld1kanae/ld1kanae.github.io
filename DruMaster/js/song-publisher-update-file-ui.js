@@ -35,7 +35,7 @@
     const midi=d.getElementById("midi"),badge=midi?.closest(".file-row")?.querySelector("i");
     if(!badge)return;
     const updating=d.body.classList.contains("dm-publisher-update");
-    setText(badge,updating?"変更時のみ":"必須");
+    setText(badge,updating?"任意":"必須");
     badge.classList.toggle("req",!updating);
     badge.classList.toggle("optional",updating);
   }
