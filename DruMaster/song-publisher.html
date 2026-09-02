@@ -30,7 +30,7 @@
 <button id="volumeTab" class="tab locked" type="button" role="tab" aria-selected="false" aria-controls="volumeView" aria-disabled="true">音量バランス <span class="tab-state">LOCKED</span></button>
 </nav>
 <div class="views">
-<iframe id="registerView" class="view active" title="楽曲登録" src="song-publisher-form.html?v=20260829-inputfix1"></iframe>
+<iframe id="registerView" class="view active" title="楽曲登録" src="song-publisher-form.html?v=20260902-updateoptional1"></iframe>
 <iframe id="editorView" class="view" title="タイミング編集" src="about:blank"></iframe>
 <iframe id="volumeView" class="view" title="音量バランス調整" src="about:blank"></iframe>
 </div>
@@ -38,59 +38,75 @@
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id),registerTab=$("registerTab"),editorTab=$("editorTab"),volumeTab=$("volumeTab"),registerView=$("registerView"),editorView=$("editorView"),volumeView=$("volumeView");
-let editorReady=false,currentSession=null;
+let editorReady=false,currentSession=null,registerModeObserver=null;
 const tabs={register:registerTab,editor:editorTab,volume:volumeTab},views={register:registerView,editor:editorView,volume:volumeView};
 function show(which){
   if(which!=="register"&&!editorReady)return;
   for(const [key,tab] of Object.entries(tabs)){const active=key===which;tab.classList.toggle("active",active);tab.setAttribute("aria-selected",String(active));views[key].classList.toggle("active",active)}
 }
 registerTab.addEventListener("click",()=>show("register"));editorTab.addEventListener("click",()=>show("editor"));volumeTab.addEventListener("click",()=>show("volume"));
-function tuneRegisterForm(){
-  let doc;try{doc=registerView.contentDocument}catch{return}if(!doc?.head||doc.getElementById("dmRegisterShellTune"))return;
-  const style=doc.createElement("style");style.id="dmRegisterShellTune";style.textContent=`
-    main{width:min(600px,calc(100% - 28px))!important;margin:30px auto 64px!important}
-    header{display:block!important;text-align:center!important;margin-bottom:22px!important}
-    header .badge{display:inline-block!important;margin-top:12px!important}
-    h1{font-size:32px!important;text-align:center!important}
-    .sub{text-align:center!important}
-    .grid{display:flex!important;flex-direction:column!important;gap:16px!important}
-    .panel,.panel.full{width:100%!important;grid-column:auto!important}
-    .panel h2{text-align:center!important;font-size:16px!important;letter-spacing:.12em!important;margin-bottom:16px!important}
-    .fields{grid-template-columns:1fr!important}
-    .field.full{grid-column:auto!important}
-    .req,.optional{font-size:8px!important;font-weight:700!important;letter-spacing:.02em!important}
-    .file-row{grid-template-columns:150px minmax(0,1fr)!important;gap:14px!important}
-    .file-row small{display:none!important}
-    input[type=file]{direction:rtl!important;text-align:right!important}
-    input[type=file]::file-selector-button{margin-left:10px!important;margin-right:0!important}
-    .publish{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:12px!important;margin-top:22px!important}
-    .publish button{min-width:190px!important;height:46px!important;font-size:14px!important}
-    .progress-shell{width:100%!important;min-width:0!important}
-    #log{text-align:center!important;min-height:44px!important}
-    .token-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 14px}
-    .token-link{display:inline-flex;align-items:center;justify-content:center;width:190px;min-height:38px;padding:0 16px;border:1px solid #406784;border-radius:8px;background:#0b1c29;color:#dff4ff;text-decoration:none;font-weight:750;font-size:11px}
-    .token-link:hover{border-color:#63c3ff;background:#10283a}
-    .token-howto{margin-top:12px;border-top:1px solid #263746;padding-top:10px;color:#8fa1b4;font-size:10px}
-    .token-howto summary{cursor:pointer;text-align:center;color:#aabacd;font-weight:700}
-    .token-howto ol{margin:10px 0 0;padding-left:20px;line-height:1.7}
-    @media(max-width:640px){main{width:min(100% - 18px,600px)!important}.file-row{grid-template-columns:1fr!important}input[type=file]{width:100%!important}}
-  `;doc.head.appendChild(style);
-  const grid=doc.querySelector(".grid"),panels=[...doc.querySelectorAll(".panel")],github=panels.find(p=>p.querySelector("h2")?.textContent.trim()==="GITHUB");if(grid&&github)grid.appendChild(github);
-  doc.querySelectorAll(".file-row small").forEach(n=>n.remove());
-  doc.querySelectorAll("p.help").forEach(p=>{const t=p.textContent.trim();if(t.startsWith("内部IDは")||t.startsWith("原曲またはオフボーカル"))p.remove()});
-  if(github){
-    const help=github.querySelector("p.help");if(help)help.remove();
-    const fields=github.querySelector(".fields");
-    if(fields&&!github.querySelector(".token-actions")){
-      const actions=doc.createElement("div");actions.className="token-actions";actions.innerHTML='<a class="token-link" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHubでTokenを作成</a><a class="token-link" href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">Token一覧を開く</a>';
-      github.insertBefore(actions,fields);
-      const details=doc.createElement("details");details.className="token-howto";details.innerHTML='<summary>Fine-grained Personal Access Tokenの作成方法</summary><ol><li>Token nameと有効期限を設定します。</li><li>Repository accessで「Only select repositories」を選び、ld1kanae.github.ioを指定します。</li><li>Permissions欄の右上にある「＋ Add permissions」を押します。</li><li>「Repository permissions」から「Contents」を選んで追加します。</li><li>追加されたContentsの権限を「Read and write」に変更します。</li><li>画面下の「Generate token」を押し、表示された github_pat_… を上の入力欄へ貼り付けます。</li></ol>';
-      fields.insertAdjacentElement("afterend",details);
-    }
-  }
-  const publish=doc.getElementById("publish"),log=doc.getElementById("log");if(publish)publish.textContent="PUBLISH";if(log&&log.textContent.includes("一次PUBLISH"))log.textContent="タイミングエディタに移動します。";
+function syncMidiRequirement(doc){
+  const midi=doc?.getElementById("midi"),badge=midi?.closest(".file-row")?.querySelector("i");if(!badge)return;
+  const updating=doc.body?.classList.contains("dm-publisher-update");
+  badge.textContent=updating?"任意":"必須";
+  badge.classList.toggle("req",!updating);badge.classList.toggle("optional",updating);
 }
-registerView.addEventListener("load",tuneRegisterForm);setTimeout(tuneRegisterForm,250);
+function tuneRegisterForm(){
+  let doc;try{doc=registerView.contentDocument}catch{return}if(!doc?.head)return;
+  if(!doc.getElementById("dmRegisterShellTune")){
+    const style=doc.createElement("style");style.id="dmRegisterShellTune";style.textContent=`
+      main{width:min(600px,calc(100% - 28px))!important;margin:30px auto 64px!important}
+      header{display:block!important;text-align:center!important;margin-bottom:22px!important}
+      header .badge{display:inline-block!important;margin-top:12px!important}
+      h1{font-size:32px!important;text-align:center!important}
+      .sub{text-align:center!important}
+      .grid{display:flex!important;flex-direction:column!important;gap:16px!important}
+      .panel,.panel.full{width:100%!important;grid-column:auto!important}
+      .panel h2{text-align:center!important;font-size:16px!important;letter-spacing:.12em!important;margin-bottom:16px!important}
+      .fields{grid-template-columns:1fr!important}
+      .field.full{grid-column:auto!important}
+      .req,.optional{font-size:8px!important;font-weight:700!important;letter-spacing:.02em!important}
+      .file-row{grid-template-columns:150px minmax(0,1fr)!important;gap:14px!important}
+      .file-row small{display:none!important}
+      input[type=file]{direction:rtl!important;text-align:right!important}
+      input[type=file]::file-selector-button{margin-left:10px!important;margin-right:0!important}
+      .publish{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:12px!important;margin-top:22px!important}
+      .publish button{min-width:190px!important;height:46px!important;font-size:14px!important}
+      .progress-shell{width:100%!important;min-width:0!important}
+      #log{text-align:center!important;min-height:44px!important}
+      .token-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+      .token-link{display:inline-flex;align-items:center;justify-content:center;width:190px;min-height:38px;padding:0 16px;border:1px solid #406784;border-radius:8px;background:#0b1c29;color:#dff4ff;text-decoration:none;font-weight:750;font-size:11px}
+      .token-link:hover{border-color:#63c3ff;background:#10283a}
+      .token-howto{margin-top:12px;border-top:1px solid #263746;padding-top:10px;color:#8fa1b4;font-size:10px}
+      .token-howto summary{cursor:pointer;text-align:center;color:#aabacd;font-weight:700}
+      .token-howto ol{margin:10px 0 0;padding-left:20px;line-height:1.7}
+      @media(max-width:640px){main{width:min(100% - 18px,600px)!important}.file-row{grid-template-columns:1fr!important}input[type=file]{width:100%!important}}
+    `;doc.head.appendChild(style);
+    const grid=doc.querySelector(".grid"),panels=[...doc.querySelectorAll(".panel")],github=panels.find(p=>p.querySelector("h2")?.textContent.trim()==="GITHUB");if(grid&&github)grid.appendChild(github);
+    doc.querySelectorAll(".file-row small").forEach(n=>n.remove());
+    doc.querySelectorAll("p.help").forEach(p=>{const t=p.textContent.trim();if(t.startsWith("内部IDは")||t.startsWith("原曲またはオフボーカル"))p.remove()});
+    if(github){
+      const help=github.querySelector("p.help");if(help)help.remove();
+      const fields=github.querySelector(".fields");
+      if(fields&&!github.querySelector(".token-actions")){
+        const actions=doc.createElement("div");actions.className="token-actions";actions.innerHTML='<a class="token-link" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHubでTokenを作成</a><a class="token-link" href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">Token一覧を開く</a>';
+        github.insertBefore(actions,fields);
+        const details=doc.createElement("details");details.className="token-howto";details.innerHTML='<summary>Fine-grained Personal Access Tokenの作成方法</summary><ol><li>Token nameと有効期限を設定します。</li><li>Repository accessで「Only select repositories」を選び、ld1kanae.github.ioを指定します。</li><li>Permissions欄の右上にある「＋ Add permissions」を押します。</li><li>「Repository permissions」から「Contents」を選んで追加します。</li><li>追加されたContentsの権限を「Read and write」に変更します。</li><li>画面下の「Generate token」を押し、表示された github_pat_… を上の入力欄へ貼り付けます。</li></ol>';
+        fields.insertAdjacentElement("afterend",details);
+      }
+    }
+    const publish=doc.getElementById("publish"),log=doc.getElementById("log");if(publish)publish.textContent="PUBLISH";if(log&&log.textContent.includes("一次PUBLISH"))log.textContent="タイミングエディタに移動します。";
+  }
+  syncMidiRequirement(doc);
+  registerModeObserver?.disconnect();
+  registerModeObserver=new MutationObserver(()=>syncMidiRequirement(doc));
+  if(doc.body)registerModeObserver.observe(doc.body,{attributes:true,attributeFilter:["class"]});
+  if(doc.documentElement?.dataset.dmMidiRequirementBound!=="1"){
+    doc.documentElement.dataset.dmMidiRequirementBound="1";
+    doc.addEventListener("click",e=>{if(e.target?.closest?.(".dm-mode-switch")){setTimeout(()=>syncMidiRequirement(doc),0);setTimeout(()=>syncMidiRequirement(doc),100)}},true);
+  }
+}
+registerView.addEventListener("load",()=>{registerModeObserver?.disconnect();registerModeObserver=null;tuneRegisterForm()});setTimeout(tuneRegisterForm,250);
 addEventListener("message",e=>{
   if(e.origin!==location.origin||e.source!==registerView.contentWindow)return;
   const d=e.data;if(!d||d.type!=="dm-song-editor-ready"||!d.id||!d.sessionId)return;
@@ -108,7 +124,7 @@ addEventListener("message",e=>{
 <script src="js/song-publisher-token-memory.js?v=20260829-inputfix1"></script>
 <script src="js/song-publisher-draft-catalog.js?v=20260902-midiupload2" data-dm-draft-catalog="1"></script>
 <script src="js/song-publisher-update-mode.js?v=20260902-updatefix2"></script>
-<script src="js/song-publisher-update-file-ui.js?v=20260902-submitfix2"></script>
+<script src="js/song-publisher-update-file-ui.js?v=20260902-submitfix3"></script>
 <script src="js/song-publisher-update-isolation.js?v=20260902-isolation1"></script>
 <script src="js/song-publisher-update-bridge.js?v=20260902-commitfix1"></script>
 <script src="js/song-publisher-existing-editor.js?v=20260830-midibounds3"></script>
