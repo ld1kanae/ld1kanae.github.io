@@ -261,10 +261,7 @@
     performanceMode?.stopMic?.();
 
     if(autoplay){
-      setRankingKind(false);
-      document.querySelector("#finalScore").textContent="AUTO PLAY";
-      renderRanking(readRanking());
-      showResult(false);
+      goHome();
       return;
     }
 
