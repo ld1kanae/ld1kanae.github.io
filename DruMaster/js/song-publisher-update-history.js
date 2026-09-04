@@ -13,6 +13,7 @@
   const VERIFY_RETRY_MS=[0,700,1200,1800,2600,3600,5000,7000,9000,12000];
 
   let boundDoc=null,stageObserver=null,modeObserver=null,current=null,baselineById=new Map(),runtimeErrors=[];
+  const wrappedConsoles=new WeakSet();
 
   function doc(){try{return frame.contentDocument}catch{return null}}
   function nowIso(){return new Date().toISOString()}
@@ -36,7 +37,19 @@
     }
     if(changed)writeHistory(items);
   }
+  function consoleArg(v){
+    if(v instanceof Error)return v.stack||v.message;
+    if(typeof v==="string")return v;
+    try{return JSON.stringify(v)}catch{return String(v)}
+  }
+  function bindConsoleCapture(target,prefix){
+    const c=target?.console;if(!c||wrappedConsoles.has(c)||typeof c.error!=="function")return;
+    const original=c.error.bind(c);
+    c.error=(...args)=>{if(current){runtimeErrors.push(`${prefix} console.error: ${args.map(consoleArg).join(" | ")}`);if(runtimeErrors.length>30)runtimeErrors=runtimeErrors.slice(-30)}return original(...args)};
+    wrappedConsoles.add(c);
+  }
   normalizeInterrupted();
+  bindConsoleCapture(window,"parent");
   if(document.documentElement.dataset.dmHistoryParentErrorBound!=="1"){
     document.documentElement.dataset.dmHistoryParentErrorBound="1";
     addEventListener("error",e=>{if(current){runtimeErrors.push(`parent error: ${e.error?.stack||e.message||"unknown"}`);if(runtimeErrors.length>30)runtimeErrors=runtimeErrors.slice(-30)}});
@@ -256,6 +269,7 @@
   function bindRuntimeErrors(d){
     if(d.documentElement.dataset.dmHistoryErrorBound==="1")return;d.documentElement.dataset.dmHistoryErrorBound="1";
     const record=(prefix,value)=>{if(!current)return;const msg=value instanceof Error?(value.stack||value.message):String(value||"");runtimeErrors.push(`${prefix}: ${msg}`);if(runtimeErrors.length>30)runtimeErrors=runtimeErrors.slice(-30)};
+    try{bindConsoleCapture(frame.contentWindow,"iframe")}catch{}
     try{frame.contentWindow.addEventListener("error",e=>record("iframe error",e.error||e.message))}catch{}
     try{frame.contentWindow.addEventListener("unhandledrejection",e=>record("iframe unhandledrejection",e.reason))}catch{}
   }
