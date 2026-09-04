@@ -1,11 +1,12 @@
 /* DruMaster desktop result layout generated from the editor.
-   Mobile geometry is intentionally NOT defined here anymore.
-   Smartphone result placement is owned exclusively by result-mobile-centering-v2.css. */
+   Design reference: 1280x720.
+   Desktop coordinates are expressed proportionally so the editor composition
+   survives larger/smaller desktop viewports.
+   Mobile geometry is owned exclusively by result-mobile-centering-v2.css. */
 
 @media (hover:hover) and (pointer:fine){
-  /* The editor positions RETRY/HOME against #result itself. In production they
-     live inside .result-actions, so remove that wrapper as a positioning block
-     on desktop only. */
+  /* RETRY/HOME are authored against #result in the editor. Remove the wrapper
+     as a positioning context so their left/top values are viewport-relative. */
   #result>.result-actions{
     position:static!important;
     display:block!important;
@@ -22,28 +23,105 @@
   #result>.result-actions>#home{
     z-index:3!important;
     box-sizing:border-box!important;
+    transform:none!important;
+    translate:none!important;
   }
 
-  #result{padding:0!important;}
-  #result>h2,#result>.result-song-sub,#result>.result-score-label,#result>#finalScore,#result>.ranking-panel{
+  #result{
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:100%!important;
+    padding:0!important;
+  }
+  #result>h2,
+  #result>.result-song-sub,
+  #result>.result-score-label,
+  #result>#finalScore,
+  #result>.result-summary,
+  #result>.ranking-panel{
     translate:none!important;
     right:auto!important;
     max-width:none!important;
+    flex:none!important;
+    box-sizing:border-box!important;
   }
 
-  #result:not(.autoplay)>h2{position:absolute!important;left:180px!important;top:125px!important;width:280px!important;height:58px!important;font-size:48px!important;line-height:1.05!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result:not(.autoplay)>.result-song-sub{position:absolute!important;left:160px!important;top:200px!important;width:320px!important;height:34px!important;font-size:24px!important;line-height:1.15!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result:not(.autoplay)>.result-score-label{position:absolute!important;left:230px!important;top:270px!important;width:180px!important;height:28px!important;font-size:21px!important;line-height:1!important;letter-spacing:7px!important;opacity:1!important;margin:0!important;}
-  #result:not(.autoplay)>#finalScore{position:absolute!important;left:60px!important;top:305px!important;width:520px!important;height:110px!important;font-size:92px!important;line-height:.9!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result:not(.autoplay)>.result-summary{position:absolute!important;left:85px!important;top:420px!important;width:470px!important;height:78px!important;font-size:16px!important;line-height:1.1!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result:not(.autoplay)>.ranking-panel{position:absolute!important;left:665px!important;top:113px!important;width:590px!important;height:390px!important;min-height:0!important;max-height:none!important;font-size:20px!important;line-height:1.1!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;flex:none!important;}
-  #result:not(.autoplay)>.result-actions>#retry{position:absolute!important;left:441px!important;top:600px!important;width:190px!important;min-width:190px!important;max-width:190px!important;height:48px!important;min-height:48px!important;font-size:15px!important;line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result:not(.autoplay)>.result-actions>#home{position:absolute!important;left:649px!important;top:600px!important;width:190px!important;min-width:190px!important;max-width:190px!important;height:48px!important;min-height:48px!important;font-size:15px!important;line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
+  /* NORMAL RESULT — 1280x720 editor canvas mapped to the actual PC stage. */
+  #result:not(.autoplay)>h2{
+    position:absolute!important;left:14.0625%!important;top:17.3611%!important;
+    width:21.875%!important;height:8.0556%!important;font-size:6.6667vh!important;
+    line-height:1.05!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+  }
+  #result:not(.autoplay)>.result-song-sub{
+    position:absolute!important;left:12.5%!important;top:27.7778%!important;
+    width:25%!important;height:4.7222%!important;font-size:3.3333vh!important;
+    line-height:1.15!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+  }
+  #result:not(.autoplay)>.result-score-label{
+    position:absolute!important;left:17.9688%!important;top:37.5%!important;
+    width:14.0625%!important;height:3.8889%!important;font-size:2.9167vh!important;
+    line-height:1!important;letter-spacing:7px!important;opacity:1!important;margin:0!important;
+  }
+  #result:not(.autoplay)>#finalScore{
+    position:absolute!important;left:4.6875%!important;top:42.3611%!important;
+    width:40.625%!important;height:15.2778%!important;font-size:12.7778vh!important;
+    line-height:.9!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+  }
+  #result:not(.autoplay)>.result-summary{
+    position:absolute!important;left:6.6406%!important;top:58.3333%!important;
+    width:36.7188%!important;height:10.8333%!important;font-size:2.2222vh!important;
+    line-height:1.1!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+  }
+  #result:not(.autoplay)>.ranking-panel{
+    position:absolute!important;left:51.9531%!important;top:15.6944%!important;
+    width:46.0938%!important;height:54.1667%!important;min-height:0!important;max-height:none!important;
+    font-size:2.7778vh!important;line-height:1.1!important;letter-spacing:1px!important;
+    opacity:1!important;margin:0!important;flex:none!important;
+  }
+  #result:not(.autoplay)>.result-actions>#retry{
+    position:absolute!important;left:34.4531%!important;top:83.3333%!important;
+    width:14.8438%!important;min-width:0!important;max-width:none!important;
+    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
+    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
+  }
+  #result:not(.autoplay)>.result-actions>#home{
+    position:absolute!important;left:50.7031%!important;top:83.3333%!important;
+    width:14.8438%!important;min-width:0!important;max-width:none!important;
+    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
+    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
+  }
 
-  #result.autoplay>h2{position:absolute!important;left:500px!important;top:91px!important;width:280px!important;height:58px!important;font-size:48px!important;line-height:1.05!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result.autoplay>.result-song-sub{position:absolute!important;left:500px!important;top:166px!important;width:300px!important;height:36px!important;font-size:24px!important;line-height:1.15!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result.autoplay>.result-score-label{position:absolute!important;left:560px!important;top:245px!important;width:160px!important;height:30px!important;font-size:21px!important;line-height:1!important;letter-spacing:7px!important;opacity:1!important;margin:0!important;}
-  #result.autoplay>#finalScore{position:absolute!important;left:395px!important;top:285px!important;width:490px!important;height:120px!important;font-size:92px!important;line-height:.9!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result.autoplay>.result-actions>#retry{position:absolute!important;left:438px!important;top:455px!important;width:190px!important;min-width:190px!important;max-width:190px!important;height:48px!important;min-height:48px!important;font-size:15px!important;line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
-  #result.autoplay>.result-actions>#home{position:absolute!important;left:652px!important;top:455px!important;width:190px!important;min-width:190px!important;max-width:190px!important;height:48px!important;min-height:48px!important;font-size:15px!important;line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;}
+  /* AUTO PLAY RESULT */
+  #result.autoplay>h2{
+    position:absolute!important;left:39.0625%!important;top:12.6389%!important;
+    width:21.875%!important;height:8.0556%!important;font-size:6.6667vh!important;
+    line-height:1.05!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+  }
+  #result.autoplay>.result-song-sub{
+    position:absolute!important;left:39.0625%!important;top:23.0556%!important;
+    width:23.4375%!important;height:5%!important;font-size:3.3333vh!important;
+    line-height:1.15!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+  }
+  #result.autoplay>.result-score-label{
+    position:absolute!important;left:43.75%!important;top:34.0278%!important;
+    width:12.5%!important;height:4.1667%!important;font-size:2.9167vh!important;
+    line-height:1!important;letter-spacing:7px!important;opacity:1!important;margin:0!important;
+  }
+  #result.autoplay>#finalScore{
+    position:absolute!important;left:30.8594%!important;top:39.5833%!important;
+    width:38.2813%!important;height:16.6667%!important;font-size:12.7778vh!important;
+    line-height:.9!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+  }
+  #result.autoplay>.result-actions>#retry{
+    position:absolute!important;left:34.2188%!important;top:63.1944%!important;
+    width:14.8438%!important;min-width:0!important;max-width:none!important;
+    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
+    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
+  }
+  #result.autoplay>.result-actions>#home{
+    position:absolute!important;left:50.9375%!important;top:63.1944%!important;
+    width:14.8438%!important;min-width:0!important;max-width:none!important;
+    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
+    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
+  }
 }
