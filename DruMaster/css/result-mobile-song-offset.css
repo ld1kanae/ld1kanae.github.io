@@ -40,11 +40,19 @@
     text-align:center!important;
   }
 
+  /* Song titles must never wrap on desktop. Keep the existing font size. */
+  #result>h2{
+    white-space:nowrap!important;
+    word-break:keep-all!important;
+    overflow:visible!important;
+  }
+
   /* ---------- NORMAL RESULT ---------- */
   #result:not(.autoplay)>h2{
     left:25%!important;
     top:17.36%!important;
-    width:22%!important;
+    width:max-content!important;
+    min-width:max-content!important;
     height:auto!important;
     font-size:clamp(34px,3.75vw,54px)!important;
     line-height:1.05!important;
@@ -169,7 +177,8 @@
   #result.autoplay>h2{
     left:50%!important;
     top:12.64%!important;
-    width:28%!important;
+    width:max-content!important;
+    min-width:max-content!important;
     height:auto!important;
     font-size:clamp(34px,3.75vw,54px)!important;
     line-height:1.05!important;
