@@ -1,127 +1,225 @@
-/* DruMaster desktop result layout generated from the editor.
-   Design reference: 1280x720.
-   Desktop coordinates are expressed proportionally so the editor composition
-   survives larger/smaller desktop viewports.
-   Mobile geometry is owned exclusively by result-mobile-centering-v2.css. */
+/* DruMaster desktop result layout.
+   Desktop only. Smartphone result placement is owned by result-mobile-centering-v2.css.
+   Use stable screen-center anchors instead of scaling editor px coordinates. */
 
 @media (hover:hover) and (pointer:fine){
-  /* RETRY/HOME are authored against #result in the editor. Remove the wrapper
-     as a positioning context so their left/top values are viewport-relative. */
-  #result>.result-actions{
-    position:static!important;
-    display:block!important;
-    width:0!important;
-    height:0!important;
-    min-width:0!important;
-    max-width:none!important;
-    margin:0!important;
-    padding:0!important;
-    transform:none!important;
-    translate:none!important;
-  }
-  #result>.result-actions>#retry,
-  #result>.result-actions>#home{
-    z-index:3!important;
-    box-sizing:border-box!important;
-    transform:none!important;
-    translate:none!important;
-  }
-
   #result{
+    position:relative!important;
     box-sizing:border-box!important;
     width:100%!important;
     height:100%!important;
     padding:0!important;
+    overflow:hidden!important;
   }
+
+  #result>.eyebrow{display:none!important;}
+
+  #result>h2,
+  #result>.result-song-sub,
+  #result>.result-score-label,
+  #result>#finalScore,
+  #result>.result-summary,
+  #result>.ranking-panel,
+  #result>.result-actions{
+    position:absolute!important;
+    margin:0!important;
+    right:auto!important;
+    bottom:auto!important;
+    max-width:none!important;
+    flex:none!important;
+    box-sizing:border-box!important;
+  }
+
   #result>h2,
   #result>.result-song-sub,
   #result>.result-score-label,
   #result>#finalScore,
   #result>.result-summary,
   #result>.ranking-panel{
-    translate:none!important;
-    right:auto!important;
-    max-width:none!important;
-    flex:none!important;
-    box-sizing:border-box!important;
+    translate:-50% 0!important;
+    text-align:center!important;
   }
 
-  /* NORMAL RESULT — 1280x720 editor canvas mapped to the actual PC stage. */
+  /* ---------- NORMAL RESULT ---------- */
   #result:not(.autoplay)>h2{
-    position:absolute!important;left:14.0625%!important;top:17.3611%!important;
-    width:21.875%!important;height:8.0556%!important;font-size:6.6667vh!important;
-    line-height:1.05!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
-  }
-  #result:not(.autoplay)>.result-song-sub{
-    position:absolute!important;left:12.5%!important;top:27.7778%!important;
-    width:25%!important;height:4.7222%!important;font-size:3.3333vh!important;
-    line-height:1.15!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
-  }
-  #result:not(.autoplay)>.result-score-label{
-    position:absolute!important;left:17.9688%!important;top:37.5%!important;
-    width:14.0625%!important;height:3.8889%!important;font-size:2.9167vh!important;
-    line-height:1!important;letter-spacing:7px!important;opacity:1!important;margin:0!important;
-  }
-  #result:not(.autoplay)>#finalScore{
-    position:absolute!important;left:4.6875%!important;top:42.3611%!important;
-    width:40.625%!important;height:15.2778%!important;font-size:12.7778vh!important;
-    line-height:.9!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
-  }
-  #result:not(.autoplay)>.result-summary{
-    position:absolute!important;left:6.6406%!important;top:58.3333%!important;
-    width:36.7188%!important;height:10.8333%!important;font-size:2.2222vh!important;
-    line-height:1.1!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
-  }
-  #result:not(.autoplay)>.ranking-panel{
-    position:absolute!important;left:51.9531%!important;top:15.6944%!important;
-    width:46.0938%!important;height:54.1667%!important;min-height:0!important;max-height:none!important;
-    font-size:2.7778vh!important;line-height:1.1!important;letter-spacing:1px!important;
-    opacity:1!important;margin:0!important;flex:none!important;
-  }
-  #result:not(.autoplay)>.result-actions>#retry{
-    position:absolute!important;left:34.4531%!important;top:83.3333%!important;
-    width:14.8438%!important;min-width:0!important;max-width:none!important;
-    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
-    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
-  }
-  #result:not(.autoplay)>.result-actions>#home{
-    position:absolute!important;left:50.7031%!important;top:83.3333%!important;
-    width:14.8438%!important;min-width:0!important;max-width:none!important;
-    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
-    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
+    left:25%!important;
+    top:17.36%!important;
+    width:22%!important;
+    height:auto!important;
+    font-size:clamp(34px,3.75vw,54px)!important;
+    line-height:1.05!important;
+    letter-spacing:1px!important;
   }
 
-  /* AUTO PLAY RESULT */
+  #result:not(.autoplay)>.result-song-sub{
+    left:25%!important;
+    top:27.78%!important;
+    width:28%!important;
+    height:auto!important;
+    font-size:clamp(18px,1.9vw,28px)!important;
+    line-height:1.15!important;
+    letter-spacing:1px!important;
+  }
+
+  #result:not(.autoplay)>.result-score-label{
+    left:25%!important;
+    top:37.5%!important;
+    width:18%!important;
+    height:auto!important;
+    font-size:clamp(15px,1.65vw,24px)!important;
+    line-height:1!important;
+    letter-spacing:7px!important;
+  }
+
+  #result:not(.autoplay)>#finalScore{
+    left:25%!important;
+    top:42.36%!important;
+    width:42%!important;
+    height:auto!important;
+    font-size:clamp(72px,8vw,116px)!important;
+    line-height:.9!important;
+    letter-spacing:1px!important;
+    transform:skewX(-4deg) scaleX(1.04)!important;
+    transform-origin:center!important;
+    white-space:nowrap!important;
+  }
+
+  #result:not(.autoplay)>.result-summary{
+    left:25%!important;
+    top:58.33%!important;
+    width:37%!important;
+    height:auto!important;
+    display:flex!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
+    gap:clamp(22px,2.4vw,40px)!important;
+  }
+  #result:not(.autoplay)>.result-summary p{margin:0!important;text-align:center!important;}
+  #result:not(.autoplay)>.result-summary span{
+    display:block!important;
+    font-size:clamp(10px,.9vw,14px)!important;
+    line-height:1.2!important;
+  }
+  #result:not(.autoplay)>.result-summary b{
+    display:block!important;
+    margin-top:3px!important;
+    font-size:clamp(22px,2vw,32px)!important;
+    line-height:1.1!important;
+  }
+
+  #result:not(.autoplay)>.ranking-panel{
+    left:75%!important;
+    top:15.7%!important;
+    width:min(46vw,760px)!important;
+    height:54.2%!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:13px 18px 15px!important;
+    text-align:left!important;
+    overflow:hidden!important;
+  }
+  #result:not(.autoplay)>.ranking-panel .ranking-title h3{
+    font-size:clamp(20px,2vw,30px)!important;
+  }
+  #result:not(.autoplay)>.ranking-panel .ranking-list{
+    height:calc(100% - 70px)!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+  }
+
+  /* Actions are centered on the whole screen, not either column. */
+  #result:not(.autoplay)>.result-actions{
+    left:50%!important;
+    top:83.33%!important;
+    translate:-50% 0!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,190px)!important;
+    gap:18px!important;
+    width:max-content!important;
+    height:48px!important;
+    padding:0!important;
+  }
+  #result:not(.autoplay)>.result-actions>#retry,
+  #result:not(.autoplay)>.result-actions>#home{
+    position:static!important;
+    width:190px!important;
+    min-width:190px!important;
+    max-width:190px!important;
+    height:48px!important;
+    min-height:48px!important;
+    margin:0!important;
+    padding:0 24px!important;
+    font-size:15px!important;
+    line-height:1.2!important;
+  }
+
+  /* ---------- AUTO PLAY ---------- */
   #result.autoplay>h2{
-    position:absolute!important;left:39.0625%!important;top:12.6389%!important;
-    width:21.875%!important;height:8.0556%!important;font-size:6.6667vh!important;
-    line-height:1.05!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+    left:50%!important;
+    top:12.64%!important;
+    width:28%!important;
+    height:auto!important;
+    font-size:clamp(34px,3.75vw,54px)!important;
+    line-height:1.05!important;
+    letter-spacing:1px!important;
   }
+
   #result.autoplay>.result-song-sub{
-    position:absolute!important;left:39.0625%!important;top:23.0556%!important;
-    width:23.4375%!important;height:5%!important;font-size:3.3333vh!important;
-    line-height:1.15!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+    left:50%!important;
+    top:23.06%!important;
+    width:30%!important;
+    height:auto!important;
+    font-size:clamp(18px,1.9vw,28px)!important;
+    line-height:1.15!important;
+    letter-spacing:1px!important;
   }
+
   #result.autoplay>.result-score-label{
-    position:absolute!important;left:43.75%!important;top:34.0278%!important;
-    width:12.5%!important;height:4.1667%!important;font-size:2.9167vh!important;
-    line-height:1!important;letter-spacing:7px!important;opacity:1!important;margin:0!important;
+    left:50%!important;
+    top:34.03%!important;
+    width:18%!important;
+    height:auto!important;
+    font-size:clamp(15px,1.65vw,24px)!important;
+    line-height:1!important;
+    letter-spacing:7px!important;
   }
+
   #result.autoplay>#finalScore{
-    position:absolute!important;left:30.8594%!important;top:39.5833%!important;
-    width:38.2813%!important;height:16.6667%!important;font-size:12.7778vh!important;
-    line-height:.9!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;
+    left:50%!important;
+    top:39.58%!important;
+    width:46%!important;
+    height:auto!important;
+    font-size:clamp(72px,8vw,116px)!important;
+    line-height:.9!important;
+    letter-spacing:1px!important;
+    transform:skewX(-4deg) scaleX(1.04)!important;
+    transform-origin:center!important;
+    white-space:nowrap!important;
   }
-  #result.autoplay>.result-actions>#retry{
-    position:absolute!important;left:34.2188%!important;top:63.1944%!important;
-    width:14.8438%!important;min-width:0!important;max-width:none!important;
-    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
-    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
+
+  #result.autoplay>.result-actions{
+    left:50%!important;
+    top:63.2%!important;
+    translate:-50% 0!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,190px)!important;
+    gap:24px!important;
+    width:max-content!important;
+    height:48px!important;
+    padding:0!important;
   }
+  #result.autoplay>.result-actions>#retry,
   #result.autoplay>.result-actions>#home{
-    position:absolute!important;left:50.9375%!important;top:63.1944%!important;
-    width:14.8438%!important;min-width:0!important;max-width:none!important;
-    height:6.6667%!important;min-height:0!important;font-size:2.0833vh!important;
-    line-height:1.2!important;letter-spacing:1px!important;opacity:1!important;margin:0!important;padding:0!important;
+    position:static!important;
+    width:190px!important;
+    min-width:190px!important;
+    max-width:190px!important;
+    height:48px!important;
+    min-height:48px!important;
+    margin:0!important;
+    padding:0 24px!important;
+    font-size:15px!important;
+    line-height:1.2!important;
   }
 }
