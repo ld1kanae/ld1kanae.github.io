@@ -50,6 +50,16 @@
     if (event.clientY < 0 || event.clientY > HOT_ZONE_PX) return;
     if (button.contains(event.target)) return;
 
+    if (event.detail === 2) {
+      pendingDrag = false;
+      dragging = false;
+      event.preventDefault();
+      window.__TAURI__?.core?.invoke('toggle_window_maximize').catch((error) => {
+        console.error('Failed to toggle DruMaster window maximize:', error);
+      });
+      return;
+    }
+
     pendingDrag = true;
     dragging = false;
     dragStartX = event.screenX;
