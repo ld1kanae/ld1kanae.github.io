@@ -45,7 +45,7 @@
       const repositoryHash=await hashBytes(base64Bytes(canonicalB64));
       if(repositoryHash!==expectedHash)throw Error(`GitHub canonical MIDI SHA mismatch: upload=${expectedHash}, repository=${repositoryHash}`);
 
-      const immutableName=`chart-${tag}.mid`,immutablePath=`${ROOT}/${localIntent.id}/${immutableName}`;
+      const immutableName=`chart.mid-${tag}.mid`,immutablePath=`${ROOT}/${localIntent.id}/${immutableName}`;
       let immutable=await apiGet(immutablePath,token);
       if(!immutable){await putBase64(immutablePath,canonicalB64,null,token,`Publish immutable MIDI ${localIntent.id}: ${immutableName}`);immutable=await apiGet(immutablePath,token)}
       if(!immutable||Number(immutable.size)!==Number(localIntent.size))throw Error(`Immutable MIDI save verification failed: ${immutablePath}`);
@@ -53,7 +53,7 @@
       const canonicalGzipPath=`${ROOT}/${localIntent.id}/chart.mid.gz`,canonicalGzip=await apiGet(canonicalGzipPath,token);
       let immutableGzipUrl=null;
       if(canonicalGzip?.content){
-        const immutableGzipName=`chart-${tag}.mid.gz`,immutableGzipPath=`${ROOT}/${localIntent.id}/${immutableGzipName}`;
+        const immutableGzipName=`chart.mid-${tag}.mid.gz`,immutableGzipPath=`${ROOT}/${localIntent.id}/${immutableGzipName}`;
         let immutableGzip=await apiGet(immutableGzipPath,token);
         if(!immutableGzip){await putBase64(immutableGzipPath,String(canonicalGzip.content).replace(/\n/g,""),null,token,`Publish immutable MIDI gzip ${localIntent.id}: ${immutableGzipName}`);immutableGzip=await apiGet(immutableGzipPath,token)}
         if(!immutableGzip)throw Error(`Immutable MIDI gzip save verification failed: ${immutableGzipPath}`);
