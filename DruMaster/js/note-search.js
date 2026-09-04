@@ -35,11 +35,35 @@ globalThis.DruMasterNoteSearch=(()=>{
     return best?{note:best,delta:bestDelta,index:bestIndex}:null;
   }
 
+  /* Like nearest(), but each candidate owns only the interval between the
+     midpoints to its adjacent notes in the same judgement family. This keeps
+     dense rolls/flams from stealing the following note after the previous one
+     has already been hit, while preserving the existing +/- judgement windows. */
+  function nearestOwned(list,time,maxDelta,eligiblePredicate,neighborPredicate=eligiblePredicate){
+    const match=nearest(list,time,maxDelta,eligiblePredicate);
+    if(!match)return null;
+    const i=match.index,n=match.note;
+    let prev=null,next=null;
+    for(let j=i-1;j>=0;j--){
+      const candidate=list[j];
+      if(!neighborPredicate||neighborPredicate(candidate,j)){prev=candidate;break}
+    }
+    for(let j=i+1;j<list.length;j++){
+      const candidate=list[j];
+      if(!neighborPredicate||neighborPredicate(candidate,j)){next=candidate;break}
+    }
+    const left=prev?(prev.time+n.time)/2:-Infinity;
+    const right=next?(n.time+next.time)/2:Infinity;
+    /* Exact midpoint belongs to the earlier note, matching nearest() tie order. */
+    if(time<=left||time>right)return null;
+    return {...match,left,right};
+  }
+
   function visibleTickRange(list,minTick,maxTick){
     if(!Array.isArray(list)||!list.length)return {start:0,end:0};
     const start=lowerBoundTick(list,minTick),end=lowerBoundTick(list,maxTick+1e-7);
     return {start,end};
   }
 
-  return {lowerBoundTime,lowerBoundTick,nearest,visibleTickRange};
+  return {lowerBoundTime,lowerBoundTick,nearest,nearestOwned,visibleTickRange};
 })();
