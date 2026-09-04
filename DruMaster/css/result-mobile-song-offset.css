@@ -127,8 +127,16 @@
     max-height:none!important;
     overflow-y:auto!important;
   }
+  /* Preserve the original ranking number sizes. Only DATE is reduced by 2pt. */
+  #result:not(.autoplay)>.ranking-panel .ranking-row{
+    font-size:14px!important;
+  }
+  #result:not(.autoplay)>.ranking-panel .rank-no,
+  #result:not(.autoplay)>.ranking-panel .rank-score{
+    font-size:14px!important;
+  }
   #result:not(.autoplay)>.ranking-panel .rank-date{
-    font-size:calc(14px - 2pt)!important;
+    font-size:11.3333px!important;
   }
 
   /* Actions are centered on the whole screen, not either column. */
