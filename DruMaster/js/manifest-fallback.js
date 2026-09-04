@@ -5,9 +5,10 @@
 //
 // app.js still contains a legacy "songs/nanairo/chart.mid" bootstrap URL. Since the
 // persistent asset cache is installed before app.js, that literal URL can otherwise be
-// satisfied from the nanairo cache before song-manager gets a chance to remap it. Route
-// that legacy bootstrap request to the actually selected song here, after the cache layer
-// is installed and before app.js runs.
+// satisfied from nanairo's old unversioned cache before song-manager gets a chance to
+// remap it. Route that legacy bootstrap request to the selected song's current, versioned
+// MIDI URL here, after the cache layer is installed and before app.js runs. This applies
+// to nanairo itself as well as every other song.
 (function(){
   const embeddedDrumManifest={
     sourceVelocity:100,
@@ -36,10 +37,13 @@
     const url=rawUrl(input);
     const current=globalThis.DruMasterSongs?.current;
 
-    // Never let the selected song reuse nanairo's cached chart. The exact current.midi
-    // URL is passed into the persistent cache, so each song keeps its own cache key/version.
-    if(current?.id&&current.id!=="nanairo"&&current.midi&&isLegacyNanairoMidi(url)){
-      return nativeFetch(current.midi,init);
+    // Always replace app.js's hard-coded bootstrap URL with the current metadata URL.
+    // Even nanairo must go through current.midi so a new ?v= value invalidates the
+    // persistent MIDI cache after publishing a replacement chart.
+    if(current?.midi&&isLegacyNanairoMidi(url)){
+      const requested=String(url||"");
+      const currentUrl=String(current.midi||"");
+      if(requested!==currentUrl)return nativeFetch(currentUrl,init);
     }
 
     if(/(?:^|\/)assets\/drumsound-manifest\.json(?:[?#].*)?$/.test(url)){
