@@ -69,6 +69,16 @@
     });
   }
 
+  async function getPlay(playId) {
+    const db = await openDb();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(playId);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
   async function pendingPlays() {
     const db = await openDb();
     return await new Promise((resolve, reject) => {
@@ -96,8 +106,7 @@
   }
 
   function setStatus(text) {
-    const el = statusElement();
-    el.textContent = text || '';
+    statusElement().textContent = text || '';
   }
 
   async function sha256(buffer) {
@@ -171,44 +180,25 @@
 
     const now = new Date().toISOString();
     const play = {
-      playId: uuid(),
-      playerId: playerId(),
-      displayName: playerName(),
-      songId: currentSongId(),
-      chartId: document.body?.dataset.chartId || 'default',
+      playId: uuid(), playerId: playerId(), displayName: playerName(),
+      songId: currentSongId(), chartId: document.body?.dataset.chartId || 'default',
       rankingVersion: document.body?.dataset.rankingVersion || DEFAULT_RANKING_VERSION,
-      chartVersion: await chartVersion(),
-      gameVersion: document.documentElement.dataset.gameVersion || 'pc-ranking-20260902',
-      score,
-      perfect,
-      great,
-      good,
-      miss,
-      noteCount: perfect + great + good + miss,
-      maxCombo: numberFrom('#maxCombo') || null,
-      playMode: detectMode(),
-      autoPlay: false,
-      noScore: false,
-      playedAtClient: now,
-      createdAtLocal: now,
-      syncStatus: 'pending',
-      retryCount: 0,
-      lastAttemptAt: null,
-      lastError: null,
-      serverResult: null
+      chartVersion: await chartVersion(), gameVersion: document.documentElement.dataset.gameVersion || 'pc-ranking-20260902',
+      score, perfect, great, good, miss, noteCount: perfect + great + good + miss,
+      maxCombo: numberFrom('#maxCombo') || null, playMode: detectMode(),
+      autoPlay: false, noScore: false, playedAtClient: now, createdAtLocal: now,
+      syncStatus: 'pending', retryCount: 0, lastAttemptAt: null, lastError: null, serverResult: null
     };
 
     if (play.noteCount < 1) return;
     await putPlay(play);
     setStatus('ランキング同期中…');
-    syncPending().catch(console.error);
+    syncAll().catch(console.error);
   }
 
   async function uploadPlay(play, base) {
     const response = await fetch(`${base}/v1/plays`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(play)
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(play)
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const result = await response.json().catch(() => ({}));
@@ -217,32 +207,67 @@
     play.lastError = null;
     play.serverResult = result;
     await putPlay(play);
-    if (Number.isFinite(result.rank)) {
-      setStatus(`WORLD RANK #${result.rank}${result.totalPlayers ? ` / ${result.totalPlayers}` : ''}`);
-    } else {
-      setStatus('ランキング同期済み');
+    if (Number.isFinite(result.rank)) setStatus(`WORLD RANK #${result.rank}${result.totalPlayers ? ` / ${result.totalPlayers}` : ''}`);
+    else setStatus('ランキング同期済み');
+  }
+
+  async function pushPending(base) {
+    const queue = await pendingPlays();
+    for (const play of queue) {
+      try {
+        play.lastAttemptAt = new Date().toISOString();
+        await uploadPlay(play, base);
+      } catch (error) {
+        play.syncStatus = 'pending';
+        play.retryCount = (play.retryCount || 0) + 1;
+        play.lastAttemptAt = new Date().toISOString();
+        play.lastError = String(error?.message || error);
+        await putPlay(play);
+        setStatus('ランキング未同期 · 自動再送します');
+        throw error;
+      }
     }
   }
 
-  async function syncPending() {
+  async function pullServerHistory(base) {
+    const response = await fetch(`${base}/v1/players/${encodeURIComponent(playerId())}/plays`, { cache: 'no-store' });
+    if (response.status === 404) return 0;
+    if (!response.ok) throw new Error(`history HTTP ${response.status}`);
+    const payload = await response.json();
+    const plays = Array.isArray(payload?.plays) ? payload.plays : [];
+    let added = 0;
+    for (const remote of plays) {
+      if (!remote?.playId) continue;
+      if (await getPlay(remote.playId)) continue;
+      await putPlay({
+        ...remote,
+        playerId: remote.playerId || playerId(),
+        displayName: remote.displayName || playerName(),
+        autoPlay: false,
+        noScore: false,
+        createdAtLocal: remote.createdAtLocal || remote.playedAtClient || remote.receivedAtServer || new Date().toISOString(),
+        syncStatus: 'synced',
+        retryCount: 0,
+        lastAttemptAt: new Date().toISOString(),
+        lastError: null,
+        serverResult: { importedFromServer: true }
+      });
+      added++;
+    }
+    return added;
+  }
+
+  async function syncAll() {
     const base = endpoint();
     if (!base || !navigator.onLine || syncing) return;
     syncing = true;
     try {
-      const queue = await pendingPlays();
-      for (const play of queue) {
-        try {
-          play.lastAttemptAt = new Date().toISOString();
-          await uploadPlay(play, base);
-        } catch (error) {
-          play.syncStatus = 'pending';
-          play.retryCount = (play.retryCount || 0) + 1;
-          play.lastAttemptAt = new Date().toISOString();
-          play.lastError = String(error?.message || error);
-          await putPlay(play);
-          setStatus('ランキング未同期 · 自動再送します');
-          break;
-        }
+      await pushPending(base).catch(() => {});
+      try {
+        const added = await pullServerHistory(base);
+        if (added > 0) setStatus(`ランキング同期済み · ${added}件取得`);
+      } catch (error) {
+        console.warn('Ranking history pull unavailable:', error);
       }
     } finally {
       syncing = false;
@@ -260,24 +285,20 @@
   function init() {
     statusElement();
     watchResult();
-    syncPending().catch(console.error);
-    addEventListener('online', () => syncPending().catch(console.error));
-    setInterval(() => syncPending().catch(console.error), RETRY_MS);
+    syncAll().catch(console.error);
+    addEventListener('online', () => syncAll().catch(console.error));
+    setInterval(() => syncAll().catch(console.error), RETRY_MS);
     document.addEventListener('click', (event) => {
-      if (event.target?.closest?.('#home,.home,[data-action="home"]')) syncPending().catch(console.error);
+      if (event.target?.closest?.('#home,.home,[data-action="home"]')) syncAll().catch(console.error);
     }, true);
   }
 
   window.DruMasterRanking = {
-    syncPending,
-    setEndpoint(value) {
-      localStorage.setItem(ENDPOINT_KEY, String(value || '').trim());
-      syncPending().catch(console.error);
-    },
+    syncPending: syncAll,
+    syncAll,
+    setEndpoint(value) { localStorage.setItem(ENDPOINT_KEY, String(value || '').trim()); syncAll().catch(console.error); },
     getEndpoint: endpoint,
-    setPlayerName(value) {
-      localStorage.setItem(PLAYER_NAME_KEY, String(value || '').trim() || playerName());
-    },
+    setPlayerName(value) { localStorage.setItem(PLAYER_NAME_KEY, String(value || '').trim() || playerName()); },
     getPlayerName: playerName
   };
 
