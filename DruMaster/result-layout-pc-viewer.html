@@ -8,12 +8,12 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b11;color:#fff;font-family:Arial,Helvetica,sans-serif}
 #viewer{position:fixed;inset:0;background:radial-gradient(circle at 22% 26%,rgba(72,129,190,.20),transparent 34%),radial-gradient(circle at 24% 76%,rgba(177,104,255,.12),transparent 38%),linear-gradient(180deg,#0d1723 0%,#070b11 70%)}
 .el{position:absolute;box-sizing:border-box;text-align:center;transform:translateX(-50%)}
-.title{font-weight:800;font-style:italic}
+.title{font-weight:800;font-style:italic;white-space:nowrap;word-break:keep-all;overflow:visible;width:max-content!important;min-width:max-content!important}
 .artist,.score-label{color:#8a98aa}
 .score-label{font-weight:800}
 .score{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-style:italic;color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:1.2px #fff;background:linear-gradient(105deg,#fff 0%,#ffd8f6 13%,#6cecff 29%,#fff1a0 44%,#d18cff 62%,#72edff 81%,#fff 100%);background-clip:text;-webkit-background-clip:text;background-repeat:no-repeat;background-size:100% 100%;filter:drop-shadow(0 0 8px rgba(95,226,255,.58));white-space:nowrap;overflow:visible;padding:0 .06em .12em}
 .summary{display:flex;justify-content:center;gap:clamp(22px,2.4vw,40px)}.summary small{display:block;color:#8794a6;font-size:clamp(10px,.9vw,14px)}.summary b{display:block;margin-top:3px;color:#eef6ff;font-size:calc(clamp(22px,2vw,32px) + 4pt);line-height:1.1}
-.ranking{border:1px solid rgba(147,169,195,.34);border-radius:16px;background:rgba(9,15,23,.68);padding:13px 18px 15px;overflow:hidden;text-align:left}.ranking h3{margin:0 0 12px;text-align:center;letter-spacing:.12em;font-size:clamp(20px,2vw,30px)}.rhead,.rrow{display:grid;grid-template-columns:64px 1fr 130px;align-items:center;min-height:34px}.rhead{color:#738195;font-size:10px;border-bottom:1px solid rgba(255,255,255,.08)}.rrow{font-size:14px;border-bottom:1px solid rgba(255,255,255,.045)}.rrow.best{background:linear-gradient(90deg,rgba(255,232,145,.12),rgba(102,231,255,.13) 45%,rgba(199,137,255,.12));box-shadow:inset 2px 0 #ffe77a}.rrow .date{font-size:calc(14px - 2pt);color:#8492a4;text-align:right}.right{text-align:right}.badge{display:inline-block;margin-left:8px;padding:2px 6px;border:1px solid rgba(255,234,145,.72);border-radius:999px;color:#fff2ad;font-size:9px}
+.ranking{border:1px solid rgba(147,169,195,.34);border-radius:16px;background:rgba(9,15,23,.68);padding:13px 18px 15px;overflow:hidden;text-align:left}.ranking h3{margin:0 0 12px;text-align:center;letter-spacing:.12em;font-size:clamp(20px,2vw,30px)}.rhead,.rrow{display:grid;grid-template-columns:64px 1fr 130px;align-items:center;min-height:34px}.rhead{color:#738195;font-size:10px;border-bottom:1px solid rgba(255,255,255,.08)}.rrow{font-size:14px;border-bottom:1px solid rgba(255,255,255,.045)}.rrow.best{background:linear-gradient(90deg,rgba(255,232,145,.12),rgba(102,231,255,.13) 45%,rgba(199,137,255,.12));box-shadow:inset 2px 0 #ffe77a}.rrow .date{font-size:11.3333px;color:#8492a4;text-align:right}.right{text-align:right}.badge{display:inline-block;margin-left:8px;padding:2px 6px;border:1px solid rgba(255,234,145,.72);border-radius:999px;color:#fff2ad;font-size:9px}
 .actions{position:absolute;left:50%;top:83.33%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(2,190px);gap:18px}.btn{height:48px;display:grid;place-items:center;border:1px solid #7890a9;border-radius:999px;background:rgba(18,28,41,.65);font-weight:900;letter-spacing:.08em;font-size:15px}
 #mode{position:absolute;left:20px;bottom:18px;display:flex;border:1px solid #28374a;border-radius:999px;overflow:hidden;background:#0b111b;font-size:12px;z-index:5}#mode button{border:0;background:transparent;color:#c9d3df;padding:10px 16px;cursor:pointer}#mode button.on{background:#dbeeff;color:#0b1824}
 </style>
@@ -30,16 +30,16 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b11;col
  function render(){
   V.innerHTML='';
   if(mode==='normal'){
-   el('title','25%','17.36%','22%','clamp(34px,3.75vw,54px)','Ray');
-   el('artist','25%','27.78%','28%','clamp(18px,1.9vw,28px)','BUMP OF CHICKEN');
+   el('title','25%','17.36%',null,'clamp(34px,3.75vw,54px)','アルクアラウンド');
+   el('artist','25%','27.78%','28%','clamp(18px,1.9vw,28px)','サカナクション');
    el('score-label','25%','37.5%','18%','clamp(15px,1.65vw,24px)','S C O R E');
-   const s=el('score','25%','42.36%','42%','clamp(72px,8vw,116px)','985,420');s.style.lineHeight='.9';
-   el('summary','25%','58.33%','37%',null,'<div><small>PERFECT</small><b>428</b></div><div><small>GREAT</small><b>37</b></div><div><small>GOOD</small><b>9</b></div><div><small>MISS</small><b>2</b></div>');
-   const r=el('ranking','75%','15.7%','min(46vw,760px)',null,'<h3>RECORD RANKING</h3><div class="rhead"><span>RANK</span><span>SCORE</span><span class="right">DATE</span></div><div class="rrow best"><span>1</span><b>985,420 <span class="badge">BEST</span></b><span class="date">2026.09.01</span></div><div class="rrow"><span>2</span><b>973,180</b><span class="date">2026.08.31</span></div><div class="rrow"><span>3</span><b>961,730</b><span class="date">2026.08.30</span></div>');r.style.height='54.2%';
+   const s=el('score','25%','42.36%','42%','clamp(72px,8vw,116px)','582,565');s.style.lineHeight='.9';
+   el('summary','25%','58.33%','37%',null,'<div><small>PERFECT</small><b>451</b></div><div><small>GREAT</small><b>234</b></div><div><small>GOOD</small><b>14</b></div><div><small>MISS</small><b>34</b></div>');
+   const r=el('ranking','75%','15.7%','min(46vw,760px)',null,'<h3>RECORD RANKING</h3><div class="rhead"><span>RANK</span><span>SCORE</span><span class="right">DATE</span></div><div class="rrow best"><span>1</span><b>595,414</b><span class="date">2026.08.30</span></div><div class="rrow"><span>2</span><b>591,895</b><span class="date">2026.08.31</span></div><div class="rrow"><span>3</span><b>591,462</b><span class="date">2026.08.30</span></div>');r.style.height='54.2%';
    actions();
   }else{
-   el('title','50%','12.64%','28%','clamp(34px,3.75vw,54px)','Ray');
-   el('artist','50%','23.06%','30%','clamp(18px,1.9vw,28px)','BUMP OF CHICKEN');
+   el('title','50%','12.64%',null,'clamp(34px,3.75vw,54px)','アルクアラウンド');
+   el('artist','50%','23.06%','30%','clamp(18px,1.9vw,28px)','サカナクション');
    el('score-label','50%','34.03%','18%','clamp(15px,1.65vw,24px)','S C O R E');
    const s=el('score','50%','39.58%',null,'clamp(72px,8vw,116px)','AUTO PLAY');s.style.width='max-content';s.style.lineHeight='.9';
    actions();
