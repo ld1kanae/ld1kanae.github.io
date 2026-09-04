@@ -147,17 +147,36 @@
 
   function nearestPartNote(part,t,maxDelta=.16){
     const search=globalThis.DruMasterNoteSearch;
-    if(search?.nearest){
-      return search.nearest(notes,t,maxDelta,n=>!n.hit&&n.type!=="kick"&&noteMatchesPart(part,n));
+    const eligible=n=>!n.hit&&n.type!=="kick"&&noteMatchesPart(part,n);
+    const neighbor=n=>n.type!=="kick"&&noteMatchesPart(part,n);
+    if(search?.nearestOwned){
+      return search.nearestOwned(notes,t,maxDelta,eligible,neighbor);
     }
-    let best=null,delta=maxDelta+1e-9;
-    for(const n of notes){
+    if(search?.nearest){
+      const match=search.nearest(notes,t,maxDelta,eligible);
+      if(!match)return null;
+      let prev=null,next=null;
+      for(let i=match.index-1;i>=0;i--)if(neighbor(notes[i])){prev=notes[i];break}
+      for(let i=match.index+1;i<notes.length;i++)if(neighbor(notes[i])){next=notes[i];break}
+      const left=prev?(prev.time+match.note.time)/2:-Infinity,
+            right=next?(match.note.time+next.time)/2:Infinity;
+      return t>left&&t<=right?match:null;
+    }
+    let best=null,bestIndex=-1,delta=maxDelta+1e-9;
+    for(let i=0;i<notes.length;i++){
+      const n=notes[i];
       if(n.time<t-maxDelta)continue;
       if(n.time>t+maxDelta)break;
-      if(n.hit||n.type==="kick"||!noteMatchesPart(part,n))continue;
-      const d=Math.abs(n.time-t);if(d<delta){best=n;delta=d}
+      if(!eligible(n))continue;
+      const d=Math.abs(n.time-t);if(d<delta){best=n;bestIndex=i;delta=d}
     }
-    return best?{note:best,delta}:null;
+    if(!best)return null;
+    let prev=null,next=null;
+    for(let i=bestIndex-1;i>=0;i--)if(neighbor(notes[i])){prev=notes[i];break}
+    for(let i=bestIndex+1;i<notes.length;i++)if(neighbor(notes[i])){next=notes[i];break}
+    const left=prev?(prev.time+best.time)/2:-Infinity,
+          right=next?(best.time+next.time)/2:Infinity;
+    return t>left&&t<=right?{note:best,delta,index:bestIndex,left,right}:null;
   }
 
   if(typeof input==="function"&&typeof notes!=="undefined"&&typeof PART!=="undefined"){
