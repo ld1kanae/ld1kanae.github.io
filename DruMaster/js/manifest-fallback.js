@@ -2,6 +2,12 @@
 
 // The drum-source manifest is tiny and versioned with the app. Keep an embedded copy so
 // a transient GitHub Pages/cache failure for the JSON file can never block the START button.
+//
+// app.js still contains a legacy "songs/nanairo/chart.mid" bootstrap URL. Since the
+// persistent asset cache is installed before app.js, that literal URL can otherwise be
+// satisfied from the nanairo cache before song-manager gets a chance to remap it. Route
+// that legacy bootstrap request to the actually selected song here, after the cache layer
+// is installed and before app.js runs.
 (function(){
   const embeddedDrumManifest={
     sourceVelocity:100,
@@ -23,8 +29,19 @@
   };
 
   const nativeFetch=window.fetch.bind(window);
+  const rawUrl=input=>typeof input==="string"?input:(input&&input.url)||"";
+  const isLegacyNanairoMidi=url=>/(?:^|\/)songs\/nanairo\/chart\.mid(?:[?#].*)?$/.test(String(url||""));
+
   window.fetch=async function(input,init){
-    const url=typeof input==="string"?input:(input&&input.url)||"";
+    const url=rawUrl(input);
+    const current=globalThis.DruMasterSongs?.current;
+
+    // Never let the selected song reuse nanairo's cached chart. The exact current.midi
+    // URL is passed into the persistent cache, so each song keeps its own cache key/version.
+    if(current?.id&&current.id!=="nanairo"&&current.midi&&isLegacyNanairoMidi(url)){
+      return nativeFetch(current.midi,init);
+    }
+
     if(/(?:^|\/)assets\/drumsound-manifest\.json(?:[?#].*)?$/.test(url)){
       // Do not depend on a separate Pages request for this static metadata.
       return new Response(JSON.stringify(embeddedDrumManifest),{
