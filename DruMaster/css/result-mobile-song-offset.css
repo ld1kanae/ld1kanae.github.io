@@ -103,7 +103,7 @@
   #result:not(.autoplay)>.result-summary b{
     display:block!important;
     margin-top:3px!important;
-    font-size:clamp(22px,2vw,32px)!important;
+    font-size:calc(clamp(22px,2vw,32px) + 4pt)!important;
     line-height:1.1!important;
   }
 
@@ -126,6 +126,9 @@
     min-height:0!important;
     max-height:none!important;
     overflow-y:auto!important;
+  }
+  #result:not(.autoplay)>.ranking-panel .rank-date{
+    font-size:calc(14px - 2pt)!important;
   }
 
   /* Actions are centered on the whole screen, not either column. */
@@ -188,19 +191,27 @@
   #result.autoplay>#finalScore{
     left:50%!important;
     top:39.58%!important;
-    width:46%!important;
+    display:block!important;
+    width:max-content!important;
+    min-width:max-content!important;
     height:auto!important;
+    max-width:none!important;
+    padding:0 .06em .12em!important;
+    overflow:visible!important;
+    white-space:nowrap!important;
+    word-break:keep-all!important;
     font-size:clamp(72px,8vw,116px)!important;
     line-height:.9!important;
     letter-spacing:1px!important;
     transform:skewX(-4deg) scaleX(1.04)!important;
     transform-origin:center!important;
-    white-space:nowrap!important;
+    background-repeat:no-repeat!important;
+    background-size:100% 100%!important;
   }
 
   #result.autoplay>.result-actions{
     left:50%!important;
-    top:63.2%!important;
+    top:83.33%!important;
     translate:-50% 0!important;
     display:grid!important;
     grid-template-columns:repeat(2,190px)!important;
