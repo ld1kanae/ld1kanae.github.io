@@ -86,3 +86,15 @@
     isLocked:isPlaybackLocked
   };
 })();
+
+// Ranking is part of the shared web core. Loading it here guarantees the same
+// cloud upload / retry / history merge behavior on GitHub Pages, Windows and
+// Android without adding a second platform-specific copy of the ranking client.
+(()=>{
+  if(globalThis.DruMasterRanking||document.querySelector('script[data-drumaster-ranking-sync]'))return;
+  const s=document.createElement('script');
+  s.src='js/ranking-sync.js?v=20260905-shared1';
+  s.async=false;
+  s.dataset.drumasterRankingSync='1';
+  document.head.appendChild(s);
+})();
