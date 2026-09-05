@@ -22,7 +22,7 @@ function parsePlay(body:unknown):PlayInput{
   if(!isObject(body))throw new Error('JSON object required');
   const id=/^[A-Za-z0-9._:-]+$/;
   const playId=cleanString(body.playId,'playId',128,id),playerId=cleanString(body.playerId,'playerId',128,id),songId=cleanString(body.songId,'songId',80,id),chartId=cleanString(body.chartId,'chartId',80,id),rankingVersion=cleanString(body.rankingVersion,'rankingVersion',64,id),chartVersion=cleanString(body.chartVersion,'chartVersion',128),gameVersion=cleanString(body.gameVersion,'gameVersion',128),playMode=cleanString(body.playMode,'playMode',64,id);
-  let displayName=cleanString(body.displayName,'displayName',32).replace(/[\u0000-\u001f\u007f]/g,'').trim()||'PLAYER';
+  const displayName=cleanString(body.displayName,'displayName',32).replace(/[\u0000-\u001f\u007f]/g,'').trim()||'PLAYER';
   if(body.autoPlay!==false)throw new Error('AUTO PLAY scores are not ranked');
   if(body.noScore!==false)throw new Error('NO SCORE results are not ranked');
   if(/auto|no[-_ ]?score/i.test(playMode))throw new Error('This play mode is not ranked');
@@ -47,6 +47,31 @@ async function submitPlay(request:Request,env:Env){
   ])}catch(c){const m=c instanceof Error?c.message:String(c);if(/UNIQUE|constraint/i.test(m)){const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:true,...(rank||{})})}console.error('D1 submit failure',c);return error('Database write failed',500)}
   const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:false,personalBest:rank?.playId===play.playId,...(rank||{})},201);
 }
+
+async function submitLegacyBest(request:Request,env:Env){
+  let body:unknown;try{body=await request.json()}catch{return error('Invalid JSON')}
+  if(!isObject(body))return error('JSON object required');
+  const id=/^[A-Za-z0-9._:-]+$/;
+  let playerId:string,displayName:string,songId:string,chartId:string,rankingVersion:string,score:number;
+  try{
+    playerId=cleanString(body.playerId,'playerId',128,id);
+    displayName=cleanString(body.displayName,'displayName',32).replace(/[\u0000-\u001f\u007f]/g,'').trim()||'PLAYER';
+    songId=cleanString(body.songId,'songId',80,id);
+    chartId=cleanString(body.chartId||'default','chartId',80,id);
+    rankingVersion=cleanString(body.rankingVersion||'1','rankingVersion',64,id);
+    score=cleanInt(body.score,'score',0,1_000_000);
+  }catch(c){return error(c instanceof Error?c.message:'Invalid legacy best')}
+  const now=new Date().toISOString();
+  const safe=(s:string)=>s.replace(/[^A-Za-z0-9._:-]/g,'_');
+  const playId=`legacy:${safe(playerId)}:${safe(songId)}:${safe(chartId)}:${safe(rankingVersion)}`.slice(0,128);
+  try{await env.DB.batch([
+    env.DB.prepare(`INSERT INTO players(player_id,display_name,created_at,updated_at) VALUES(?1,?2,?3,?3) ON CONFLICT(player_id) DO UPDATE SET display_name=excluded.display_name,updated_at=excluded.updated_at`).bind(playerId,displayName,now),
+    env.DB.prepare(`INSERT INTO plays(play_id,player_id,display_name,song_id,chart_id,ranking_version,chart_version,game_version,score,perfect,great,good,miss,note_count,max_combo,play_mode,played_at_client,received_at_server) VALUES(?1,?2,?3,?4,?5,?6,'legacy-best-only','legacy-import',?7,0,0,0,0,0,NULL,'legacy',?8,?8) ON CONFLICT(play_id) DO UPDATE SET score=MAX(score,excluded.score),display_name=excluded.display_name,received_at_server=excluded.received_at_server`).bind(playId,playerId,displayName,songId,chartId,rankingVersion,score,now)
+  ])}catch(c){console.error('D1 legacy best failure',c);return error('Database write failed',500)}
+  const rank=await getPlayerRank(env.DB,playerId,songId,chartId,rankingVersion);
+  return json({ok:true,accepted:true,legacyBest:true,...(rank||{})},201);
+}
+
 async function leaderboard(url:URL,env:Env){
   const m=url.pathname.match(/^\/v1\/leaderboards\/([^/]+)\/([^/]+)$/);if(!m)return error('Not found',404);const id=/^[A-Za-z0-9._:-]+$/;let songId,chartId,rankingVersion;try{songId=cleanString(decodeURIComponent(m[1]),'songId',80,id);chartId=cleanString(decodeURIComponent(m[2]),'chartId',80,id);rankingVersion=cleanString(url.searchParams.get('rankingVersion')||'1','rankingVersion',64,id)}catch(c){return error(c instanceof Error?c.message:'Invalid request')}
   const limit=Math.min(100,Math.max(1,parseInt(url.searchParams.get('limit')||'50')||50)),offset=Math.max(0,parseInt(url.searchParams.get('offset')||'0')||0);
@@ -67,6 +92,7 @@ async function playerPlays(url:URL,env:Env){
 export default{async fetch(request:Request,env:Env){if(request.method==='OPTIONS')return new Response(null,{status:204,headers:CORS_HEADERS});const url=new URL(request.url);try{
   if(request.method==='GET'&&url.pathname==='/health'){const probe=await env.DB.prepare('SELECT 1 AS ok').first();return json({ok:true,service:'drumaster-ranking-api',database:!!probe})}
   if(request.method==='POST'&&url.pathname==='/v1/plays')return await submitPlay(request,env);
+  if(request.method==='POST'&&url.pathname==='/v1/legacy-best')return await submitLegacyBest(request,env);
   if(request.method==='GET'&&url.pathname.startsWith('/v1/leaderboards/'))return await leaderboard(url,env);
   if(request.method==='GET'&&/^\/v1\/players\/[^/]+\/best$/.test(url.pathname))return await playerBest(url,env);
   if(request.method==='GET'&&/^\/v1\/players\/[^/]+\/plays$/.test(url.pathname))return await playerPlays(url,env);
