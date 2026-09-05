@@ -9,6 +9,7 @@
   const ENDPOINT_KEY = 'drumasterRankingEndpoint';
   const PLAYER_ID_KEY = 'drumasterPlayerId';
   const PLAYER_NAME_KEY = 'drumasterPlayerName';
+  const LINKED_PLAYER_IDS_KEY = 'drumasterRankingLinkedPlayerIds';
   const MERGED_STATE_KEY = 'drumasterRankingMergedState';
   const DEFAULT_ENDPOINT = 'https://drumaster-ranking-api.aoka45utau.workers.dev';
   const DEFAULT_RANKING_VERSION = '1';
@@ -42,6 +43,29 @@
       localStorage.setItem(PLAYER_NAME_KEY, value);
     }
     return value;
+  }
+
+  function linkedPlayerIds() {
+    try {
+      const value = JSON.parse(localStorage.getItem(LINKED_PLAYER_IDS_KEY) || '[]');
+      return Array.isArray(value)
+        ? value.filter(v => typeof v === 'string' && /^[A-Za-z0-9._:-]{8,128}$/.test(v))
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function setLinkedPlayerIds(values) {
+    const current = playerId();
+    const clean = [...new Set(values)]
+      .filter(v => typeof v === 'string' && v !== current && /^[A-Za-z0-9._:-]{8,128}$/.test(v));
+    localStorage.setItem(LINKED_PLAYER_IDS_KEY, JSON.stringify(clean));
+    return clean;
+  }
+
+  function syncPlayerIds() {
+    return [...new Set([playerId(), ...linkedPlayerIds()])];
   }
 
   function openDb() {
@@ -104,18 +128,112 @@
     });
   }
 
+  async function migrateLocalHistoryToCanonical(targetId, sourceIds) {
+    const sourceSet = new Set(sourceIds.filter(v => v && v !== targetId));
+    if (!sourceSet.size) return 0;
+    const plays = await allPlays();
+    let migrated = 0;
+
+    for (const original of plays) {
+      if (!original || !sourceSet.has(original.playerId)) continue;
+      if (original.linkedToPlayerId === targetId) continue;
+
+      original.linkedToPlayerId = targetId;
+      await putPlay(original);
+
+      const clone = {
+        ...original,
+        playId: uuid(),
+        playerId: targetId,
+        displayName: playerName(),
+        syncStatus: 'pending',
+        retryCount: 0,
+        lastAttemptAt: null,
+        lastError: null,
+        serverResult: {
+          migratedFromPlayId: original.playId,
+          migratedFromPlayerId: original.playerId
+        }
+      };
+      delete clone.linkedToPlayerId;
+      await putPlay(clone);
+      migrated++;
+    }
+    return migrated;
+  }
+
+  async function linkToPlayerId(rawTarget) {
+    const target = String(rawTarget || '').trim();
+    if (!/^[A-Za-z0-9._:-]{8,128}$/.test(target)) {
+      throw new Error('同期コードの形式が正しくありません');
+    }
+
+    const current = playerId();
+    if (target === current) {
+      return { changed: false, playerId: current, aliases: linkedPlayerIds(), migrated: 0 };
+    }
+
+    const previousAliases = linkedPlayerIds();
+    const sourceIds = [...new Set([current, ...previousAliases])];
+
+    localStorage.setItem(PLAYER_ID_KEY, target);
+    const aliases = setLinkedPlayerIds(sourceIds);
+    const migrated = await migrateLocalHistoryToCanonical(target, sourceIds);
+
+    await rebuildMergedState();
+    await syncAll();
+
+    return { changed: true, playerId: target, aliases, migrated };
+  }
+
+  async function openSyncPrompt() {
+    if (globalThis.DruMasterOfflinePlayback?.isLocked?.()) return;
+
+    const current = playerId();
+    const value = prompt(
+      `端末同期コード\n\n現在のコード:\n${current}\n\n別の端末と同じスコア履歴を使う場合は、その端末のコードを入力してください。\nこのコードのままOKを押すとクリップボードへコピーします。`,
+      current
+    );
+    if (value === null) return;
+
+    const target = value.trim();
+    if (!target) return;
+
+    if (target === current) {
+      try {
+        await navigator.clipboard?.writeText(current);
+        setStatus('端末同期コードをコピーしました');
+      } catch {
+        setStatus(`端末同期コード: ${current}`);
+      }
+      return;
+    }
+
+    setStatus('端末スコアを統合中…');
+    try {
+      const result = await linkToPlayerId(target);
+      setStatus(`端末同期完了 · ${result.migrated}件を統合`);
+    } catch (error) {
+      setStatus(`端末同期失敗 · ${String(error?.message || error).slice(0, 80)}`);
+      alert(String(error?.message || error));
+    }
+  }
+
   function statusElement() {
     let el = document.getElementById('rankingSyncState');
     if (el) return el;
     el = document.createElement('div');
     el.id = 'rankingSyncState';
+    el.title = 'クリックして端末同期コードを確認・入力';
     Object.assign(el.style, {
       position: 'fixed', right: '18px', bottom: '14px', zIndex: '2147483000',
       fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '12px', fontWeight: '600',
-      color: 'rgba(255,255,255,.88)', background: 'rgba(0,0,0,.24)', pointerEvents: 'none',
+      color: 'rgba(255,255,255,.88)', background: 'rgba(0,0,0,.24)', pointerEvents: 'auto',
+      cursor: 'pointer', userSelect: 'none',
       padding: '5px 8px', borderRadius: '6px', letterSpacing: '.02em',
       textShadow: '0 1px 3px rgba(0,0,0,.7)'
     });
+    el.addEventListener('click', () => openSyncPrompt().catch(console.error));
     document.body.appendChild(el);
     return el;
   }
@@ -196,6 +314,7 @@
     }
     const merged = {
       playerId: playerId(),
+      linkedPlayerIds: linkedPlayerIds(),
       displayName: playerName(),
       totalPlays: plays.length,
       pendingPlays: plays.filter(p => p?.syncStatus === 'pending').length,
@@ -300,31 +419,39 @@
   }
 
   async function pullServerHistory(base) {
-    const response = await fetchWithTimeout(`${base}/v1/players/${encodeURIComponent(playerId())}/plays?limit=5000`, {
-      cache: 'no-store',
-      headers: { accept: 'application/json' }
-    });
-    if (response.status === 404) return { remoteCount: 0, added: 0 };
-    if (!response.ok) throw new Error(`history HTTP ${response.status}`);
-    const payload = await response.json();
-    const plays = Array.isArray(payload?.plays) ? payload.plays : [];
+    let remoteCount = 0;
     let added = 0;
-    for (const remote of plays) {
-      if (!remote?.playId || await getPlay(remote.playId)) continue;
-      await putPlay({
-        ...remote,
-        autoPlay: false,
-        noScore: false,
-        createdAtLocal: remote.playedAtClient || remote.receivedAtServer || new Date().toISOString(),
-        syncStatus: 'synced',
-        retryCount: 0,
-        lastAttemptAt: new Date().toISOString(),
-        lastError: null,
-        serverResult: { importedFromServer: true }
+
+    for (const id of syncPlayerIds()) {
+      const response = await fetchWithTimeout(`${base}/v1/players/${encodeURIComponent(id)}/plays?limit=5000`, {
+        cache: 'no-store',
+        headers: { accept: 'application/json' }
       });
-      added++;
+      if (response.status === 404) continue;
+      if (!response.ok) throw new Error(`history HTTP ${response.status}`);
+
+      const payload = await response.json();
+      const plays = Array.isArray(payload?.plays) ? payload.plays : [];
+      remoteCount += plays.length;
+
+      for (const remote of plays) {
+        if (!remote?.playId || await getPlay(remote.playId)) continue;
+        await putPlay({
+          ...remote,
+          autoPlay: false,
+          noScore: false,
+          createdAtLocal: remote.playedAtClient || remote.receivedAtServer || new Date().toISOString(),
+          syncStatus: 'synced',
+          retryCount: 0,
+          lastAttemptAt: new Date().toISOString(),
+          lastError: null,
+          serverResult: { importedFromServer: true }
+        });
+        added++;
+      }
     }
-    return { remoteCount: plays.length, added };
+
+    return { remoteCount, added, playerIds: syncPlayerIds() };
   }
 
   async function syncAll() {
@@ -379,6 +506,10 @@
       catch { return null; }
     },
     getPlayerId: playerId,
+    getLinkedPlayerIds: linkedPlayerIds,
+    getSyncCode: playerId,
+    linkSyncCode: linkToPlayerId,
+    showSyncCodeDialog: openSyncPrompt,
     getPlayerName: playerName,
     setPlayerName(value) {
       localStorage.setItem(PLAYER_NAME_KEY, String(value || '').trim() || playerName());
