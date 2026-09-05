@@ -180,7 +180,7 @@ async fn install_update(app: tauri::AppHandle, url: String, asset_name: String) 
 
 #[cfg(target_os = "windows")]
 fn ps_literal(value: &std::path::Path) -> String {
-    value.to_string_lossy().replace(''', "''")
+    value.to_string_lossy().replace('\'', "''")
 }
 
 #[cfg(target_os = "windows")]
