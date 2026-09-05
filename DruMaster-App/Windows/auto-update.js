@@ -4,6 +4,10 @@
   const invoke = window.__TAURI__?.core?.invoke;
   if (!invoke) return;
 
+  const ATTEMPTED_BUILD_KEY = 'drumasterAutoUpdateAttemptedBuild';
+  const ATTEMPTED_AT_KEY = 'drumasterAutoUpdateAttemptedAt';
+  const RETRY_AFTER_MS = 6 * 60 * 60 * 1000;
+
   let overlay;
   let message;
 
@@ -47,13 +51,44 @@
     if (overlay) overlay.style.display = 'none';
   }
 
+  function recentlyAttempted(build) {
+    const attemptedBuild = Number(localStorage.getItem(ATTEMPTED_BUILD_KEY) || 0);
+    const attemptedAt = Number(localStorage.getItem(ATTEMPTED_AT_KEY) || 0);
+    return attemptedBuild === Number(build) && Date.now() - attemptedAt < RETRY_AFTER_MS;
+  }
+
+  function rememberAttempt(build) {
+    localStorage.setItem(ATTEMPTED_BUILD_KEY, String(build));
+    localStorage.setItem(ATTEMPTED_AT_KEY, String(Date.now()));
+  }
+
+  function clearAttemptIfCurrent(currentBuild) {
+    const attemptedBuild = Number(localStorage.getItem(ATTEMPTED_BUILD_KEY) || 0);
+    if (attemptedBuild > 0 && Number(currentBuild) >= attemptedBuild) {
+      localStorage.removeItem(ATTEMPTED_BUILD_KEY);
+      localStorage.removeItem(ATTEMPTED_AT_KEY);
+    }
+  }
+
   async function check() {
     try {
       const info = await invoke('check_for_update');
+      clearAttemptIfCurrent(info?.currentBuild);
       if (!info?.updateAvailable) {
         hide();
         return;
       }
+
+      /* If an installer failed or was cancelled, never trap the user in an
+         update -> exit -> relaunch -> update loop. Leave the app playable and
+         retry the same build only after a cooldown. A newer build is still
+         allowed immediately. */
+      if (recentlyAttempted(info.latestBuild)) {
+        hide();
+        return;
+      }
+
+      rememberAttempt(info.latestBuild);
       show(`最新版（Build #${info.latestBuild}）をダウンロードしています。完了後、自動で再起動します。`);
       await invoke('install_update', {
         url: info.downloadUrl,
