@@ -101,7 +101,7 @@
     return {duration:t.duration,frames:[
       {opacity:0,offset:0},
       {opacity:max,offset:t.inOff},
-      {opacity:max,offset:t.outOff},
+      {opacity:max,offset:t.outOff,offset:t.outOff},
       {opacity:0,offset:1}
     ]};
   }
@@ -204,8 +204,9 @@
     s.onerror=reject;
     document.head.appendChild(s);
   });
-  load('js/ranking-sync.js?v=20260906-shared4','ranking-sync')
-    .then(()=>load('js/ranking-best-bridge.js?v=20260906-shared4','ranking-best-bridge'))
-    .then(()=>load('js/legacy-score-migration.js?v=20260906-legacy2','legacy-score-migration'))
+  load('js/ranking-sync.js?v=20260906-shared5','ranking-sync')
+    .then(()=>load('js/ranking-best-bridge.js?v=20260906-shared5','ranking-best-bridge'))
+    .then(()=>load('js/legacy-score-migration.js?v=20260906-legacy3','legacy-score-migration'))
+    .then(()=>load('js/legacy-storage-recovery.js?v=20260906-recovery1','legacy-storage-recovery'))
     .catch(err=>console.error('DruMaster shared ranking loader failed',err));
 })();
