@@ -22,7 +22,8 @@ struct UpdateInfo {
 }
 
 fn current_build() -> u64 {
-    option_env!("GITHUB_RUN_NUMBER")
+    option_env!("DRUMASTER_BUILD_NUMBER")
+        .or(option_env!("GITHUB_RUN_NUMBER"))
         .and_then(|value| value.parse::<u64>().ok())
         .unwrap_or(0)
 }
@@ -185,10 +186,6 @@ fn ps_literal(value: &std::path::Path) -> String {
 
 #[cfg(target_os = "windows")]
 fn launch_update_helper(installer: &std::path::Path, current_exe: &std::path::Path) -> Result<(), String> {
-    // Do not use a .cmd helper here. cmd.exe reads batch files using the active
-    // ANSI/OEM code page, which corrupts Temp paths when the Windows user name
-    // contains Japanese or other non-ASCII characters. PowerShell receives this
-    // command through CreateProcessW, so the paths remain Unicode end-to-end.
     let installer = ps_literal(installer);
     let current_exe = ps_literal(current_exe);
     let script = format!(
