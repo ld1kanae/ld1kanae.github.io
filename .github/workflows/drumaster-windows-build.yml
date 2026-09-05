@@ -49,6 +49,8 @@ jobs:
         run: npx tauri icon DruMaster-D-icon-square.svg
 
       - name: Build Windows app
+        env:
+          DRUMASTER_BUILD_NUMBER: ${{ github.run_number }}
         run: npx tauri build
 
       - name: Prepare direct-download installer
