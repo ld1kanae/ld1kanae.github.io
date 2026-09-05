@@ -1,6 +1,6 @@
 use serde::Serialize;
 use std::{
-    fs::File,
+    fs::{self, File},
     io::copy,
     process::Command,
 };
@@ -174,7 +174,7 @@ async fn install_update(app: tauri::AppHandle, url: String, asset_name: String) 
     .await
     .map_err(|error| error.to_string())??;
 
-    launch_update_helper(&installer_path, &current_exe)?;
+    launch_update_helper(&installer_path, &current_exe, std::process::id())?;
     app.exit(0);
     Ok(())
 }
@@ -185,13 +185,46 @@ fn ps_literal(value: &std::path::Path) -> String {
 }
 
 #[cfg(target_os = "windows")]
-fn launch_update_helper(installer: &std::path::Path, current_exe: &std::path::Path) -> Result<(), String> {
+fn launch_update_helper(installer: &std::path::Path, current_exe: &std::path::Path, current_pid: u32) -> Result<(), String> {
     let installer = ps_literal(installer);
     let current_exe = ps_literal(current_exe);
+    let log_path = std::env::temp_dir().join("DruMaster-update.log");
+    let log_path_ps = ps_literal(&log_path);
+    let helper_path = std::env::temp_dir().join(format!("DruMaster-update-{}.ps1", current_pid));
+
     let script = format!(
-        "$ErrorActionPreference='Stop'; Start-Sleep -Seconds 2; $p=Start-Process -FilePath '{}' -ArgumentList '/S' -Wait -PassThru; if ($p.ExitCode -eq 0 -and (Test-Path -LiteralPath '{}')) {{ Start-Process -FilePath '{}' }}",
-        installer, current_exe, current_exe
+        "$ErrorActionPreference='Stop'\r\n\
+$log='{}'\r\n\
+function Log([string]$m) {{ Add-Content -LiteralPath $log -Value ((Get-Date -Format o) + ' ' + $m) -Encoding UTF8 }}\r\n\
+try {{\r\n\
+  Log 'helper started'\r\n\
+  try {{ Wait-Process -Id {} -Timeout 30 -ErrorAction SilentlyContinue }} catch {{}}\r\n\
+  Start-Sleep -Milliseconds 700\r\n\
+  Log 'starting installer'\r\n\
+  $p=Start-Process -FilePath '{}' -ArgumentList '/S' -Wait -PassThru\r\n\
+  Log ('installer exit=' + $p.ExitCode)\r\n\
+  if ($p.ExitCode -ne 0) {{ throw ('installer failed with exit code ' + $p.ExitCode) }}\r\n\
+  $deadline=(Get-Date).AddSeconds(20)\r\n\
+  while ((-not (Test-Path -LiteralPath '{}')) -and ((Get-Date) -lt $deadline)) {{ Start-Sleep -Milliseconds 500 }}\r\n\
+  if (-not (Test-Path -LiteralPath '{}')) {{ throw 'updated executable was not found' }}\r\n\
+  Log 'restarting app'\r\n\
+  Start-Process -FilePath '{}'\r\n\
+  Log 'restart command sent'\r\n\
+}} catch {{\r\n\
+  Log ('ERROR: ' + $_.Exception.Message)\r\n\
+  try {{ if (Test-Path -LiteralPath '{}') {{ Start-Process -FilePath '{}' }} }} catch {{}}\r\n\
+}}\r\n",
+        log_path_ps,
+        current_pid,
+        installer,
+        current_exe,
+        current_exe,
+        current_exe,
+        current_exe,
+        current_exe
     );
+
+    fs::write(&helper_path, script.as_bytes()).map_err(|error| error.to_string())?;
 
     let mut command = Command::new("powershell.exe");
     command
@@ -201,15 +234,15 @@ fn launch_update_helper(installer: &std::path::Path, current_exe: &std::path::Pa
         .arg("Bypass")
         .arg("-WindowStyle")
         .arg("Hidden")
-        .arg("-Command")
-        .arg(script);
+        .arg("-File")
+        .arg(&helper_path);
     command.creation_flags(0x00000008 | 0x00000200);
     command.spawn().map_err(|error| error.to_string())?;
     Ok(())
 }
 
 #[cfg(not(target_os = "windows"))]
-fn launch_update_helper(_installer: &std::path::Path, _current_exe: &std::path::Path) -> Result<(), String> {
+fn launch_update_helper(_installer: &std::path::Path, _current_exe: &std::path::Path, _current_pid: u32) -> Result<(), String> {
     Err("automatic installer launch is only supported on Windows".into())
 }
 
