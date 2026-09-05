@@ -1,34 +1,22 @@
 (() => {
   'use strict';
 
-  // Keep gameplay/audio scheduling at the browser's native rAF cadence, but
-  // cap the expensive chart redraw to 60 Hz. This matters on 120/144/165 Hz
-  // displays where WebView2 otherwise redraws the full chart multiple times
-  // more often than needed.
-  if (typeof draw !== 'function') return;
+  /* Do not manually throttle draw(). WebView2's requestAnimationFrame cadence
+     is already synchronized to presentation. The old 16.67 ms gate could miss
+     slightly-early 60 Hz frames (e.g. 16.4 ms) and then wait for the following
+     frame, effectively producing uneven ~30 Hz chart motion. Keep native rAF,
+     matching the Web build. */
 
-  const baseDraw = draw;
-  const FRAME_MS = 1000 / 60;
-  let lastDrawAt = -Infinity;
-
-  draw = function optimizedPcDraw() {
-    const now = performance.now();
-    if (now - lastDrawAt < FRAME_MS) return;
-    lastDrawAt = now;
-    return baseDraw();
-  };
-
-  // Keep the canvas on its own compositor layer without changing its layout.
   const chart = document.getElementById('chart');
   if (chart) {
-    chart.style.willChange = 'contents';
-    chart.style.transform = 'translateZ(0)';
+    /* Avoid will-change:contents. On an every-frame canvas it can force extra
+       invalidation/work in WebView2 instead of helping compositing. */
+    chart.style.willChange = 'auto';
     chart.style.backfaceVisibility = 'hidden';
   }
 
-  // Cache the most frequently queried effect elements. The existing effect
-  // functions are left intact so animation timing and judgement visuals do not
-  // change; this only avoids repeated DOM lookups in hot paths where possible.
+  // Cache the most frequently queried hit target. This keeps the optimization
+  // side-effect free with respect to timing and frame scheduling.
   const cachedParts = new Map();
   const originalFlashPart = typeof flashPart === 'function' ? flashPart : null;
   if (originalFlashPart) {
@@ -45,5 +33,5 @@
     };
   }
 
-  document.documentElement.dataset.pcPerformanceOpt = '1';
+  document.documentElement.dataset.pcPerformanceOpt = '2';
 })();
