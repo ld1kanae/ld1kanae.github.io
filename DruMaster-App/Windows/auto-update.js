@@ -79,11 +79,18 @@
         return;
       }
 
-      /* If an installer failed or was cancelled, never trap the user in an
-         update -> exit -> relaunch -> update loop. Leave the app playable and
-         retry the same build only after a cooldown. A newer build is still
-         allowed immediately. */
       if (recentlyAttempted(info.latestBuild)) {
+        hide();
+        return;
+      }
+
+      const accepted = window.confirm(
+        `新しいバージョンがあります。更新しますか？\n\n` +
+        `現在: Build #${info.currentBuild}\n` +
+        `最新版: Build #${info.latestBuild}\n\n` +
+        `「OK」を押すと更新を開始します。`
+      );
+      if (!accepted) {
         hide();
         return;
       }
@@ -97,6 +104,7 @@
     } catch (error) {
       console.error('DruMaster auto update failed:', error);
       hide();
+      alert(`更新に失敗しました。アプリはこのまま使用できます。\n\n${String(error?.message || error)}`);
     }
   }
 
