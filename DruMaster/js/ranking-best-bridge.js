@@ -60,22 +60,27 @@
     }
   }
 
-  function loadLegacyMigration() {
-    if (document.querySelector('script[data-dm-legacy-best-migration]')) return;
+  function loadOnce(src, key) {
+    if (document.querySelector(`script[data-${key}]`)) return;
     const script = document.createElement('script');
-    script.src = 'js/legacy-score-migration.js?v=20260906-legacy3';
-    script.dataset.dmLegacyBestMigration = '1';
-    script.onerror = error => console.error('DruMaster legacy score migration loader failed', error);
+    script.src = src;
+    script.setAttribute(`data-${key}`, '1');
+    script.onerror = error => console.error(`DruMaster ${key} loader failed`, error);
     document.head.appendChild(script);
+  }
+
+  function loadRankingExtensions() {
+    loadOnce('js/legacy-score-migration.js?v=20260906-legacy3', 'dm-legacy-best-migration');
+    loadOnce('js/ranking-result-cloud.js?v=20260906-cloudresult1', 'dm-ranking-result-cloud');
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       applyCurrentState();
-      loadLegacyMigration();
+      loadRankingExtensions();
     }, { once: true });
   } else {
     applyCurrentState();
-    loadLegacyMigration();
+    loadRankingExtensions();
   }
 })();
