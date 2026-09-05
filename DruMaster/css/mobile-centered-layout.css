@@ -20,6 +20,19 @@
     transform:translateY(var(--dm-mobile-stage-w)) rotate(-90deg)!important;
   }
 
+  /* Ranking status is appended outside #app, so it does not inherit the
+     forced-landscape transform. Rotate and anchor it to the equivalent
+     logical bottom-right corner of the landscape stage. */
+  html.dm-layout-centered #rankingSyncState{
+    left:auto!important;
+    bottom:auto!important;
+    right:max(14px,env(safe-area-inset-top))!important;
+    top:max(18px,env(safe-area-inset-left))!important;
+    transform-origin:100% 0!important;
+    transform:rotate(-90deg)!important;
+    white-space:nowrap!important;
+  }
+
   /* Setup only: remove the old asymmetric screen inset and center against
      the safe visible rectangle after the forced-landscape transform. */
   html.dm-layout-centered .setup.screen{
