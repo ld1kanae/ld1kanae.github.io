@@ -52,7 +52,7 @@ async function submitLegacyBest(request:Request,env:Env){
   let body:unknown;try{body=await request.json()}catch{return error('Invalid JSON')}
   if(!isObject(body))return error('JSON object required');
   const id=/^[A-Za-z0-9._:-]+$/;
-  let playerId:string,displayName:string,songId:string,chartId:string,rankingVersion:string,score:number;
+  let playerId:string,displayName:string,songId:string,chartId:string,rankingVersion:string,score:number,legacySource='default';
   try{
     playerId=cleanString(body.playerId,'playerId',128,id);
     displayName=cleanString(body.displayName,'displayName',32).replace(/[\u0000-\u001f\u007f]/g,'').trim()||'PLAYER';
@@ -60,16 +60,19 @@ async function submitLegacyBest(request:Request,env:Env){
     chartId=cleanString(body.chartId||'default','chartId',80,id);
     rankingVersion=cleanString(body.rankingVersion||'1','rankingVersion',64,id);
     score=cleanInt(body.score,'score',0,1_000_000);
+    if(body.legacySource!==undefined)legacySource=cleanString(body.legacySource,'legacySource',64,id);
   }catch(c){return error(c instanceof Error?c.message:'Invalid legacy best')}
   const now=new Date().toISOString();
   const safe=(s:string)=>s.replace(/[^A-Za-z0-9._:-]/g,'_');
-  const playId=`legacy:${safe(playerId)}:${safe(songId)}:${safe(chartId)}:${safe(rankingVersion)}`.slice(0,128);
+  const playId=legacySource==='default'
+    ? `legacy:${safe(playerId)}:${safe(songId)}:${safe(chartId)}:${safe(rankingVersion)}`.slice(0,128)
+    : `legacy2:${safe(playerId).slice(0,40)}:${safe(songId).slice(0,32)}:${safe(legacySource).slice(0,40)}`.slice(0,128);
   try{await env.DB.batch([
     env.DB.prepare(`INSERT INTO players(player_id,display_name,created_at,updated_at) VALUES(?1,?2,?3,?3) ON CONFLICT(player_id) DO UPDATE SET display_name=excluded.display_name,updated_at=excluded.updated_at`).bind(playerId,displayName,now),
     env.DB.prepare(`INSERT INTO plays(play_id,player_id,display_name,song_id,chart_id,ranking_version,chart_version,game_version,score,perfect,great,good,miss,note_count,max_combo,play_mode,played_at_client,received_at_server) VALUES(?1,?2,?3,?4,?5,?6,'legacy-best-only','legacy-import',?7,0,0,0,0,0,NULL,'legacy',?8,?8) ON CONFLICT(play_id) DO UPDATE SET score=MAX(score,excluded.score),display_name=excluded.display_name,received_at_server=excluded.received_at_server`).bind(playId,playerId,displayName,songId,chartId,rankingVersion,score,now)
   ])}catch(c){console.error('D1 legacy best failure',c);return error('Database write failed',500)}
   const rank=await getPlayerRank(env.DB,playerId,songId,chartId,rankingVersion);
-  return json({ok:true,accepted:true,legacyBest:true,...(rank||{})},201);
+  return json({ok:true,accepted:true,legacyBest:true,legacySource,playId,...(rank||{})},201);
 }
 
 async function leaderboard(url:URL,env:Env){
