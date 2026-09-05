@@ -65,7 +65,7 @@
   function loadLegacyMigration() {
     if (document.querySelector('script[data-dm-legacy-best-migration]')) return;
     const script = document.createElement('script');
-    script.src = 'js/legacy-score-migration.js?v=20260906-legacy1';
+    script.src = 'js/legacy-score-migration.js?v=20260906-legacy2';
     script.dataset.dmLegacyBestMigration = '1';
     script.onerror = error => console.error('DruMaster legacy score migration loader failed', error);
     document.head.appendChild(script);
