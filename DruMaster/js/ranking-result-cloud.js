@@ -2,14 +2,19 @@
   'use strict';
 
   const MAX_RECORDS=10;
-  const DB_NAME='drumaster-ranking';
+  const SHARED_DB='drumaster-ranking';
+  const LOCAL_DB='drumaster-local-history';
   const STORE='plays';
+  const TOP10_KEY='drumasterLocalTop10V1';
   let renderToken=0;
 
-  const currentSongId=()=>globalThis.DruMasterSongs?.current?.id
-    || document.documentElement.dataset.songId
+  const currentSongId=()=>document.querySelector('#songSelect')?.value
+    || globalThis.DruMasterLocalHistory?.getCurrentSongId?.()
+    || globalThis.DruMasterSongs?.current?.id
     || document.body?.dataset.songId
-    || document.querySelector('#songSelect')?.value
+    || document.documentElement.dataset.songId
+    || localStorage.getItem('drumasterSongId')
+    || localStorage.getItem('drumusterSongId')
     || 'nanairo';
 
   const dateText=value=>{
@@ -21,10 +26,10 @@
 
   const scoreText=value=>Math.max(0,Math.round(Number(value)||0)).toLocaleString('en-US');
 
-  function readLocalHistory(){
+  function readDb(name){
     return new Promise(resolve=>{
       try{
-        const req=indexedDB.open(DB_NAME);
+        const req=indexedDB.open(name);
         req.onerror=()=>resolve([]);
         req.onupgradeneeded=()=>{try{req.transaction?.abort()}catch{}};
         req.onsuccess=()=>{
@@ -39,6 +44,46 @@
         };
       }catch{resolve([])}
     });
+  }
+
+  function readTopMirror(songId){
+    try{
+      const map=JSON.parse(localStorage.getItem(TOP10_KEY)||'{}');
+      const rows=map?.[String(songId)];
+      return Array.isArray(rows)?rows:[];
+    }catch{return []}
+  }
+
+  function visibleResultRow(){
+    const result=document.querySelector('#result');
+    if(!result||result.classList.contains('hidden')||result.classList.contains('autoplay')||result.classList.contains('no-score'))return null;
+    const n=selector=>{
+      const raw=document.querySelector(selector)?.textContent||'';
+      const match=raw.replace(/,/g,'').match(/-?\d+/);
+      return match?Number(match[0]):0;
+    };
+    const perfect=n('#perfectCount'),great=n('#greatCount'),good=n('#goodCount'),miss=n('#missCount');
+    if(perfect+great+good+miss<1)return null;
+    return {
+      playId:'visible-result',songId:currentSongId(),score:n('#finalScore'),perfect,great,good,miss,
+      playedAtClient:new Date().toISOString(),createdAtLocal:new Date().toISOString(),localOnly:true
+    };
+  }
+
+  function mergeRows(groups){
+    const byId=new Map();
+    const fingerprints=new Set();
+    for(const group of groups){
+      for(const row of Array.isArray(group)?group:[]){
+        if(!row||row.autoPlay||row.noScore)continue;
+        const id=String(row.playId||'');
+        const fp=`${row.songId||''}|${Number(row.score||0)}|${row.perfect||0}|${row.great||0}|${row.good||0}|${row.miss||0}|${String(row.playedAtClient||row.createdAtLocal||'').slice(0,19)}`;
+        if((id&&byId.has(id))||fingerprints.has(fp))continue;
+        if(id)byId.set(id,row);
+        fingerprints.add(fp);
+      }
+    }
+    return [...byId.values(),...groups.flat().filter(row=>row&&!row.playId&&!row.autoPlay&&!row.noScore&&!fingerprints.has(`__never__`))];
   }
 
   function render(rows){
@@ -84,11 +129,18 @@
     const token=++renderToken;
     const result=document.querySelector('#result');
     if(!result||result.classList.contains('hidden')||result.classList.contains('autoplay')||result.classList.contains('no-score'))return;
-    const all=await readLocalHistory();
-    if(token!==renderToken)return;
     const songId=currentSongId();
-    const rows=all
-      .filter(p=>p&&!p.autoPlay&&!p.noScore&&(p.songId||'nanairo')===songId)
+    const visible=visibleResultRow();
+    const [dedicated,shared]=await Promise.all([readDb(LOCAL_DB),readDb(SHARED_DB)]);
+    if(token!==renderToken)return;
+    const merged=mergeRows([
+      visible?[visible]:[],
+      readTopMirror(songId),
+      dedicated,
+      shared
+    ]);
+    const rows=merged
+      .filter(p=>(p.songId||'nanairo')===songId)
       .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.receivedAtServer||a.playedAtClient||'').localeCompare(String(b.receivedAtServer||b.playedAtClient||'')))
       .slice(0,MAX_RECORDS);
     render(rows);
@@ -97,9 +149,10 @@
   function install(){
     const result=document.querySelector('#result');
     if(result){
-      const observer=new MutationObserver(()=>{if(!result.classList.contains('hidden'))setTimeout(()=>refresh().catch(console.error),0)});
+      const observer=new MutationObserver(()=>{if(!result.classList.contains('hidden'))requestAnimationFrame(()=>setTimeout(()=>refresh().catch(console.error),0))});
       observer.observe(result,{attributes:true,attributeFilter:['class']});
     }
+    addEventListener('drumaster-local-play-saved',()=>refresh().catch(console.error));
     addEventListener('drumaster-ranking-synced',()=>refresh().catch(console.error));
     setTimeout(()=>refresh().catch(console.error),1500);
   }
