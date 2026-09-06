@@ -2,8 +2,8 @@
   'use strict';
 
   function currentSongId() {
-    return document.querySelector('#songSelect')?.value
-      || globalThis.DruMasterLocalHistory?.getCurrentSongId?.()
+    return globalThis.DruMasterSongs?.current?.id
+      || document.querySelector('#songSelect')?.value
       || document.body?.dataset.songId
       || document.documentElement.dataset.songId
       || localStorage.getItem('drumasterSongId')
@@ -40,15 +40,15 @@
       );
     }
 
-    const cloudBest = matches.reduce((best, entry) => Math.max(best, Number(entry?.score || 0)), 0);
-    if (!cloudBest) return;
+    const historyBest = matches.reduce((best, entry) => Math.max(best, Number(entry?.score || 0)), 0);
+    if (!historyBest) return;
 
-    const localBest = Number(localStorage.getItem('drumusterBest') || 0);
-    const sharedBest = Math.max(localBest, cloudBest);
-    localStorage.setItem('drumusterBest', String(sharedBest));
+    const compatibilityBest = Number(localStorage.getItem('drumusterBest') || 0);
+    const best = Math.max(compatibilityBest, historyBest);
+    localStorage.setItem('drumusterBest', String(best));
 
     const bestScore = document.querySelector('#bestScore');
-    if (bestScore) bestScore.textContent = String(sharedBest).padStart(6, '0');
+    if (bestScore) bestScore.textContent = String(best).padStart(6, '0');
   }
 
   addEventListener('drumaster-ranking-synced', event => applyMergedBest(event.detail));
@@ -57,7 +57,7 @@
     try {
       applyMergedBest(globalThis.DruMasterRanking?.getMergedState?.());
     } catch (error) {
-      console.warn('Unable to project cloud ranking best into game UI:', error);
+      console.warn('Unable to project local ranking best into game UI:', error);
     }
   }
 
@@ -72,8 +72,7 @@
 
   function loadRankingExtensions() {
     loadOnce('js/legacy-score-migration.js?v=20260906-legacy3', 'dm-legacy-best-migration');
-    loadOnce('js/local-play-history.js?v=20260907-local1', 'dm-local-play-history');
-    loadOnce('js/ranking-result-cloud.js?v=20260907-localresult1', 'dm-ranking-result-cloud');
+    loadOnce('js/ranking-result-cloud.js?v=20260907-unified1', 'dm-ranking-result-cloud');
   }
 
   if (document.readyState === 'loading') {
