@@ -24,6 +24,15 @@
       || 'nanairo';
   }
 
+  function syncSongIdentity(){
+    const value=document.querySelector('#songSelect')?.value;
+    if(!value)return;
+    document.documentElement.dataset.songId=value;
+    if(document.body)document.body.dataset.songId=value;
+    localStorage.setItem('drumasterSongId',value);
+    localStorage.setItem('drumusterSongId',value);
+  }
+
   function numberFrom(selector){
     const raw=document.querySelector(selector)?.textContent||'';
     const match=raw.replace(/,/g,'').match(/-?\d+/);
@@ -132,6 +141,7 @@
 
   async function capture(){
     if(capturedForVisibleResult||!isRankableResult())return null;
+    syncSongIdentity();
     const perfect=numberFrom('#perfectCount');
     const great=numberFrom('#greatCount');
     const good=numberFrom('#goodCount');
@@ -156,8 +166,7 @@
       noScore:false
     };
 
-    /* The tiny TOP10 mirror is written first. Even if IndexedDB or the network
-       is unavailable, the result screen can still recover the local record. */
+    /* Write the tiny local mirror before IndexedDB or any network work. */
     saveTop(play);
     try{await put(play)}catch(error){console.error('Local play history write failed',error)}
     dispatchEvent(new CustomEvent('drumaster-local-play-saved',{detail:play}));
@@ -169,6 +178,13 @@
   }
 
   function install(){
+    const songSelect=document.querySelector('#songSelect');
+    syncSongIdentity();
+    songSelect?.addEventListener('change',()=>{
+      syncSongIdentity();
+      capturedForVisibleResult=false;
+    });
+
     const result=document.querySelector('#result');
     if(result){
       const observer=new MutationObserver(()=>{
@@ -190,7 +206,8 @@
     getTop,
     captureNow:capture,
     getCurrentSongId:currentSongId,
-    seedFromShared
+    seedFromShared,
+    syncSongIdentity
   };
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
