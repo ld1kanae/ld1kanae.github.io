@@ -5,20 +5,15 @@
   globalThis.DruMasterResultRankingLocal=true;
 
   const MAX_RECORDS=10;
-  const SHARED_DB='drumaster-ranking';
-  const LOCAL_DB='drumaster-local-history';
-  const STORE='plays';
-  const TOP10_KEY='drumasterLocalTop10V1';
   let renderToken=0;
 
-  const currentSongId=()=>document.querySelector('#songSelect')?.value
-    || globalThis.DruMasterLocalHistory?.getCurrentSongId?.()
-    || globalThis.DruMasterSongs?.current?.id
-    || document.body?.dataset.songId
-    || document.documentElement.dataset.songId
-    || localStorage.getItem('drumasterSongId')
-    || localStorage.getItem('drumusterSongId')
-    || 'nanairo';
+  const currentSongId=()=>globalThis.DruMasterSongs?.current?.id
+    ||document.querySelector('#songSelect')?.value
+    ||document.body?.dataset.songId
+    ||document.documentElement.dataset.songId
+    ||localStorage.getItem('drumasterSongId')
+    ||localStorage.getItem('drumusterSongId')
+    ||'nanairo';
 
   const dateText=value=>{
     const d=new Date(value||Date.now());
@@ -28,34 +23,6 @@
   };
 
   const scoreText=value=>Math.max(0,Math.round(Number(value)||0)).toLocaleString('en-US');
-
-  function readDb(name){
-    return new Promise(resolve=>{
-      try{
-        const req=indexedDB.open(name);
-        req.onerror=()=>resolve([]);
-        req.onupgradeneeded=()=>{try{req.transaction?.abort()}catch{}};
-        req.onsuccess=()=>{
-          const db=req.result;
-          if(!db.objectStoreNames.contains(STORE)){db.close();resolve([]);return}
-          try{
-            const tx=db.transaction(STORE,'readonly');
-            const all=tx.objectStore(STORE).getAll();
-            all.onsuccess=()=>{db.close();resolve(Array.isArray(all.result)?all.result:[])};
-            all.onerror=()=>{db.close();resolve([])};
-          }catch{db.close();resolve([])}
-        };
-      }catch{resolve([])}
-    });
-  }
-
-  function readTopMirror(songId){
-    try{
-      const map=JSON.parse(localStorage.getItem(TOP10_KEY)||'{}');
-      const rows=map?.[String(songId)];
-      return Array.isArray(rows)?rows:[];
-    }catch{return []}
-  }
 
   function visibleResultRow(){
     const result=document.querySelector('#result');
@@ -69,7 +36,7 @@
     if(perfect+great+good+miss<1)return null;
     return {
       playId:'visible-result',songId:currentSongId(),score:n('#finalScore'),perfect,great,good,miss,
-      playedAtClient:new Date().toISOString(),createdAtLocal:new Date().toISOString(),localOnly:true
+      playedAtClient:new Date().toISOString(),createdAtLocal:new Date().toISOString()
     };
   }
 
@@ -136,15 +103,10 @@
     if(!result||result.classList.contains('hidden')||result.classList.contains('autoplay')||result.classList.contains('no-score'))return;
     const songId=currentSongId();
     const visible=visibleResultRow();
-    const [dedicated,shared]=await Promise.all([readDb(LOCAL_DB),readDb(SHARED_DB)]);
+    let local=[];
+    try{local=await globalThis.DruMasterRanking?.getLocalPlays?.()||[]}catch(error){console.warn('Unable to read local ranking history:',error)}
     if(token!==renderToken)return;
-    const merged=mergeRows([
-      visible?[visible]:[],
-      readTopMirror(songId),
-      dedicated,
-      shared
-    ]);
-    const rows=merged
+    const rows=mergeRows([visible?[visible]:[],local])
       .filter(p=>(p.songId||'nanairo')===songId)
       .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.receivedAtServer||a.playedAtClient||'').localeCompare(String(b.receivedAtServer||b.playedAtClient||'')))
       .slice(0,MAX_RECORDS);
@@ -159,7 +121,7 @@
     }
     addEventListener('drumaster-local-play-saved',()=>refresh().catch(console.error));
     addEventListener('drumaster-ranking-synced',()=>refresh().catch(console.error));
-    setTimeout(()=>refresh().catch(console.error),1500);
+    setTimeout(()=>refresh().catch(console.error),1000);
   }
 
   globalThis.DruMasterRefreshResultRanking=refresh;
