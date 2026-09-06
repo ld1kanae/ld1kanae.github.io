@@ -36,6 +36,8 @@ jobs:
         run: npm install
 
       - name: Sync current DruMaster web core
+        env:
+          DRUMASTER_BUILD_NUMBER: ${{ github.run_number }}
         run: npm run sync:web
 
       - name: Prepare square D-mark icon source
