@@ -3,6 +3,8 @@ use std::{
     fs::{self, File},
     io::copy,
     process::Command,
+    thread,
+    time::{Duration, Instant},
 };
 
 #[cfg(target_os = "windows")]
@@ -174,6 +176,8 @@ async fn install_update(app: tauri::AppHandle, url: String, asset_name: String) 
     .await
     .map_err(|error| error.to_string())??;
 
+    // Do not terminate the app until the detached helper has actually started
+    // and acknowledged ownership of the update/restart sequence.
     launch_update_helper(&installer_path, &current_exe, std::process::id())?;
     app.exit(0);
     Ok(())
@@ -188,40 +192,59 @@ fn ps_literal(value: &std::path::Path) -> String {
 fn launch_update_helper(installer: &std::path::Path, current_exe: &std::path::Path, current_pid: u32) -> Result<(), String> {
     let installer = ps_literal(installer);
     let current_exe = ps_literal(current_exe);
-    let log_path = std::env::temp_dir().join("DruMaster-update.log");
+    let temp = std::env::temp_dir();
+    let log_path = temp.join("DruMaster-update.log");
+    let ready_path = temp.join(format!("DruMaster-update-ready-{current_pid}.flag"));
+    let helper_path = temp.join(format!("DruMaster-update-{current_pid}.ps1"));
+    let _ = fs::remove_file(&ready_path);
+
     let log_path_ps = ps_literal(&log_path);
-    let helper_path = std::env::temp_dir().join(format!("DruMaster-update-{}.ps1", current_pid));
+    let ready_path_ps = ps_literal(&ready_path);
 
     let script = format!(
         "$ErrorActionPreference='Stop'\r\n\
 $log='{}'\r\n\
-function Log([string]$m) {{ Add-Content -LiteralPath $log -Value ((Get-Date -Format o) + ' ' + $m) -Encoding UTF8 }}\r\n\
+$ready='{}'\r\n\
+$exe='{}'\r\n\
+function Log([string]$m) {{ try {{ Add-Content -LiteralPath $log -Value ((Get-Date -Format o) + ' ' + $m) -Encoding UTF8 }} catch {{}} }}\r\n\
+function Start-DruMaster {{\r\n\
+  param([string]$Path)\r\n\
+  if (-not (Test-Path -LiteralPath $Path)) {{ throw 'DruMaster executable was not found' }}\r\n\
+  for ($i=1; $i -le 5; $i++) {{\r\n\
+    try {{\r\n\
+      Log ('restart attempt ' + $i)\r\n\
+      $rp=Start-Process -FilePath $Path -PassThru\r\n\
+      Start-Sleep -Milliseconds 1200\r\n\
+      if (-not $rp.HasExited) {{ Log ('restart verified pid=' + $rp.Id); return }}\r\n\
+      Log ('restart process exited early code=' + $rp.ExitCode)\r\n\
+    }} catch {{ Log ('restart attempt failed: ' + $_.Exception.Message) }}\r\n\
+    Start-Sleep -Seconds 1\r\n\
+  }}\r\n\
+  Log 'falling back to Explorer shell launch'\r\n\
+  Start-Process -FilePath 'explorer.exe' -ArgumentList $Path\r\n\
+}}\r\n\
 try {{\r\n\
-  Log 'helper started'\r\n\
+  Set-Content -LiteralPath $ready -Value 'ready' -Encoding ASCII\r\n\
+  Log 'helper ready'\r\n\
   try {{ Wait-Process -Id {} -Timeout 30 -ErrorAction SilentlyContinue }} catch {{}}\r\n\
-  Start-Sleep -Milliseconds 700\r\n\
+  Start-Sleep -Milliseconds 900\r\n\
   Log 'starting installer'\r\n\
   $p=Start-Process -FilePath '{}' -ArgumentList '/S' -Wait -PassThru\r\n\
   Log ('installer exit=' + $p.ExitCode)\r\n\
   if ($p.ExitCode -ne 0) {{ throw ('installer failed with exit code ' + $p.ExitCode) }}\r\n\
-  $deadline=(Get-Date).AddSeconds(20)\r\n\
-  while ((-not (Test-Path -LiteralPath '{}')) -and ((Get-Date) -lt $deadline)) {{ Start-Sleep -Milliseconds 500 }}\r\n\
-  if (-not (Test-Path -LiteralPath '{}')) {{ throw 'updated executable was not found' }}\r\n\
-  Log 'restarting app'\r\n\
-  Start-Process -FilePath '{}'\r\n\
-  Log 'restart command sent'\r\n\
+  $deadline=(Get-Date).AddSeconds(30)\r\n\
+  while ((-not (Test-Path -LiteralPath $exe)) -and ((Get-Date) -lt $deadline)) {{ Start-Sleep -Milliseconds 500 }}\r\n\
+  Start-DruMaster -Path $exe\r\n\
+  Log 'update sequence completed'\r\n\
 }} catch {{\r\n\
   Log ('ERROR: ' + $_.Exception.Message)\r\n\
-  try {{ if (Test-Path -LiteralPath '{}') {{ Start-Process -FilePath '{}' }} }} catch {{}}\r\n\
+  try {{ Start-DruMaster -Path $exe }} catch {{ Log ('fallback restart failed: ' + $_.Exception.Message) }}\r\n\
 }}\r\n",
         log_path_ps,
+        ready_path_ps,
+        current_exe,
         current_pid,
-        installer,
-        current_exe,
-        current_exe,
-        current_exe,
-        current_exe,
-        current_exe
+        installer
     );
 
     fs::write(&helper_path, script.as_bytes()).map_err(|error| error.to_string())?;
@@ -238,7 +261,16 @@ try {{\r\n\
         .arg(&helper_path);
     command.creation_flags(0x00000008 | 0x00000200);
     command.spawn().map_err(|error| error.to_string())?;
-    Ok(())
+
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while Instant::now() < deadline {
+        if ready_path.exists() {
+            return Ok(());
+        }
+        thread::sleep(Duration::from_millis(100));
+    }
+
+    Err("update helper did not start; application was not closed".into())
 }
 
 #[cfg(not(target_os = "windows"))]
