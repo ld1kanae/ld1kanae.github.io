@@ -9,7 +9,9 @@
   const RETRY_AFTER_MS = 6 * 60 * 60 * 1000;
 
   let overlay;
-  let message;
+  let titleNode;
+  let messageNode;
+  let actionsNode;
 
   function ensureOverlay() {
     if (overlay) return overlay;
@@ -22,33 +24,81 @@
       WebkitBackdropFilter: 'blur(10px)', color: '#fff',
       fontFamily: 'Arial, Helvetica, sans-serif'
     });
+
     const panel = document.createElement('div');
     Object.assign(panel.style, {
-      width: 'min(560px, calc(100vw - 48px))', padding: '34px 36px',
+      width: 'min(560px, calc(100vw - 48px))', padding: '32px 34px',
       border: '1px solid rgba(255,255,255,.18)', borderRadius: '18px',
-      background: 'rgba(13,24,36,.96)', boxShadow: '0 24px 80px rgba(0,0,0,.45)',
+      background: 'rgba(13,24,36,.98)', boxShadow: '0 24px 80px rgba(0,0,0,.5)',
       textAlign: 'center'
     });
-    const title = document.createElement('div');
-    title.textContent = 'DruMaster を更新しています';
-    Object.assign(title.style, { fontSize: '24px', fontWeight: '700', marginBottom: '14px' });
-    message = document.createElement('div');
-    message.textContent = '最新版を確認しています…';
-    Object.assign(message.style, { fontSize: '14px', lineHeight: '1.7', opacity: '.8' });
-    panel.append(title, message);
+
+    titleNode = document.createElement('div');
+    Object.assign(titleNode.style, { fontSize: '22px', fontWeight: '700', marginBottom: '14px' });
+
+    messageNode = document.createElement('div');
+    Object.assign(messageNode.style, {
+      fontSize: '14px', lineHeight: '1.8', opacity: '.86', whiteSpace: 'pre-line'
+    });
+
+    actionsNode = document.createElement('div');
+    Object.assign(actionsNode.style, {
+      display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px'
+    });
+
+    panel.append(titleNode, messageNode, actionsNode);
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
     return overlay;
   }
 
-  function show(text) {
-    ensureOverlay();
-    message.textContent = text;
-    overlay.style.display = 'flex';
+  function makeButton(text, primary = false) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = text;
+    Object.assign(button.style, {
+      minWidth: '128px', minHeight: '42px', padding: '10px 18px',
+      borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700',
+      border: primary ? '1px solid rgba(184,218,255,.7)' : '1px solid rgba(255,255,255,.22)',
+      color: '#fff',
+      background: primary ? 'rgba(86,145,210,.5)' : 'rgba(255,255,255,.08)'
+    });
+    return button;
   }
 
   function hide() {
     if (overlay) overlay.style.display = 'none';
+  }
+
+  function showProgress(text) {
+    ensureOverlay();
+    titleNode.textContent = 'DruMaster を更新しています';
+    messageNode.textContent = text;
+    actionsNode.replaceChildren();
+    overlay.style.display = 'flex';
+  }
+
+  function askForUpdate(info) {
+    ensureOverlay();
+    titleNode.textContent = '新しいバージョンがあります';
+    messageNode.textContent = `現在: Build #${info.currentBuild}\n最新版: Build #${info.latestBuild}\n\n更新しますか？`;
+    actionsNode.replaceChildren();
+
+    const later = makeButton('後で');
+    const update = makeButton('更新する', true);
+    actionsNode.append(later, update);
+    overlay.style.display = 'flex';
+    update.focus();
+
+    return new Promise(resolve => {
+      const finish = value => {
+        later.onclick = null;
+        update.onclick = null;
+        resolve(value);
+      };
+      later.onclick = () => finish(false);
+      update.onclick = () => finish(true);
+    });
   }
 
   function recentlyAttempted(build) {
@@ -84,19 +134,14 @@
         return;
       }
 
-      const accepted = window.confirm(
-        `新しいバージョンがあります。更新しますか？\n\n` +
-        `現在: Build #${info.currentBuild}\n` +
-        `最新版: Build #${info.latestBuild}\n\n` +
-        `「OK」を押すと更新を開始します。`
-      );
+      const accepted = await askForUpdate(info);
       if (!accepted) {
         hide();
         return;
       }
 
       rememberAttempt(info.latestBuild);
-      show(`最新版（Build #${info.latestBuild}）をダウンロードしています。完了後、自動で再起動します。`);
+      showProgress(`最新版（Build #${info.latestBuild}）をダウンロードしています。\n完了後、自動で再起動します。`);
       await invoke('install_update', {
         url: info.downloadUrl,
         assetName: info.assetName
