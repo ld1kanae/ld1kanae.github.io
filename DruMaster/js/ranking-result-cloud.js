@@ -1,6 +1,9 @@
 (()=>{
   'use strict';
 
+  if(globalThis.DruMasterResultRankingLocal)return;
+  globalThis.DruMasterResultRankingLocal=true;
+
   const MAX_RECORDS=10;
   const SHARED_DB='drumaster-ranking';
   const LOCAL_DB='drumaster-local-history';
@@ -71,19 +74,21 @@
   }
 
   function mergeRows(groups){
-    const byId=new Map();
+    const rows=[];
+    const ids=new Set();
     const fingerprints=new Set();
     for(const group of groups){
       for(const row of Array.isArray(group)?group:[]){
         if(!row||row.autoPlay||row.noScore)continue;
         const id=String(row.playId||'');
         const fp=`${row.songId||''}|${Number(row.score||0)}|${row.perfect||0}|${row.great||0}|${row.good||0}|${row.miss||0}|${String(row.playedAtClient||row.createdAtLocal||'').slice(0,19)}`;
-        if((id&&byId.has(id))||fingerprints.has(fp))continue;
-        if(id)byId.set(id,row);
+        if((id&&ids.has(id))||fingerprints.has(fp))continue;
+        if(id)ids.add(id);
         fingerprints.add(fp);
+        rows.push(row);
       }
     }
-    return [...byId.values(),...groups.flat().filter(row=>row&&!row.playId&&!row.autoPlay&&!row.noScore&&!fingerprints.has(`__never__`))];
+    return rows;
   }
 
   function render(rows){
@@ -157,5 +162,6 @@
     setTimeout(()=>refresh().catch(console.error),1500);
   }
 
+  globalThis.DruMasterRefreshResultRanking=refresh;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
