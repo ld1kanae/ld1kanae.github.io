@@ -2,6 +2,8 @@
   'use strict';
 
   const MAX_RECORDS=10;
+  const DB_NAME='drumaster-ranking';
+  const STORE='plays';
   let renderToken=0;
 
   const currentSongId=()=>globalThis.DruMasterSongs?.current?.id
@@ -19,25 +21,24 @@
 
   const scoreText=value=>Math.max(0,Math.round(Number(value)||0)).toLocaleString('en-US');
 
-  async function fetchHistory(){
-    const ranking=globalThis.DruMasterRanking;
-    if(!ranking)return [];
-    const endpoint=String(ranking.getEndpoint?.()||'').replace(/\/$/,'');
-    if(!endpoint)return [];
-    const ids=[ranking.getPlayerId?.(),...(ranking.getLinkedPlayerIds?.()||[])].filter(Boolean);
-    const seen=new Set(),all=[];
-    for(const id of [...new Set(ids)]){
+  function readLocalHistory(){
+    return new Promise(resolve=>{
       try{
-        const r=await fetch(`${endpoint}/v1/players/${encodeURIComponent(id)}/plays?limit=5000`,{cache:'no-store',headers:{accept:'application/json'}});
-        if(!r.ok)continue;
-        const payload=await r.json();
-        for(const p of Array.isArray(payload?.plays)?payload.plays:[]){
-          if(!p?.playId||seen.has(p.playId)||p.autoPlay||p.noScore)continue;
-          seen.add(p.playId);all.push(p);
-        }
-      }catch{}
-    }
-    return all;
+        const req=indexedDB.open(DB_NAME);
+        req.onerror=()=>resolve([]);
+        req.onupgradeneeded=()=>{try{req.transaction?.abort()}catch{}};
+        req.onsuccess=()=>{
+          const db=req.result;
+          if(!db.objectStoreNames.contains(STORE)){db.close();resolve([]);return}
+          try{
+            const tx=db.transaction(STORE,'readonly');
+            const all=tx.objectStore(STORE).getAll();
+            all.onsuccess=()=>{db.close();resolve(Array.isArray(all.result)?all.result:[])};
+            all.onerror=()=>{db.close();resolve([])};
+          }catch{db.close();resolve([])}
+        };
+      }catch{resolve([])}
+    });
   }
 
   function render(rows){
@@ -83,11 +84,11 @@
     const token=++renderToken;
     const result=document.querySelector('#result');
     if(!result||result.classList.contains('hidden')||result.classList.contains('autoplay')||result.classList.contains('no-score'))return;
-    const all=await fetchHistory();
+    const all=await readLocalHistory();
     if(token!==renderToken)return;
     const songId=currentSongId();
     const rows=all
-      .filter(p=>(p.songId||'nanairo')===songId)
+      .filter(p=>p&&!p.autoPlay&&!p.noScore&&(p.songId||'nanairo')===songId)
       .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.receivedAtServer||a.playedAtClient||'').localeCompare(String(b.receivedAtServer||b.playedAtClient||'')))
       .slice(0,MAX_RECORDS);
     render(rows);
