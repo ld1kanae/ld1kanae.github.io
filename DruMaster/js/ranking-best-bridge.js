@@ -70,7 +70,16 @@
     document.head.appendChild(script);
   }
 
+  function blockDetachedLocalHistoryLoader() {
+    if (document.querySelector('script[data-dm-local-play-history]')) return;
+    const marker = document.createElement('script');
+    marker.type = 'application/json';
+    marker.setAttribute('data-dm-local-play-history', 'disabled-unified-store');
+    document.head.appendChild(marker);
+  }
+
   function loadRankingExtensions() {
+    blockDetachedLocalHistoryLoader();
     loadOnce('js/legacy-score-migration.js?v=20260906-legacy3', 'dm-legacy-best-migration');
     loadOnce('js/ranking-result-cloud.js?v=20260907-unified1', 'dm-ranking-result-cloud');
   }
