@@ -11,6 +11,7 @@ const performanceTarget = resolve(target, 'pc-performance-opt.js');
 const updaterSource = resolve(packageRoot, 'auto-update.js');
 const updaterTarget = resolve(target, 'auto-update.js');
 const indexPath = resolve(target, 'index.html');
+const buildNumber = String(process.env.DRUMASTER_BUILD_NUMBER || process.env.GITHUB_RUN_NUMBER || Date.now());
 
 await rm(target, { recursive: true, force: true });
 await mkdir(target, { recursive: true });
@@ -32,11 +33,15 @@ const injections = [
   'auto-update.js'
 ];
 for (const script of injections) {
-  if (!indexHtml.includes(script)) {
-    indexHtml = indexHtml.replace(/<\/body>/i, `  <script src="${script}"></script>\n</body>`);
+  const barePattern = new RegExp(`<script\\s+src=["']${script.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^"']*["'][^>]*><\\/script>`, 'i');
+  const tag = `<script src="${script}?v=${encodeURIComponent(buildNumber)}"></script>`;
+  if (barePattern.test(indexHtml)) {
+    indexHtml = indexHtml.replace(barePattern, tag);
+  } else {
+    indexHtml = indexHtml.replace(/<\/body>/i, `  ${tag}\n</body>`);
   }
 }
 await writeFile(indexPath, indexHtml, 'utf8');
 
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
-console.log('Shared ranking sync retained; injected Windows-only window controls, performance optimization, and automatic updater.');
+console.log(`Injected Windows-only scripts with build cache key v=${buildNumber}.`);
