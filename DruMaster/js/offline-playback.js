@@ -39,19 +39,44 @@
   globalThis.DruMasterOfflinePlayback={isLocked:isPlaybackLocked};
 })();
 
-// One shared client is used by Web, Windows and Android. During normal page
-// parsing load it synchronously, so an older cached dynamic loader later in the
-// document can never win the race and install the previous timer-based client.
+// Web, Windows and Android all load the exact same local-first ranking engine.
+// During document parsing, synchronous tags guarantee that old cached dynamic
+// loaders later in the page cannot race ahead and install a previous client.
 (()=>{
-  if(globalThis.DruMasterRanking||document.querySelector('script[data-drumaster-ranking-sync]'))return;
-  const src='js/ranking-sync.js?v=20260907-localfirst1';
+  const rankingSrc='js/ranking-sync.js?v=20260907-localfirst2';
+  const bridgeSrc='js/ranking-best-bridge.js?v=20260907-unified2';
+
   if(document.readyState==='loading'){
-    document.write(`<script src="${src}" data-drumaster-ranking-sync="1"><\/script>`);
+    if(!globalThis.DruMasterRanking&&!document.querySelector('script[data-drumaster-ranking-sync]')){
+      document.write(`<script src="${rankingSrc}" data-drumaster-ranking-sync="1"><\/script>`);
+    }
+    if(!document.querySelector('script[data-drumaster-ranking-bridge]')){
+      document.write(`<script src="${bridgeSrc}" data-drumaster-ranking-bridge="1"><\/script>`);
+    }
+    return;
+  }
+
+  const loadBridge=()=>{
+    if(document.querySelector('script[data-drumaster-ranking-bridge]'))return;
+    const b=document.createElement('script');
+    b.src=bridgeSrc;
+    b.dataset.drumasterRankingBridge='1';
+    document.head.appendChild(b);
+  };
+
+  if(globalThis.DruMasterRanking){
+    loadBridge();
+    return;
+  }
+  if(document.querySelector('script[data-drumaster-ranking-sync]')){
+    const wait=()=>globalThis.DruMasterRanking?loadBridge():setTimeout(wait,20);
+    wait();
     return;
   }
   const s=document.createElement('script');
-  s.src=src;
+  s.src=rankingSrc;
   s.async=false;
   s.dataset.drumasterRankingSync='1';
+  s.onload=loadBridge;
   document.head.appendChild(s);
 })();
