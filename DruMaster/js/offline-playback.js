@@ -36,17 +36,21 @@
     };
   }
 
-  globalThis.DruMasterOfflinePlayback={
-    isLocked:isPlaybackLocked
-  };
+  globalThis.DruMasterOfflinePlayback={isLocked:isPlaybackLocked};
 })();
 
-// One shared client is used by Web, Windows and Android. It owns the single
-// durable local play database and performs event-driven cloud delta sync.
+// One shared client is used by Web, Windows and Android. During normal page
+// parsing load it synchronously, so an older cached dynamic loader later in the
+// document can never win the race and install the previous timer-based client.
 (()=>{
   if(globalThis.DruMasterRanking||document.querySelector('script[data-drumaster-ranking-sync]'))return;
+  const src='js/ranking-sync.js?v=20260907-localfirst1';
+  if(document.readyState==='loading'){
+    document.write(`<script src="${src}" data-drumaster-ranking-sync="1"><\/script>`);
+    return;
+  }
   const s=document.createElement('script');
-  s.src='js/ranking-sync.js?v=20260907-localfirst1';
+  s.src=src;
   s.async=false;
   s.dataset.drumasterRankingSync='1';
   document.head.appendChild(s);
