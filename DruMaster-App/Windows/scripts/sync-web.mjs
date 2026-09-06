@@ -17,9 +17,9 @@ await rm(target, { recursive: true, force: true });
 await mkdir(target, { recursive: true });
 await cp(source, target, { recursive: true });
 
-// Ranking sync now lives in the shared DruMaster web core, so Windows must not
-// inject its old platform-specific copy or the same result would be captured and
-// uploaded twice. Only Windows-shell/performance/updater scripts remain here.
+// Ranking sync lives in the shared DruMaster web core. Windows injects its
+// shell/performance/updater scripts plus the local-history safety layer with a
+// per-build cache key so a stale WebView cache cannot suppress result storage.
 await Promise.all([
   cp(overlaySource, overlayTarget),
   cp(performanceSource, performanceTarget),
@@ -30,7 +30,9 @@ let indexHtml = await readFile(indexPath, 'utf8');
 const injections = [
   'app-close-overlay.js',
   'pc-performance-opt.js',
-  'auto-update.js'
+  'auto-update.js',
+  'js/local-play-history.js',
+  'js/ranking-result-cloud.js'
 ];
 for (const script of injections) {
   const barePattern = new RegExp(`<script\\s+src=["']${script.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^"']*["'][^>]*><\\/script>`, 'i');
@@ -44,4 +46,4 @@ for (const script of injections) {
 await writeFile(indexPath, indexHtml, 'utf8');
 
 console.log(`Synced DruMaster web core:\n  ${source}\n→ ${target}`);
-console.log(`Injected Windows-only scripts with build cache key v=${buildNumber}.`);
+console.log(`Injected Windows-only scripts and durable local history with build cache key v=${buildNumber}.`);
