@@ -6,6 +6,7 @@ type PlayInput = {
   perfect:number; great:number; good:number; miss:number; noteCount:number;
   maxCombo:number|null; playMode:string; autoPlay:boolean; noScore:boolean; playedAtClient:string;
 };
+type SyncCursor = { receivedAtServer:string; playId:string };
 
 const CORS_HEADERS={
   'access-control-allow-origin':'*',
@@ -32,20 +33,38 @@ function parsePlay(body:unknown):PlayInput{
   const playedAtClient=cleanString(body.playedAtClient,'playedAtClient',64),d=new Date(playedAtClient);if(!Number.isFinite(d.getTime()))throw new Error('playedAtClient is invalid');
   return{playId,playerId,displayName,songId,chartId,rankingVersion,chartVersion,gameVersion,score,perfect,great,good,miss,noteCount,maxCombo,playMode,autoPlay:false,noScore:false,playedAtClient:d.toISOString()};
 }
+
+function encodeCursor(receivedAtServer:string,playId:string){
+  const raw=JSON.stringify([receivedAtServer,playId]);
+  return btoa(raw).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function decodeCursor(value:string|null):SyncCursor|null{
+  if(!value)return null;
+  try{
+    const normalized=value.replace(/-/g,'+').replace(/_/g,'/');
+    const padded=normalized+'='.repeat((4-normalized.length%4)%4);
+    const decoded=JSON.parse(atob(padded));
+    if(!Array.isArray(decoded)||decoded.length!==2||typeof decoded[0]!=='string'||typeof decoded[1]!=='string')return null;
+    if(!Number.isFinite(new Date(decoded[0]).getTime())||!/^[A-Za-z0-9._:-]{1,128}$/.test(decoded[1]))return null;
+    return{receivedAtServer:decoded[0],playId:decoded[1]};
+  }catch{return null}
+}
+
 async function getPlayerRank(db:D1Database,playerId:string,songId:string,chartId:string,rankingVersion:string){
   const row=await db.prepare(`WITH candidate AS (SELECT play_id,player_id,display_name,score,played_at_client,received_at_server,ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC,received_at_server ASC,play_id ASC) AS player_best FROM plays WHERE song_id=?1 AND chart_id=?2 AND ranking_version=?3),best AS (SELECT * FROM candidate WHERE player_best=1),ranked AS (SELECT *,ROW_NUMBER() OVER (ORDER BY score DESC,received_at_server ASC,play_id ASC) AS rank FROM best) SELECT play_id AS playId,player_id AS playerId,display_name AS displayName,score,played_at_client AS playedAtClient,received_at_server AS receivedAtServer,rank,(SELECT COUNT(*) FROM ranked) AS totalPlayers FROM ranked WHERE player_id=?4 LIMIT 1`).bind(songId,chartId,rankingVersion,playerId).first<Record<string,unknown>>();return row||null;
 }
+
 async function submitPlay(request:Request,env:Env){
   let body:unknown;try{body=await request.json()}catch{return error('Invalid JSON')}
   let play:PlayInput;try{play=parsePlay(body)}catch(c){return error(c instanceof Error?c.message:'Invalid play')}
-  const existing=await env.DB.prepare('SELECT play_id FROM plays WHERE play_id=?1 LIMIT 1').bind(play.playId).first();
-  if(existing){const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:true,personalBest:rank?.playId===play.playId,...(rank||{})})}
+  const existing=await env.DB.prepare('SELECT play_id AS playId,received_at_server AS receivedAtServer FROM plays WHERE play_id=?1 LIMIT 1').bind(play.playId).first<Record<string,unknown>>();
+  if(existing){const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:true,personalBest:rank?.playId===play.playId,receivedAtServer:existing.receivedAtServer,...(rank||{})})}
   const receivedAtServer=new Date().toISOString();
   try{await env.DB.batch([
     env.DB.prepare(`INSERT INTO players(player_id,display_name,created_at,updated_at) VALUES(?1,?2,?3,?3) ON CONFLICT(player_id) DO UPDATE SET display_name=excluded.display_name,updated_at=excluded.updated_at`).bind(play.playerId,play.displayName,receivedAtServer),
     env.DB.prepare(`INSERT INTO plays(play_id,player_id,display_name,song_id,chart_id,ranking_version,chart_version,game_version,score,perfect,great,good,miss,note_count,max_combo,play_mode,played_at_client,received_at_server) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)`).bind(play.playId,play.playerId,play.displayName,play.songId,play.chartId,play.rankingVersion,play.chartVersion,play.gameVersion,play.score,play.perfect,play.great,play.good,play.miss,play.noteCount,play.maxCombo,play.playMode,play.playedAtClient,receivedAtServer)
-  ])}catch(c){const m=c instanceof Error?c.message:String(c);if(/UNIQUE|constraint/i.test(m)){const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:true,...(rank||{})})}console.error('D1 submit failure',c);return error('Database write failed',500)}
-  const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:false,personalBest:rank?.playId===play.playId,...(rank||{})},201);
+  ])}catch(c){const m=c instanceof Error?c.message:String(c);if(/UNIQUE|constraint/i.test(m)){const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:true,receivedAtServer,...(rank||{})})}console.error('D1 submit failure',c);return error('Database write failed',500)}
+  const rank=await getPlayerRank(env.DB,play.playerId,play.songId,play.chartId,play.rankingVersion);return json({ok:true,accepted:true,duplicate:false,personalBest:rank?.playId===play.playId,receivedAtServer,...(rank||{})},201);
 }
 
 async function submitLegacyBest(request:Request,env:Env){
@@ -69,7 +88,7 @@ async function submitLegacyBest(request:Request,env:Env){
     : `legacy2:${safe(playerId).slice(0,40)}:${safe(songId).slice(0,32)}:${safe(legacySource).slice(0,40)}`.slice(0,128);
   try{await env.DB.batch([
     env.DB.prepare(`INSERT INTO players(player_id,display_name,created_at,updated_at) VALUES(?1,?2,?3,?3) ON CONFLICT(player_id) DO UPDATE SET display_name=excluded.display_name,updated_at=excluded.updated_at`).bind(playerId,displayName,now),
-    env.DB.prepare(`INSERT INTO plays(play_id,player_id,display_name,song_id,chart_id,ranking_version,chart_version,game_version,score,perfect,great,good,miss,note_count,max_combo,play_mode,played_at_client,received_at_server) VALUES(?1,?2,?3,?4,?5,?6,'legacy-best-only','legacy-import',?7,0,0,0,0,0,NULL,'legacy',?8,?8) ON CONFLICT(play_id) DO UPDATE SET score=MAX(score,excluded.score),display_name=excluded.display_name,received_at_server=excluded.received_at_server`).bind(playId,playerId,displayName,songId,chartId,rankingVersion,score,now)
+    env.DB.prepare(`INSERT INTO plays(play_id,player_id,display_name,song_id,chart_id,ranking_version,chart_version,game_version,score,perfect,great,good,miss,note_count,max_combo,play_mode,played_at_client,received_at_server) VALUES(?1,?2,?3,?4,?5,?6,'legacy-best-only','legacy-import',?7,0,0,0,0,0,NULL,'legacy',?8,?8) ON CONFLICT(play_id) DO UPDATE SET score=MAX(score,excluded.score),display_name=excluded.display_name`).bind(playId,playerId,displayName,songId,chartId,rankingVersion,score,now)
   ])}catch(c){console.error('D1 legacy best failure',c);return error('Database write failed',500)}
   const rank=await getPlayerRank(env.DB,playerId,songId,chartId,rankingVersion);
   return json({ok:true,accepted:true,legacyBest:true,legacySource,playId,...(rank||{})},201);
@@ -82,18 +101,39 @@ async function leaderboard(url:URL,env:Env){
   const count=await env.DB.prepare('SELECT COUNT(DISTINCT player_id) AS totalPlayers FROM plays WHERE song_id=?1 AND chart_id=?2 AND ranking_version=?3').bind(songId,chartId,rankingVersion).first<{totalPlayers:number}>();
   return json({ok:true,songId,chartId,rankingVersion,totalPlayers:Number(count?.totalPlayers||0),limit,offset,entries:result.results||[]});
 }
+
 async function playerBest(url:URL,env:Env){
   const m=url.pathname.match(/^\/v1\/players\/([^/]+)\/best$/);if(!m)return error('Not found',404);const id=/^[A-Za-z0-9._:-]+$/;let playerId,songId,chartId,rankingVersion;try{playerId=cleanString(decodeURIComponent(m[1]),'playerId',128,id);songId=cleanString(url.searchParams.get('songId'),'songId',80,id);chartId=cleanString(url.searchParams.get('chartId')||'default','chartId',80,id);rankingVersion=cleanString(url.searchParams.get('rankingVersion')||'1','rankingVersion',64,id)}catch(c){return error(c instanceof Error?c.message:'Invalid request')}
   const rank=await getPlayerRank(env.DB,playerId,songId,chartId,rankingVersion);if(!rank)return error('Player has no ranked play for this chart',404);return json({ok:true,songId,chartId,rankingVersion,...rank});
 }
+
 async function playerPlays(url:URL,env:Env){
   const m=url.pathname.match(/^\/v1\/players\/([^/]+)\/plays$/);if(!m)return error('Not found',404);const id=/^[A-Za-z0-9._:-]+$/;let playerId:string;try{playerId=cleanString(decodeURIComponent(m[1]),'playerId',128,id)}catch(c){return error(c instanceof Error?c.message:'Invalid request')}
-  const limit=Math.min(5000,Math.max(1,parseInt(url.searchParams.get('limit')||'5000')||5000));
-  const result=await env.DB.prepare(`SELECT play_id AS playId,player_id AS playerId,display_name AS displayName,song_id AS songId,chart_id AS chartId,ranking_version AS rankingVersion,chart_version AS chartVersion,game_version AS gameVersion,score,perfect,great,good,miss,note_count AS noteCount,max_combo AS maxCombo,play_mode AS playMode,played_at_client AS playedAtClient,received_at_server AS receivedAtServer FROM plays WHERE player_id=?1 ORDER BY received_at_server ASC,play_id ASC LIMIT ?2`).bind(playerId,limit).all();
-  return json({ok:true,playerId,plays:result.results||[]});
+  const deltaMode=url.searchParams.has('cursor');
+  if(!deltaMode){
+    const limit=Math.min(5000,Math.max(1,parseInt(url.searchParams.get('limit')||'5000')||5000));
+    const result=await env.DB.prepare(`SELECT play_id AS playId,player_id AS playerId,display_name AS displayName,song_id AS songId,chart_id AS chartId,ranking_version AS rankingVersion,chart_version AS chartVersion,game_version AS gameVersion,score,perfect,great,good,miss,note_count AS noteCount,max_combo AS maxCombo,play_mode AS playMode,played_at_client AS playedAtClient,received_at_server AS receivedAtServer FROM plays WHERE player_id=?1 ORDER BY received_at_server ASC,play_id ASC LIMIT ?2`).bind(playerId,limit).all();
+    return json({ok:true,playerId,plays:result.results||[]});
+  }
+
+  const rawCursor=url.searchParams.get('cursor')||'';
+  const cursor=decodeCursor(rawCursor);
+  if(rawCursor&&!cursor)return error('cursor is invalid');
+  const limit=Math.min(1000,Math.max(1,parseInt(url.searchParams.get('limit')||'500')||500));
+  const select=`SELECT play_id AS playId,player_id AS playerId,display_name AS displayName,song_id AS songId,chart_id AS chartId,ranking_version AS rankingVersion,chart_version AS chartVersion,game_version AS gameVersion,score,perfect,great,good,miss,note_count AS noteCount,max_combo AS maxCombo,play_mode AS playMode,played_at_client AS playedAtClient,received_at_server AS receivedAtServer FROM plays`;
+  const result=cursor
+    ? await env.DB.prepare(`${select} WHERE player_id=?1 AND (received_at_server>?2 OR (received_at_server=?2 AND play_id>?3)) ORDER BY received_at_server ASC,play_id ASC LIMIT ?4`).bind(playerId,cursor.receivedAtServer,cursor.playId,limit+1).all()
+    : await env.DB.prepare(`${select} WHERE player_id=?1 ORDER BY received_at_server ASC,play_id ASC LIMIT ?2`).bind(playerId,limit+1).all();
+  const rows=(result.results||[]) as Record<string,unknown>[];
+  const hasMore=rows.length>limit;
+  const plays=hasMore?rows.slice(0,limit):rows;
+  const last=plays.length?plays[plays.length-1]:null;
+  const nextCursor=last?encodeCursor(String(last.receivedAtServer||''),String(last.playId||'')):rawCursor;
+  return json({ok:true,playerId,cursor:rawCursor,nextCursor,hasMore,plays});
 }
+
 export default{async fetch(request:Request,env:Env){if(request.method==='OPTIONS')return new Response(null,{status:204,headers:CORS_HEADERS});const url=new URL(request.url);try{
-  if(request.method==='GET'&&url.pathname==='/health'){const probe=await env.DB.prepare('SELECT 1 AS ok').first();return json({ok:true,service:'drumaster-ranking-api',database:!!probe})}
+  if(request.method==='GET'&&url.pathname==='/health'){const probe=await env.DB.prepare('SELECT 1 AS ok').first();return json({ok:true,service:'drumaster-ranking-api',database:!!probe,syncProtocol:2})}
   if(request.method==='POST'&&url.pathname==='/v1/plays')return await submitPlay(request,env);
   if(request.method==='POST'&&url.pathname==='/v1/legacy-best')return await submitLegacyBest(request,env);
   if(request.method==='GET'&&url.pathname.startsWith('/v1/leaderboards/'))return await leaderboard(url,env);
