@@ -11,9 +11,11 @@
   const PLAYER_NAME_KEY = 'drumasterPlayerName';
   const LINKED_PLAYER_IDS_KEY = 'drumasterRankingLinkedPlayerIds';
   const MERGED_STATE_KEY = 'drumasterRankingMergedState';
+  const HISTORY_PULL_KEY_PREFIX = 'drumasterRankingHistoryPullAt:';
   const DEFAULT_ENDPOINT = 'https://drumaster-ranking-api.aoka45utau.workers.dev';
   const DEFAULT_RANKING_VERSION = '1';
-  const RETRY_MS = 30000;
+  const RETRY_MS = 5 * 60 * 1000;
+  const HISTORY_PULL_MIN_INTERVAL_MS = 15 * 60 * 1000;
   const REQUEST_TIMEOUT_MS = 12000;
 
   let dbPromise;
@@ -178,10 +180,11 @@
 
     localStorage.setItem(PLAYER_ID_KEY, target);
     const aliases = setLinkedPlayerIds(sourceIds);
+    for (const id of [target, ...aliases]) localStorage.removeItem(`${HISTORY_PULL_KEY_PREFIX}${id}`);
     const migrated = await migrateLocalHistoryToCanonical(target, sourceIds);
 
     await rebuildMergedState();
-    await syncAll();
+    await syncAll(true);
 
     return { changed: true, playerId: target, aliases, migrated };
   }
@@ -350,7 +353,7 @@
       chartId: document.body?.dataset.chartId || 'default',
       rankingVersion: document.body?.dataset.rankingVersion || DEFAULT_RANKING_VERSION,
       chartVersion: document.body?.dataset.chartVersion || document.documentElement.dataset.chartVersion || 'unknown',
-      gameVersion: document.documentElement.dataset.gameVersion || 'shared-ranking-20260905',
+      gameVersion: document.documentElement.dataset.gameVersion || 'shared-ranking-20260906-throttled',
       score,
       perfect,
       great,
@@ -418,11 +421,25 @@
     return { queued: queue.length, uploaded, failed, lastRank };
   }
 
-  async function pullServerHistory(base) {
+  async function pullServerHistory(base, force = false) {
     let remoteCount = 0;
     let added = 0;
+    let skipped = 0;
+    const existing = new Set((await allPlays()).map(play => String(play?.playId || '')).filter(Boolean));
 
     for (const id of syncPlayerIds()) {
+      const pullKey = `${HISTORY_PULL_KEY_PREFIX}${id}`;
+      const lastPullAt = Number(localStorage.getItem(pullKey) || 0);
+      if (!force && lastPullAt > 0 && Date.now() - lastPullAt < HISTORY_PULL_MIN_INTERVAL_MS) {
+        skipped++;
+        continue;
+      }
+
+      /* Record the attempt before the request as well. If the backend is
+         temporarily unavailable or quota-limited, focus/timer events must not
+         hammer the same large history query repeatedly. */
+      localStorage.setItem(pullKey, String(Date.now()));
+
       const response = await fetchWithTimeout(`${base}/v1/players/${encodeURIComponent(id)}/plays?limit=5000`, {
         cache: 'no-store',
         headers: { accept: 'application/json' }
@@ -435,7 +452,7 @@
       remoteCount += plays.length;
 
       for (const remote of plays) {
-        if (!remote?.playId || await getPlay(remote.playId)) continue;
+        if (!remote?.playId || existing.has(remote.playId)) continue;
         await putPlay({
           ...remote,
           autoPlay: false,
@@ -447,14 +464,15 @@
           lastError: null,
           serverResult: { importedFromServer: true }
         });
+        existing.add(remote.playId);
         added++;
       }
     }
 
-    return { remoteCount, added, playerIds: syncPlayerIds() };
+    return { remoteCount, added, skipped, playerIds: syncPlayerIds() };
   }
 
-  async function syncAll() {
+  async function syncAll(forceHistory = false) {
     if (syncing) return lastSyncState;
     const base = endpoint();
     if (!base) return lastSyncState;
@@ -463,7 +481,7 @@
     const startedAt = new Date().toISOString();
     try {
       const pushed = await pushPending(base);
-      const pulled = await pullServerHistory(base);
+      const pulled = await pullServerHistory(base, forceHistory);
       const merged = await rebuildMergedState();
       lastSyncState = { ok: pushed.failed === 0, startedAt, completedAt: new Date().toISOString(), pushed, pulled, merged };
       if (pushed.failed) setStatus(`同期一部失敗 · ${pushed.failed}件を自動再送`);
@@ -500,6 +518,8 @@
   globalThis.DruMasterRanking = {
     syncPending: syncAll,
     syncAll,
+    forceHistorySync: () => syncAll(true),
+    getLocalPlays: allPlays,
     getSyncState: () => lastSyncState,
     getMergedState() {
       try { return JSON.parse(localStorage.getItem(MERGED_STATE_KEY) || 'null'); }
