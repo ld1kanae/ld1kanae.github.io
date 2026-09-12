@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#245d9e">
   <meta name="description" content="日常や創作で使える日本語の慣用句を、気軽に眺めて分類できるアプリです。">
   <title>使える日本語を勝手に浴びる</title>
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <header class="app-header">
@@ -52,17 +52,13 @@
           <span class="mode-icon star">★</span>
           <span class="mode-copy"><strong>お気に入り</strong><small><span data-count="favorite">0</span>件を振り返る</small></span>
         </button>
-        <button class="mode-card review-link" type="button" data-filter="known">
-          <span class="mode-dot known"></span>
-          <span class="mode-copy"><strong>知ってる</strong><small><span data-count="known">0</span>件を振り返る</small></span>
-        </button>
         <button class="mode-card review-link" type="button" data-filter="unknown">
           <span class="mode-dot unknown"></span>
           <span class="mode-copy"><strong>知らない</strong><small><span data-count="unknown">0</span>件を振り返る</small></span>
         </button>
-        <button class="mode-card review-link" type="button" data-filter="uninterested">
-          <span class="mode-dot uninterested"></span>
-          <span class="mode-copy"><strong>興味ない</strong><small><span data-count="uninterested">0</span>件を振り返る</small></span>
+        <button class="mode-card review-link" type="button" data-filter="known">
+          <span class="mode-dot known"></span>
+          <span class="mode-copy"><strong>知ってる</strong><small><span data-count="known">0</span>件を振り返る</small></span>
         </button>
         <button id="genres-button" class="mode-card" type="button">
           <span class="mode-icon">⌘</span>
@@ -108,16 +104,15 @@
       </article>
 
       <div class="classification" role="group" aria-label="ことばを分類">
-        <button type="button" data-status="known">知ってる</button>
         <button type="button" data-status="unknown">知らない</button>
-        <button type="button" data-status="uninterested">興味ない</button>
+        <button type="button" data-status="known">知ってる</button>
       </div>
 
       <div class="quiz-navigation">
         <button id="previous-button" class="secondary-button" type="button">← 戻る</button>
         <button id="next-button" class="primary-button" type="button">次へ →</button>
       </div>
-      <p class="shortcut-hint">← → 移動　Space 説明　F ★　1 / 2 / 3 分類</p>
+      <p class="shortcut-hint">← → 移動　Space 説明　F ★　1 / 2 分類</p>
     </section>
 
     <section id="complete-view" class="view empty-state">
@@ -244,6 +239,6 @@
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=11" defer></script>
+  <script src="app.js?v=12" defer></script>
 </body>
 </html>
