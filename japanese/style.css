@@ -16,7 +16,6 @@
   --blue-soft: #dbeaf7;
   --known: #258778;
   --unknown: #387bc0;
-  --uninterested: #7a8390;
   --star: #f2b928;
   --danger: #b4494b;
   --shadow: 0 16px 50px rgba(36, 76, 112, .13);
@@ -40,7 +39,6 @@ html[data-theme="dark"] {
   --blue-soft: #1d3447;
   --known: #438c80;
   --unknown: #1679d2;
-  --uninterested: #a2acb6;
   --star: #ffd257;
   --danger: #ee898c;
   --shadow: 0 18px 55px rgba(0, 0, 0, .28);
@@ -106,7 +104,7 @@ button:focus-visible, input:focus-visible, label:focus-within {
 .mode-icon { display: grid; place-items: center; flex: 0 0 36px; height: 36px; font-size: 1.35rem; }
 .mode-icon.star { color: var(--star); }
 .mode-dot { flex: 0 0 14px; width: 14px; height: 14px; margin: 0 15px; border-radius: 50%; background: currentColor; }
-.mode-dot.known { color: var(--known); }.mode-dot.unknown { color: var(--unknown); }.mode-dot.uninterested { color: var(--uninterested); }
+.mode-dot.known { color: var(--known); }.mode-dot.unknown { color: var(--unknown); }
 .mode-copy { display: flex; flex-direction: column; }
 .mode-copy strong { font-size: 1.08rem; }
 .mode-copy small { color: var(--text-muted); }
@@ -144,11 +142,10 @@ body[data-view="quiz"] .quiz-view { height: 100%; }
 .similar-list { display: flex; flex-wrap: wrap; gap: 5px 7px; margin-top: 5px; }
 .similar-list span { padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-muted); font-size: .82rem; line-height: 1.5; }
 .reveal-button { display: block; margin: auto auto; padding: 10px 23px; border: 1px solid var(--blue); border-radius: 999px; background: transparent; color: var(--blue); cursor: pointer; }
-.classification { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
+.classification { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0; }
 .classification button { min-height: 42px; padding: 8px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); cursor: pointer; }
 .classification button[data-status="known"].is-active { color: #fff; border-color: var(--known); background: var(--known); }
 .classification button[data-status="unknown"].is-active { color: #fff; border-color: var(--unknown); background: var(--unknown); }
-.classification button[data-status="uninterested"].is-active { color: #fff; border-color: var(--uninterested); background: var(--uninterested); }
 .quiz-navigation { display: grid; grid-template-columns: 1fr 1.5fr; gap: 9px; }
 .quiz-navigation button { min-height: 42px; }
 .shortcut-hint { margin: 0; color: var(--text-muted); font-size: .7rem; line-height: 1.2; text-align: center; }
@@ -247,10 +244,10 @@ html[data-theme="dark"] .review-item-controls button.is-active { background: #0b
   .word-card { padding: clamp(19px, 3.5vh, 28px) 18px 15px; border-radius: 19px; touch-action: pan-y; will-change: transform; }
   .word-card::before,
   .word-card::after { position: absolute; top: 50%; z-index: 2; padding: 5px 9px; border-radius: 999px; color: #fff; font-size: .72rem; font-weight: 800; opacity: 0; pointer-events: none; transform: translateY(-50%); transition: opacity .1s ease; }
-  .word-card::before { left: 10px; content: '知らない →'; background: var(--unknown); }
-  .word-card::after { right: 10px; content: '← 知ってる'; background: var(--known); }
-  .word-card[data-swipe-direction="unknown"]::before,
-  .word-card[data-swipe-direction="known"]::after { opacity: 1; }
+  .word-card::before { left: 10px; content: '知ってる →'; background: var(--known); }
+  .word-card::after { right: 10px; content: '← 知らない'; background: var(--unknown); }
+  .word-card[data-swipe-direction="known"]::before,
+  .word-card[data-swipe-direction="unknown"]::after { opacity: 1; }
   .favorite-button { top: 5px; right: 7px; width: 38px; height: 38px; font-size: 1.65rem; }
   .word-category { font-size: .68rem; }
   .word-card h1 { margin-top: clamp(8px, 1.8vh, 15px); font-size: clamp(1.75rem, 9vw, 2.7rem); }
