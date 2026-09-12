@@ -6,8 +6,8 @@
   const GITHUB_REPOSITORY = 'ld1kanae/ld1kanae.github.io';
   const GITHUB_SAVE_PATH = 'japanese/save_data.json';
   const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${GITHUB_SAVE_PATH}`;
-  const STATUS_LABELS = { known: '知ってる', unknown: '知らない', uninterested: '興味ない' };
-  const FILTER_LABELS = { favorite: 'お気に入り', known: '知ってる', unknown: '知らない', uninterested: '興味ない' };
+  const STATUS_LABELS = { unknown: '知らない', known: '知ってる' };
+  const FILTER_LABELS = { favorite: 'お気に入り', unknown: '知らない', known: '知ってる' };
   const VOCABULARY_ID_ALIASES = {
     'jp-000593': 'jp-000007',
     'jp-000801': 'jp-000103',
@@ -387,7 +387,7 @@
       const limitedX = Math.max(-120, Math.min(120, gesture.dx));
       card.style.transition = 'none';
       card.style.transform = `translateX(${limitedX}px) rotate(${limitedX / 45}deg)`;
-      card.dataset.swipeDirection = gesture.dx < 0 ? 'known' : 'unknown';
+      card.dataset.swipeDirection = gesture.dx < 0 ? 'unknown' : 'known';
     }, { passive: false });
 
     const finishSwipe = (event) => {
@@ -405,7 +405,7 @@
       }
 
       swipeLocked = true;
-      const status = dx < 0 ? 'known' : 'unknown';
+      const status = dx < 0 ? 'unknown' : 'known';
       card.style.transition = 'transform .12s ease, opacity .12s ease';
       card.style.transform = `translateX(${dx < 0 ? '-110%' : '110%'}) rotate(${dx < 0 ? -7 : 7}deg)`;
       card.style.opacity = '.2';
@@ -779,9 +779,8 @@
       if (event.key === 'ArrowLeft') moveSession(-1);
       if (event.key === 'ArrowRight') moveSession(1);
       if (event.key.toLowerCase() === 'f') toggleCurrentFavorite();
-      if (event.key === '1') setCurrentStatus('known');
-      if (event.key === '2') setCurrentStatus('unknown');
-      if (event.key === '3') setCurrentStatus('uninterested');
+      if (event.key === '1') setCurrentStatus('unknown');
+      if (event.key === '2') setCurrentStatus('known');
       if (event.key === ' ' && !$('#reveal-button').hidden) {
         event.preventDefault();
         $('#reveal-button').click();
