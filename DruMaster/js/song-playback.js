@@ -6,10 +6,10 @@
 
   const activeStemVoices=new Set();
   const fullMixOnly=()=>globalThis.DruMasterSongSource?.isFullMixOnly?.()||false;
+  const hasOriginalMix=()=>!!song?.stems?.fullmix||!!song?.sourceAvailability?.fullmix;
   const useOriginalMix=()=>{
     if(fullMixOnly())return true;
-    const available=song?.sourceAvailability||{};
-    return !!available.fullmix&&!!$("#vocalToggle")?.checked&&!!$("#guideToggle")?.checked;
+    return hasOriginalMix()&&!!$("#vocalToggle")?.checked&&!!$("#guideToggle")?.checked;
   };
 
   function trackGain(name,fallback){
@@ -57,11 +57,11 @@
       playAt(buffers.fullmix,trackGain("fullmix",.95),when,sourceOffset);
       return;
     }
-    /* When all audible stems are requested and an original/full mix exists,
-       use that single source instead of summing offvocal + vocals + drums.
-       Its level intentionally follows the offvocal/base mix setting. */
+    /* When both Vocal and Guide Drums are ON and an original/full mix exists,
+       play ONLY that original source. Never sum base + vocals + drums in this
+       state; the stems are reserved for the partial-mix toggle combinations. */
     if(useOriginalMix()){
-      playAt(buffers.fullmix,trackGain("base",.95),when,sourceOffset);
+      playAt(buffers.fullmix,trackGain("fullmix",trackGain("base",.95)),when,sourceOffset);
       return;
     }
     playAt(buffers.base,trackGain("base",.95),when,sourceOffset);
