@@ -92,7 +92,7 @@
       if(n.time>t+maxDelta)break;
       if(!predicate(n))continue;
       const delta=Math.abs(n.time-t);
-      if(delta<bestDelta){best=n;bestDelta=delta}
+      if(delta<bestDelta){best=n;bestDelta=i;bestDelta=delta}
     }
     return best?{note:best,delta:bestDelta}:null;
   }
@@ -170,21 +170,22 @@
         !document.body.classList.contains("acoustic-calibrating");
       if(!active)return;
 
-      const t=eventSongTime(e),nearby=nearestTouchNote(t,true);
+      const t=eventSongTime(e),nearby=nearestTouchNote(t,true),
+            target=e.target.closest("#hitLayer .hit:not(.inactive)");
 
-      /* Anywhere-touch owns the whole pointer while a playable chart note is
-         inside the GOOD window. This is intentionally based on note presence,
-         not only on whether an unhit note can still be consumed. It prevents a
-         drum hit target underneath the finger from sounding an extra sample. */
+      /* A chart note owns the judgement path while it is inside the GOOD
+         window. If that note is already consumed (or otherwise cannot be
+         judged), do not swallow the player's drum hit: sound the physical pad
+         normally instead. Judgement and audibility are independent. */
       if(nearby&&nearby.delta<=.160){
         e.preventDefault();
         e.stopImmediatePropagation();
-        consumeTouchAt(t);
+        const consumed=consumeTouchAt(t);
+        if(!consumed&&target)playFreePad(target);
         return;
       }
 
-      /* Outside every note window, keep the drum set usable as a free pad. */
-      const target=e.target.closest("#hitLayer .hit:not(.inactive)");
+      /* Outside every note window, the drum set always remains a free pad. */
       if(target&&playFreePad(target)){
         e.preventDefault();
         e.stopImmediatePropagation();
