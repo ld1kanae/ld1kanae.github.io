@@ -40,7 +40,7 @@ function rebuildHiHatGraphEnvelope(){
   const division=Number(beatTiming?.division)||480,actual=[];
   for(const note of notes){
     if(!HH_GRAPH_TYPES.has(note.type))continue;
-    actual.push({beat:Number(note.tick)/division,target:note.type==="hhOpen"?Math.max(0,Math.min(127,Number(note.velocity)||0)):0});
+    actual.push({beat:Number(note.tick)/division,target:note.type==="hhOpen"?127:0});
   }
   actual.sort((a,b)=>a.beat-b.beat);
   hhGraphEvents=[];
