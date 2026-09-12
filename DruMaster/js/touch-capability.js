@@ -92,7 +92,7 @@
       if(n.time>t+maxDelta)break;
       if(!predicate(n))continue;
       const delta=Math.abs(n.time-t);
-      if(delta<bestDelta){best=n;bestDelta=i;bestDelta=delta}
+      if(delta<bestDelta){best=n;bestDelta=delta}
     }
     return best?{note:best,delta:bestDelta}:null;
   }
