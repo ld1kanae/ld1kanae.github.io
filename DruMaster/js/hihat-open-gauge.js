@@ -41,7 +41,7 @@
       if(!HH_TYPES.has(note.type))continue;
       actual.push({
         beat:Number(note.tick)/division,
-        target:note.type==="hhOpen"?127:0,
+        target:note.type==="hhOpen"?100:0,
         synthetic:false
       });
     }
