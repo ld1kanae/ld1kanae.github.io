@@ -50,14 +50,14 @@
     return bLoadPromise;
   }
 
-  startDrumVoice=function(type,v=.75,when){
+  startDrumVoice=function(type,v=.75,when,chartNote){
     captureA();
     const tone=toneForType(type),kit=tone==="B"?toneKits.B:toneKits.A;
-    if(!kit)return baseStartDrumVoice(type,v,when);
+    if(!kit)return baseStartDrumVoice(type,v,when,chartNote);
     const savedBuffers=drumSampleBuffers,savedVelocity=drumSourceVelocity;
     drumSampleBuffers=kit.buffers;
     drumSourceVelocity=kit.sourceVelocity;
-    try{return baseStartDrumVoice(type,v,when)}
+    try{return baseStartDrumVoice(type,v,when,chartNote)}
     finally{
       drumSampleBuffers=savedBuffers;
       drumSourceVelocity=savedVelocity;
