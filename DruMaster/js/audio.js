@@ -200,10 +200,10 @@ function handleSourceEnded(event){
   releaseSource(event.currentTarget);
 }
 
-function startDrumVoice(type,v=.75,when){
+function startDrumVoice(type,v=.75,when,chartNote){
   if(!ac)return null;
   if(type==="hhClosed"||type==="hhPedal")chokeOpenHat();
-  const sampleNote=DEFAULT_NOTE[type],sample=drumSampleBuffers[String(sampleNote)];
+  const authoredNote=Number(chartNote),sampleNote=authoredNote===55?55:DEFAULT_NOTE[type],sample=drumSampleBuffers[String(sampleNote)];
   if(!sample)return null;
 
   const startAt=Number.isFinite(Number(when))?Math.max(ac.currentTime,Number(when)):ac.currentTime,
@@ -228,8 +228,8 @@ function startDrumVoice(type,v=.75,when){
   return slot;
 }
 
-playDrum=function(_chartNote,type,v=.75){
-  return startDrumVoice(type,v,ac?.currentTime);
+playDrum=function(chartNote,type,v=.75){
+  return startDrumVoice(type,v,ac?.currentTime,chartNote);
 };
 
 globalThis.DruMasterAudioControl={
