@@ -15,7 +15,7 @@
         baseFinish=typeof finish==="function"?finish:null;
 
   let active=false,currentSong=initialSong,stemVoices=new Set(),kickCursor=0,ending=false,prefetchFor="",switching=false,
-      scrubbing=false,scrubTarget=0,scrubWasPaused=false,dragPointer=null,dragStartX=0,dragStartSec=0,restartGeneration=0;
+      scrubbing=false,scrubTarget=0,scrubWasPaused=false,dragPointer=null,dragStartX=0,dragStartSec=0,restartGeneration=0,pausedAtSec=0;
   let loopMode="off";
   try{const saved=localStorage.getItem("drumasterScorePlaybackLoop");if(["off","all","one"].includes(saved))loopMode=saved}catch{}
 
@@ -92,6 +92,9 @@
       try{v.source.disconnect()}catch{}try{v.gain.disconnect()}catch{}
     }
   }
+  function stopDrumVoices(){
+    try{globalThis.DruMasterAudioControl?.stopAllDrumVoices?.()}catch{}
+  }
   function playStem(entry,name,gainValue,when,logicalOffset){
     const buf=entry.buffers[name];if(!buf)return;
     const stemOffset=Number(currentSong.playback?.stemOffsetSec)||0,
@@ -100,7 +103,9 @@
           startWhen=when+(rawOffset<0?(-rawOffset)/Math.max(.001,rate):0);
     if(offset>=buf.duration-.001)return;
     const source=ac.createBufferSource(),gain=ac.createGain(),voice={source,gain};
-    source.buffer=buf;source.playbackRate.value=rate;gain.gain.value=gainValue;source.connect(gain).connect(masterBus);
+    source.buffer=buf;source.playbackRate.value=rate;
+    gain.gain.setValueAtTime(0,startWhen);gain.gain.linearRampToValueAtTime(gainValue,startWhen+.035);
+    source.connect(gain).connect(masterBus);
     stemVoices.add(voice);source.onended=()=>{stemVoices.delete(voice);try{source.disconnect()}catch{}try{gain.disconnect()}catch{}};
     source.start(startWhen,offset);
   }
@@ -143,19 +148,19 @@
 
   async function restartAt(sec,shouldPlay=true){
     const generation=++restartGeneration,song=currentSong,target=clamp(sec,0,songDuration(song));
-    cancelAnimationFrame(raf);stopStemVoices();
+    cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();
     const entry=await ensureSongData(song);
     if(generation!==restartGeneration||!active||currentSong!==song)return;
     resetKickCursor(target);ending=false;prefetchFor="";
     if(shouldPlay){
       try{await ac.resume()}catch{}
       if(generation!==restartGeneration||!active||currentSong!==song)return;
-      stopStemVoices();
-      const when=ac.currentTime+.045;startStemSet(entry,when,target);startedAt=when-target/rate;paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop);
+      stopStemVoices();stopDrumVoices();
+      const when=ac.currentTime+.045;startStemSet(entry,when,target);startedAt=when-target/rate;pausedAtSec=target;paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop);
     }else{
       if(generation!==restartGeneration||!active||currentSong!==song)return;
-      stopStemVoices();
-      const when=ac.currentTime;startStemSet(entry,when,target);startedAt=when-target/rate;paused=true;setPauseUi(true);draw?.();updateSeekUi(target);
+      stopStemVoices();stopDrumVoices();
+      pausedAtSec=target;startedAt=ac.currentTime-target/rate;paused=true;setPauseUi(true);draw?.();updateSeekUi(target);
     }
   }
 
@@ -168,25 +173,22 @@
     switching=true;setLoading(true,"LOADING SONG");
     let failed=false;
     try{
-      /* Resume while this function is still directly handling the button gesture.
-         Waiting for MP3 decode first can lose the user-activation window on
-         Chrome-family browsers when the context happens to be suspended. */
       if(!wasPaused&&ac.state!=="running"){
         try{await ac.resume()}catch{}
       }
       const entry=await ensureSongData(target);
       if(generation!==restartGeneration||!active)return;
-      cancelAnimationFrame(raf);stopStemVoices();currentSong=target;applySong(target,entry);
+      cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();currentSong=target;applySong(target,entry);
       rate=+document.querySelector("#tempo")?.value/100||1;running=true;scrubbing=false;
       if(wasPaused){
-        const when=ac.currentTime;startStemSet(entry,when,0);startedAt=when;paused=true;setPauseUi(true);draw?.();
+        const when=ac.currentTime;pausedAtSec=0;startedAt=when;paused=true;setPauseUi(true);draw?.();updateSeekUi(0);
       }else{
         if(ac.state!=="running"){
           try{await ac.resume()}catch{}
         }
         if(generation!==restartGeneration||!active||currentSong!==target)return;
         if(ac.state==="suspended")throw Error("音声再生を再開できませんでした");
-        const when=ac.currentTime+.045;startStemSet(entry,when,0);startedAt=when;paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop);
+        const when=ac.currentTime+.045;startStemSet(entry,when,0);startedAt=when;pausedAtSec=0;paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop);
       }
       prefetchFor="";ending=false;
     }catch(e){
@@ -200,7 +202,7 @@
   }
 
   async function handleTrackEnd(){
-    if(!active||ending)return;restartGeneration++;ending=true;cancelAnimationFrame(raf);stopStemVoices();
+    if(!active||ending)return;restartGeneration++;ending=true;cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();
     if(loopMode==="one"){
       ending=false;await restartAt(0,true);return;
     }
@@ -208,7 +210,7 @@
       const target=nextSong(1);setLoading(true,"LOADING NEXT SONG");
       try{
         const entry=await ensureSongData(target);currentSong=target;applySong(target,entry);rate=+document.querySelector("#tempo")?.value/100||1;
-        try{await ac.resume()}catch{}const when=ac.currentTime+.045;startStemSet(entry,when,0);startedAt=when;paused=false;setPauseUi(false);prefetchFor="";ending=false;setLoading(false);raf=requestAnimationFrame(scoreLoop);return;
+        try{await ac.resume()}catch{}const when=ac.currentTime+.045;startStemSet(entry,when,0);startedAt=when;pausedAtSec=0;paused=false;setPauseUi(false);prefetchFor="";ending=false;setLoading(false);raf=requestAnimationFrame(scoreLoop);return;
       }catch(e){console.error(e);setLoading(false)}
     }
     goHome();
@@ -225,9 +227,9 @@
     raf=requestAnimationFrame(scoreLoop);
   }
 
-  function beginScrub(startSec=current()){
+  function beginScrub(startSec=paused?pausedAtSec:current()){
     if(!active||scrubbing)return;
-    restartGeneration++;scrubWasPaused=paused;scrubTarget=clamp(startSec,0,songDuration(currentSong));scrubbing=true;cancelAnimationFrame(raf);stopStemVoices();
+    restartGeneration++;scrubWasPaused=paused;scrubTarget=clamp(startSec,0,songDuration(currentSong));scrubbing=true;cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();
   }
   function previewScrub(sec){
     if(!active)return;if(!scrubbing)beginScrub(sec);scrubTarget=clamp(sec,0,songDuration(currentSong));
@@ -238,14 +240,14 @@
     if(!active||!scrubbing)return;const target=scrubTarget,wasPaused=scrubWasPaused;scrubbing=false;await restartAt(target,!wasPaused);
   }
 
-  seek.addEventListener("pointerdown",()=>beginScrub(current()));
+  seek.addEventListener("pointerdown",()=>beginScrub(paused?pausedAtSec:current()));
   seek.addEventListener("input",()=>previewScrub(+seek.value||0));
   seek.addEventListener("change",()=>{void commitScrub()});
   seek.addEventListener("pointerup",()=>{void commitScrub()});
 
   chartWrap.addEventListener("pointerdown",e=>{
     if(!active||e.target.closest("#scoreSeekWrap")||e.button>0)return;
-    dragPointer=e.pointerId;dragStartX=e.clientX;dragStartSec=current();beginScrub(dragStartSec);chartWrap.setPointerCapture?.(e.pointerId);e.preventDefault();
+    dragPointer=e.pointerId;dragStartX=e.clientX;dragStartSec=paused?pausedAtSec:current();beginScrub(dragStartSec);chartWrap.setPointerCapture?.(e.pointerId);e.preventDefault();
   },true);
   chartWrap.addEventListener("pointermove",e=>{
     if(!active||dragPointer!==e.pointerId||!scrubbing)return;
@@ -277,10 +279,10 @@
       globalThis.DruMasterPerformanceMode?.stopMic?.();
       const song=songApi.current||initialSong,entry=await ensureSongData(song);currentSong=song;applySong(song,entry);
       rate=+document.querySelector("#tempo")?.value/100||1;autoplay=false;
-      globalThis.DruMasterResultFanfare?.stop?.();globalThis.DruMasterPlaybackControl?.stopRunAudio?.();stopStemVoices();
+      globalThis.DruMasterResultFanfare?.stop?.();globalThis.DruMasterPlaybackControl?.stopRunAudio?.();stopStemVoices();stopDrumVoices();
       setupEl.classList.add("hidden");resultEl?.classList.add("hidden");gameEl.classList.remove("hidden");
       const label=document.querySelector(".score small"),value=document.querySelector("#score");if(label)label.textContent="PLAYBACK";if(value)value.textContent="--";
-      installRunActions();running=true;paused=false;setPauseUi(false);resize?.();
+      installRunActions();running=true;pausedAtSec=0;paused=false;setPauseUi(false);resize?.();
       const when=ac.currentTime+.055;startStemSet(entry,when,0);startedAt=when;resetKickCursor(0);updateSeekUi(0);raf=requestAnimationFrame(scoreLoop);
       if(load)load.textContent=oldLoad;
     }catch(e){
@@ -289,7 +291,7 @@
   }
 
   function goHome(){
-    if(!active)return;restartGeneration++;active=false;running=false;paused=false;scrubbing=false;cancelAnimationFrame(raf);stopStemVoices();setPauseUi(false);document.body.dataset.scorePlayback="0";document.body.dataset.scoreLoading="0";
+    if(!active)return;restartGeneration++;active=false;running=false;paused=false;scrubbing=false;pausedAtSec=0;cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();setPauseUi(false);document.body.dataset.scorePlayback="0";document.body.dataset.scoreLoading="0";
     const url=new URL(location.href);url.searchParams.set("song",currentSong.id);url.searchParams.delete("v");url.searchParams.delete("micdebug");location.href=url.toString();
   }
 
@@ -297,7 +299,6 @@
     if(modeSelect.value==="score")return startScorePlayback();
     return baseStartHandler?.call(this,e);
   };
-
   if(baseInput){
     input=function(part,visualEl){
       if(!active)return baseInput(part,visualEl);
@@ -309,8 +310,13 @@
     togglePause=async function(forceResume=false){
       if(!active)return baseTogglePause(forceResume);
       if(!running||scrubbing)return;
-      if(!paused&&!forceResume){paused=true;cancelAnimationFrame(raf);try{await ac.suspend()}catch{}setPauseUi(true)}
-      else{try{await ac.resume()}catch{}paused=false;setPauseUi(false);raf=requestAnimationFrame(scoreLoop)}
+      if(!paused&&!forceResume){
+        pausedAtSec=clamp(current(),0,songDuration(currentSong));
+        paused=true;cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();setPauseUi(true);draw?.();updateSeekUi(pausedAtSec);
+      }else{
+        const target=clamp(pausedAtSec,0,songDuration(currentSong));
+        await restartAt(target,true);
+      }
     };
   }
   if(baseFinish){
