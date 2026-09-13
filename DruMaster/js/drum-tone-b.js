@@ -2,7 +2,6 @@
 
 (()=>{
   const baseStartDrumVoice=startDrumVoice;
-  const baseStartGame=startGame;
   const toneKits={A:null,B:null};
   let bLoadPromise=null;
 
@@ -13,15 +12,15 @@
     return toneKits.A;
   }
 
+  function songUsesB(song){
+    const config=song?.midiDrumMix;
+    return !!config?.individual&&["cymbal","hihatRide","snareTom","kick","other"].some(group=>config.tone?.[group]==="B");
+  }
+
   function toneForType(type){
     const config=globalThis.DruMasterSongs?.current?.midiDrumMix;
     if(!config?.individual)return "A";
     return config.tone?.[midiDrumGroup(type)]==="B"?"B":"A";
-  }
-
-  function needsB(){
-    const config=globalThis.DruMasterSongs?.current?.midiDrumMix;
-    return !!config?.individual&&["cymbal","hihatRide","snareTom","kick","other"].some(group=>config.tone?.[group]==="B");
   }
 
   async function ensureB(){
@@ -65,29 +64,33 @@
     }
   };
 
-  startGame=async function(...args){
-    captureA();
-    if(needsB()){
-      const state=$("#loadState");
-      if(state)state.textContent="Bセットドラム音源を読み込み中…";
-      try{await ensureB()}
-      catch(e){
-        console.error(e);
-        if(state)state.textContent=e.message||"Bセットドラム音源の読み込みに失敗しました";
-        const start=$("#start");
-        if(start)start.disabled=false;
-        return;
+  const startButton=$("#start"),baseStartHandler=startButton?.onclick;
+  if(startButton&&baseStartHandler){
+    startButton.onclick=async function(e){
+      captureA();
+      const scoreMode=document.querySelector("#performanceModeSelect")?.value==="score",
+            songs=globalThis.DruMasterSongs?.songs||{},
+            needsB=scoreMode?Object.values(songs).some(songUsesB):songUsesB(globalThis.DruMasterSongs?.current);
+      if(needsB&&!toneKits.B){
+        const state=$("#loadState");
+        startButton.disabled=true;
+        if(state)state.textContent="Bセットドラム音源を読み込み中…";
+        try{await ensureB()}
+        catch(err){
+          console.error(err);
+          if(state)state.textContent=err.message||"Bセットドラム音源の読み込みに失敗しました";
+          startButton.disabled=false;
+          return;
+        }
       }
-    }
-    return baseStartGame(...args);
-  };
-
-  const startButton=$("#start");
-  if(startButton)startButton.onclick=startGame;
+      return baseStartHandler.call(this,e);
+    };
+  }
 
   globalThis.DruMasterDrumTone={
     ensureB,
     toneForType,
+    songUsesB,
     get loadedB(){return !!toneKits.B}
   };
 })();
