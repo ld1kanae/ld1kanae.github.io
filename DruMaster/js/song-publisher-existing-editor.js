@@ -41,7 +41,7 @@
     try{view.contentWindow.name=JSON.stringify(inherited(session,sessionToken||rememberedToken))}catch{}
     view.src=which==="editor"
       ?timingUrl()
-      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260913-tone-selector1`;
+      :`song-volume-editor.html?song=${encodeURIComponent(session.id)}&session=${encodeURIComponent(session.sessionId)}&embedded=1&v=20260913-tone-b1`;
     loaded[which]=true;launched[which]=true;return true;
   }
   function openTool(which){
