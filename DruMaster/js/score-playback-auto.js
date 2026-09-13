@@ -28,6 +28,10 @@
   function resetCursor(){
     const list=notesSafe(),t=currentTimeSafe();
     if(!list)return;
+    /* Score playback marks notes hit as they cross the goal line so the chart
+       can hide consumed notes. A repeat/seek starts a new chart timeline, so
+       those flags must be cleared before drawing the new pass. */
+    for(const n of list)n.hit=false;
     cursor=lowerBound(list,Math.max(0,t-.05));
     lastNotes=list;lastStartedAt=startedAtSafe();lastTime=t;
   }
