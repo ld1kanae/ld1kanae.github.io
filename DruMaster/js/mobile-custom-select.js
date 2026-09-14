@@ -3,7 +3,8 @@
 (()=>{
   /* Use the same DOM-based selector on desktop as well. Native Windows/Chromium
      dropdowns keep the OS accent color for the selected row and ignore CSS. */
-  const enhanced=new WeakMap();
+  const enhanced=new WeakMap(),
+        mobileQuery=typeof matchMedia==="function"?matchMedia("(hover:none) and (pointer:coarse) and (max-width:900px)"):null;
   let opened=null;
 
   function close(entry=opened){
@@ -29,23 +30,34 @@
     });
   }
 
+  function topWithin(node,ancestor){
+    let top=0,el=node;
+    while(el&&el!==ancestor){
+      top+=el.offsetTop||0;
+      el=el.offsetParent;
+    }
+    if(el===ancestor)return top;
+    const nr=node.getBoundingClientRect(),ar=ancestor.getBoundingClientRect();
+    return nr.top-ar.top;
+  }
+
   function positionMenu(entry){
     entry.root.classList.remove("open-up");
     const setup=entry.root.closest(".setup");
     if(!setup)return;
 
-    /* offsetTop is measured in the app's unrotated layout space, which is what
-       matters here. The phone stage itself is rotated with CSS afterwards. */
-    const rootTop=entry.root.offsetTop,
+    /* Measure in the setup stage rather than against the selector's nearest
+       positioned parent. The song selector is nested inside .song-card, so a
+       bare offsetTop understated the available room and could choose a clipped
+       direction on the forced-landscape phone layout. */
+    const rootTop=topWithin(entry.root,setup),
           rootBottom=rootTop+entry.root.offsetHeight,
           spaceAbove=Math.max(0,rootTop-8),
           spaceBelow=Math.max(0,setup.clientHeight-rootBottom-8),
-          naturalHeight=Math.min(180,Math.max(48,entry.menu.scrollHeight||0));
+          naturalHeight=Math.min(180,Math.max(48,entry.menu.scrollHeight||0)),
+          forceSongUp=entry.select.id==="songSelect"&&!!mobileQuery?.matches,
+          openUp=forceSongUp||(spaceBelow<naturalHeight&&spaceAbove>spaceBelow);
 
-    /* Open upward only when it actually gives us more usable room. The old
-       logic chose upward whenever the full menu did not fit below, even when
-       the top side was smaller and therefore clipped the first option. */
-    const openUp=spaceBelow<naturalHeight&&spaceAbove>spaceBelow;
     if(openUp)entry.root.classList.add("open-up");
 
     const available=openUp?spaceAbove:spaceBelow;
