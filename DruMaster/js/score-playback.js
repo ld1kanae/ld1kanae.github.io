@@ -50,6 +50,18 @@
   }
   updateLoopButton();
 
+  function songEntry(song){
+    let entry=cache.get(song.id);
+    if(!entry){entry={song,notes:null,timing:null,buffers:{},stemPromises:{},midiPromise:null};cache.set(song.id,entry)}
+    return entry;
+  }
+  function releaseDecodedStemsExcept(keepSongId=""){
+    for(const [id,entry] of cache){
+      if(id===keepSongId)continue;
+      entry.buffers={};
+    }
+  }
+
   async function loadMidi(song,entry){
     if(entry.notes)return;
     if(entry.midiPromise)return entry.midiPromise;
@@ -67,6 +79,8 @@
     if(entry.buffers[name])return;
     if(entry.stemPromises[name])return entry.stemPromises[name];
     const spec=song.stems?.[name];if(!spec)throw Error(`${song.title} の ${name} stem がありません`);
+    const sharedName=Object.keys(entry.buffers).find(other=>song.stems?.[other]?.path===spec.path);
+    if(sharedName){entry.buffers[name]=entry.buffers[sharedName];return}
     entry.stemPromises[name]=(async()=>{
       const r=await nativeFetch(spec.path,{cache:"force-cache"});
       if(!r.ok)throw Error(`${song.title} の伴奏を取得できません（HTTP ${r.status}）`);
@@ -76,11 +90,16 @@
     })();
     try{await entry.stemPromises[name]}finally{delete entry.stemPromises[name]}
   }
-  async function ensureSongData(song){
-    let entry=cache.get(song.id);
-    if(!entry){entry={song,notes:null,timing:null,buffers:{},stemPromises:{},midiPromise:null};cache.set(song.id,entry)}
+  async function ensureMidiData(song){
+    const entry=songEntry(song);
     await loadMidi(song,entry);
-    await Promise.all(selectedStemNames().map(name=>loadStemFor(song,entry,name)));
+    return entry;
+  }
+  async function ensureSongData(song){
+    const entry=await ensureMidiData(song);
+    /* Full-song decode is deliberately serial. Concurrent decodeAudioData calls
+       cause large transient CPU/RAM spikes on phones and can underrun WebAudio. */
+    for(const name of selectedStemNames())await loadStemFor(song,entry,name);
     return entry;
   }
 
@@ -173,12 +192,16 @@
     switching=true;setLoading(true,"LOADING SONG");
     let failed=false;
     try{
-      if(!wasPaused&&ac.state!=="running"){
+      /* Do not decode another multi-minute song while the current WebAudio graph
+         is playing. That was the source of the audible underruns after NEXT/PREV. */
+      cancelAnimationFrame(raf);paused=true;stopStemVoices();stopDrumVoices();
+      releaseDecodedStemsExcept(target.id);
+      if(ac.state!=="running"){
         try{await ac.resume()}catch{}
       }
       const entry=await ensureSongData(target);
       if(generation!==restartGeneration||!active)return;
-      cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();currentSong=target;applySong(target,entry);
+      currentSong=target;applySong(target,entry);
       rate=+document.querySelector("#tempo")?.value/100||1;running=true;scrubbing=false;
       if(wasPaused){
         const when=ac.currentTime;pausedAtSec=0;startedAt=when;paused=true;setPauseUi(true);draw?.();updateSeekUi(0);
@@ -202,13 +225,14 @@
   }
 
   async function handleTrackEnd(){
-    if(!active||ending)return;restartGeneration++;ending=true;cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();
+    if(!active||ending)return;restartGeneration++;ending=true;cancelAnimationFrame(raf);paused=true;stopStemVoices();stopDrumVoices();
     if(loopMode==="one"){
       ending=false;await restartAt(0,true);return;
     }
     if(loopMode==="all"){
       const target=nextSong(1);setLoading(true,"LOADING NEXT SONG");
       try{
+        releaseDecodedStemsExcept(target.id);
         const entry=await ensureSongData(target);currentSong=target;applySong(target,entry);rate=+document.querySelector("#tempo")?.value/100||1;
         try{await ac.resume()}catch{}const when=ac.currentTime+.045;startStemSet(entry,when,0);startedAt=when;pausedAtSec=0;paused=false;setPauseUi(false);prefetchFor="";ending=false;setLoading(false);raf=requestAnimationFrame(scoreLoop);return;
       }catch(e){console.error(e);setLoading(false)}
@@ -221,7 +245,9 @@
     const t=current(),d=songDuration(currentSong);
     draw?.();updateSeekUi(t);
     if(loopMode==="all"&&d-t<=5&&d-t>=0&&prefetchFor!==currentSong.id){
-      prefetchFor=currentSong.id;const target=nextSong(1);void ensureSongData(target).catch(e=>console.warn("Next song prefetch failed",e));
+      /* Only the tiny MIDI is prefetched while audio is running. Encoded audio
+         remains in the persistent asset cache and is decoded after playback stops. */
+      prefetchFor=currentSong.id;const target=nextSong(1);void ensureMidiData(target).catch(e=>console.warn("Next song MIDI prefetch failed",e));
     }
     if(t>=d){void handleTrackEnd();return}
     raf=requestAnimationFrame(scoreLoop);
@@ -277,7 +303,7 @@
     try{
       try{await ac.resume()}catch{}
       globalThis.DruMasterPerformanceMode?.stopMic?.();
-      const song=songApi.current||initialSong,entry=await ensureSongData(song);currentSong=song;applySong(song,entry);
+      const song=songApi.current||initialSong;releaseDecodedStemsExcept(song.id);const entry=await ensureSongData(song);currentSong=song;applySong(song,entry);
       rate=+document.querySelector("#tempo")?.value/100||1;autoplay=false;
       globalThis.DruMasterResultFanfare?.stop?.();globalThis.DruMasterPlaybackControl?.stopRunAudio?.();stopStemVoices();stopDrumVoices();
       setupEl.classList.add("hidden");resultEl?.classList.add("hidden");gameEl.classList.remove("hidden");
@@ -291,7 +317,7 @@
   }
 
   function goHome(){
-    if(!active)return;restartGeneration++;active=false;running=false;paused=false;scrubbing=false;pausedAtSec=0;cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();setPauseUi(false);document.body.dataset.scorePlayback="0";document.body.dataset.scoreLoading="0";
+    if(!active)return;restartGeneration++;active=false;running=false;paused=false;scrubbing=false;pausedAtSec=0;cancelAnimationFrame(raf);stopStemVoices();stopDrumVoices();releaseDecodedStemsExcept();setPauseUi(false);document.body.dataset.scorePlayback="0";document.body.dataset.scoreLoading="0";
     const url=new URL(location.href);url.searchParams.set("song",currentSong.id);url.searchParams.delete("v");url.searchParams.delete("micdebug");location.href=url.toString();
   }
 
