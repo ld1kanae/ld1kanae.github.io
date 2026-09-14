@@ -5,6 +5,7 @@
   globalThis.DruMasterResultRankingLocal=true;
 
   const MAX_RECORDS=10;
+  const LEGACY_STORAGE_KEY='drumasterRankingV3';
   let renderToken=0;
 
   const currentSongId=()=>globalThis.DruMasterSongs?.current?.id
@@ -34,10 +35,26 @@
     };
     const perfect=n('#perfectCount'),great=n('#greatCount'),good=n('#goodCount'),miss=n('#missCount');
     if(perfect+great+good+miss<1)return null;
+    const stableScore=Number(result.dataset.finalScore);
     return {
-      playId:'visible-result',songId:currentSongId(),score:n('#finalScore'),perfect,great,good,miss,
+      playId:'visible-result',songId:currentSongId(),score:Number.isFinite(stableScore)?stableScore:n('#finalScore'),perfect,great,good,miss,
       playedAtClient:new Date().toISOString(),createdAtLocal:new Date().toISOString()
     };
+  }
+
+  function legacyLocalRows(){
+    try{
+      const data=JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY)||'[]');
+      if(!Array.isArray(data))return [];
+      return data.filter(row=>row&&Number.isFinite(Number(row.score))).map((row,i)=>{
+        const rawDate=typeof row.date==='string'?row.date:'';
+        const iso=/^\d{4}\.\d{2}\.\d{2}$/.test(rawDate)?`${rawDate.replace(/\./g,'-')}T12:00:00`:new Date().toISOString();
+        return {
+          playId:`legacy-local:${row.id||i}`,songId:row.song||'nanairo',score:Number(row.score)||0,
+          playedAtClient:iso,createdAtLocal:iso,legacyLocal:true
+        };
+      });
+    }catch{return []}
   }
 
   function mergeRows(groups){
@@ -57,6 +74,8 @@
     }
     return rows;
   }
+
+  const dayScoreKey=row=>`${row?.songId||'nanairo'}|${Number(row?.score||0)}|${dateText(row?.playedAtClient||row?.receivedAtServer||row?.createdAtLocal)}`;
 
   function render(rows){
     const host=document.querySelector('#rankingList');
@@ -106,7 +125,11 @@
     let local=[];
     try{local=await globalThis.DruMasterRanking?.getLocalPlays?.()||[]}catch(error){console.warn('Unable to read local ranking history:',error)}
     if(token!==renderToken)return;
-    const rows=mergeRows([visible?[visible]:[],local])
+
+    const primary=[...(visible?[visible]:[]),...local];
+    const primaryKeys=new Set(primary.map(dayScoreKey));
+    const fallback=legacyLocalRows().filter(row=>!primaryKeys.has(dayScoreKey(row)));
+    const rows=mergeRows([visible?[visible]:[],local,fallback])
       .filter(p=>(p.songId||'nanairo')===songId)
       .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.receivedAtServer||a.playedAtClient||'').localeCompare(String(b.receivedAtServer||b.playedAtClient||'')))
       .slice(0,MAX_RECORDS);
