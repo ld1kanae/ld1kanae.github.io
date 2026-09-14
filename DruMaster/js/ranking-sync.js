@@ -362,7 +362,9 @@
     if (captureBusy || capturedForVisibleResult || !isRankableResult()) return null;
     captureBusy = true;
     try {
-      const score = numberFrom('#finalScore');
+      const result = document.querySelector('#result');
+      const stableScore = Number(result?.dataset.finalScore);
+      const score = Number.isFinite(stableScore) ? stableScore : numberFrom('#finalScore');
       const perfect = numberFrom('#perfectCount');
       const great = numberFrom('#greatCount');
       const good = numberFrom('#goodCount');
