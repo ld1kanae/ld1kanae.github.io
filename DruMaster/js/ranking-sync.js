@@ -21,10 +21,10 @@
 
   let dbPromise;
   let syncing = false;
-  let syncQueued = false;
   let lastSyncState = null;
   let captureBusy = false;
   let capturedForVisibleResult = false;
+  let resultSyncPermit = false;
 
   const uuid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}-${Math.random().toString(16).slice(2)}`;
 
@@ -230,7 +230,6 @@
     const aliases = setLinkedPlayerIds(sourceIds);
     resetCursor(target);
     await rebuildMergedState();
-    await syncAll('link');
     return { changed: true, playerId: target, aliases, migrated: 0 };
   }
 
@@ -253,12 +252,12 @@
       }
       return;
     }
-    setStatus('端末スコアを統合中…');
+    setStatus('端末同期コードを更新中…');
     try {
       await linkToPlayerId(target);
-      setStatus('端末同期完了');
+      setStatus('端末同期コードを更新済み · 次回RESULT時に同期');
     } catch (error) {
-      setStatus(`端末同期失敗 · ${String(error?.message || error).slice(0, 80)}`);
+      setStatus(`端末同期設定失敗 · ${String(error?.message || error).slice(0, 80)}`);
       alert(String(error?.message || error));
     }
   }
@@ -378,7 +377,7 @@
         chartId: document.body?.dataset.chartId || 'default',
         rankingVersion: document.body?.dataset.rankingVersion || DEFAULT_RANKING_VERSION,
         chartVersion: document.body?.dataset.chartVersion || document.documentElement.dataset.chartVersion || 'unknown',
-        gameVersion: document.documentElement.dataset.gameVersion || 'shared-ranking-20260907-local-first',
+        gameVersion: document.documentElement.dataset.gameVersion || 'shared-ranking-20260914-result-only',
         score, perfect, great, good, miss, noteCount, maxCombo: numberFrom('#maxCombo') || null,
         playMode: detectMode(), autoPlay: false, noScore: false,
         playedAtClient: now, createdAtLocal: now, syncStatus: 'pending', retryCount: 0,
@@ -493,15 +492,16 @@
   }
 
   async function syncAll(reason = 'manual') {
+    /* Internet ranking I/O is allowed only for the one-shot permit created by
+       an actual hidden -> visible RESULT transition. Public/manual sync calls,
+       startup, endpoint changes and sync-code edits remain local-only. */
+    if (reason !== 'result' || !resultSyncPermit || !isRankableResult()) return lastSyncState;
+    resultSyncPermit = false;
     if (globalThis.DruMasterOfflinePlayback?.isLocked?.()) return lastSyncState;
-    if (syncing) {
-      syncQueued = true;
-      return lastSyncState;
-    }
+    if (syncing) return lastSyncState;
     const base = endpoint();
     if (!base) return lastSyncState;
     syncing = true;
-    syncQueued = false;
     setStatus('ランキング同期中…');
     const startedAt = new Date().toISOString();
     try {
@@ -539,10 +539,6 @@
       return lastSyncState;
     } finally {
       syncing = false;
-      if (syncQueued && !globalThis.DruMasterOfflinePlayback?.isLocked?.()) {
-        syncQueued = false;
-        queueMicrotask(() => syncAll('queued').catch(console.error));
-      }
     }
   }
 
@@ -553,25 +549,29 @@
   function watchResult() {
     const result = document.querySelector('#result');
     if (!result) return;
+    let wasHidden = result.classList.contains('hidden');
     const observer = new MutationObserver(() => {
-      if (result.classList.contains('hidden')) {
+      const hidden = result.classList.contains('hidden');
+      if (hidden) {
         capturedForVisibleResult = false;
-        return;
+        resultSyncPermit = false;
+      } else if (wasHidden) {
+        /* This transition is the only place that arms Internet ranking sync. */
+        resultSyncPermit = true;
+        scheduleCapture();
       }
-      scheduleCapture();
+      wasHidden = hidden;
     });
     observer.observe(result, { attributes: true, attributeFilter: ['class'] });
-    addEventListener('drumaster-result-finalized', scheduleCapture);
-    if (!result.classList.contains('hidden')) scheduleCapture();
   }
 
   async function init() {
     statusElement();
     watchResult();
     const migrated = await migrateDetachedLocalHistory();
-    await rebuildMergedState().catch(console.warn);
-    if (migrated) setStatus(`ローカル履歴 ${migrated}件を統合 · 同期中…`);
-    syncAll('startup').catch(console.error);
+    const merged = await rebuildMergedState().catch(error => { console.warn(error); return null; });
+    if (migrated) setStatus(`ローカル履歴 ${migrated}件を統合 · 次回RESULT時に同期`);
+    else if (merged?.pendingPlays) setStatus(`未同期 ${merged.pendingPlays}件 · 次回RESULT時に同期`);
   }
 
   globalThis.DruMasterRanking = {
@@ -600,7 +600,7 @@
     getEndpoint: endpoint,
     setEndpoint(value) {
       localStorage.setItem(ENDPOINT_KEY, String(value || '').trim());
-      syncAll('endpoint-change').catch(console.error);
+      setStatus('ランキング接続先を更新済み · 次回RESULT時に同期');
     },
     captureResult
   };
