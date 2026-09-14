@@ -43,8 +43,8 @@
 // During document parsing, synchronous tags guarantee that old cached dynamic
 // loaders later in the page cannot race ahead and install a previous client.
 (()=>{
-  const rankingSrc='js/ranking-sync.js?v=20260914-resultonly1';
-  const bridgeSrc='js/ranking-best-bridge.js?v=20260907-unified2';
+  const rankingSrc='js/ranking-sync.js?v=20260914-localdurable1';
+  const bridgeSrc='js/ranking-best-bridge.js?v=20260914-localfallback1';
 
   if(document.readyState==='loading'){
     if(!globalThis.DruMasterRanking&&!document.querySelector('script[data-drumaster-ranking-sync]')){
