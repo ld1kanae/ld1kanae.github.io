@@ -1,9 +1,9 @@
 "use strict";
 
 (()=>{
-  /* Real-time gameplay must never compete with network work. The ranking client
-     now syncs only at startup and after RESULT, so no ranking request needs to be
-     held open during a run. All network APIs are simply blocked while playing. */
+  /* Real-time gameplay must never compete with network work. Ranking Internet
+     sync is armed only by the transition into RESULT, and all network APIs stay
+     blocked for the entire active run, including pause. */
   const isPlaybackLocked=()=>{
     try{
       return typeof running!=="undefined"&&running;
@@ -43,7 +43,7 @@
 // During document parsing, synchronous tags guarantee that old cached dynamic
 // loaders later in the page cannot race ahead and install a previous client.
 (()=>{
-  const rankingSrc='js/ranking-sync.js?v=20260907-localfirst2';
+  const rankingSrc='js/ranking-sync.js?v=20260914-resultonly1';
   const bridgeSrc='js/ranking-best-bridge.js?v=20260907-unified2';
 
   if(document.readyState==='loading'){
