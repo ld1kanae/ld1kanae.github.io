@@ -81,7 +81,7 @@
   function loadRankingExtensions() {
     blockDetachedLocalHistoryLoader();
     loadOnce('js/legacy-score-migration.js?v=20260906-legacy3', 'dm-legacy-best-migration');
-    loadOnce('js/ranking-result-cloud.js?v=20260907-unified1', 'dm-ranking-result-cloud');
+    loadOnce('js/ranking-result-cloud.js?v=20260914-localfallback1', 'dm-ranking-result-cloud');
   }
 
   if (document.readyState === 'loading') {
