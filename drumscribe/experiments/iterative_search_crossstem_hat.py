@@ -124,22 +124,22 @@ def main():
     with tempfile.TemporaryDirectory(prefix="crossstem-") as td:
         allstems=prepare(Path(td))
         res={}
-        for name,gk,gs in [("c85_loose",.70,.60),("c85_balanced",1.00,.80),("c85_strict",1.25,1.00)]:
-            res[name]=evaluate(name,allstems,gk,gs,0,.30,root/"cycle85");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+        for name,gk,gs in [("c91_loose",.70,.60),("c91_balanced",1.00,.80),("c91_strict",1.25,1.00)]:
+            res[name]=evaluate(name,allstems,gk,gs,0,.30,root/"cycle91");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
         rr=rank(res);win=rr[0][0];best=res[win]
-        report["cycles"].append({"cycle":85,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+        report["cycles"].append({"cycle":91,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
 
         res={}
-        for name,q in [("c86_no_rescue",0),("c86_rescue50",.50),("c86_rescue75",.75)]:
-            res[name]=evaluate(name,allstems,best["gate_k"],best["gate_s"],q,best["hat_thr"],root/"cycle86");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+        for name,q in [("c92_no_rescue",0),("c92_rescue50",.50),("c92_rescue75",.75)]:
+            res[name]=evaluate(name,allstems,best["gate_k"],best["gate_s"],q,best["hat_thr"],root/"cycle92");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
         rr=rank(res);win=rr[0][0];best=res[win]
-        report["cycles"].append({"cycle":86,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+        report["cycles"].append({"cycle":92,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
 
         res={}
-        for name,t in [("c87_thr24",.24),("c87_thr30",.30),("c87_thr36",.36)]:
-            res[name]=evaluate(name,allstems,best["gate_k"],best["gate_s"],best["rescue"],t,root/"cycle87");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+        for name,t in [("c93_thr24",.24),("c93_thr30",.30),("c93_thr36",.36)]:
+            res[name]=evaluate(name,allstems,best["gate_k"],best["gate_s"],best["rescue"],t,root/"cycle93");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
         rr=rank(res);win=rr[0][0]
-        report["cycles"].append({"cycle":87,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+        report["cycles"].append({"cycle":93,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
         report["final"]={"winner":win,"summary":res[win]["summary"],"gate_k":res[win]["gate_k"],"gate_s":res[win]["gate_s"],"rescue":res[win]["rescue"],"hat_thr":res[win]["hat_thr"],"detailed":res[win]["detailed"]}
         (EXP/"results-iterative-crossstem-hat.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
         print("FINAL",json.dumps(report["final"],ensure_ascii=False,indent=2),flush=True)
