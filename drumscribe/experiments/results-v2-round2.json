@@ -1,7 +1,7 @@
 {
-  "schema": 4,
-  "formal_round": 2,
-  "description": "Formal Round 2: conservative kick/snare competition plus BPM/measure/periodicity-driven crash/ride classification. Truth MIDI is scoring-only.",
+  "schema": 5,
+  "formal_round": 3,
+  "description": "Formal Round 3: preserve Round 2 kick/snare protection, rhythmically rescue ambiguous snares, and add periodic ride candidates. Truth MIDI is scoring-only.",
   "songs": {
     "arcaround": {
       "bpm": 132.000132,
@@ -10,12 +10,12 @@
         4
       ],
       "metrics": {
-        "tp": 842,
-        "predicted": 1804,
+        "tp": 929,
+        "predicted": 2108,
         "reference": 1400,
-        "precision": 0.467,
-        "recall": 0.601,
-        "f1": 0.526,
+        "precision": 0.441,
+        "recall": 0.664,
+        "f1": 0.53,
         "by_group": {
           "kick": {
             "tp": 497,
@@ -23,8 +23,8 @@
             "reference": 576
           },
           "snare": {
-            "tp": 109,
-            "predicted": 165,
+            "tp": 196,
+            "predicted": 469,
             "reference": 292
           },
           "hat": {
@@ -53,10 +53,10 @@
             "reference": 0
           }
         },
-        "median_error": -0.01,
+        "median_error": -0.011,
         "count_ratio": {
           "kick": 0.924,
-          "snare": 0.565,
+          "snare": 1.606,
           "hat": 2.591,
           "tom": 2.5,
           "crash": 0.538,
@@ -70,15 +70,16 @@
             "tom_to_crash": 1,
             "tom_to_kick": 2,
             "kick_to_hat": 455,
-            "kick_to_snare": 40,
+            "kick_to_snare": 216,
             "kick_to_crash": 39,
             "crash_to_hat": 42,
+            "hat_to_snare": 29,
             "hat_to_tom": 6,
             "snare_to_hat": 111,
             "kick_to_ride": 37,
+            "crash_to_snare": 15,
             "hat_to_kick": 10,
             "kick_to_tom": 5,
-            "hat_to_snare": 3,
             "crash_to_ride": 1,
             "snare_to_ride": 2,
             "snare_to_kick": 19,
@@ -87,15 +88,15 @@
             "crash_to_kick": 2,
             "ride_to_hat": 32
           },
-          "kick_to_snare": 40,
+          "kick_to_snare": 216,
           "snare_to_kick": 19,
           "unmatched_predicted": {
             "hat": 79,
             "kick": 2,
             "snare": 11
           },
-          "kick_snare_double_supported": 0,
-          "kick_snare_double_unsupported": 0
+          "kick_snare_double_supported": 86,
+          "kick_snare_double_unsupported": 218
         }
       }
     },
@@ -201,11 +202,11 @@
       ],
       "metrics": {
         "tp": 981,
-        "predicted": 1522,
+        "predicted": 1561,
         "reference": 1797,
-        "precision": 0.645,
+        "precision": 0.628,
         "recall": 0.546,
-        "f1": 0.591,
+        "f1": 0.584,
         "by_group": {
           "kick": {
             "tp": 387,
@@ -214,7 +215,7 @@
           },
           "snare": {
             "tp": 196,
-            "predicted": 198,
+            "predicted": 237,
             "reference": 205
           },
           "hat": {
@@ -246,7 +247,7 @@
         "median_error": -0.002,
         "count_ratio": {
           "kick": 1.0,
-          "snare": 0.966,
+          "snare": 1.156,
           "hat": 1.232,
           "tom": 4.391,
           "crash": 0.49,
@@ -259,6 +260,7 @@
             "hat_to_tom": 83,
             "hat_to_crash": 57,
             "hat_to_ride": 18,
+            "hat_to_snare": 28,
             "hat_to_kick": 3,
             "snare_to_hat": 18,
             "tom_to_hat": 9,
@@ -266,18 +268,19 @@
             "kick_to_hat": 64,
             "ride_to_crash": 10,
             "ride_to_tom": 15,
+            "kick_to_snare": 2,
             "crash_to_tom": 2,
-            "crash_to_snare": 1,
+            "crash_to_snare": 10,
             "kick_to_crash": 1
           },
-          "kick_to_snare": 0,
+          "kick_to_snare": 2,
           "snare_to_kick": 0,
           "unmatched_predicted": {
             "hat": 26,
             "snare": 1
           },
           "kick_snare_double_supported": 0,
-          "kick_snare_double_unsupported": 0
+          "kick_snare_double_unsupported": 39
         }
       }
     },
@@ -288,12 +291,12 @@
         4
       ],
       "metrics": {
-        "tp": 1316,
-        "predicted": 1974,
+        "tp": 1387,
+        "predicted": 2053,
         "reference": 2009,
-        "precision": 0.667,
-        "recall": 0.655,
-        "f1": 0.661,
+        "precision": 0.676,
+        "recall": 0.69,
+        "f1": 0.683,
         "by_group": {
           "kick": {
             "tp": 482,
@@ -301,8 +304,8 @@
             "reference": 486
           },
           "snare": {
-            "tp": 58,
-            "predicted": 104,
+            "tp": 129,
+            "predicted": 183,
             "reference": 155
           },
           "hat": {
@@ -334,7 +337,7 @@
         "median_error": 0.011,
         "count_ratio": {
           "kick": 1.23,
-          "snare": 0.671,
+          "snare": 1.181,
           "hat": 0.813,
           "tom": null,
           "crash": 1.889,
@@ -353,8 +356,9 @@
             "hat_to_ride": 16,
             "hat_to_kick": 61,
             "kick_to_tom": 14,
+            "crash_to_snare": 2,
             "crash_to_tom": 2,
-            "crash_to_snare": 1
+            "hat_to_snare": 5
           },
           "kick_to_snare": 0,
           "snare_to_kick": 0,
@@ -364,8 +368,8 @@
             "hat": 69,
             "tom": 4
           },
-          "kick_snare_double_supported": 0,
-          "kick_snare_double_unsupported": 0
+          "kick_snare_double_supported": 73,
+          "kick_snare_double_unsupported": 6
         }
       }
     },
@@ -376,12 +380,12 @@
         4
       ],
       "metrics": {
-        "tp": 1173,
-        "predicted": 1754,
+        "tp": 1261,
+        "predicted": 1844,
         "reference": 2491,
-        "precision": 0.669,
-        "recall": 0.471,
-        "f1": 0.553,
+        "precision": 0.684,
+        "recall": 0.506,
+        "f1": 0.582,
         "by_group": {
           "kick": {
             "tp": 490,
@@ -389,8 +393,8 @@
             "reference": 520
           },
           "snare": {
-            "tp": 104,
-            "predicted": 104,
+            "tp": 192,
+            "predicted": 194,
             "reference": 210
           },
           "hat": {
@@ -419,10 +423,10 @@
             "reference": 0
           }
         },
-        "median_error": -0.007,
+        "median_error": -0.008,
         "count_ratio": {
           "kick": 1.071,
-          "snare": 0.495,
+          "snare": 0.924,
           "hat": 0.484,
           "tom": null,
           "crash": 1.788,
@@ -443,6 +447,7 @@
             "snare_to_tom": 37,
             "snare_to_kick": 7,
             "snare_to_ride": 7,
+            "crash_to_snare": 2,
             "kick_to_ride": 4,
             "snare_to_crash": 6
           },
@@ -452,23 +457,23 @@
             "hat": 107,
             "kick": 60
           },
-          "kick_snare_double_supported": 4,
-          "kick_snare_double_unsupported": 0
+          "kick_snare_double_supported": 92,
+          "kick_snare_double_unsupported": 2
         }
       }
     }
   },
   "summary": {
-    "tp": 6147,
-    "predicted": 9978,
+    "tp": 6393,
+    "predicted": 10490,
     "reference": 10086,
-    "precision": 0.616,
-    "recall": 0.609,
-    "f1": 0.613,
-    "kick_to_snare": 42,
+    "precision": 0.609,
+    "recall": 0.634,
+    "f1": 0.621,
+    "kick_to_snare": 220,
     "snare_to_kick": 27,
-    "kick_snare_double_supported": 4,
-    "kick_snare_double_unsupported": 0,
+    "kick_snare_double_supported": 251,
+    "kick_snare_double_unsupported": 265,
     "by_group": {
       "kick": {
         "tp": 2548,
@@ -477,10 +482,10 @@
         "count_ratio": 1.031
       },
       "snare": {
-        "tp": 1016,
-        "predicted": 1136,
+        "tp": 1262,
+        "predicted": 1648,
         "reference": 1470,
-        "count_ratio": 0.773
+        "count_ratio": 1.121
       },
       "hat": {
         "tp": 2549,
