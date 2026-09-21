@@ -1,0 +1,56 @@
+name: DrumScribe real browser validation
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/app.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/midi.js"
+      - "drumscribe/index.html"
+      - "drumscribe/experiments/browser_validate.mjs"
+      - "drumscribe/experiments/compare_browser.py"
+      - ".github/workflows/drumscribe-browser-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install browser and Python dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate MIDI in real Chromium
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Compare browser MIDI with reference MIDI
+        run: python drumscribe/experiments/compare_browser.py
+      - name: Commit browser validation outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/generated-v2-browser drumscribe/experiments/results-v2-browser.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record real browser DrumScribe validation [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval
