@@ -63,3 +63,44 @@ def score(summary:dict)->dict:
         "crash_fdr":round(crash_fdr,6),"ride_fdr":round(ride_fdr,6)
       }
     }
+
+
+def part_f1(summary:dict,part:str)->float:
+    return float(((summary or {}).get("by_group") or {}).get(part,{}).get("f1",0) or 0)
+
+def eligibility(candidate_summary:dict,baseline_summary:dict,target_parts=(),
+                target_tolerance=.01,max_part_drop=.05,meaningful_floor=.10)->dict:
+    """Hard non-regression gate before score ordering.
+
+    A candidate that gets a better aggregate score by deleting a hard
+    instrument cannot become the new all-part base. It can still be retained
+    in the component bank.
+    """
+    reasons=[]
+    for part in target_parts:
+        b=part_f1(baseline_summary,part);v=part_f1(candidate_summary,part)
+        if v+target_tolerance<b:
+            reasons.append(f"target_regression:{part}:{b:.4f}->{v:.4f}")
+    for part in PARTS:
+        b=part_f1(baseline_summary,part);v=part_f1(candidate_summary,part)
+        if b>=meaningful_floor and v<=0:
+            reasons.append(f"part_collapsed:{part}:{b:.4f}->0")
+        elif b>=meaningful_floor and b-v>max_part_drop:
+            reasons.append(f"part_drop:{part}:{b:.4f}->{v:.4f}")
+    bviol=baseline_summary.get("two_limb_violations")
+    vviol=candidate_summary.get("two_limb_violations")
+    if bviol==0 and vviol not in (None,0):
+        reasons.append(f"two_limb_regression:0->{vviol}")
+    return {"eligible":not reasons,"reasons":reasons}
+
+def select(candidates:dict,baseline_summary:dict,target_parts=(),**guard_kwargs)->dict:
+    scored=[]
+    guards={}
+    for name,obj in candidates.items():
+        summary=obj.get("summary",obj)
+        guard=eligibility(summary,baseline_summary,target_parts,**guard_kwargs)
+        guards[name]=guard
+        scored.append((guard["eligible"],score(summary)["score"],name))
+    scored.sort(reverse=True)
+    winner=next((name for ok,_,name in scored if ok),None)
+    return {"winner":winner,"ranking":[x[2] for x in scored],"guards":guards}
