@@ -570,3 +570,59 @@ Cycle 69のhat recall改善を保持しつつ、余計打音を減らすため�
 Cycle 69に比べ、hat recallを少し下げてfalse positivesを減らし、hat F1とoverall F1を僅かに上げた。現時点のhat部品候補として保持する。
 
 依然としてhat false-discovery約38%は高いため、今後も「総合F1」と「外れて鳴るhat率」を別指標で監視する。
+
+
+## Cycles 76–78 — pedal hi-hat repair
+
+過去のpedal-hat専用候補を現在の本体へ再投入し、current / strict / recall の最低3案を比較。その後、周期支持閾値3案とhand-hat競合除去3案を比較した。
+
+最良部品 `c77_per75`:
+- pedal_hat F1 **0.3865**
+- precision **0.3441**
+- recall **0.4408**
+- count ratio 1.2811
+
+旧現行pedal_hat:
+- F1 0.1735
+- precision 0.2440
+- recall 0.1346
+
+pedal-hat単体としては大幅改善。ただし全体へ無条件注入すると予測数が増え、overall precisionを落とす。よって「pedal部品として保持」はするが、総合候補では再評価してから採用する。
+
+hand-hatと近いpedal候補を単純除去する案は大幅悪化した。pedalとhand-hatの近接自体は十分起こりうるため、このhard conflict ruleは不採用。
+
+## Cycles 79–81 — first multi-component fusion
+
+Cycle 69 high-recall hatを土台に、crash / snare / pedalの強い部品を順に融合した。
+
+Cycle 79 crash:
+- base crash: overall F1 0.7148 / crash F1 0.3517
+- precision crash: overall F1 **0.7158** / crash F1 **0.3734**
+- recall crash: overall F1 0.7148 / crash F1 **0.3824** だがfalse positives増加
+
+全体選択ではprecision crashを採用。
+
+Cycle 80 snare:
+- existing base snare: snare F1 **0.8130**, kick→snare 42
+- veto snare: 0.8107, kick→snare 42
+- pattern snare: **0.8253** だがkick→snare **103**
+
+ユーザーが問題視したkick→snare誤認を優先し、base snareを維持。pattern snareは高recall部品としてのみ保持。
+
+Cycle 81 pedal:
+- base pedal: overall F1 **0.7158**
+- strict pedal: overall 0.7015
+- balanced pedal: overall 0.6946
+
+pedal単体は改善しても、無条件融合すると全体precision低下が大きい。Cycle 79–81の正式勝者は:
+- overall F1 **0.7158**
+- kick F1 0.9590
+- snare F1 0.8130
+- hat F1 0.6731
+- tom F1 0.6369
+- crash F1 0.3734
+- pedal_hat F1 0.1735
+- ride F1 0
+- kick→snare 42
+
+次段ではhat false-positive修正版とperiodic pedalを同時に含めた all-part fusion v2 を比較する。
