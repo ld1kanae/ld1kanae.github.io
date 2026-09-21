@@ -694,3 +694,73 @@ zero-fallbackは1曲全損を防ぎ、crash F1自体も上がる一方、overall
 として両方を保持する。
 
 Cycle 89のratio 0.10/0.25/0.50はこのデータでは同一結果。Cycle 90のgap rescueも改善なし。密度fallbackの有効部分は「0または極端な疎さを検知して別crash部品へ切替える」点に限定される。
+
+
+## Cycles 85–87 — 44.1 kHz ride section classifier
+
+fusion-v2 (Cycle 84) を土台に、44.1 kHz原音から高域スペクトル・金物onset周期・区間密度を抽出し、held-out曲以外4曲でride-dominant区間を学習した。
+
+比較:
+- Cycle 85: 2 / 4 / 8 beat window
+- Cycle 86: logistic / random forest / ExtraTrees
+- Cycle 87: strict / balanced / recall threshold
+
+結果:
+- ExtraTreesはride TPをほぼ作れず、最終strictではride TP=0。
+- RFはride TP=5 / predicted 69 / F1 0.014。
+- logisticはride TP **151** / predicted **1233** / precision **0.1225** / recall **0.2345** / F1 **0.1609**まで拾えたが、hatを大量にrideへ誤変換し overall F1は **0.6603**まで低下。
+- recall案でもride TP=6 / predicted 259 / F1 0.0133。
+
+結論:
+**44.1 kHzの区間特徴だけではride/hat分離は不十分。**
+rideはニューラル6ステム分離、または複数独立detectorのconsensusへ進める。
+結果は `results-iterative-ride-hires.json`。
+
+## Cycles 91–93 — cross-stem hi-hat bleed suppression（実行系）
+
+5WAV実分離を再実行し、hihat stemのonsetをkick/snare stemの同時onset強度と比較する。目的は、特にarcaroundで残るhat大量誤検出が他stem bleed由来かを検証すること。
+
+Cycle 91: loose / balanced / strict cross-stem gate  
+Cycle 92: periodic rescue なし / 0.50 / 0.75  
+Cycle 93: hat onset threshold 0.24 / 0.30 / 0.36
+
+## Cycles 94–96 — adaptive crash fallback
+
+precision crashが曲単位で0または極端に少ない場合のみ、base/recall crashを予測密度からfallbackする。参照MIDIはfallback判断に使用しない。
+
+旧番号での先行試験では:
+- zero fallback: crash F1 **0.3891**まで上昇
+- sparse recall: crash F1 0.3824
+- precision維持: crash F1 0.3734
+- ただしoverallではprecision維持 **0.7193** が最高
+
+したがって「crash単体F1向上」と「全体精度」のトレードオフを部品として保持し、正式には91以降と重ならない番号で再実行する。
+
+## Cycles 97–99 — structural pedal-hi-hat（実行系）
+
+pedal-hat候補を単純音色だけで決めず、以下を利用する。
+
+1. hand-supported: snare/tom/crash/rideと同時で、かつ周期的
+2. poly-rescue: kick+handまたは複数hand hitと同時で、足で鳴らすと解釈すると2-hand制約を自然に満たす候補
+3. gap-repeat: hand-hatが無い反復slotを周期的に埋める候補
+
+Cycle 98でperiodicity閾値、Cycle 99でstrict/recall/union候補源を比較する。
+
+## Cycles 100–102 — multi-detector ride consensus（実行系）
+
+独立したride検出器:
+- 44.1 kHz section logistic
+- 旧composite ride-recall
+- 旧section logistic
+
+を組み合わせる。
+
+Cycle 100:
+- highres単独
+- 3者intersection
+- 2-of-3 consensus
+
+Cycle 101: 時刻一致窓 35 / 60 / 90 ms  
+Cycle 102: 周期支持 0.25 / 0.50 / 0.75
+
+単一detectorのride precisionが低いため、複数系統の合意でfalse positiveを落とせるか検証する。
