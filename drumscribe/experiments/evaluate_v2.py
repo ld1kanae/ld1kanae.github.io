@@ -182,12 +182,12 @@ def periodic_support(times, i, bpm):
 
 
 
-def acoustic_candidates(band, sim):
-    """Formal Round 2 acoustic stage.
 
-    Preserve published band-precision peak detection. Kick/snare conflicts are
-    resolved conservatively in favour of kick unless snare evidence is clearly
-    stronger. Cymbal peaks remain generic until rhythmic post-processing.
+def acoustic_candidates(band, sim):
+    """Formal Round 3 acoustic candidates.
+
+    Keep the published band-precision detector intact and defer ambiguous
+    kick/snare and high-frequency classification to rhythmic post-processing.
     """
     idx={g:i for i,g in enumerate(ORDER)}
     signals={"kick":band[0],"snare":band[1],"hat":band[3],"tom":band[1],"cymbal":band[2]}
@@ -208,117 +208,175 @@ def acoustic_candidates(band, sim):
                 if sim[idx["tom"],p] < .85*max(sim[idx["kick"],p],sim[idx["snare"],p]):
                     continue
             if group=="cymbal":
-                cym_sim=max(float(sim[idx["crash"],p]),float(sim[idx["ride"],p]))
-                if cym_sim < .39:
+                if max(float(sim[idx["crash"],p]),float(sim[idx["ride"],p])) < .39:
                     continue
                 raw.append((p*HOP/SR,"cymbal_raw",float(s[p]),p))
             else:
                 raw.append((p*HOP/SR,group,float(s[p]),p))
+    return sorted(raw)
 
-    # Compete kick and snare. Ambiguous low/mid-band hits default to kick;
-    # keep both only when both templates independently support a true layered hit.
-    keep=set(range(len(raw)))
-    kick_idx=[i for i,e in enumerate(raw) if e[1]=="kick"]
-    snare_idx=[i for i,e in enumerate(raw) if e[1]=="snare"]
+
+def postprocess(events,bpm,num,den,round_id=3,sim=None,band=None):
+    idx={g:i for i,g in enumerate(ORDER)}
+    beat=60.0/bpm*4/den if bpm else .5
+    bar=beat*num
+    sigma=max(.035,beat*.15)
+
+    # Estimate a bar phase from common drum roles: kick tends toward strong beats,
+    # snare toward backbeats, crash toward the bar head. This is a prior, not a
+    # hard rule, and uses no reference MIDI.
+    def circ_dist(x,y,period):
+        d=abs(x-y)%period
+        return min(d,period-d)
+
+    phase_candidates=[e for e in events if e[1] in ("kick","snare","cymbal_raw")]
+    best_phase=0.0; best_score=-1.0
+    steps=96
+    for q in range(steps):
+        phase=bar*q/steps
+        score0=0.0
+        for t,g,s,p in phase_candidates:
+            pos=(t-phase)%bar
+            if g=="kick":
+                targets=[beat*i for i in range(num) if i%2==0] or [0.0]
+                w=1.0
+            elif g=="snare":
+                targets=[beat*i for i in range(num) if i%2==1] or [beat]
+                w=1.15
+            else:
+                targets=[0.0]
+                w=.75
+            d=min(circ_dist(pos,z,bar) for z in targets)
+            score0 += w*min(2.0,math.sqrt(max(s,0)))*math.exp(-.5*(d/sigma)**2)
+        if score0>best_score:
+            best_score=score0; best_phase=phase
+
+    def beat_info(t):
+        pos=(t-best_phase)%bar
+        bi=int(round(pos/beat))%num
+        target=bi*beat
+        d=circ_dist(pos,target,bar)
+        return bi,d/beat
+
+    def db_strength(t):
+        pos=(t-best_phase)%bar
+        d=circ_dist(pos,0.0,bar)
+        return math.exp(-.5*(d/max(.04,beat*.14))**2)
+
+    # Resolve kick/snare after bar phase is known.
+    keep=[True]*len(events)
+    kicks=[i for i,e in enumerate(events) if e[1]=="kick"]
+    snares=[i for i,e in enumerate(events) if e[1]=="snare"]
     used=set()
-    for ki in kick_idx:
-        k=raw[ki]
-        near=[si for si in snare_idx if si not in used and abs(raw[si][0]-k[0])<=.04]
-        if not near:
-            continue
-        si=min(near,key=lambda j:abs(raw[j][0]-k[0])); used.add(si)
-        s=raw[si]; p=k[3]
-        b0=float(band[0,p]); b1=float(band[1,p])
-        kr=b0/(b1+1e-7); sr=b1/(b0+1e-7)
-        sk=float(sim[idx["kick"],p]); ss=float(sim[idx["snare"],p])
+    for ki in kicks:
+        kt,kg,ks,kp=events[ki]
+        near=[si for si in snares if si not in used and abs(events[si][0]-kt)<=.04]
+        if not near: continue
+        si=min(near,key=lambda j:abs(events[j][0]-kt)); used.add(si)
+        st,sg,sscore,sp=events[si]
+        center=(kt+st)/2
+        bi,bd=beat_info(center)
+        backbeat=(bi%2==1 and bd<=.24)
 
-        layered=(sk>=.52 and ss>=.56 and .72<=kr<=1.38)
+        b0=float(band[0,kp]); b1=float(band[1,sp])
+        kr=b0/(b1+1e-7); sr=b1/(b0+1e-7)
+        sk=float(sim[idx["kick"],kp]); ss=float(sim[idx["snare"],sp])
+
+        layered=(sk>=.54 and ss>=.56 and .72<=kr<=1.45 and backbeat)
         if layered:
             continue
-        snare_strong=(sr>=1.55 and ss>=.42) or (ss>=sk+.18 and sr>=1.15)
-        if snare_strong:
-            keep.discard(ki)
-        else:
-            # Keep the ambiguous snare as a shadow candidate. Round 3 may
-            # restore it only when the song-level rhythmic context supports it.
-            raw[si]=(s[0],"snare_shadow",s[2],s[3])
 
-    # Add a separate ride candidate stream. The previous generic cymbal path
-    # misses sustained/regular ride because its mid-band threshold is tuned for
-    # crash attacks. These candidates are never accepted without periodic and
-    # timbral support in post-processing.
-    ride_signal=band[3]
-    for p in peaks_for(ride_signal,.30,distance=.075,prominence=.055):
-        rs=float(sim[idx["ride"],p]); hs=float(sim[idx["hat"],p])
-        if rs>=.28 and rs>=hs*.96:
-            raw.append((p*HOP/SR,"ride_raw",float(ride_signal[p]),p))
-
-    return sorted((t,g,s,p) for i,(t,g,s,p) in enumerate(raw) if i in keep)
-
-
-def postprocess(events,bpm,num,den,round_id=2,sim=None,band=None):
-    """Formal Round 2 rhythmic cymbal classification.
-
-    Crash is primarily a downbeat/first-beat event. Ride requires periodic
-    support and timbral separation from hi-hat. Weak non-structural cymbal
-    candidates are rejected rather than exported as crash.
-    """
-    musical=[(t,g,s,p) for t,g,s,p in events if g not in ("cymbal_raw","ride_raw","snare_shadow")]
-    cym=[(t,g,s,p) for t,g,s,p in events if g=="cymbal_raw"]
-    ride_raw=[(t,g,s,p) for t,g,s,p in events if g=="ride_raw"]
-    shadows=[(t,g,s,p) for t,g,s,p in events if g=="snare_shadow"]
-
-    # Restore only rhythmically stable ambiguous snares. This protects the
-    # kick->snare fix from Round 2 while recovering repeated backbeats/layers.
-    shadow_times=[t for t,g,s,p in shadows]
-    idx={g:i for i,g in enumerate(ORDER)}
-    for i,(t,g,s,p) in enumerate(shadows):
-        per=periodic_support(shadow_times,i,bpm)
-        ss=float(sim[idx["snare"],p]) if sim is not None else 0
-        ratio=float(band[1,p]/(band[0,p]+1e-7)) if band is not None else 0
-        if per>=.50 and ss>=.40 and ratio>=.78:
-            musical.append((t,"snare",s,p))
-
-    if not cym and not ride_raw:
-        return sorted((t,g,s) for t,g,s,p in musical)
-
-    # Estimate measure phase from kick plus generic cymbal accents; no reference MIDI.
-    phase_events=[(t,g,s) for t,g,s,p in musical if g in ("kick","snare")]
-    phase_events += [(t,"crash",s) for t,g,s,p in cym]
-    phase=estimate_downbeat_phase(phase_events,bpm,num,den)
-
-    times=sorted(set([t for t,g,s,p in cym]+[t for t,g,s,p in ride_raw]))
-    out=list(musical)
-    beat=60.0/bpm*4/den if bpm else .5
-
-    for i,(t,g,s,p) in enumerate(cym):
-        db=downbeat_strength(t,bpm,phase,num,den)
-        ti=min(range(len(times)),key=lambda k:abs(times[k]-t))
-        per=periodic_support(times,ti,bpm)
-
-        crash_sim=float(sim[idx["crash"],p]) if sim is not None else 0
-        ride_sim=float(sim[idx["ride"],p]) if sim is not None else 0
-        hat_sim=float(sim[idx["hat"],p]) if sim is not None else 0
-
-        # First-beat/downbeat cymbals are crash candidates. Allow exceptional
-        # off-beat crashes only with substantially stronger acoustic evidence.
-        crash_ok=(db>=.42 and crash_sim>=.34) or (s>=1.85 and crash_sim>=.48 and db>=.10)
-
-        # Ride must form a rhythmic sequence and be more ride-like than hi-hat.
-        ride_ok=(per>=.50 and ride_sim>=.32 and ride_sim>=hat_sim*1.04)
-
-        if crash_ok and not ride_ok:
-            out.append((t,"crash",s*(1+.35*db),p))
-        elif ride_ok and not crash_ok:
-            out.append((t,"ride",s*(1+.25*per),p))
-        elif crash_ok and ride_ok:
-            # Structural accent wins very close to the downbeat; otherwise ride.
-            if db>=.70:
-                out.append((t,"crash",s*(1+.35*db),p))
+        if backbeat:
+            # Restore snare on beats 2/4 unless low-frequency evidence is overwhelming.
+            keep[si]=True
+            if kr>=1.55 and sk>=.42 and ss<sk+.10:
+                keep[si]=False
+                keep[ki]=True
             else:
-                out.append((t,"ride",s*(1+.25*per),p))
+                # Kick may coexist only with clear independent low-end evidence.
+                keep[ki]=(b0>=.90 and sk>=.46)
+        else:
+            snare_strong=(sr>=1.60 and ss>=.42) or (ss>=sk+.20 and sr>=1.18)
+            if snare_strong:
+                keep[ki]=False
+            else:
+                keep[si]=False
 
-    return sorted((t,g,s) for t,g,s,p in out)
+    retained=[e for i,e in enumerate(events) if keep[i]]
+    hats=[e for e in retained if e[1]=="hat"]
+    cym=[e for e in retained if e[1]=="cymbal_raw"]
+    fixed=[e for e in retained if e[1] not in ("hat","cymbal_raw")]
+
+    # Use all high-frequency onsets for periodicity. Candidate-to-index matching is
+    # stable because event times are unique enough at the detector's peak distances.
+    high=sorted(hats+cym,key=lambda e:e[0])
+    high_times=[e[0] for e in high]
+    periodic={}
+    for i,e in enumerate(high):
+        periodic[id(e)]=periodic_support(high_times,i,bpm)
+
+    # Decide whether the song has meaningful ride evidence before reclassifying hats.
+    ride_votes=0
+    for e in hats:
+        t,g,s,p=e
+        rs=float(sim[idx["ride"],p]); hs=float(sim[idx["hat"],p])
+        per=periodic[id(e)]
+        ratio=float(band[2,p])/(float(band[3,p])+1e-7)
+        if per>=.50 and rs>=.31 and rs>=hs*1.06 and ratio>=.42:
+            ride_votes+=1
+    ride_mode=ride_votes>=max(8,int(.025*max(1,len(hats))))
+
+    out=list(fixed)
+    consumed_cym=set()
+
+    # Reclassify hats first. Downbeat hats with crash evidence become crash;
+    # periodic ride-like hats become ride only when song-level ride evidence exists.
+    for hi,e in enumerate(hats):
+        t,g,s,p=e
+        db=db_strength(t)
+        cs=float(sim[idx["crash"],p]); rs=float(sim[idx["ride"],p]); hs=float(sim[idx["hat"],p])
+        ratio=float(band[2,p])/(float(band[3,p])+1e-7)
+        per=periodic[id(e)]
+        nearby=[j for j,x in enumerate(cym) if abs(x[0]-t)<=.045]
+
+        crash_from_hat=(db>=.58 and cs>=.28 and (ratio>=.28 or bool(nearby)))
+        ride_from_hat=(ride_mode and db<.55 and per>=.50 and rs>=.31 and rs>=hs*1.06 and ratio>=.42)
+
+        if crash_from_hat:
+            out.append((t,"crash",s*(1+.30*db),p))
+            consumed_cym.update(nearby)
+        elif ride_from_hat:
+            out.append((t,"ride",s*(1+.20*per),p))
+            consumed_cym.update(nearby)
+        else:
+            out.append(e)
+
+    # Remaining dedicated cymbal candidates: bar-head crash, periodic ride, or reject.
+    for j,e in enumerate(cym):
+        if j in consumed_cym: continue
+        t,g,s,p=e
+        db=db_strength(t); per=periodic[id(e)]
+        cs=float(sim[idx["crash"],p]); rs=float(sim[idx["ride"],p]); hs=float(sim[idx["hat"],p])
+        crash_ok=(db>=.50 and cs>=.32) or (db>=.12 and s>=1.95 and cs>=.50)
+        ride_ok=(ride_mode and db<.60 and per>=.50 and rs>=.32 and rs>=hs*1.04)
+
+        if crash_ok and (not ride_ok or db>=.68):
+            out.append((t,"crash",s*(1+.30*db),p))
+        elif ride_ok:
+            out.append((t,"ride",s*(1+.20*per),p))
+
+    # Per-class de-duplication after reclassification.
+    result=[]
+    min_dist={"kick":.05,"snare":.05,"hat":.04,"tom":.07,"crash":.16,"ride":.05}
+    for g in ("kick","snare","hat","tom","crash","ride"):
+        arr=sorted([e for e in out if e[1]==g],key=lambda e:(e[0],-e[2]))
+        last=-999.0
+        for e in arr:
+            if e[0]-last < min_dist[g]:
+                continue
+            result.append((e[0],e[1],e[2]))
+            last=e[0]
+    return sorted(result)
 
 def score(pred, truth, shift=0, tol=.08):
     totals=Counter(); hits=Counter(); errors=[]
@@ -392,6 +450,7 @@ def count_ratios(score_obj):
 
 
 
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--repo-root",type=Path,default=Path("."))
@@ -401,16 +460,15 @@ def main():
     results={
         "schema":5,
         "formal_round":3,
-        "description":"Formal Round 3: preserve Round 2 kick/snare protection, rhythmically rescue ambiguous snares, and add periodic ride candidates. Truth MIDI is scoring-only.",
+        "description":"Formal Round 3: beat-aware kick/snare conflict resolution and reclassification of high-frequency hat/cymbal candidates into crash/ride. Truth MIDI is scoring-only.",
         "songs":{}
     }
     total=Counter()
     for folder in sorted((root/"DruMaster/songs").iterdir()):
         meta_path=folder/"song.json"
-        if not meta_path.exists() or not (folder/"drums.mp3").exists() or not (folder/"chart.mid").exists():
-            continue
-        if folder.name not in {"arcaround","diamondvirgin","kaiju","nanairo","ray"}:
-            continue
+        if not meta_path.exists() or not (folder/"drums.mp3").exists() or not (folder/"chart.mid").exists(): continue
+        if folder.name not in {"arcaround","diamondvirgin","kaiju","nanairo","ray"}: continue
+
         meta=json.loads(meta_path.read_text())
         bpm=float(meta.get("bpm") or 0)
         ts=meta.get("timeSignature") or {"numerator":4,"denominator":4}
@@ -419,7 +477,7 @@ def main():
 
         x=audio(folder/"drums.mp3"); spec=spectrum(x); band,sim=features(spec,tmpl)
         raw=acoustic_candidates(band,sim)
-        pred=postprocess(raw,bpm,num,den,2,sim=sim,band=band)
+        pred=postprocess(raw,bpm,num,den,3,sim=sim,band=band)
         truth=midi_events(folder/"chart.mid")
 
         sc=score(pred,truth,shift); cf=confusion(pred,truth,shift)
