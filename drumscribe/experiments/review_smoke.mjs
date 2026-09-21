@@ -13,10 +13,15 @@ async function ensureScheduledFor(song,candidate){
   if(Number.isFinite(target)&&target>d.mediaTime+.35){
     await page.evaluate(t=>{const s=document.querySelector('#source');s.currentTime=Math.max(0,t-.08)},target);
   }
-  await page.waitForFunction(({song,candidate})=>{
-    const x=window.__drumscribeReviewDebug?.();
-    return x&&x.scheduledNotes>0&&x.song===song&&x.candidate===candidate;
-  },{song,candidate},{timeout:15000});
+  try{
+    await page.waitForFunction(({song,candidate})=>{
+      const x=window.__drumscribeReviewDebug?.();
+      return x&&x.scheduledNotes>0&&x.song===song&&x.candidate===candidate;
+    },{song,candidate},{timeout:15000});
+  }catch(err){
+    const state=await page.evaluate(()=>window.__drumscribeReviewDebug?.());
+    throw new Error('schedule timeout '+song+'/'+candidate+' '+JSON.stringify(state));
+  }
   return await page.evaluate(()=>window.__drumscribeReviewDebug?.());
 }
 
