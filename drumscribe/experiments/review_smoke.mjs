@@ -22,6 +22,20 @@ if(!midiResponse.ok())throw new Error('MIDI fetch failed: '+midiResponse.status(
 const bytes=await midiResponse.body();
 if(bytes.subarray(0,4).toString()!=='MThd')throw new Error('download is not MIDI');
 
+// Playback smoke: click through the real UI, require a running AudioContext,
+// decoded drum samples, and at least one scheduled MIDI hit.
+await page.locator('#syncPlay').click();
+await page.waitForFunction(()=>{
+  const d=window.__drumscribeReviewDebug?.();
+  return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused;
+},{},{timeout:30000});
+await page.waitForFunction(()=>{
+  const d=window.__drumscribeReviewDebug?.();
+  return d&&d.scheduledNotes>0;
+},{},{timeout:15000});
+const playbackDebug=await page.evaluate(()=>window.__drumscribeReviewDebug());
+await page.locator('#stop').click();
+
 await page.locator('#overall').fill('5');
 await page.locator('#notes').fill('review-smoke-note');
 await page.locator('#tags input').first().check();
@@ -34,5 +48,5 @@ await page.waitForFunction(()=>document.querySelector('#notes')?.value==='review
 if(await page.locator('#notes').inputValue()!=='review-smoke-note')throw new Error('review did not persist');
 if(await page.locator('#overall').inputValue()!=='5')throw new Error('rating did not persist');
 
-console.log('review smoke OK',{songCount,candidateCount,midiBytes:bytes.length});
+console.log('review smoke OK',{songCount,candidateCount,midiBytes:bytes.length,playbackDebug});
 await browser.close();
