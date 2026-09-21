@@ -35,6 +35,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git reset --hard HEAD
+          git clean -fd drumscribe/experiments/EXPERIMENT_LOG.md drumscribe/experiments/experiment-log.json drumscribe/experiments/validation-history.json drumscribe/experiments/component-bank.json || true
           git pull --rebase origin drumscribe-v2-eval
           python drumscribe/experiments/build_validation_catalog.py
           python drumscribe/experiments/build_experiment_log.py
