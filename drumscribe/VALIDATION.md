@@ -778,3 +778,95 @@ Cycle 102: 周期支持 0.25 / 0.50 / 0.75
 - Canonical detailed re-score: `drumscribe/experiments/detailed-history/`
 
 各cycleは最低3候補、勝者、僅差候補、全パートF1、kick→snare / snare→kick、実装script/commit、result commit、params参照を記録する。生成MIDIが残る候補は標準評価器で再採点可能とする。
+
+
+## 2026-09-22 checkpoint — component fusion / part-specific repair / ride recovery
+
+正式な候補IDは result file + cycle + candidate name とする。過去に異なる探索系列でcycle番号が重複したため、cycle番号単独では識別しない。
+
+### Component fusion 系
+
+複数の過去候補からパート単位の勝ち要素を再利用した結果、直接分類/単一探索系列より総合性能が明確に向上した。
+
+- results-iterative-best-fusion.json
+  - final c81_pedal_base: overall F1 0.7158
+  - kick F1 0.9590
+  - snare F1 0.8130
+  - hat F1 0.6731
+  - pedal_hat F1 0.1735
+  - tom F1 0.6369
+  - crash F1 0.3734
+  - ride F1 0
+- results-iterative-fusion-v2.json
+  - final c84_pedal75: overall F1 0.7193
+  - pedal_hat F1 0.3865 まで改善し、全体バランスも維持
+- results-iterative-tom-consensus.json
+  - final c105_density7: overall F1 0.7197
+  - tom F1 0.6667 / precision 0.7534 / recall 0.5978
+  - 現状のbalanced base候補として保持
+
+### 「総合F1だけ高い」候補の扱い
+
+results-iterative-pedal-structural.json には overall F1 0.7205 付近の候補があるが、pedal_hat F1が約0.01–0.03まで崩れる。このため総合F1最高値だけを理由に本採用しない。全パート評価を優先する。
+
+### Hi-hat
+
+44.1 kHz高域保持が11.025 kHzより有効だった結果を引き継ぎ、hat fusion / precision / cross-stem bleed suppressionを複数cycleで比較した。
+
+- current balanced hat: F1 約0.674
+- false discovery rate 約0.38
+- recall 約0.74
+- 改善はしたがFPが依然多く、レビュー指摘の「細かい不要連打」は未解決として保持
+
+### Snare
+
+高recall部品では:
+- results-iterative-best-fusion.json : c80_snare_pattern
+- snare F1 0.8253 / precision 0.7778 / recall 0.8789
+- ただし kick→snare が42→103へ増加
+
+したがって丸ごと採用せず、高精度baseに安全な追加snareだけを足す探索へ移行。results-iterative-snare-veto.jsonではkick→snareを42へ戻せたが、snare F1は0.8107まで戻ってしまった。Cycles 112–114でより細かい kick近傍 veto / independent snare consensus / backbeat rescue を検証中。
+
+### Crash
+
+crash fallback / consensusを比較した結果、部品ベストは概ね:
+- crash F1 約0.389
+- precision 約0.58
+- recall 約0.29
+
+小節頭優先を維持するとprecisionは確保できるが、recallが低い。総合候補ではprecision重視のcrashを使用し、別部品としてrecall候補も保持する。
+
+### Ride
+
+rideは長く最大の弱点だったが、0検出状態は突破した。
+
+1. ride consensus / grid:
+   - ride F1 約0.03–0.05
+2. ride song-gate:
+   - TP 36 / predicted 121 / reference 644
+   - precision 0.2975 / recall 0.0559 / F1 0.0941
+3. ride seed-expand:
+   - c109_radius8 は ride TP 56 / predicted 358 / reference 644
+   - precision 0.1564 / recall 0.0870 / F1 0.1118
+   - 総合F1は0.7102なので丸ごとは採用しないが、現時点のride部品として保持
+   - final c111_seed3はride F1 0.0917だが、全体precisionとのバランスで探索系列内winner
+
+曲別には:
+- diamondvirgin: rideを一定量回収可能
+- kaiju: expanded rideで改善するがreference 431に対しまだ大幅不足
+- arcaround: rideをまだ拾えていない
+- nanairo / ray: reference ride 0で、不要rideを出さないことを維持
+
+Cycles 115–117では、予測由来の seed ride数 / hat数により tight / expanded / off を曲ごとに切り替える方式を検証中。
+
+### Logging / reproducibility
+
+自動ログ生成を導入済み。
+
+- experiments/EXPERIMENT_LOG.md: 全result / 全cycle / 全candidateの人間向けログ
+- experiments/experiment-log.json: params、script/commit、result commit、aggregate part metricsを保持
+- experiments/validation-history.json: 生resultsへの索引
+- experiments/component-bank.json: 総合敗者も含むパート別保持候補
+- experiments/detailed-history/: 生成済みMIDIを標準評価器で再採点した全曲×全パート詳細データ
+
+2026-09-22時点でEXPERIMENT_LOG生成workflowは成功しており、直近生成時は43 result files / 350 candidatesを収録した。今後の完了cycleも同じ形式へ追記する。
