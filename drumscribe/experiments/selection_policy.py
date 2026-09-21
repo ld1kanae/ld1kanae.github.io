@@ -27,10 +27,16 @@ def score(summary:dict)->dict:
     kref=max(1,int((by.get("kick") or {}).get("reference") or 0))
     k2s=float(summary.get("kick_to_snare") or 0)/kref
 
-    hat_fdr=float((by.get("hat") or {}).get("false_discovery_rate") or 0)
-    pedal_fdr=float((by.get("pedal_hat") or {}).get("false_discovery_rate") or 0)
-    crash_fdr=float((by.get("crash") or {}).get("false_discovery_rate") or 0)
-    ride_fdr=float((by.get("ride") or {}).get("false_discovery_rate") or 0)
+    def fdr(part):
+        x=by.get(part) or {}
+        if x.get("false_discovery_rate") is not None:
+            return float(x.get("false_discovery_rate") or 0)
+        pred=float(x.get("predicted") or 0);tp=float(x.get("tp") or 0)
+        return max(0.0,(pred-tp)/pred) if pred else 0.0
+    hat_fdr=fdr("hat")
+    pedal_fdr=fdr("pedal_hat")
+    crash_fdr=fdr("crash")
+    ride_fdr=fdr("ride")
 
     mean_parts=sum(part_f1)/len(part_f1)
     mean_core=sum(core_f1)/len(core_f1)
