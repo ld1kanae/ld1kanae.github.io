@@ -1,0 +1,43 @@
+name: DrumScribe source-separation search
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_separation.py"
+      - ".github/workflows/drumscribe-separation-search.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install numpy scipy scikit-learn
+      - name: Run source-separated search cycles 40 to 42
+        run: python drumscribe/experiments/iterative_search_separation.py
+      - name: Commit separated candidate MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/generated-search-separation drumscribe/experiments/results-iterative-separation.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record DrumScribe separated search results [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval
