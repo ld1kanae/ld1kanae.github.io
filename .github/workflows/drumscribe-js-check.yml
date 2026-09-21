@@ -1,0 +1,28 @@
+name: DrumScribe JS check
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/app.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/midi.js"
+      - "drumscribe/index.html"
+      - "drumscribe/style.css"
+      - ".github/workflows/drumscribe-js-check.yml"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax
+        run: |
+          node --check drumscribe/app.js
+          node --check drumscribe/transcribe.js
+          node --check drumscribe/midi.js
