@@ -1,0 +1,52 @@
+name: DrumScribe post-ride fusion
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/results-iterative-ride-hires.json"
+      - "drumscribe/experiments/iterative_search_post_ride_fusion.py"
+      - ".github/workflows/drumscribe-post-ride-fusion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - name: Check prerequisite
+        id: prereq
+        run: |
+          if [ -f drumscribe/experiments/results-iterative-ride-hires.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.prereq.outputs.ready == 'true'
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        if: steps.prereq.outputs.ready == 'true'
+        run: pip install numpy scipy
+      - name: Run post-ride fusion cycles 88 to 90
+        if: steps.prereq.outputs.ready == 'true'
+        run: python drumscribe/experiments/iterative_search_post_ride_fusion.py
+      - name: Commit MIDI and metrics
+        if: steps.prereq.outputs.ready == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-post-ride-fusion drumscribe/experiments/results-iterative-post-ride-fusion.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record post-ride fusion PDCA results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
