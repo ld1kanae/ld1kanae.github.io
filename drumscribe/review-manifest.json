@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "songs": [
+    {
+      "id": "arcaround",
+      "label": "arcaround"
+    },
+    {
+      "id": "diamondvirgin",
+      "label": "diamondvirgin"
+    },
+    {
+      "id": "kaiju",
+      "label": "kaiju"
+    },
+    {
+      "id": "nanairo",
+      "label": "nanairo"
+    },
+    {
+      "id": "ray",
+      "label": "ray"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "balanced-best",
+      "label": "A / 総合バランス",
+      "description": "現時点の総合F1が高い案。kick/snareは強く、crashは比較的精密。rideはほぼ出さない。",
+      "midiBase": "experiments/generated-search-ride-ml/cycle18/c18_periodic_strict",
+      "metricsFile": "experiments/results-iterative-ride-ml.json",
+      "cycle": 18,
+      "key": "c18_periodic_strict"
+    },
+    {
+      "id": "crash-ml",
+      "label": "B / Crash ML",
+      "description": "crash検出を重視した学習型案。crashの位置・量をAと比較するために残す。",
+      "midiBase": "experiments/generated-search-ml/cycle15/c15_head_015",
+      "metricsFile": "experiments/results-iterative-ml.json",
+      "cycle": 15,
+      "key": "c15_head_015"
+    },
+    {
+      "id": "ride-recall",
+      "label": "C / Ride回収",
+      "description": "rideを多めに拾う案。ride区間の聞こえ方と誤検出量をA/Bと比較するために残す。",
+      "midiBase": "experiments/generated-search-rotation/cycle12/c12_ride_medium",
+      "metricsFile": "experiments/results-iterative-rotation.json",
+      "cycle": 12,
+      "key": "c12_ride_medium"
+    }
+  ],
+  "tags": [
+    "kick→snare誤認",
+    "snare→kick誤認",
+    "snare取りこぼし",
+    "hat過多",
+    "hat不足",
+    "crash過多",
+    "crash不足",
+    "crash位置ずれ",
+    "ride過多",
+    "ride不足",
+    "tom誤検出",
+    "フィル不自然",
+    "同時発音不自然",
+    "タイミングずれ",
+    "この候補が一番良い"
+  ]
+}
