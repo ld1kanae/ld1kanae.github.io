@@ -157,3 +157,30 @@ drumscribe-v2-eval ブランチ上で、本番 main を変更せずにフル尺5
 - 候補生成は現行 band-precision を基準へ戻し、既存F1を失わない状態からkick/snare競合処理とcrash/ride分離を追加する。
 
 予備結果の生データは experiments/results-v2-pilot.json に固定保存する。
+
+
+### 正式Round 1 — 現行band-precision基準 + kick/snare競合 + 音響crash/ride分離
+
+予備案を破棄し、公開方式の band-precision 候補生成を基準へ戻した。変更は主に次の2点へ限定した。
+
+- 同一時刻のkick/snare候補を競合させ、無条件の二重採用を避ける。
+- 従来のcymbal候補をcrash / rideへ分割する。
+
+結果:
+
+| 指標 | 現行公開方式（既存検証） | Round 1 |
+|---|---:|---:|
+| Precision | 0.578 | 0.569 |
+| Recall | 0.657 | 0.608 |
+| F1 | **0.615** | **0.588** |
+| 推定ノート数 | 11,477 | 10,788 |
+
+Round 1の楽器別ノート数比（推定 / 参照）は、kick 0.933、snare 1.053、hat 1.067、tom 4.163、crash 3.154、ride 0.000だった。
+
+kick→snare誤分類は評価器の改良後の定義で176件、snare→kickは26件。うちkick→snareは arcaround が174件を占めた。arcaroundではkick数比が0.589まで落ちており、競合処理がkick候補をsnare側へ寄せ過ぎている。
+
+crash / ride分離も失敗した。nanairoのcrash数比は5.244、rayは5.385で従来の過剰検出を解消できず、一方rideは5曲合計で0件になった。したがって「シンバル候補をcrash/rideのテンプレート類似度だけで二分する」方式は不採用とする。
+
+Round 1の生データは experiments/results-v2-round1.json に保存した。
+
+**Round 2での修正方針:** kick/snare競合では低域比をより強く使い、kickを誤って落とさない。シンバルは音色テンプレート主導ではなく、既知BPMから得る小節位置と周期反復を主要特徴にする。小節頭付近はcrash、一定周期で連続する候補はride、それ以外の弱いシンバル候補は棄却する。
