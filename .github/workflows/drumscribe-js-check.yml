@@ -9,7 +9,7 @@ on:
       - "drumscribe/transcribe.js"
       - "drumscribe/midi.js"
       - "drumscribe/index.html"
-      - "drumscribe/style.css"
+      - "drumscribe/style.css"\n      - "drumscribe/review.js"\n      - "drumscribe/review.html"\n      - "drumscribe/review.css"\n      - "drumscribe/review-manifest.json"
       - ".github/workflows/drumscribe-js-check.yml"
   workflow_dispatch:
 
@@ -25,4 +25,4 @@ jobs:
         run: |
           node --check drumscribe/app.js
           node --check drumscribe/transcribe.js
-          node --check drumscribe/midi.js
+          node --check drumscribe/midi.js\n          node --check drumscribe/review.js
