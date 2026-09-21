@@ -41,6 +41,38 @@ function localMedian(values,index,radius,step){
   arr.sort((a,b)=>a-b);return arr[arr.length>>1]||0;
 }
 function percentile98(values){const copy=Array.from(values).sort((a,b)=>a-b);return copy[Math.floor(.98*(copy.length-1))]||0;}
+async function parallelSpectrum(samples,frames,report){
+  if(typeof Worker==='undefined'||frames<1800)return null;
+  const cores=Math.max(2,Number(globalThis.navigator?.hardwareConcurrency)||2);
+  const count=Math.min(4,Math.max(2,cores-1),Math.max(1,Math.ceil(frames/1800)));
+  const spectrum=new Float32Array(frames*BINS),mean=new Float64Array(BINS);
+  let completed=0;
+  const jobs=[];
+  for(let w=0;w<count;w++){
+    const startFrame=Math.floor(frames*w/count),endFrame=Math.floor(frames*(w+1)/count);
+    if(endFrame<=startFrame)continue;
+    const globalStart=startFrame*HOP-(SIZE>>1);
+    const globalEnd=(endFrame-1)*HOP+(SIZE>>1);
+    const clipStart=Math.max(0,globalStart),clipEnd=Math.min(samples.length,globalEnd+1);
+    const segment=samples.slice(clipStart,clipEnd);
+    jobs.push(new Promise((resolve,reject)=>{
+      const worker=new Worker(new URL('./fft-worker.js',import.meta.url));
+      const cleanup=()=>worker.terminate();
+      worker.onerror=e=>{cleanup();reject(e.error||Error(e.message||'FFT worker failed'));};
+      worker.onmessage=e=>{
+        const part=new Float32Array(e.data.spectrum),m=new Float64Array(e.data.mean);
+        spectrum.set(part,startFrame*BINS);
+        for(let j=0;j<BINS;j++)mean[j]+=m[j];
+        completed++;report('周波数を並列解析中…',10+36*completed/count);
+        cleanup();resolve();
+      };
+      worker.postMessage({samples:segment.buffer,startFrame,endFrame,sampleStart:clipStart},[segment.buffer]);
+    }));
+  }
+  await Promise.all(jobs);
+  return {spectrum,mean};
+}
+
 
 export async function transcribe(decoded,report=()=>{},options={}){
   report('音声を解析用に変換中…',5);
@@ -59,15 +91,23 @@ export async function transcribe(decoded,report=()=>{},options={}){
       samples[i]=((a[j]+b[j])*(1-f)+(a[j+1]+b[j+1])*f)*.5;
     }
   }
-  const frames=Math.ceil(samples.length/HOP),spectrum=new Float32Array(frames*BINS),mean=new Float64Array(BINS);
-  const real=new Float32Array(SIZE),imag=new Float32Array(SIZE),windowed=new Float32Array(SIZE),mag=new Float32Array(BINS);
-  const window=Float32Array.from({length:SIZE},(_,i)=>.5-.5*Math.cos(2*Math.PI*i/(SIZE-1)));
-  for(let t=0;t<frames;t++){
-    const center=t*HOP;
-    for(let i=0;i<SIZE;i++)windowed[i]=(samples[center+i-SIZE/2]||0)*window[i];
-    fftMagnitude(windowed,real,imag,mag);
-    for(let j=0;j<BINS;j++){spectrum[t*BINS+j]=mag[j];mean[j]+=mag[j];}
-    if(t%450===0){report('周波数を調べています…',10+36*t/frames);await wait();}
+  const frames=Math.ceil(samples.length/HOP);
+  let spectrum,mean;
+  try{
+    const parallel=await parallelSpectrum(samples,frames,report);
+    if(parallel){spectrum=parallel.spectrum;mean=parallel.mean;}
+  }catch(err){console.warn('parallel FFT fallback',err);}
+  if(!spectrum){
+    spectrum=new Float32Array(frames*BINS);mean=new Float64Array(BINS);
+    const real=new Float32Array(SIZE),imag=new Float32Array(SIZE),windowed=new Float32Array(SIZE),mag=new Float32Array(BINS);
+    const window=Float32Array.from({length:SIZE},(_,i)=>.5-.5*Math.cos(2*Math.PI*i/(SIZE-1)));
+    for(let t=0;t<frames;t++){
+      const center=t*HOP;
+      for(let i=0;i<SIZE;i++)windowed[i]=(samples[center+i-SIZE/2]||0)*window[i];
+      fftMagnitude(windowed,real,imag,mag);
+      for(let j=0;j<BINS;j++){spectrum[t*BINS+j]=mag[j];mean[j]+=mag[j];}
+      if(t%450===0){report('周波数を調べています…',10+36*t/frames);await wait();}
+    }
   }
   const sampleTemplates=await fetch('templates.json').then(r=>{if(!r.ok)throw Error('参照サンプルを読み込めません');return r.json();});
   const band=new Array(4).fill(0).map(()=>new Float32Array(frames));
