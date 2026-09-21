@@ -37,13 +37,13 @@ jobs:
           pip install numpy scipy
       - name: Run three validation passes
         run: |
-          python drumscribe/experiments/evaluate_v2.py             --repo-root .             --output drumscribe/experiments/results-v2-round2.json
+          python drumscribe/experiments/evaluate_v2.py             --repo-root .             --output drumscribe/experiments/results-v2-round3.json
       - name: Commit evaluation results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add drumscribe/experiments/results-v2-round2.json
           git diff --cached --quiet && exit 0
-          git commit -m "Record DrumScribe v2 round 2 results [skip ci]"
+          git commit -m "Record DrumScribe v2 round 3 results [skip ci]"
           git pull --rebase origin drumscribe-v2-eval
           git push origin HEAD:drumscribe-v2-eval
