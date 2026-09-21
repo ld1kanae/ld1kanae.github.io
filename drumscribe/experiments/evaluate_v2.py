@@ -239,7 +239,19 @@ def acoustic_candidates(band, sim):
         if snare_strong:
             keep.discard(ki)
         else:
-            keep.discard(si)
+            # Keep the ambiguous snare as a shadow candidate. Round 3 may
+            # restore it only when the song-level rhythmic context supports it.
+            raw[si]=(s[0],"snare_shadow",s[2],s[3])
+
+    # Add a separate ride candidate stream. The previous generic cymbal path
+    # misses sustained/regular ride because its mid-band threshold is tuned for
+    # crash attacks. These candidates are never accepted without periodic and
+    # timbral support in post-processing.
+    ride_signal=band[3]
+    for p in peaks_for(ride_signal,.30,distance=.075,prominence=.055):
+        rs=float(sim[idx["ride"],p]); hs=float(sim[idx["hat"],p])
+        if rs>=.28 and rs>=hs*.96:
+            raw.append((p*HOP/SR,"ride_raw",float(ride_signal[p]),p))
 
     return sorted((t,g,s,p) for i,(t,g,s,p) in enumerate(raw) if i in keep)
 
@@ -251,9 +263,23 @@ def postprocess(events,bpm,num,den,round_id=2,sim=None,band=None):
     support and timbral separation from hi-hat. Weak non-structural cymbal
     candidates are rejected rather than exported as crash.
     """
-    musical=[(t,g,s,p) for t,g,s,p in events if g!="cymbal_raw"]
+    musical=[(t,g,s,p) for t,g,s,p in events if g not in ("cymbal_raw","ride_raw","snare_shadow")]
     cym=[(t,g,s,p) for t,g,s,p in events if g=="cymbal_raw"]
-    if not cym:
+    ride_raw=[(t,g,s,p) for t,g,s,p in events if g=="ride_raw"]
+    shadows=[(t,g,s,p) for t,g,s,p in events if g=="snare_shadow"]
+
+    # Restore only rhythmically stable ambiguous snares. This protects the
+    # kick->snare fix from Round 2 while recovering repeated backbeats/layers.
+    shadow_times=[t for t,g,s,p in shadows]
+    idx={g:i for i,g in enumerate(ORDER)}
+    for i,(t,g,s,p) in enumerate(shadows):
+        per=periodic_support(shadow_times,i,bpm)
+        ss=float(sim[idx["snare"],p]) if sim is not None else 0
+        ratio=float(band[1,p]/(band[0,p]+1e-7)) if band is not None else 0
+        if per>=.50 and ss>=.40 and ratio>=.78:
+            musical.append((t,"snare",s,p))
+
+    if not cym and not ride_raw:
         return sorted((t,g,s) for t,g,s,p in musical)
 
     # Estimate measure phase from kick plus generic cymbal accents; no reference MIDI.
@@ -261,14 +287,14 @@ def postprocess(events,bpm,num,den,round_id=2,sim=None,band=None):
     phase_events += [(t,"crash",s) for t,g,s,p in cym]
     phase=estimate_downbeat_phase(phase_events,bpm,num,den)
 
-    times=[t for t,g,s,p in cym]
-    idx={g:i for i,g in enumerate(ORDER)}
+    times=sorted(set([t for t,g,s,p in cym]+[t for t,g,s,p in ride_raw]))
     out=list(musical)
     beat=60.0/bpm*4/den if bpm else .5
 
     for i,(t,g,s,p) in enumerate(cym):
         db=downbeat_strength(t,bpm,phase,num,den)
-        per=periodic_support(times,i,bpm)
+        ti=min(range(len(times)),key=lambda k:abs(times[k]-t))
+        per=periodic_support(times,ti,bpm)
 
         crash_sim=float(sim[idx["crash"],p]) if sim is not None else 0
         ride_sim=float(sim[idx["ride"],p]) if sim is not None else 0
@@ -373,9 +399,9 @@ def main():
     args=ap.parse_args(); root=args.repo_root
     tmpl=templates(root/"DruMaster/assets/drums")
     results={
-        "schema":4,
-        "formal_round":2,
-        "description":"Formal Round 2: conservative kick/snare competition plus BPM/measure/periodicity-driven crash/ride classification. Truth MIDI is scoring-only.",
+        "schema":5,
+        "formal_round":3,
+        "description":"Formal Round 3: preserve Round 2 kick/snare protection, rhythmically rescue ambiguous snares, and add periodic ride candidates. Truth MIDI is scoring-only.",
         "songs":{}
     }
     total=Counter()
