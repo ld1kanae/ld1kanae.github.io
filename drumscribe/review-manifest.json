@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "songs": [
     {
       "id": "arcaround",
@@ -24,49 +24,49 @@
   ],
   "candidates": [
     {
-      "id": "balanced-best",
-      "label": "A / 総合バランス",
-      "description": "現時点の総合F1が高い案。kick/snareは強く、crashは比較的精密。rideはほぼ出さない。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-ride-ml/cycle18/c18_periodic_strict",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-ride-ml.json",
-      "cycle": 18,
-      "key": "c18_periodic_strict"
+      "id": "v2-balanced",
+      "label": "A / 新総合バランス",
+      "description": "stick hat / pedal hatを分離した新基準の総合案。Tom ML、measure-head限定Crash、Pedal Hatグリッド判定を統合。Rideは出さない。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_balanced",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
+      "cycle": 39,
+      "key": "c39_crash_balanced"
     },
     {
-      "id": "crash-ml",
-      "label": "B / Crash ML",
-      "description": "crash検出を重視した学習型案。crashの位置・量をAと比較するために残す。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-ml/cycle15/c15_head_015",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-ml.json",
-      "cycle": 15,
-      "key": "c15_head_015"
+      "id": "v2-crash-precision",
+      "label": "B / Crash精度寄り",
+      "description": "AよりCrashを厳しく採用する案。小節頭外Crashは同様に不採用。Crashの余計な音が気になる場合の比較用。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_strict",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
+      "cycle": 39,
+      "key": "c39_crash_strict"
     },
     {
-      "id": "ride-recall",
-      "label": "C / Ride回収",
-      "description": "rideを多めに拾う案。ride区間の聞こえ方と誤検出量をA/Bと比較するために残す。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-rotation/cycle12/c12_ride_medium",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-rotation.json",
-      "cycle": 12,
-      "key": "c12_ride_medium"
+      "id": "v2-crash-recall",
+      "label": "C / Crash再現寄り",
+      "description": "AよりCrashを多めに拾う案。小節頭近傍というハード条件は維持しつつ、音響閾値と許容幅を緩める。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_recall",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
+      "cycle": 39,
+      "key": "c39_crash_recall"
     },
     {
-      "id": "ride-section-recall",
-      "label": "D / Ride区間回収",
-      "description": "2拍区間でrideらしさを判定する高再現案。rideは多く拾うが誤検出も多い。区間として自然かを聴感確認するために残す。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-ride-section/cycle21/c21_recall",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-ride-section.json",
-      "cycle": 21,
-      "key": "c21_recall"
+      "id": "v2-ride-balanced",
+      "label": "D / Rideバランス",
+      "description": "Ride区間判定を有効にした案。総合値はAより低いが、Rideが必要な曲で演奏として自然かを耳で確認するために残す。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle37/c37_ride_balanced",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
+      "cycle": 37,
+      "key": "c37_ride_balanced"
     },
     {
-      "id": "tom-ml",
-      "label": "E / Tom ML",
-      "description": "tom専用分類を追加した現時点の高精度案。Tomのフィルと、rideを出さないことによる違いを確認する。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-tom/cycle27/c27_no_context",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-tom.json",
-      "cycle": 27,
-      "key": "c27_no_context"
+      "id": "v2-ride-recall",
+      "label": "E / Ride回収寄り",
+      "description": "Rideを積極的に拾う案。誤検出も多いので、正しいRide区間を拾えている部分だけ折衷案へ取り込めるかを見る。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle37/c37_ride_recall",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
+      "cycle": 37,
+      "key": "c37_ride_recall"
     }
   ],
   "tags": [
