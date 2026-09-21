@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DrumScribe 候補比較レビュー</title>
+  <link rel="stylesheet" href="review.css?v=20260922-1">
+</head>
+<body>
+<main class="shell">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">DrumScribe / evaluation branch</p>
+      <h1>候補比較レビュー</h1>
+      <p>同じ <code>drums.mp3</code> に対する複数の採譜候補を聴き比べ、聴感レビューを保存・共有します。候補MIDIは各曲を学習対象から除外した検証結果を優先して掲載します。</p>
+    </div>
+    <a class="back" href="./">← 採譜画面</a>
+  </header>
+
+  <section class="panel controls">
+    <label>曲
+      <select id="song"></select>
+    </label>
+    <label>候補
+      <select id="candidate"></select>
+    </label>
+    <a id="midiDownload" class="button ghost" download>このMIDIを保存</a>
+    <a id="chartDownload" class="button ghost" download>正規chart.mid</a>
+  </section>
+
+  <section class="grid">
+    <section class="panel audition">
+      <h2>試聴</h2>
+      <p id="candidateDescription" class="muted"></p>
+      <div id="metricCards" class="metrics"></div>
+
+      <label class="source-label">元の drums.mp3</label>
+      <audio id="source" controls preload="metadata"></audio>
+
+      <div class="transport">
+        <button id="syncPlay" class="button primary">▶ 音源 + MIDI</button>
+        <button id="stop" class="button">停止</button>
+        <label>音源 <input id="sourceVolume" type="range" min="0" max="100" value="65"><output>65%</output></label>
+        <label>MIDI <input id="midiVolume" type="range" min="0" max="100" value="85"><output>85%</output></label>
+      </div>
+      <p id="status" class="status">候補を読み込みます。</p>
+      <div class="legend">
+        <span>36 Kick</span><span>38 Snare</span><span>42/46 Stick Hat</span><span>44 Pedal Hat</span>
+        <span>45 Tom</span><span>49 Crash</span><span>51 Ride</span>
+      </div>
+    </section>
+
+    <section class="panel review">
+      <h2>レビュー</h2>
+      <p class="muted">評価はこのブラウザのlocalStorageに保存されます。1=悪い、5=良い。</p>
+      <div class="ratings">
+        <label>総合 <input id="overall" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
+        <label>Kick / Snare <input id="kickSnare" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
+        <label>Hat / Pedal / Ride <input id="hatRide" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
+        <label>Crash / Cymbal <input id="cymbal" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
+        <label>自然さ <input id="naturalness" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
+      </div>
+
+      <fieldset>
+        <legend>気になった点</legend>
+        <div id="tags" class="tags"></div>
+      </fieldset>
+
+      <label class="notes">コメント
+        <textarea id="notes" rows="8" placeholder="例: 0:42のクラッシュは不要。1:18からライドは候補Cの方が自然。スネアはこの案が一番近い。"></textarea>
+      </label>
+      <div class="review-actions">
+        <button id="saveReview" class="button primary">このレビューを保存</button>
+        <button id="clearReview" class="button">このレビューを消去</button>
+      </div>
+      <p id="saveState" class="status"></p>
+    </section>
+  </section>
+
+  <section class="panel export">
+    <div>
+      <h2>ChatGPTへ共有</h2>
+      <p class="muted">全曲・全候補の保存済みレビューをJSONにまとめます。そのままチャットへ貼り付けられます。</p>
+    </div>
+    <div class="export-actions">
+      <button id="copyReviews" class="button primary">レビューJSONをコピー</button>
+      <button id="downloadReviews" class="button">JSONを保存</button>
+    </div>
+    <pre id="reviewPreview"></pre>
+  </section>
+</main>
+<script type="module" src="review.js?v=20260922-1"></script>
+</body>
+</html>
