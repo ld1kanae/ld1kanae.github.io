@@ -53,13 +53,10 @@
 
     <section class="panel review">
       <h2>レビュー</h2>
-      <p class="muted">評価はこのブラウザのlocalStorageに保存されます。1=悪い、5=良い。</p>
-      <div class="ratings">
-        <label>総合 <input id="overall" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
-        <label>Kick / Snare <input id="kickSnare" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
-        <label>Hat / Pedal / Ride <input id="hatRide" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
-        <label>Crash / Cymbal <input id="cymbal" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
-        <label>自然さ <input id="naturalness" type="range" min="1" max="5" step="1" value="3"><output>3</output></label>
+      <p class="muted">判定は「0点」か「その他」だけです。詳細はコメントに書いてください。</p>
+      <div class="verdicts">
+        <label><input type="radio" name="verdict" value="zero"> 0点</label>
+        <label><input type="radio" name="verdict" value="other" checked> その他</label>
       </div>
       <label class="notes">コメント
         <textarea id="notes" rows="8" placeholder="例: 0:42のクラッシュは不要。1:18からライドは候補Cの方が自然。スネアはこの案が一番近い。"></textarea>
@@ -84,6 +81,6 @@
     <pre id="reviewPreview"></pre>
   </section>
 </main>
-<script type="module" src="review.js?v=20260922-review-clean1"></script>
+<script type="module" src="review.js?v=20260922-review-binary1"></script>
 </body>
 </html>
