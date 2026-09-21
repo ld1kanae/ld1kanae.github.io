@@ -150,7 +150,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     for(let i=0;i<96;i++){
       const ph=bar*i/96;let score=0;
       for(const e of base){
-        const weight=e.group==='cymbal_raw'?3.2:e.group==='kick'?1.8:e.group==='snare'?.8:.1;
+        const weight=e.group==='cymbal_raw'?3.2:(e.group==='kick'?1.8:(e.group==='snare'?0.8:0.1));
         const x=(e.time-ph)%bar,d0=Math.abs(x),d=Math.min(d0,bar-d0);
         score+=weight*e.score*Math.exp(-.5*(d/sigma)**2);
       }
