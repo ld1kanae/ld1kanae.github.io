@@ -89,7 +89,14 @@ def eligibility(candidate_summary:dict,baseline_summary:dict,target_parts=(),
             reasons.append(f"target_regression:{part}:{b:.4f}->{v:.4f}")
     for part in PARTS:
         b=part_f1(baseline_summary,part);v=part_f1(candidate_summary,part)
-        if b>=meaningful_floor and v<=0:
+        cx=((candidate_summary.get("by_group") or {}).get(part) or {})
+        ref=int(cx.get("reference") or 0);pred=int(cx.get("predicted") or 0)
+        # All-part bases may not silently omit a part that exists in the
+        # reference corpus. Such candidates remain valid component-bank entries
+        # but are ineligible as the integrated winner.
+        if ref>0 and pred==0:
+            reasons.append(f"part_missing:{part}:reference={ref}")
+        elif b>=meaningful_floor and v<=0:
             reasons.append(f"part_collapsed:{part}:{b:.4f}->0")
         elif b>=meaningful_floor and b-v>max_part_drop:
             reasons.append(f"part_drop:{part}:{b:.4f}->{v:.4f}")
