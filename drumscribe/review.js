@@ -142,13 +142,7 @@ function reviewValue(){
     song:currentSong,
     candidate:currentCandidate.id,
     candidateLabel:currentCandidate.label,
-    ratings:{
-      overall:Number($('overall').value),
-      kickSnare:Number($('kickSnare').value),
-      hatRide:Number($('hatRide').value),
-      cymbal:Number($('cymbal').value),
-      naturalness:Number($('naturalness').value)
-    },
+    verdict:document.querySelector('input[name="verdict"]:checked')?.value||'other',
     notes:$('notes').value.trim(),
     savedAt:new Date().toISOString()
   };
@@ -160,9 +154,10 @@ function saveReview(){
 }
 function loadReview(){
   const v=readStore()[key()];
-  for(const id of ['overall','kickSnare','hatRide','cymbal','naturalness']){
-    $(id).value=v?.ratings?.[id]??3;rangeOutput($(id));
-  }
+  const legacyOverall=v?.ratings?.overall;
+  const verdict=v?.verdict||(legacyOverall===1?'zero':'other');
+  const radio=document.querySelector('input[name="verdict"][value="'+verdict+'"]');
+  if(radio)radio.checked=true;
   $('notes').value=v?.notes??'';
   $('saveState').textContent=v?'保存済みレビューを読み込みました。':'未保存です。';
   renderExport();
@@ -175,7 +170,7 @@ function clearReview(){
 function exported(){
   const store=readStore();
   return {
-    schema:3,
+    schema:4,
     manifestVersion:manifest?.version??null,
     exportedAt:new Date().toISOString(),
     purpose:'DrumScribe candidate human review',
