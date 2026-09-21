@@ -27,11 +27,11 @@ if(bytes.subarray(0,4).toString()!=='MThd')throw new Error('download is not MIDI
 await page.locator('#syncPlay').click();
 await page.waitForFunction(()=>{
   const d=window.__drumscribeReviewDebug?.();
-  return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused;
+  return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused&&d.song==='nanairo'&&d.candidate==='v2-balanced';
 },{},{timeout:30000});
 await page.waitForFunction(()=>{
   const d=window.__drumscribeReviewDebug?.();
-  return d&&d.scheduledNotes>0;
+  return d&&d.scheduledNotes>0&&d.song==='nanairo'&&d.candidate==='v2-balanced';
 },{},{timeout:15000});
 const playbackDebug=await page.evaluate(()=>window.__drumscribeReviewDebug());
 await page.locator('#stop').click();
@@ -45,11 +45,11 @@ await page.waitForFunction(()=>document.querySelector('#source')?.dataset?.song=
 await page.locator('#syncPlay').click();
 await page.waitForFunction(()=>{
   const d=window.__drumscribeReviewDebug?.();
-  return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused;
+  return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused&&d.song==='kaiju'&&d.candidate==='v2-balanced';
 },{},{timeout:30000});
 await page.waitForFunction(()=>{
   const d=window.__drumscribeReviewDebug?.();
-  return d&&d.scheduledNotes>0;
+  return d&&d.scheduledNotes>0&&d.song==='kaiju'&&d.candidate==='v2-balanced';
 },{},{timeout:15000});
 const switchPlaybackDebug=await page.evaluate(()=>({
   debug:window.__drumscribeReviewDebug(),
@@ -63,7 +63,7 @@ await page.locator('#stop').click();
 await page.selectOption('#candidate','tom-ml');
 await page.waitForFunction(()=>document.querySelector('#candidate')?.value==='tom-ml'&&!document.querySelector('#syncPlay')?.disabled);
 await page.locator('#syncPlay').click();
-await page.waitForFunction(()=>window.__drumscribeReviewDebug?.().scheduledNotes>0,{},{timeout:15000});
+await page.waitForFunction(()=>{const d=window.__drumscribeReviewDebug?.();return d&&d.scheduledNotes>0&&d.song==='kaiju'&&d.candidate==='tom-ml';},{},{timeout:15000});
 const candidateSwitchDebug=await page.evaluate(()=>window.__drumscribeReviewDebug());
 await page.locator('#stop').click();
 
