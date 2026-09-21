@@ -626,3 +626,71 @@ pedal単体は改善しても、無条件融合すると全体precision低下が
 - kick→snare 42
 
 次段ではhat false-positive修正版とperiodic pedalを同時に含めた all-part fusion v2 を比較する。
+
+
+## Cycles 82–84 — all-part fusion v2
+
+直近のパート別勝者を同時融合した。
+- kick/tom: stable component
+- snare: kick-confusion veto
+- hat: high-resolution + repetition precision repair
+- crash: detector consensus + soft downbeat prior
+- pedal_hat: strict historical component + periodic support 0.75
+- ride: この時点では未解決のため0
+
+Cycle 82で robust / balanced / recall の最低3案、Cycle 83でhat部品3案、Cycle 84でpedal部品3案を比較した。
+
+正式勝者 `c84_pedal75`:
+- overall F1 **0.7193**
+- precision **0.7170**
+- recall **0.7217**
+- kick F1 **0.9590** / FDR 0.0512
+- snare F1 **0.8107** / precision 0.8203 / recall 0.8014 / kick→snare 42
+- hat F1 **0.6744** / precision 0.6216 / recall 0.7370 / FDR 0.3784
+- pedal_hat F1 **0.3865** / precision 0.3441 / recall 0.4408 / FDR 0.6559
+- tom F1 **0.6369** / precision 0.7692 / recall 0.5435
+- crash F1 **0.3734** / precision 0.6689 / recall 0.2590 / FDR 0.3311
+- ride F1 **0.0000** / reference 644
+- kick→snare **42**, snare→kick 25
+
+曲別:
+- arcaround: overall F1 0.585。hat 210/797/293、snare 125/234/292、crash 3/28/78。最大の弱点。
+- diamondvirgin: overall 0.748。kick/snareは強いがprecision crash部品が crash 0/0/70 と全損。
+- kaiju: overall 0.637。kick/snare/tomは強いがride 0/431。
+- nanairo: overall 0.749。hat 0.744、snare 0.656、pedal_hat recallが低い。
+- ray: overall 0.799。hat 0.763、snare 0.857、crash 0.843、pedal_hat 0.698。
+
+この結果から平均だけでなく「最悪曲」を正式な次サイクルの判断材料に加える。
+
+## 打点タイミング精度の完全詳細評価
+
+`experiments/materialize_current_details.py` で主要候補の全曲×全パートについて完全版 `detailed_metrics.py` 結果を `experiments/detailed-current/` に保存した。
+
+c84の一致打音について、多くの曲・パートで absolute timing error median は約 **6–15 ms**、p90も多くが **15–30 ms**。例:
+- arcaround kick median 8.58 ms / p90 16.87 ms
+- diamondvirgin snare 8.63 / 20.04 ms
+- kaiju snare 6.77 / 15.06 ms
+- ray hat 9.74 / 15.42 ms
+- ray crash 11.63 / 16.36 ms
+
+例外としてnanairo kickは median 35.91 ms / p90 54.57 msだが80 ms評価窓内には大半が入る。
+
+したがって現状の主要ボトルネックはonset時刻そのものより、**クラス誤認・余計打音・取りこぼし**。今後の探索は分離/分類/部品融合を優先する。
+
+また unmatched prediction は正解打点から大きく離れる例が多い。特に arcaround hat はFP 587のうち500件が同クラス正解から160 ms超離れており、単なる微小タイミングずれではなく明確な余計打音である。
+
+## Cycles 88–90 — adaptive crash fallback
+
+Cycle 82–84のprecision crashがdiamondvirginで0予測になる問題を受け、予測密度だけでfallbackする方式を比較した。曲名や参照MIDIは分岐に使用しない。
+
+Cycle 88:
+- precision only: crash F1 0.3734 / P 0.6689 / R 0.2590 / worst-song F1 0
+- zero→old-base fallback: crash F1 **0.3891** / P 0.5816 / R 0.2923 / worst-song F1 **0.0566**
+- sparse→recall fallback: crash F1 0.3824 / worst 0.0566
+
+zero-fallbackは1曲全損を防ぎ、crash F1自体も上がる一方、overall F1は0.7190でprecision-only 0.7193と僅差。よって、
+- **precision crash** = 平均precision優先部品
+- **zero-fallback crash** = 最悪曲耐性優先部品
+として両方を保持する。
+
+Cycle 89のratio 0.10/0.25/0.50はこのデータでは同一結果。Cycle 90のgap rescueも改善なし。密度fallbackの有効部分は「0または極端な疎さを検知して別crash部品へ切替える」点に限定される。
