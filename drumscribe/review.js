@@ -74,26 +74,63 @@ function midiUrl(c,song){return c.midiBase+'/'+song+'.mid'}
 function sourceUrl(song){return '../DruMaster/songs/'+song+'/drums.mp3'}
 function chartUrl(song){return '../DruMaster/songs/'+song+'/chart.mid'}
 
+async function prepareSource(song,version){
+  const src=$('source');
+  if(src.dataset.song===song&&src.readyState>=2)return;
+  src.pause();
+  src.dataset.song=song;
+  src.src=sourceUrl(song);
+  src.load();
+  await new Promise((resolve,reject)=>{
+    if(src.readyState>=2){resolve();return}
+    let timer;
+    const done=()=>{cleanup();resolve()};
+    const fail=()=>{cleanup();reject(Error('音源を読み込めません'))};
+    const cleanup=()=>{
+      clearTimeout(timer);
+      src.removeEventListener('canplay',done);
+      src.removeEventListener('loadeddata',done);
+      src.removeEventListener('error',fail);
+    };
+    src.addEventListener('canplay',done,{once:true});
+    src.addEventListener('loadeddata',done,{once:true});
+    src.addEventListener('error',fail,{once:true});
+    timer=setTimeout(()=>{cleanup();reject(Error('音源の読み込みがタイムアウトしました'))},20000);
+  });
+  if(version!==refreshVersion)return;
+}
+
 async function refresh(){
   const version=++refreshVersion;
-  stopPlayback(false);
+  // Song/candidate switching must fully stop the previous transport. Keeping
+  // the previous media element playing while replacing src leaves Safari and
+  // some Chromium builds in a dead playback state.
+  stopPlayback(true);
+
   const song=$('song').value,candidate=candidateById($('candidate').value);
   currentSong=song;currentCandidate=candidate;
   $('saveReview').disabled=true;
+  $('syncPlay').disabled=true;
   $('candidateDescription').textContent=candidate.description;
-  $('source').src=sourceUrl(song);
+  $('status').textContent='音源と候補を準備中…';
+
   $('midiDownload').href=midiUrl(candidate,song);
   $('midiDownload').download=song+'-'+candidate.id+'.mid';
   $('chartDownload').href=chartUrl(song);
   $('chartDownload').download=song+'-chart.mid';
-  const result=await metricsFor(candidate);
+
+  const [result]=await Promise.all([
+    metricsFor(candidate),
+    prepareSource(song,version)
+  ]);
   if(version!==refreshVersion)return;
+
   renderMetrics(result,song);
   loadReview();
   $('saveReview').disabled=false;
+  $('syncPlay').disabled=false;
   $('status').textContent='準備完了。音源の好きな位置へ移動して「音源 + MIDI」を押してください。';
 }
-
 function rangeOutput(input){
   const out=input.parentElement.querySelector('output');
   if(out)out.value=input.value;
@@ -239,6 +276,7 @@ function lowerBound(events,t){
 async function startPlayback(){
   stopPlayback(false);
   const src=$('source');
+  if(src.readyState<2)throw Error('音源の準備が完了していません');
   const pos=src.currentTime||0;
 
   // Start the media element immediately while the click still counts as a
