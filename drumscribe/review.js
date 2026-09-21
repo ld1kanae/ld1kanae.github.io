@@ -217,7 +217,7 @@ async function midiEvents(){
 }
 async function audioContext(){
   if(!ctx){
-    ctx=new AudioContext();
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)throw Error('このブラウザはWeb Audioに対応していません');ctx=new AudioCtx();
     gainNode=ctx.createGain();gainNode.gain.value=Number($('midiVolume').value)/100;gainNode.connect(ctx.destination);
   }
   await ctx.resume();return ctx;
