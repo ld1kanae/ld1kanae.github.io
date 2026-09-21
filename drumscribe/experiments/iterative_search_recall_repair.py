@@ -37,9 +37,15 @@ def winner_dir(result_file,root,cycle):
     return EXP/root/f"cycle{cycle}"/w,w
 
 def base_dir():
-    p=EXP/"results-iterative-pattern-consensus.json"
-    if p.exists():return winner_dir("results-iterative-pattern-consensus.json","generated-search-pattern-consensus",57)
-    return winner_dir("results-iterative-component-hybrid.json","generated-search-component-hybrid",54)
+    choices=[]
+    hp=EXP/"results-iterative-component-hybrid.json"
+    if hp.exists():
+        o=json.loads(hp.read_text());choices.append((float(o["final"]["summary"].get("selection_score",o["final"]["summary"]["f1"])),EXP/"generated-search-component-hybrid"/"cycle54"/o["final"]["winner"],o["final"]["winner"]))
+    pp=EXP/"results-iterative-pattern-consensus.json"
+    if pp.exists():
+        o=json.loads(pp.read_text());choices.append((float(o["final"]["summary"].get("selection_score",o["final"]["summary"]["f1"])),EXP/"generated-search-pattern-consensus"/"cycle57"/o["final"]["winner"],o["final"]["winner"]))
+    if not choices:raise FileNotFoundError("no completed base search")
+    _,p,n=max(choices,key=lambda x:x[0]);return p,n
 
 def events(path,song):
     return [(t,g) for t,g,*_ in ev.midi_events(path/f"{song}.mid")]
@@ -168,7 +174,8 @@ def evaluate(name,basedir,snare_mode,tom_mode,pedal_mode,outdir):
           "mean_song_f1":round(sum(sf)/len(sf),4) if sf else None,"worst_song_f1":round(min(sf),4) if sf else None}
         if g in ("kick","snare","hat","tom","crash","ride"):parts.append(f)
     ks=tot["kick_to_snare"]/max(1,tot["kick_ref"])
-    s["selection_score"]=round(s["f1"]+.20*sum(parts)/len(parts)-.25*ks,6);result["summary"]=s
+    pedal=s["by_group"]["pedal_hat"]["f1"]
+    s["selection_score"]=round(s["f1"]+.20*sum(parts)/len(parts)+.06*pedal-.25*ks,6);result["summary"]=s
     result["detailed"]=detail.compare_dir(outdir/name,name)["aggregate"];return result
 
 def rank(x):return sorted(x.items(),key=lambda kv:(kv[1]["summary"]["selection_score"],kv[1]["summary"]["f1"]),reverse=True)
