@@ -269,3 +269,120 @@ Round 3ではsnare数比が1.064まで回復し、ride数比も0.988と量だけ
 学習型方式そのものを否定する結果ではない。候補oracle recallが高いため、より多様な音色を含む外部データで分類器を学習すれば改善余地がある。次にE-GMD等の大規模データで学習済みの既存ドラム転写モデルを、本アプリ5曲へそのまま適用して一般化性能を確認する。
 
 生データは experiments/results-ml-loo.json に保存した。
+
+
+## 2026-09-22: 評価基盤の固定 — 全曲×全パート詳細比較と部品ベスト保存
+
+以後のPDCAは、必ず次の順序で実施する。
+
+1. 同一の土台から最低3候補を仮定する。
+2. 各候補を実装し、5曲すべての `drums.mp3` から実際のMIDIファイルを生成する。
+3. 生成したMIDIを再読み込みし、対応する `chart.mid` と比較する。参照MIDIは予測生成には使用しない。
+4. 全曲×全パートについて詳細指標を保存する。
+5. 総合性能だけでなく、パート別に突出した候補を component bank に保存する。
+6. 総合勝者を次サイクルの土台にする。僅差候補は残す。総合敗者でも特定パートで突出した場合は部品候補として残す。
+7. 再び最低3候補を派生させ、同じ手順を複数サイクル繰り返す。
+
+### 正式な詳細指標
+
+標準評価器は `experiments/detailed_metrics.py` とする。同一クラスかつ80 ms以内の1対1対応をTPとし、曲×パートごとに最低限次を記録する。
+
+- reference / predicted / TP / FP / FN
+- precision / recall / F1
+- false discovery rate（余計な打音 / 予測打音）
+- miss rate（取りこぼし / 正解打音）
+- predicted / reference のノート数比
+- 一致した打音のsigned mean timing error
+- 一致した打音のabsolute median timing error
+- 一致した打音のabsolute p90 timing error
+- unmatched predictionから最も近い同クラス正解までの距離
+- 160 ms以上離れた明確な余計打音数
+- クラス間誤分類行列
+
+全パートは kick / snare / hat / pedal_hat / tom / crash / ride / other を分離して記録する。補助診断として hat family、cymbal family、kick+snare、手で叩くパート群も集計する。
+
+### 再現可能な履歴データ
+
+- `experiments/validation-history.json`: 既存の全 `results*.json` を自動収集し、候補名、cycle、params、曲別指標、結果ファイルのGit commit、実装スクリプトとそのGit commitを保存する。
+- `experiments/component-bank.json`: 各パートについて候補を横断比較し、aggregate F1だけでなく mean-song F1 / worst-song F1 を使って、全曲で安定した部品候補を残す。
+- `experiments/detailed/*.json`: 実MIDIを再解析して得た標準詳細指標。
+- 各 `results-*.json`: 各探索固有の生結果。削除せず履歴として保持する。
+- 各 `generated-search-*/`: 生成MIDI。可能な限り結果JSONと対応するディレクトリを保持する。
+
+## Cycles 40–42 — 明示的スペクトログラム分離 → 従来分類器
+
+旧方式は `drums.mp3` 全体から直接候補を生成していたため、分離を先に行う方式へ変更した。soft / sharp / temporal-smooth の最低3方式を比較した。各方式で kick / snare / tom / hat / cymbal のスペクトログラムストリームを作り、その後に既存のLOSO分類器と音楽制約を適用した。
+
+Cycle 40の勝者は `smooth`。Cycle 41ではレビューで問題になったkick/hatの異常連打を抑える後処理を3案比較し `moderate` が勝者。Cycle 42ではsnare競合を3案比較し `snare_roll_recall` が勝者となった。
+
+最終結果:
+- 総合 F1: **0.6146**
+- kick F1: **0.9510**、count ratio 1.0037
+- snare F1: **0.7296**
+- hat F1: **0.4921**
+- tom F1: **0.5960**、precision 0.7627
+- crash F1: **0.2931**、precision 0.5302
+- ride F1: **0.0000**
+- pedal_hat F1: **0.0369**
+- two-limb violation: **0**
+
+総合F1だけなら旧方式と同程度だが、kick / tom / crashには明確な部品改善がある。一方でhat・ride・pedal_hatは不十分なため、この結果を丸ごと本番採用せず、部品候補として保持する。生データは `results-iterative-separation.json`。
+
+## Cycles 43–45 — 実WAV 5ステム分離（HPSS / frequency masking）→単純onset
+
+`cukas/drumsep` を用い、`drums.mp3` を kick / snare / toms / hihat / cymbals の実WAVへ先に分離してからonsetを検出した。Cycle 43でprecision/balanced/recall、Cycle 44でcrash幅/ride、Cycle 45でkick/hat guardを最低3案ずつ比較した。
+
+結果は不採用。最良付近でも総合F1は約0.54で、特にtomが reference 92に対し predicted 約2,800–3,400となった。これは「分離WAVのすべてのtransientをそのまま該当楽器とみなす」ことが誤りであり、**分離そのものと分離後の打点分類を別問題として扱う必要がある**ことを示す。
+
+ただしkickはF1約0.89、snare recall約0.82を保っており、分離フロントエンド全体を否定する結果ではない。分離後の専用分類器へ進む。
+
+## Cycles 46–48 — 実5ステム分離 + 11.025 / 22.05 / 44.1 kHz比較
+
+高域情報の欠落を検証するため、実5ステム分離後の解析サンプルレートを最低3案比較した。
+
+Cycle 46:
+- 11,025 Hz: overall F1 **0.5330**, hat F1 **0.5548**
+- 22,050 Hz: overall F1 **0.5732**, hat F1 **0.6603**
+- 44,100 Hz: overall F1 **0.5770**, hat F1 **0.6702**
+
+44.1 kHzが勝者、22.05 kHzは僅差として保持する。11.025 kHzは高域情報不足によりhatで明確に劣るため、今後の高域分類の基準から外す。
+
+Cycle 47では44.1 kHz上でprecision/balanced/recallを比較し、precision案が勝者:
+- overall F1 **0.5850**
+- kick F1 **0.8922**
+- snare F1 **0.6760**
+- hat F1 **0.6638**
+- tom F1 **0.0518**
+- crash F1 **0.1192**
+- ride F1 **0**
+
+Cycle 48のkick/hat guardはoverallを改善しなかったため、Cycle 47のprecision条件を維持する。
+
+重要な部品ヒント:
+- **hatは44.1 kHz分離でF1 0.6702まで上がり、11.025 kHzより明確に高い。高域保持は有効。**
+- kickはどのsample rateでも安定して高く、周波数分離+onsetの部品として有望。
+- tomは単純onsetでは全く使えない。Cycle 40–42の学習型tom処理を組み合わせるべき。
+- crash/rideは単純cymbal stem onsetでは不十分。専用分離または専用分類が必要。
+
+生データは `results-iterative-drumsep-rate.json`。
+
+## Cycles 49–51 — 分離フロントエンド + 楽器別LOSO分類（実行系）
+
+次段階は、分離後のtransientを無条件採用せず、**各パート専用の学習型打点分類器**へ通す。
+
+Cycle 49では最低3つの分離フロントエンドを比較する:
+1. DSP/HPSS 5-stem
+2. MDX23C neural 6-stem（kick/snare/toms/hh/ride/crash）
+3. neural + DSP ensemble
+
+Cycle 50では勝者分離器上で logistic / random forest / extra trees の3分類器を比較する。
+
+Cycle 51では勝者を土台に precision / balanced / recall+rhythm の3案を比較する。
+
+すべてleave-one-song-outで、評価対象曲の `chart.mid` はそのfoldの学習に使用しない。各候補は実MIDIを書き出し、標準詳細評価器で全曲×全パートを採点する。
+
+また次の音楽制約は全候補で維持する。
+- crashは推定小節頭付近のみ採用。
+- snare / hat / tom / crash / ride は同時最大2音。3音以上なら確率上位2音のみ。
+- kickとpedal hi-hatは上記2音制約の対象外。
+- rideは単発音色だけで決めず、周期継続を主要根拠にする。
