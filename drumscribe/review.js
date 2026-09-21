@@ -50,7 +50,7 @@ function groupStats(g){
 
 function renderMetrics(result,song){
   const s=result.songs[song],sum=result.summary;
-  const groups=['kick','snare','hat','tom','crash','ride'];
+  const groups=['kick','snare','hat','pedal_hat','tom','crash','ride'];
   const cards=[
     ['曲F1',fmt(s.f1)],
     ['Precision',fmt(s.precision)],
