@@ -241,3 +241,5 @@ def main():
     Path("drumscribe/experiments/results-v2-round4-ml.json").write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
 
 if __name__=="__main__":main()
+
+# workflow-trigger: round4
