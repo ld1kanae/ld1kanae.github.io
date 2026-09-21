@@ -42,16 +42,13 @@ jobs:
       - name: Run recall-repair cycles 61 to 63
         if: steps.prereq.outputs.ready == 'true'
         run: python drumscribe/experiments/iterative_search_recall_repair.py
-      - name: Refresh validation catalog
-        if: steps.prereq.outputs.ready == 'true'
-        run: python drumscribe/experiments/build_validation_catalog.py
-      - name: Commit MIDI, metrics and catalog
+      - name: Commit MIDI and metrics
         if: steps.prereq.outputs.ready == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             drumscribe/experiments/generated-search-recall-repair             drumscribe/experiments/results-iterative-recall-repair.json             drumscribe/experiments/validation-history.json             drumscribe/experiments/component-bank.json
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-recall-repair drumscribe/experiments/results-iterative-recall-repair.json
           git diff --cached --quiet && exit 0
           git commit -m "Record targeted recall repair PDCA results [skip ci]"
-          git pull --rebase origin drumscribe-v2-eval
           git push origin HEAD:drumscribe-v2-eval
