@@ -36,7 +36,7 @@ base=loadmod("base",EXP/"iterative_search.py")
 
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
 GROUPS=["kick","snare","hat","pedal_hat","tom","crash","ride","other"]
-BEST=EXP/"generated-search-best-fusion/cycle81/c81_pedal_base"
+BEST=EXP/"generated-search-fusion-v2/cycle84/c84_pedal75"
 
 def audio(song,sr=44100):
     p=ROOT/"DruMaster/songs"/song/"drums.mp3"
