@@ -180,74 +180,80 @@ def periodic_support(times, i, bpm):
     return best
 
 
+
 def acoustic_candidates(band, sim):
-    onset = np.maximum.reduce([band[0]*1.05, band[1], band[2]*.72, band[3]*.72])
-    raw = peaks_for(onset, .20, distance=.045, prominence=.055)
-    idx={g:i for i,g in enumerate(ORDER)}
-    events=[]
-    for p in raw:
-        b0,b1,b2,b3=(float(band[k,p]) for k in range(4))
-        sm={g:float(sim[idx[g],p]) for g in ORDER}
-        kick = 1.15*b0 + .55*sm["kick"] - .28*b2
-        snare = .92*b1 + .38*b2 + .62*sm["snare"] - .48*max(0,b0-b1)
-        hat = .92*b3 + .66*sm["hat"] - .22*b0
-        tom = .78*b1 + .58*sm["tom"] - .22*b3
-        crash = .82*b2 + .72*b3 + .90*sm["crash"] - .18*b0
-        ride = .58*b2 + .88*b3 + 1.02*sm["ride"] - .12*b0
-        if kick >= .82 and b0 >= .38:
-            events.append((p*HOP/SR,"kick",kick))
-        snare_ratio=b1/(b0+1e-6)
-        if snare >= 1.00 and (snare_ratio>=.92 or sm["snare"]>=.48):
-            if not (kick>=.82 and b0>=.38) or snare>=kick*1.02 or sm["snare"]>=.56:
-                events.append((p*HOP/SR,"snare",snare))
-        if hat >= .83 and b3 >= .18 and sm["hat"]>=.16:
-            events.append((p*HOP/SR,"hat",hat))
-        if tom >= 1.18 and sm["tom"]>=.42 and b1>=.45:
-            events.append((p*HOP/SR,"tom",tom))
-        if crash >= 1.18 and sm["crash"]>=.34:
-            events.append((p*HOP/SR,"crash",crash))
-        if ride >= 1.02 and sm["ride"]>=.31:
-            events.append((p*HOP/SR,"ride",ride))
-    return sorted(events)
+    """Round 1: preserve band-precision detection, then add only class competition.
+
+    This intentionally keeps the published detector's band signals, thresholds,
+    peak distances and gates for kick/snare/hat/tom. Cymbal candidates keep the
+    published band-2 threshold and are split acoustically into crash/ride.
+    """
+    idx = {g:i for i,g in enumerate(ORDER)}
+    signals = {
+        "kick": band[0],
+        "snare": band[1],
+        "hat": band[3],
+        "tom": band[1],
+        "cymbal": band[2],
+    }
+    thresholds = {"kick":.58, "snare":.70, "hat":.19, "tom":1.5, "cymbal":1.0}
+    distances = {"kick":.075, "snare":.075, "hat":.055, "tom":.09, "cymbal":.12}
+    raw = []
+
+    for group in ("kick","snare","hat","tom","cymbal"):
+        s = signals[group]
+        peaks = peaks_for(s, thresholds[group], distance=distances[group], prominence=.07)
+        for p in peaks:
+            if group=="kick" and band[0,p] < .48*band[1,p]:
+                continue
+            if group=="snare" and band[1,p] < .62*band[0,p]:
+                continue
+            if group=="tom":
+                if sim[idx["tom"],p] < .44:
+                    continue
+                if sim[idx["tom"],p] < .85*max(sim[idx["kick"],p],sim[idx["snare"],p]):
+                    continue
+            if group=="cymbal":
+                sc=float(sim[idx["crash"],p]); sr=float(sim[idx["ride"],p])
+                if max(sc,sr) < .39:
+                    continue
+                assigned = "crash" if sc >= sr else "ride"
+                raw.append((p*HOP/SR, assigned, float(s[p]), p))
+                continue
+            raw.append((p*HOP/SR, group, float(s[p]), p))
+
+    # Kick/snare are no longer allowed to pass independently without competition.
+    kicks=[e for e in raw if e[1]=="kick"]
+    snares=[e for e in raw if e[1]=="snare"]
+    keep=set(range(len(raw)))
+    used_snare=set()
+    for ki,k in enumerate(kicks):
+        near=[(abs(k[0]-s[0]),si,s) for si,s in enumerate(snares)
+              if si not in used_snare and abs(k[0]-s[0])<=.04]
+        if not near:
+            continue
+        _,si,s=min(near,key=lambda z:z[0]); used_snare.add(si)
+        kp=k[3]; sp=s[3]
+        kconf=float(band[0,kp] + .40*sim[idx["kick"],kp])
+        sconf=float(band[1,sp] + .40*sim[idx["snare"],sp])
+        # Keep both only when both timbral templates independently support a
+        # plausible simultaneous hit; otherwise select the stronger class.
+        both = (sim[idx["kick"],kp] >= .48 and sim[idx["snare"],sp] >= .48)
+        if both:
+            continue
+        target = "snare" if sconf > kconf*1.08 else "kick"
+        for ri,e in enumerate(raw):
+            if e is k and target=="snare":
+                keep.discard(ri)
+            if e is s and target=="kick":
+                keep.discard(ri)
+
+    return sorted((t,g,s) for i,(t,g,s,p) in enumerate(raw) if i in keep)
 
 
-def postprocess(events,bpm,num,den,round_id):
-    if round_id==1: return events
-    phase=estimate_downbeat_phase(events,bpm,num,den)
-    ride_times=[t for t,g,s in events if g=="ride"]
-    ride_index={t:i for i,t in enumerate(ride_times)}
-    out=[]
-    for t,g,s in events:
-        if g=="crash":
-            db=downbeat_strength(t,bpm,phase,num,den)
-            if db>=.34 or s>=2.25: out.append((t,g,s*(1+.4*db)))
-        elif g=="ride":
-            per=periodic_support(ride_times,ride_index[t],bpm)
-            if per>=.25 or s>=1.75: out.append((t,g,s*(1+.25*per)))
-        else:
-            out.append((t,g,s))
-    if round_id==2: return sorted(out)
-
-    by=defaultdict(list)
-    for e in out: by[e[1]].append(e)
-    final=[]
-    for g,arr in by.items():
-        arr=sorted(arr)
-        if g=="crash":
-            last=-999
-            for e in arr:
-                if e[0]-last < .32 and e[2] < 2.65: continue
-                final.append(e); last=e[0]
-        elif g=="snare":
-            ts=[x[0] for x in arr]
-            for e in arr:
-                near=sum(abs(t-e[0])<2.2 for t in ts)-1
-                if e[2]<1.12 and near==0: continue
-                final.append(e)
-        else:
-            final.extend(arr)
-    return sorted(final)
-
+def postprocess(events,bpm,num,den,round_id=1):
+    # Formal Round 1 deliberately has no BPM/measure/periodicity post-processing.
+    return events
 
 def score(pred, truth, shift=0, tol=.08):
     totals=Counter(); hits=Counter(); errors=[]
@@ -272,80 +278,121 @@ def score(pred, truth, shift=0, tol=.08):
                 median_error=round(float(np.median(errors)),3) if errors else None)
 
 
+
 def confusion(pred, truth, shift=0, tol=.08):
     truth_by=[(t+shift,g) for t,g,*_ in truth]
-    matrix={g:{h:0 for h in ORDER+["none"]} for g in ORDER}
+    errors=Counter()
     unmatched_pred=Counter()
+
     for pt,pg,*_ in pred:
+        same=[abs(pt-tt) for tt,tg in truth_by if tg==pg and abs(pt-tt)<=tol]
+        if same:
+            continue
         near=[(abs(pt-tt),tg) for tt,tg in truth_by if abs(pt-tt)<=tol]
         if not near:
             unmatched_pred[pg]+=1
             continue
-        _,tg=min(near,key=lambda z:z[0]); matrix[tg][pg]+=1
-    for tt,tg in truth_by:
-        if not any(abs(pt-tt)<=tol for pt,*_ in pred): matrix[tg]["none"]+=1
-    ks_dupes=0
-    kicks=[t for t,g,*_ in pred if g=="kick"]; snares=[t for t,g,*_ in pred if g=="snare"]
-    for t in kicks:
-        if any(abs(s-t)<=.04 for s in snares): ks_dupes+=1
-    return {"matrix":matrix,"unmatched_predicted":dict(unmatched_pred),"kick_snare_same_onset":ks_dupes}
+        _,tg=min(near,key=lambda z:z[0])
+        errors[f"{tg}_to_{pg}"] += 1
 
+    kicks=[t for t,g,*_ in pred if g=="kick"]
+    snares=[t for t,g,*_ in pred if g=="snare"]
+    supported=0; unsupported=0
+    for kt in kicks:
+        near_s=[st for st in snares if abs(st-kt)<=.04]
+        if not near_s:
+            continue
+        st=min(near_s,key=lambda x:abs(x-kt))
+        center=(kt+st)/2
+        has_k=any(g=="kick" and abs(tt-center)<=tol for tt,g in truth_by)
+        has_s=any(g=="snare" and abs(tt-center)<=tol for tt,g in truth_by)
+        if has_k and has_s:
+            supported+=1
+        else:
+            unsupported+=1
+
+    return {
+        "class_errors":dict(errors),
+        "kick_to_snare":errors["kick_to_snare"],
+        "snare_to_kick":errors["snare_to_kick"],
+        "unmatched_predicted":dict(unmatched_pred),
+        "kick_snare_double_supported":supported,
+        "kick_snare_double_unsupported":unsupported,
+    }
 
 def count_ratios(score_obj):
     return {g:(round(d["predicted"]/d["reference"],3) if d["reference"] else None)
             for g,d in score_obj["by_group"].items()}
 
 
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--repo-root",type=Path,default=Path("."))
     ap.add_argument("--output",type=Path,required=True)
-    args=ap.parse_args();root=args.repo_root
+    args=ap.parse_args(); root=args.repo_root
     tmpl=templates(root/"DruMaster/assets/drums")
-    results={"schema":2,"description":"Three full validation passes; truth MIDI is used only for scoring."}
-    all_summary={str(r):Counter() for r in (1,2,3)}
+    results={
+        "schema":3,
+        "formal_round":1,
+        "description":"Formal Round 1: published band-precision baseline plus kick/snare competition and acoustic crash/ride split. Truth MIDI is scoring-only.",
+        "songs":{}
+    }
+    total=Counter()
     for folder in sorted((root/"DruMaster/songs").iterdir()):
         meta_path=folder/"song.json"
-        if not meta_path.exists() or not (folder/"drums.mp3").exists() or not (folder/"chart.mid").exists(): continue
-        if folder.name not in {"arcaround","diamondvirgin","kaiju","nanairo","ray"}: continue
+        if not meta_path.exists() or not (folder/"drums.mp3").exists() or not (folder/"chart.mid").exists():
+            continue
+        if folder.name not in {"arcaround","diamondvirgin","kaiju","nanairo","ray"}:
+            continue
         meta=json.loads(meta_path.read_text())
         bpm=float(meta.get("bpm") or 0)
         ts=meta.get("timeSignature") or {"numerator":4,"denominator":4}
         num=int(ts.get("numerator",4)); den=int(ts.get("denominator",4))
         shift=meta["playback"]["stemOffsetSec"]+meta["playback"].get("midiOffsetSec",0)
-        x=audio(folder/"drums.mp3"); spec=spectrum(x); band,sim=features(spec,tmpl)
+        x=audio(folder/"drums.mp3")
+        spec=spectrum(x)
+        band,sim=features(spec,tmpl)
+        pred=postprocess(acoustic_candidates(band,sim),bpm,num,den,1)
         truth=midi_events(folder/"chart.mid")
-        songres={"bpm":bpm,"time_signature":[num,den],"reference_total":len(truth),"rounds":{}}
-        base=acoustic_candidates(band,sim)
-        for rid in (1,2,3):
-            pred=postprocess(base,bpm,num,den,rid)
-            sc=score(pred,truth,shift); cf=confusion(pred,truth,shift)
-            sc["count_ratio"]=count_ratios(sc); sc["confusion"]=cf
-            songres["rounds"][str(rid)]=sc
-            all_summary[str(rid)].update(tp=sc["tp"],predicted=sc["predicted"],reference=sc["reference"],
-                                         kick_snare_same_onset=cf["kick_snare_same_onset"])
-            for g,d in sc["by_group"].items():
-                all_summary[str(rid)][f"{g}_tp"]+=d["tp"]
-                all_summary[str(rid)][f"{g}_pred"]+=d["predicted"]
-                all_summary[str(rid)][f"{g}_ref"]+=d["reference"]
-        results[folder.name]=songres
-        print(folder.name,{r:songres["rounds"][str(r)]["f1"] for r in (1,2,3)},flush=True)
-    results["summary"]={}
-    for rid,c in all_summary.items():
-        tp,n,m=c["tp"],c["predicted"],c["reference"]
-        q={"tp":tp,"predicted":n,"reference":m,
-           "precision":round(tp/n,3) if n else 0,
-           "recall":round(tp/m,3) if m else 0,
-           "f1":round(2*tp/(n+m),3) if n+m else 0,
-           "kick_snare_same_onset":c["kick_snare_same_onset"],"by_group":{}}
-        for g in ORDER:
-            a,b,d=c[f"{g}_tp"],c[f"{g}_pred"],c[f"{g}_ref"]
-            q["by_group"][g]={"tp":a,"predicted":b,"reference":d,
-                              "count_ratio":round(b/d,3) if d else None}
-        results["summary"][rid]=q
+        sc=score(pred,truth,shift)
+        cf=confusion(pred,truth,shift)
+        sc["count_ratio"]=count_ratios(sc)
+        sc["confusion"]=cf
+        results["songs"][folder.name]={
+            "bpm":bpm,
+            "time_signature":[num,den],
+            "metrics":sc
+        }
+        total.update(tp=sc["tp"],predicted=sc["predicted"],reference=sc["reference"],
+                     kick_to_snare=cf["kick_to_snare"],snare_to_kick=cf["snare_to_kick"],
+                     double_supported=cf["kick_snare_double_supported"],
+                     double_unsupported=cf["kick_snare_double_unsupported"])
+        for g,d in sc["by_group"].items():
+            total[f"{g}_tp"]+=d["tp"]; total[f"{g}_pred"]+=d["predicted"]; total[f"{g}_ref"]+=d["reference"]
+        print(folder.name,sc["f1"],cf,flush=True)
+
+    tp,n,m=total["tp"],total["predicted"],total["reference"]
+    summary={
+        "tp":tp,"predicted":n,"reference":m,
+        "precision":round(tp/n,3) if n else 0,
+        "recall":round(tp/m,3) if m else 0,
+        "f1":round(2*tp/(n+m),3) if n+m else 0,
+        "kick_to_snare":total["kick_to_snare"],
+        "snare_to_kick":total["snare_to_kick"],
+        "kick_snare_double_supported":total["double_supported"],
+        "kick_snare_double_unsupported":total["double_unsupported"],
+        "by_group":{}
+    }
+    for g in ORDER:
+        a,b,d=total[f"{g}_tp"],total[f"{g}_pred"],total[f"{g}_ref"]
+        summary["by_group"][g]={
+            "tp":a,"predicted":b,"reference":d,
+            "count_ratio":round(b/d,3) if d else None
+        }
+    results["summary"]=summary
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(results,ensure_ascii=False,indent=2)+"\n")
-
 
 if __name__=="__main__":
     main()
