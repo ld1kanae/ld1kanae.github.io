@@ -117,7 +117,13 @@ export async function transcribe(decoded,report=()=>{},options={}){
     }
     peaks.sort((a,b)=>s[b]-s[a]);const kept=[];
     for(const p of peaks)if(!kept.some(q=>Math.abs(q-p)<minDistance))kept.push(p);
-    for(const p of kept)raw.push({time:p*HOP/RATE,frame:p,group:groupNames[k],score:s[p]});
+    for(const p of kept){
+      let confidence=s[p]/THRESHOLDS[k];
+      if(k===0||k===1)confidence+=.45*sim[k][p];
+      if(k===3)confidence+=.6*sim[3][p];
+      if(k===4)confidence+=.7*sim[4][p];
+      raw.push({time:p*HOP/RATE,frame:p,group:groupNames[k],score:s[p],confidence});
+    }
     report('ノートに変換中…',82+10*(k+1)/5);await wait();
   }
 
@@ -157,11 +163,11 @@ export async function transcribe(decoded,report=()=>{},options={}){
       if(score>bestScore){bestScore=score;phase=ph;}
     }
   }
-  function downbeatStrength(t){
-    if(!(bpm>=30&&bpm<=300))return 0;
-    const beat=60/bpm,bar=beat*4,sigma=Math.max(.04,beat*.13);
-    let x=(t-phase)%bar;if(x<0)x+=bar;const d=Math.min(x,bar-x);
-    return Math.exp(-.5*(d/sigma)**2);
+  function measureHeadDistanceBeats(t){
+    if(!(bpm>=30&&bpm<=300))return Infinity;
+    const beat=60/bpm,bar=beat*4;
+    let x=(t-phase)%bar;if(x<0)x+=bar;
+    return Math.min(x,bar-x)/beat;
   }
   const cymTimes=cym.map(e=>e.time);
   function periodicSupport(i){
@@ -182,18 +188,34 @@ export async function transcribe(decoded,report=()=>{},options={}){
   for(let i=0;i<cym.length;i++){
     const e=cym[i];
     if(bpm>=30&&bpm<=300){
-      const db=downbeatStrength(e.time),per=periodicSupport(i);
-      const crash=(db>=.42)||(e.score>=1.85&&db>=.10);
+      const headDistance=measureHeadDistanceBeats(e.time),per=periodicSupport(i);
+      // Crash is a hard measure-head prior: no off-beat exception.
+      const crash=headDistance<=.14;
       const ride=per>=.75&&band[3][e.frame]>=.55*band[2][e.frame];
-      if(crash&&(!ride||db>=.70))final.push({...e,group:'crash'});
-      else if(ride)final.push({...e,group:'ride'});
+      if(crash&&(!ride||headDistance<=.055))final.push({...e,group:'crash',confidence:e.confidence*(1+.45*(1-headDistance/.14))});
+      else if(ride)final.push({...e,group:'ride',confidence:e.confidence*(1+.3*per)});
     }else if(e.score>=1.25){
       final.push({...e,group:'crash'});
     }
   }
 
+  // A drummer has two hands: among snare/tom/hat/crash/ride, keep at most
+  // two near-simultaneous hits. Kick is foot-operated and exempt. A future
+  // pedal_hat class is also intended to be exempt.
+  const limited=new Set(['snare','hat','tom','crash','ride']);
+  const ordered=final.slice().sort((a,b)=>a.time-b.time);
+  const pruned=[];
+  for(let i=0;i<ordered.length;){
+    const start=ordered[i].time,cluster=[];let j=i;
+    while(j<ordered.length&&ordered[j].time-start<=.035)cluster.push(ordered[j++]);
+    const exempt=cluster.filter(e=>!limited.has(e.group));
+    const limb=cluster.filter(e=>limited.has(e.group)).sort((a,b)=>(b.confidence||b.score)-(a.confidence||a.score));
+    pruned.push(...exempt,...limb.slice(0,2));
+    i=j;
+  }
+
   const noteOf={kick:36,snare:38,hat:42,tom:45,crash:49,ride:51};
-  const events=final.filter(e=>noteOf[e.group]).map(e=>({
+  const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
     time:e.time,note:noteOf[e.group],group:e.group,
     velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score))))
   }));
