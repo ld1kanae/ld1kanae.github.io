@@ -8,12 +8,13 @@ on:
       - "drumscribe/app.js"
       - "drumscribe/transcribe.js"
       - "drumscribe/midi.js"
+      - "drumscribe/fft-worker.js"
       - "drumscribe/index.html"
       - "drumscribe/style.css"
       - "drumscribe/review.js"
       - "drumscribe/review.html"
       - "drumscribe/review.css"
-      - "drumscribe/review-manifest.json"\n      - "drumscribe/fft-worker.js"
+      - "drumscribe/review-manifest.json"
       - ".github/workflows/drumscribe-js-check.yml"
   workflow_dispatch:
 
@@ -30,4 +31,5 @@ jobs:
           node --check drumscribe/app.js
           node --check drumscribe/transcribe.js
           node --check drumscribe/midi.js
-          node --check drumscribe/review.js\n          node --check drumscribe/fft-worker.js
+          node --check drumscribe/review.js
+          node --check drumscribe/fft-worker.js
