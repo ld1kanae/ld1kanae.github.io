@@ -42,7 +42,7 @@ function localMedian(values,index,radius,step){
 }
 function percentile98(values){const copy=Array.from(values).sort((a,b)=>a-b);return copy[Math.floor(.98*(copy.length-1))]||0;}
 
-export async function transcribe(decoded,report=()=>{}){
+export async function transcribe(decoded,report=()=>{},options={}){
   report('音声を解析用に変換中…',5);
   let samples;
   try{
@@ -100,7 +100,9 @@ export async function transcribe(decoded,report=()=>{}){
     for(let t=0;t<frames;t++)band[b][t]=clean[t]/scale;
   }
   report('ノートに変換中…',82);await wait();
-  const signals=[band[0],band[1],band[3],band[1],band[2]],events=[];
+  const bpm=Number(options?.bpm)||0;
+  const signals=[band[0],band[1],band[3],band[1],band[2]];
+  const raw=[],groupNames=['kick','snare','hat','tom','cymbal_raw'];
   for(let k=0;k<5;k++){
     const s=signals[k],peaks=[],minDistance=Math.floor(DISTANCES[k]*RATE/HOP);
     for(let t=2;t<frames-2;t++){
@@ -113,12 +115,88 @@ export async function transcribe(decoded,report=()=>{}){
       if(k===4&&sim[4][t]<.39)continue;
       peaks.push(t);
     }
-    // scipy.find_peaks(distance=...) keeps the strongest peak locally.
     peaks.sort((a,b)=>s[b]-s[a]);const kept=[];
     for(const p of peaks)if(!kept.some(q=>Math.abs(q-p)<minDistance))kept.push(p);
-    for(const p of kept)events.push({time:p*HOP/RATE,note:NOTES[k],group:NAMES[k],velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(s[p]))))});
-    report('ノートに変換中…',82+16*(k+1)/5);await wait();
+    for(const p of kept)raw.push({time:p*HOP/RATE,frame:p,group:groupNames[k],score:s[p]});
+    report('ノートに変換中…',82+10*(k+1)/5);await wait();
   }
+
+  // Kick and snare used to be independent detectors, so the same bass-drum
+  // onset could become both notes. Resolve competing events before export.
+  const alive=new Set(raw.map((_,i)=>i));
+  const kicks=raw.map((e,i)=>[e,i]).filter(([e])=>e.group==='kick');
+  const snares=raw.map((e,i)=>[e,i]).filter(([e])=>e.group==='snare');
+  const usedSnare=new Set();
+  for(const [k,ki] of kicks){
+    const near=snares.filter(([s,si])=>!usedSnare.has(si)&&Math.abs(s.time-k.time)<=.04);
+    if(!near.length)continue;
+    near.sort((a,b)=>Math.abs(a[0].time-k.time)-Math.abs(b[0].time-k.time));
+    const [s,si]=near[0];usedSnare.add(si);
+    const p=k.frame,b0=band[0][p],b1=band[1][p],kr=b0/(b1+1e-7),sr=b1/(b0+1e-7);
+    const sk=sim[0][p],ss=sim[1][p];
+    const layered=sk>=.52&&ss>=.56&&kr>=.72&&kr<=1.38;
+    if(layered)continue;
+    const snareStrong=(sr>=1.55&&ss>=.42)||(ss>=sk+.18&&sr>=1.15);
+    if(snareStrong)alive.delete(ki);else alive.delete(si);
+  }
+
+  const base=raw.filter((_,i)=>alive.has(i));
+  const cym=base.filter(e=>e.group==='cymbal_raw');
+  const structural=base.filter(e=>e.group!=='cymbal_raw');
+  let phase=0;
+  if(bpm>=30&&bpm<=300){
+    const beat=60/bpm,bar=beat*4,sigma=Math.max(.035,beat*.11);
+    let bestScore=-1;
+    for(let i=0;i<96;i++){
+      const ph=bar*i/96;let score=0;
+      for(const e of base){
+        const weight=e.group==='cymbal_raw'?3.2:e.group==='kick'?1.8:e.group==='snare'?.8:.1;
+        const x=(e.time-ph)%bar,d0=Math.abs(x),d=Math.min(d0,bar-d0);
+        score+=weight*e.score*Math.exp(-.5*(d/sigma)**2);
+      }
+      if(score>bestScore){bestScore=score;phase=ph;}
+    }
+  }
+  function downbeatStrength(t){
+    if(!(bpm>=30&&bpm<=300))return 0;
+    const beat=60/bpm,bar=beat*4,sigma=Math.max(.04,beat*.13);
+    let x=(t-phase)%bar;if(x<0)x+=bar;const d=Math.min(x,bar-x);
+    return Math.exp(-.5*(d/sigma)**2);
+  }
+  const cymTimes=cym.map(e=>e.time);
+  function periodicSupport(i){
+    if(!(bpm>=30&&bpm<=300)||cymTimes.length<3)return 0;
+    const t=cymTimes[i];let best=0;
+    for(const step of [30/bpm,60/bpm,120/bpm]){
+      let count=0;
+      for(const k of [-2,-1,1,2]){
+        const target=t+k*step;
+        if(cymTimes.some(x=>Math.abs(x-target)<=.07))count++;
+      }
+      best=Math.max(best,count/4);
+    }
+    return best;
+  }
+
+  const final=[...structural];
+  for(let i=0;i<cym.length;i++){
+    const e=cym[i];
+    if(bpm>=30&&bpm<=300){
+      const db=downbeatStrength(e.time),per=periodicSupport(i);
+      const crash=(db>=.42)||(e.score>=1.85&&db>=.10);
+      const ride=per>=.75&&band[3][e.frame]>=.55*band[2][e.frame];
+      if(crash&&(!ride||db>=.70))final.push({...e,group:'crash'});
+      else if(ride)final.push({...e,group:'ride'});
+    }else if(e.score>=1.25){
+      final.push({...e,group:'crash'});
+    }
+  }
+
+  const noteOf={kick:36,snare:38,hat:42,tom:45,crash:49,ride:51};
+  const events=final.filter(e=>noteOf[e.group]).map(e=>({
+    time:e.time,note:noteOf[e.group],group:e.group,
+    velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score))))
+  }));
   report('完了しました',100);
   return events.sort((a,b)=>a.time-b.time||a.note-b.note);
 }
