@@ -2,7 +2,7 @@ const $=id=>document.getElementById(id);
 const STORE='drumscribe-review-v1';
 const SAMPLE_ROOT='../DruMaster/assets/drums/';
 let manifest,currentCandidate,currentSong,metricCache=new Map(),midiCache=new Map(),sampleCache=new Map();
-let ctx,gainNode,playback=null;
+let ctx,gainNode,playback=null,refreshVersion=0;
 
 function readStore(){
   try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch{return {}}
@@ -48,9 +48,8 @@ function groupStats(g){
   return {precision,recall,f1,ratio:ratio(g.predicted,g.reference)};
 }
 
-async function renderMetrics(){
-  const result=await metricsFor(currentCandidate);
-  const s=result.songs[currentSong],sum=result.summary;
+function renderMetrics(result,song){
+  const s=result.songs[song],sum=result.summary;
   const groups=['kick','snare','hat','tom','crash','ride'];
   const cards=[
     ['曲F1',fmt(s.f1)],
@@ -75,16 +74,19 @@ function sourceUrl(song){return '../DruMaster/songs/'+song+'/drums.mp3'}
 function chartUrl(song){return '../DruMaster/songs/'+song+'/chart.mid'}
 
 async function refresh(){
+  const version=++refreshVersion;
   stopPlayback(false);
-  currentSong=$('song').value;
-  currentCandidate=candidateById($('candidate').value);
-  $('candidateDescription').textContent=currentCandidate.description;
-  $('source').src=sourceUrl(currentSong);
-  $('midiDownload').href=midiUrl(currentCandidate,currentSong);
-  $('midiDownload').download=currentSong+'-'+currentCandidate.id+'.mid';
-  $('chartDownload').href=chartUrl(currentSong);
-  $('chartDownload').download=currentSong+'-chart.mid';
-  await renderMetrics();
+  const song=$('song').value,candidate=candidateById($('candidate').value);
+  $('candidateDescription').textContent=candidate.description;
+  $('source').src=sourceUrl(song);
+  $('midiDownload').href=midiUrl(candidate,song);
+  $('midiDownload').download=song+'-'+candidate.id+'.mid';
+  $('chartDownload').href=chartUrl(song);
+  $('chartDownload').download=song+'-chart.mid';
+  const result=await metricsFor(candidate);
+  if(version!==refreshVersion)return;
+  currentSong=song;currentCandidate=candidate;
+  renderMetrics(result,song);
   loadReview();
   $('status').textContent='準備完了。音源の好きな位置へ移動して「音源 + MIDI」を押してください。';
 }
