@@ -13,7 +13,7 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function candidateById(id){return manifest.candidates.find(c=>c.id===id)}
 
 async function loadManifest(){
-  manifest=await fetch('review-manifest.json?v=20260922-1').then(r=>r.json());
+  manifest=await fetch('review-manifest.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('候補一覧を読み込めません');return r.json();});
   $('song').innerHTML=manifest.songs.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.label)+'</option>').join('');
   $('candidate').innerHTML=manifest.candidates.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.label)+'</option>').join('');
   currentSong=$('song').value;
@@ -144,7 +144,8 @@ function clearReview(){
 function exported(){
   const store=readStore();
   return {
-    schema:1,
+    schema:2,
+    manifestVersion:manifest?.version??null,
     exportedAt:new Date().toISOString(),
     purpose:'DrumScribe candidate human review',
     reviews:Object.values(store)
