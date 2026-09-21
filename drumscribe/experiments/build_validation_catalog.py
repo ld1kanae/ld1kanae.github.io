@@ -125,7 +125,8 @@ def main():
             cid=f"{p.name}:{cycle}:{name}"
             row={"id":cid,"result_file":str(p),"cycle":cycle,"name":name,
                  "winner":winner,"carried_close":close,"params":c.get("params"),
-                 "summary":summary,"song_metrics":c.get("songs"),
+                 "summary":summary,
+                 "song_metrics_ref":str(p),
                  "result_commit":rec["result_commit"],"script":rec["script"],"script_commit":rec["script_commit"]}
             history["candidates"].append(row)
             for g in GROUPS:
