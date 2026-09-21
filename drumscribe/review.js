@@ -2,7 +2,7 @@ const $=id=>document.getElementById(id);
 const STORE='drumscribe-review-v1';
 const SAMPLE_ROOT='../DruMaster/assets/drums/';
 let manifest,currentCandidate,currentSong,metricCache=new Map(),midiCache=new Map(),sampleCache=new Map();
-let ctx,gainNode,playback=null,refreshVersion=0;
+let ctx,gainNode,playback=null,refreshVersion=0,currentMidiInfo={count:0,first:null};
 let playbackStats={loaded:0,failed:0,scheduled:0,song:null,candidate:null};
 
 function readStore(){
@@ -119,17 +119,19 @@ async function refresh(){
   $('chartDownload').href=chartUrl(song);
   $('chartDownload').download=song+'-chart.mid';
 
-  const [result]=await Promise.all([
+  const [result,,events]=await Promise.all([
     metricsFor(candidate),
-    prepareSource(song,version)
+    prepareSource(song,version),
+    midiEvents(candidate,song)
   ]);
   if(version!==refreshVersion)return;
 
+  currentMidiInfo={count:events.length,first:events[0]?.time??null};
   renderMetrics(result,song);
   loadReview();
   $('saveReview').disabled=false;
   $('syncPlay').disabled=false;
-  $('status').textContent='準備完了。音源の好きな位置へ移動して「音源 + MIDI」を押してください。';
+  $('status').textContent=`準備完了 / MIDI ${currentMidiInfo.count}音。音源の好きな位置へ移動して「音源 + MIDI」を押してください。`;
 }
 function rangeOutput(input){
   const out=input.parentElement.querySelector('output');
@@ -246,10 +248,10 @@ function parseMidi(buf){
   return notes.map(n=>({time:sec(n.tick),pitch:n.pitch,velocity:n.velocity})).sort((a,b)=>a.time-b.time);
 }
 
-async function midiEvents(){
-  const url=midiUrl(currentCandidate,currentSong);
+async function midiEvents(candidate=currentCandidate,song=currentSong){
+  const url=midiUrl(candidate,song);
   if(midiCache.has(url))return midiCache.get(url);
-  const events=parseMidi(await fetch(url).then(r=>{if(!r.ok)throw Error('MIDI取得失敗');return r.arrayBuffer()}));
+  const events=parseMidi(await fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('MIDI取得失敗');return r.arrayBuffer()}));
   midiCache.set(url,events);return events;
 }
 async function audioContext(){
@@ -290,7 +292,7 @@ async function startPlayback(){
   playbackStats={loaded:0,failed:0,scheduled:0,song:currentSong,candidate:currentCandidate.id};
   $('status').textContent='MIDI音源を読み込み中…';
 
-  const events=await midiEvents();
+  const events=await midiEvents(currentCandidate,currentSong);
   const notes=[...new Set(events.map(e=>e.pitch))];
   const loaded=await Promise.all(notes.map(async n=>{
     try{await sample(n);playbackStats.loaded++;return true}
@@ -315,15 +317,9 @@ async function startPlayback(){
 
   function tick(){
     if(!playback)return;
-    const mediaNow=src.currentTime;
-    if(Math.abs(mediaNow-playback.lastPos)>.65){
-      playback.index=lowerBound(events,mediaNow-.02);
-      playback.ctxStart=c.currentTime;
-      playback.sourceStart=mediaNow;
-    }
-    playback.lastPos=mediaNow;
     if(src.paused)return;
-
+    const mediaNow=playback.sourceStart+(c.currentTime-playback.ctxStart);
+    playback.lastPos=mediaNow;
     const horizon=mediaNow+.30;
     while(playback.index<events.length&&events[playback.index].time<=horizon){
       const e=events[playback.index++];
@@ -348,6 +344,14 @@ async function startPlayback(){
   playback.timer=setInterval(tick,45);
   tick();
 }
+function resyncPlaybackClock(){
+  if(!playback||!ctx)return;
+  const t=$('source').currentTime||0;
+  playback.sourceStart=t;
+  playback.ctxStart=ctx.currentTime;
+  playback.lastPos=t;
+  playback.index=lowerBound(playback.events,t-.02);
+}
 function stopPlayback(pauseSource=true){
   if(!playback){if(pauseSource)$('source').pause();return}
   clearInterval(playback.timer);
@@ -365,6 +369,8 @@ $('saveReview').addEventListener('click',saveReview);
 $('clearReview').addEventListener('click',clearReview);
 $('copyReviews').addEventListener('click',()=>copyReviews().catch(e=>$('saveState').textContent='コピー失敗: '+e.message));
 $('downloadReviews').addEventListener('click',downloadReviews);
+$('source').addEventListener('seeked',resyncPlaybackClock);
+$('source').addEventListener('play',()=>{if(playback)resyncPlaybackClock()});
 $('source').addEventListener('ended',()=>stopPlayback(false));
 window.addEventListener('beforeunload',()=>stopPlayback(false));
 
@@ -381,5 +387,9 @@ window.__drumscribeReviewDebug=()=>({
   scheduledNotes:playbackStats.scheduled,
   song:playbackStats.song,
   candidate:playbackStats.candidate,
+  eventCount:playback?.events?.length??currentMidiInfo.count,
+  firstEventTime:playback?.events?.[0]?.time??currentMidiInfo.first,
+  nextEventTime:playback?.events?.[playback?.index??0]?.time??null,
+  mediaTime:$('source')?.currentTime??0,
   sourcePaused:$('source')?.paused??true
 });
