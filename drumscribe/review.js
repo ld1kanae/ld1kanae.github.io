@@ -219,7 +219,10 @@ async function audioContext(){
 async function sample(note){
   if(sampleCache.has(note))return sampleCache.get(note);
   const c=await audioContext();
-  const p=fetch(SAMPLE_ROOT+note+'.wav').then(r=>r.arrayBuffer()).then(b=>c.decodeAudioData(b));
+  const p=fetch(SAMPLE_ROOT+note+'.wav')
+    .then(r=>{if(!r.ok)throw Error('sample '+note);return r.arrayBuffer()})
+    .then(b=>c.decodeAudioData(b))
+    .then(buf=>{sampleCache.set(note,buf);return buf});
   sampleCache.set(note,p);return p;
 }
 function lowerBound(events,t){
