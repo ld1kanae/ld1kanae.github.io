@@ -83,7 +83,8 @@ for(const el of document.querySelectorAll('.track')){
 }
 $('download').addEventListener('click',()=>{
   if(!events.length)return;const blob=new Blob([midiFile(events)],{type:'audio/midi'}),url=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=url;link.download=`${(file?.name||'drums').replace(/\.[^.]+$/,'')}-drumscribe.mid`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  link.href=url;link.download=`${(file?.name||'drums').replace(/\.[^.]+$/,'')}-drumscribe.mid`;link.hidden=true;
+  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
 });
 const canvas=$('timeline');canvas.addEventListener('click',e=>{if(!decoded)return;seek((e.clientX-canvas.getBoundingClientRect().left)/canvas.clientWidth*decoded.duration);});
 new ResizeObserver(()=>draw()).observe(canvas);
