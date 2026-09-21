@@ -24,7 +24,7 @@ ev=importlib.util.module_from_spec(spec); spec.loader.exec_module(ev)
 
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
 LIMITED={"snare","hat","tom","crash","ride"}
-PITCH={"kick":36,"snare":38,"hat":42,"tom":45,"crash":49,"ride":51}
+PITCH={"kick":36,"snare":38,"hat":42,"pedal_hat":44,"tom":45,"crash":49,"ride":51}
 BASE_THRESH={"kick":.58,"snare":.70,"hat":.19,"tom":1.5,"cymbal":1.0}
 BASE_DIST={"kick":.075,"snare":.075,"hat":.055,"tom":.09,"cymbal":.12}
 
