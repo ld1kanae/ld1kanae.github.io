@@ -32,6 +32,9 @@ def guess_script(result_path):
       ("results-iterative-crash-fallback.json","iterative_search_crash_fallback.py"),
       ("results-iterative-pedal-structural.json","iterative_search_pedal_structural.py"),
       ("results-iterative-ride-consensus.json","iterative_search_ride_consensus.py"),
+      ("results-iterative-tom-consensus.json","iterative_search_tom_consensus.py"),
+      ("results-iterative-ride-song-gate.json","iterative_search_ride_song_gate.py"),
+
 
       ("results-iterative-fusion-v2.json","iterative_search_fusion_v2.py"),
       ("results-iterative-pedal-repair.json","iterative_search_pedal_repair.py"),
