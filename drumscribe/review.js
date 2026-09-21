@@ -3,7 +3,7 @@ const STORE='drumscribe-review-v1';
 const SAMPLE_ROOT='../DruMaster/assets/drums/';
 let manifest,currentCandidate,currentSong,metricCache=new Map(),midiCache=new Map(),sampleCache=new Map();
 let ctx,gainNode,playback=null,refreshVersion=0,currentMidiInfo={count:0,first:null};
-let playbackStats={loaded:0,failed:0,scheduled:0,song:null,candidate:null};
+let playbackStats={loaded:0,failed:0,scheduled:0,song:null,candidate:null,autoJumped:false};
 
 function readStore(){
   try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch{return {}}
@@ -131,7 +131,7 @@ async function refresh(){
   loadReview();
   $('saveReview').disabled=false;
   $('syncPlay').disabled=false;
-  $('status').textContent=`準備完了 / MIDI ${currentMidiInfo.count}音。音源の好きな位置へ移動して「音源 + MIDI」を押してください。`;
+  $('status').textContent=`準備完了 / MIDI ${currentMidiInfo.count}音 / 最初の打点 ${currentMidiInfo.first==null?'-':currentMidiInfo.first.toFixed(2)+'秒'}。`;
 }
 function rangeOutput(input){
   const out=input.parentElement.querySelector('output');
@@ -279,6 +279,15 @@ async function startPlayback(){
   stopPlayback(false);
   const src=$('source');
   if(src.readyState<2)throw Error('音源の準備が完了していません');
+
+  // The comparison MIDI may legitimately have a long drumless intro. When
+  // starting from the beginning, jump just before its first hit so switching
+  // songs never looks like a broken MIDI player.
+  const cachedEvents=midiCache.get(midiUrl(currentCandidate,currentSong));
+  let autoJumped=false;
+  if((src.currentTime||0)<.5&&cachedEvents?.length&&cachedEvents[0].time>3){
+    try{src.currentTime=Math.max(0,cachedEvents[0].time-.25);autoJumped=true}catch{}
+  }
   const pos=src.currentTime||0;
 
   // Start the media element immediately while the click still counts as a
@@ -289,7 +298,7 @@ async function startPlayback(){
   const c=await audioContext();
   await sourcePlay;
 
-  playbackStats={loaded:0,failed:0,scheduled:0,song:currentSong,candidate:currentCandidate.id};
+  playbackStats={loaded:0,failed:0,scheduled:0,song:currentSong,candidate:currentCandidate.id,autoJumped};
   $('status').textContent='MIDI音源を読み込み中…';
 
   const events=await midiEvents(currentCandidate,currentSong);
@@ -338,6 +347,7 @@ async function startPlayback(){
 
     $('status').textContent=
       currentCandidate.label+' / MIDI '+playbackStats.scheduled+'音再生'+
+      (playbackStats.autoJumped?' / 最初の打点へ移動':'')+
       (playbackStats.failed?' / サンプル失敗 '+playbackStats.failed:'');
   }
 
@@ -387,6 +397,7 @@ window.__drumscribeReviewDebug=()=>({
   scheduledNotes:playbackStats.scheduled,
   song:playbackStats.song,
   candidate:playbackStats.candidate,
+  autoJumped:playbackStats.autoJumped,
   eventCount:playback?.events?.length??currentMidiInfo.count,
   firstEventTime:playback?.events?.[0]?.time??currentMidiInfo.first,
   nextEventTime:playback?.events?.[playback?.index??0]?.time??null,
