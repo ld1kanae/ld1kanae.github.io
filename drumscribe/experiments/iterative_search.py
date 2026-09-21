@@ -71,7 +71,7 @@ def raw_candidates(band,sim):
             if g=="kick" and band[0,p] < .48*band[1,p]: continue
             if g=="snare" and band[1,p] < .62*band[0,p]: continue
             if g=="tom" and (sim[3,p] < .44 or sim[3,p] < .85*max(sim[0,p],sim[1,p])): continue
-            if g=="cymbal" and sim[4,p] < .39: continue
+            if g=="cymbal" and max(sim[4,p],sim[5,p]) < .39: continue
             if g=="kick":
                 conf=float(s[p]/BASE_THRESH[g] + .45*sim[0,p])
             elif g=="snare":
@@ -79,7 +79,7 @@ def raw_candidates(band,sim):
             elif g=="tom":
                 conf=float(s[p]/BASE_THRESH[g] + .6*sim[3,p])
             elif g=="cymbal":
-                conf=float(s[p]/BASE_THRESH[g] + .7*sim[4,p])
+                conf=float(s[p]/BASE_THRESH[g] + .7*max(sim[4,p],sim[5,p]))
             else:
                 conf=float(s[p]/BASE_THRESH[g])
             raw.append({"time":p*ev.HOP/ev.SR,"frame":p,"group":g,"score":float(s[p]),"confidence":conf})
@@ -141,11 +141,11 @@ def cymbal_split(events,band,sim,bpm,num,den,p):
         per=periodic_support(times,i,bpm)
         # Hard musical prior requested by the user:
         # crash is never admitted outside the measure-head window.
-        crash_ok=dist<=p["crash_window_beats"] and e["score"]>=p["crash_score"]
+        crash_ok=dist<=p["crash_window_beats"] and e["score"]>=p["crash_score"] and float(sim[4,fr])>=p["crash_sim"]
         # Ride is a separate repeating cymbal behavior and is not subject to
         # the crash-only measure-head restriction.
         high_ratio=float(band[3,fr]/(band[2,fr]+1e-7))
-        ride_ok=per>=p["ride_periodic"] and high_ratio>=p["ride_high_ratio"] and e["score"]>=p["ride_score"]
+        ride_ok=per>=p["ride_periodic"] and high_ratio>=p["ride_high_ratio"] and e["score"]>=p["ride_score"] and float(sim[5,fr])>=p["ride_sim"] and float(sim[5,fr])>=float(sim[2,fr])*p["ride_vs_hat"]
         if crash_ok and (not ride_ok or dist<=p["crash_prefer_beats"]):
             x=dict(e);x["group"]="crash";x["confidence"]*=1+.45*(1-dist/max(p["crash_window_beats"],1e-6));rest.append(x)
         elif ride_ok:
@@ -214,16 +214,16 @@ def base_params():
     return {
       "ks_window":.040,"layer_k":.52,"layer_s":.56,"layer_ratio_lo":.72,"layer_ratio_hi":1.38,
       "snare_ratio":1.55,"snare_sim":.42,"snare_margin":.18,"snare_ratio2":1.15,
-      "crash_window_beats":.14,"crash_prefer_beats":.055,"crash_score":1.0,
-      "ride_periodic":.70,"ride_high_ratio":.55,"ride_score":1.0,
+      "crash_window_beats":.14,"crash_prefer_beats":.055,"crash_score":1.0,"crash_sim":.34,
+      "ride_periodic":.70,"ride_high_ratio":.55,"ride_score":1.0,"ride_sim":.32,"ride_vs_hat":1.02,
       "poly_window":.035
     }
 
 def variants_cycle1():
     b=base_params(); out={}
-    a=copy.deepcopy(b);a.update(crash_window_beats=.09,ride_periodic=.80,poly_window=.028,snare_ratio=1.65,snare_margin=.22);out["c1_strict"]=a
+    a=copy.deepcopy(b);a.update(crash_window_beats=.09,ride_periodic=.80,ride_sim=.36,ride_vs_hat=1.08,poly_window=.028,snare_ratio=1.65,snare_margin=.22);out["c1_strict"]=a
     a=copy.deepcopy(b);out["c1_balanced"]=a
-    a=copy.deepcopy(b);a.update(crash_window_beats=.20,ride_periodic=.55,poly_window=.045,snare_ratio=1.45,snare_margin=.14);out["c1_recall"]=a
+    a=copy.deepcopy(b);a.update(crash_window_beats=.20,ride_periodic=.55,ride_sim=.28,ride_vs_hat=.98,poly_window=.045,snare_ratio=1.45,snare_margin=.14);out["c1_recall"]=a
     return out
 
 def derive_cycle2(best):
