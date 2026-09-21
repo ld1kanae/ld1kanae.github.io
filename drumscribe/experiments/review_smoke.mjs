@@ -3,6 +3,23 @@ import { chromium } from 'playwright';
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage();
 page.setDefaultTimeout(30000);
+
+async function ensureScheduledFor(song,candidate){
+  const d=await page.evaluate(()=>window.__drumscribeReviewDebug?.());
+  if(!d)throw new Error('debug state missing');
+  if(d.song!==song||d.candidate!==candidate)throw new Error('wrong playback session '+JSON.stringify(d));
+  if(d.scheduledNotes>0)return d;
+  const target=(d.nextEventTime??d.firstEventTime);
+  if(Number.isFinite(target)&&target>d.mediaTime+.35){
+    await page.evaluate(t=>{const s=document.querySelector('#source');s.currentTime=Math.max(0,t-.08)},target);
+  }
+  await page.waitForFunction(({song,candidate})=>{
+    const x=window.__drumscribeReviewDebug?.();
+    return x&&x.scheduledNotes>0&&x.song===song&&x.candidate===candidate;
+  },{song,candidate},{timeout:15000});
+  return await page.evaluate(()=>window.__drumscribeReviewDebug?.());
+}
+
 await page.goto('http://127.0.0.1:8000/drumscribe/review.html',{waitUntil:'networkidle'});
 
 const songCount=await page.locator('#song option').count();
@@ -29,11 +46,7 @@ await page.waitForFunction(()=>{
   const d=window.__drumscribeReviewDebug?.();
   return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused&&d.song==='nanairo'&&d.candidate==='v2-balanced';
 },{},{timeout:30000});
-await page.waitForFunction(()=>{
-  const d=window.__drumscribeReviewDebug?.();
-  return d&&d.scheduledNotes>0&&d.song==='nanairo'&&d.candidate==='v2-balanced';
-},{},{timeout:15000});
-const playbackDebug=await page.evaluate(()=>window.__drumscribeReviewDebug());
+const playbackDebug=await ensureScheduledFor('nanairo','v2-balanced');
 await page.locator('#stop').click();
 
 // Switch to a different song and prove both the source media and MIDI scheduler
@@ -47,10 +60,7 @@ await page.waitForFunction(()=>{
   const d=window.__drumscribeReviewDebug?.();
   return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused&&d.song==='kaiju'&&d.candidate==='v2-balanced';
 },{},{timeout:30000});
-await page.waitForFunction(()=>{
-  const d=window.__drumscribeReviewDebug?.();
-  return d&&d.scheduledNotes>0&&d.song==='kaiju'&&d.candidate==='v2-balanced';
-},{},{timeout:15000});
+const switchScheduled=await ensureScheduledFor('kaiju','v2-balanced');
 const switchPlaybackDebug=await page.evaluate(()=>({
   debug:window.__drumscribeReviewDebug(),
   source:document.querySelector('#source')?.currentSrc,
@@ -63,8 +73,7 @@ await page.locator('#stop').click();
 await page.selectOption('#candidate','tom-ml');
 await page.waitForFunction(()=>document.querySelector('#candidate')?.value==='tom-ml'&&!document.querySelector('#syncPlay')?.disabled);
 await page.locator('#syncPlay').click();
-await page.waitForFunction(()=>{const d=window.__drumscribeReviewDebug?.();return d&&d.scheduledNotes>0&&d.song==='kaiju'&&d.candidate==='tom-ml';},{},{timeout:15000});
-const candidateSwitchDebug=await page.evaluate(()=>window.__drumscribeReviewDebug());
+const candidateSwitchDebug=await ensureScheduledFor('kaiju','tom-ml');
 await page.locator('#stop').click();
 
 await page.selectOption('#song','nanairo');
