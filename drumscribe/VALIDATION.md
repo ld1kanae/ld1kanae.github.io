@@ -870,3 +870,150 @@ Cycles 115–117では、予測由来の seed ride数 / hat数により tight / 
 - experiments/detailed-history/: 生成済みMIDIを標準評価器で再採点した全曲×全パート詳細データ
 
 2026-09-22時点でEXPERIMENT_LOG生成workflowは成功しており、直近生成時は43 result files / 350 candidatesを収録した。今後の完了cycleも同じ形式へ追記する。
+
+
+## Candidate selection non-regression policy
+
+Cycles 97以降で、overall F1だけを見ると難しいパートを丸ごと消す候補が有利になる問題を確認したため、`experiments/selection_policy.py` にhard gateを追加した。
+
+all-part baseへ昇格する候補は:
+- 今回のtarget partを許容幅以上悪化させない。
+- baselineでF1 >= 0.10の既存パートを0へ崩壊させない。
+- 既存の意味のあるパートを原則0.05 F1以上悪化させない。
+- baselineのtwo-limb violationが0なら0を維持する。
+- FDRがsummaryに直接無い場合もTP/predictedから再計算してhat/pedal/crash/ride誤打音ペナルティを適用する。
+
+条件に落ちた候補は削除せずcomponent bankへ残すが、all-part baseにはしない。
+
+## Cycles 97–99 — structural pedal-hi-hat
+
+hand-supported / poly-rescue / gap-repeatを比較し、periodicityと候補源も3案ずつ評価した。
+
+旧scoreでは `c99_recall` がoverall **0.7203** で勝ったが、pedal-hatは:
+- TP 11 / predicted 42 / reference 676
+- precision 0.2619
+- recall 0.0163
+- F1 **0.0306**
+
+baseline pedal-hat F1 0.3865から大幅悪化しているため、**all-part候補として不採用**。この結果がhard non-regression policy導入の直接理由。
+
+## Cycles 100–102 — multi-detector ride consensus
+
+3つの独立ride検出器を highres / intersection / 2-of-3 で比較した。
+
+主結果:
+- highres単独: ride TP151 / predicted1230 / F1 **0.1612**。誤爆が多くoverall 0.6606。
+- 2-of-3: TP69 / predicted796 / F1 0.0958。まだ誤爆過多。
+- intersection 35ms: TP14 / predicted79 / F1 0.0387。
+- intersection + periodic 0.25: TP11 / predicted54 / precision 0.2037 / recall 0.0171 / F1 **0.0315**、overall 0.7176。
+
+安全にrideを0から戻せたが現行baseを超えないため、ride componentとして保持。
+
+## Cycles 103–105 — tom multi-model consensus
+
+current tomを核に、RF / ExtraTrees / logisticのtom候補をfill文脈と合意で補完した。
+
+Cycle 103:
+- extra: tom F1 0.6550
+- consensus: 0.5641
+- fill: **0.6587**
+
+Cycle 104:
+- matching window 40/60/80msはいずれも同等。
+
+Cycle 105:
+- density3: tom F1 0.6215
+- density5: 0.6587
+- density7: **0.6667**
+
+最終 `c105_density7`:
+- overall F1 **0.7197**
+- tom TP55 / predicted73 / reference92
+- precision **0.7534**
+- recall **0.5978**
+- F1 **0.6667**
+- 他パートはほぼ維持
+
+よってtom部品として正式採用候補。
+
+## Cycles 106–108 — song-confidence gated ride
+
+高recall highres rideと安全なintersection rideの一致率を、参照MIDIを使わない曲単位confidenceとして利用した。
+
+confidence:
+- arcaround 0
+- diamondvirgin 0.1214
+- kaiju 0.0323
+- nanairo 0
+- ray 0.0147
+
+Cycle 106 ratio gateでdiamondvirgin/kaijuを中心にrideを有効化:
+- TP151 / predicted468
+- precision 0.3226 / recall 0.2345 / ride F1 **0.2716**
+- overall 0.7170
+
+局所化・periodic supportを加えた最終 `c108_per50`:
+- ride TP36 / predicted121 / reference644
+- precision **0.2975**
+- recall 0.0559
+- F1 **0.0941**
+- overall 0.7176
+- hat F1 0.6715
+- pedal-hat F1 0.3868
+
+overallはcurrent baseより少し下がるため単独でbaseにはしないが、ride部品としては従来の安全候補より強い。
+
+## Cycles 109–111 — guarded all-part fusion
+
+Cycle 109で current base / +tom / +ride / +tom+ride を比較。全候補がhard non-regression gateを通過。
+
+- base overall 0.7194, tom 0.6369, ride 0
+- +tom overall 0.7197, tom **0.6667**
+- +ride overall 0.7177, ride **0.0941**
+- +tom+ride overall 0.7180, tom **0.6667**, ride **0.0941**
+
+旧FDR計算前scoreではcoverageを優先して+tom+rideを選択したが、selection policyでFDR fallback計算の不足を発見したため再評価を実行中。
+
+Cycle 110ではsnare base/pattern/vetoを比較。patternはsnare F1 0.8253だがkick→snare率が高い。
+
+Cycle 111ではcrash precision/recall/zero-fallbackを比較。zero-fallbackはcrash F1 **0.3891**、ride/tomを含むcoverage candidateではoverall 0.7177。
+
+最終winnerはFDR修正版selection policyで再判定する。
+
+## Cycles 112–114 — additive snare with strict kick veto
+
+base snareを変更せず、高recall pattern由来の「追加snare」だけを検討し、base kickと近い追加候補を禁止した。
+
+最終 `c114_repeat3`:
+- overall F1 **0.7200**
+- snare TP1202 / predicted1486 / reference1470
+- precision **0.8089**
+- recall **0.8177**
+- snare F1 **0.8133**
+- kick→snare **45**
+
+baseのsnare F1 0.8107 / recall 0.8014 / kick→snare42に対し、小さい誤分類増加でrecallとoverallを改善。高recall pattern版のkick→snare103より大幅に安全。
+
+## Cycles 115–117 — kick-overlap-only hat cross-stem gate（実行中）
+
+全hatをcross-stem版へ置換せず、base hatのうちpredicted kickと同時刻のものだけcross-stem支持を要求する。
+
+目的:
+- arcaroundの大量kick→hat誤認を狙い撃ち
+- off-kickの正常hat刻みは現行のまま保持
+
+Cycle 115: cross-stem support window 25/45/70ms  
+Cycle 116: kick overlap window 20/35/55ms  
+Cycle 117: removed hitのrepeat rescue 2/3/4 bars
+
+## Cycles 118–120 — strongest-component fusion v3（実行中）
+
+current baseに:
+- tom `c105_density7`
+- snare `c114_repeat3`
+- ride `c108_per50` / `c102_per25`
+- crash precision / recall / zero-fallback
+
+を順次差し替える。
+
+全cycleでhard non-regression policyとFDR fallback計算済みcanonical scoreを用いる。
