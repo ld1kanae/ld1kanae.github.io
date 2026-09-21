@@ -16,9 +16,19 @@ drop.addEventListener('drop',e=>select(Array.from(e.dataTransfer.files).find(f=>
 $('example').addEventListener('change',async e=>{
   const id=e.target.value;if(!id)return;
   $('analyze').disabled=true;tell('検証用音源を取得中…');
-  try{const r=await fetch(`../DruMaster/songs/${id}/drums.mp3`);if(!r.ok)throw Error(`HTTP ${r.status}`);
-    const blob=await r.blob();select(new File([blob],`${id}-drums.mp3`,{type:'audio/mpeg'}));$('example').value=id;\n    try{const m=await fetch(`../DruMaster/songs/${id}/song.json`).then(x=>x.json());if(m?.bpm)$('bpm').value=Number(m.bpm).toFixed(2);}catch{}
-  }catch(err){tell(`音源を取得できませんでした: ${err.message}`,true);$('analyze').disabled=!file;}
+  try{
+    const r=await fetch(`../DruMaster/songs/${id}/drums.mp3`);if(!r.ok)throw Error(`HTTP ${r.status}`);
+    const blob=await r.blob();
+    select(new File([blob],`${id}-drums.mp3`,{type:'audio/mpeg'}));
+    $('example').value=id;
+    try{
+      const m=await fetch(`../DruMaster/songs/${id}/song.json`).then(x=>x.json());
+      if(m?.bpm)$('bpm').value=Number(m.bpm).toFixed(2);
+    }catch{}
+  }catch(err){
+    tell(`音源を取得できませんでした: ${err.message}`,true);
+    $('analyze').disabled=!file;
+  }
 });
 async function audioContext(){if(!context){context=new AudioContext();tracks.audio.gain=context.createGain();tracks.midi.gain=context.createGain();tracks.audio.gain.connect(context.destination);tracks.midi.gain.connect(context.destination);}await context.resume();return context;}
 $('analyze').addEventListener('click',async()=>{
@@ -27,12 +37,16 @@ $('analyze').addEventListener('click',async()=>{
     const ac=await audioContext();tell('音源を読み込み中…');
     decoded=await ac.decodeAudioData(await file.arrayBuffer());
     if(decoded.duration>900)throw Error('15分以内の音源を選択してください。');
-    events=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;});
+    const rawBpm=$('bpm').value.trim();
+    const bpm=rawBpm?Number(rawBpm):null;
+    if(rawBpm&&(!Number.isFinite(bpm)||bpm<30||bpm>300))throw Error('基準BPMは30〜300で入力してください。');
+    events=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm});
     position=0;$('result').hidden=false;
     if(downloadUrl)URL.revokeObjectURL(downloadUrl);
     downloadUrl=URL.createObjectURL(new Blob([midiFile(events,bpm||120)],{type:'audio/midi'}));
     $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
-    $('previewTitle').textContent=file.name;$('resultSummary').textContent=`${fmt(decoded.duration)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}`;
+    $('previewTitle').textContent=file.name;
+    $('resultSummary').textContent=`${fmt(decoded.duration)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
     tell(`${events.length} ノートを推定しました。プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
