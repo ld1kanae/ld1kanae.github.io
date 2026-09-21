@@ -9,7 +9,7 @@ Cycle 53: three conflict-resolution policies on the best combination.
 Cycle 54: three cymbal policies on the best result.
 """
 from __future__ import annotations
-import importlib.util, json, math
+import copy, importlib.util, json, math
 from collections import Counter
 from pathlib import Path
 
