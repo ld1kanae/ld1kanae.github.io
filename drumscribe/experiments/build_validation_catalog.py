@@ -26,6 +26,16 @@ def commit_for(path):
 def guess_script(result_path):
     n=result_path.name
     mapping=[
+      ("results-iterative-snare-veto.json","iterative_search_snare_veto.py"),
+      ("results-iterative-hat-fusion.json","iterative_search_hat_fusion.py"),
+      ("results-iterative-hat-precision.json","iterative_search_hat_precision.py"),
+      ("results-iterative-crash-consensus.json","iterative_search_crash_consensus.py"),
+      ("results-iterative-pedal-repair.json","iterative_search_pedal_repair.py"),
+      ("results-iterative-recall-repair.json","iterative_search_recall_repair.py"),
+      ("results-iterative-pattern-consensus.json","iterative_search_pattern_consensus.py"),
+      ("results-iterative-component-hybrid.json","iterative_search_component_hybrid.py"),
+      ("results-iterative-neural-separation.json","iterative_search_neural_separation.py"),
+      ("results-iterative-cymbal-fusion.json","iterative_search_cymbal_fusion.py"),
       ("results-iterative-composite-v2.json","iterative_search_composite_v2.py"),
       ("results-iterative-composite.json","iterative_search_composite.py"),
       ("results-iterative-separation.json","iterative_search_separation.py"),
