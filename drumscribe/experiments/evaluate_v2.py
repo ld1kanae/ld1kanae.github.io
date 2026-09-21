@@ -16,14 +16,17 @@ SR, FFT, HOP = 11025, 1024, 110
 GROUPS = {
     "kick": (35, 36),
     "snare": (37, 38, 39, 40),
-    "hat": (42, 44, 46),
+    "hat": (42, 46),
     "tom": (41, 43, 45, 47, 48, 50),
     "crash": (49, 52, 55, 57),
     "ride": (51, 53, 59),
     "other": (58,),
+    # MIDI 44 is foot/pedal hi-hat. Keep it separate so the two-hand
+    # polyphony constraint never treats it as a hand-played hi-hat.
+    "pedal_hat": (44,),
 }
 ORDER = list(GROUPS)
-MIDI_PITCH = {"kick":36,"snare":38,"hat":42,"tom":45,"crash":49,"ride":51,"other":58}
+MIDI_PITCH = {"kick":36,"snare":38,"hat":42,"tom":45,"crash":49,"ride":51,"other":58,"pedal_hat":44}
 
 
 def variable(data, i):
