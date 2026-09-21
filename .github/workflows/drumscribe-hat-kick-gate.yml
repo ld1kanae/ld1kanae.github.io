@@ -1,0 +1,39 @@
+name: DrumScribe kick-overlap hat gate
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_hat_kick_gate.py"
+      - ".github/workflows/drumscribe-hat-kick-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install numpy scipy
+      - name: Run hat gate cycles 115 to 117
+        run: python drumscribe/experiments/iterative_search_hat_kick_gate.py
+      - name: Commit MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-hat-kick-gate drumscribe/experiments/results-iterative-hat-kick-gate.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record kick-overlap hat gate PDCA results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
