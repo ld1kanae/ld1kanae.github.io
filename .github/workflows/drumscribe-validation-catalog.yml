@@ -1,0 +1,47 @@
+name: DrumScribe validation catalog
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/results*.json"
+      - "drumscribe/experiments/build_validation_catalog.py"
+      - "drumscribe/experiments/detailed_metrics.py"
+      - ".github/workflows/drumscribe-validation-catalog.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install evaluator dependencies
+        run: pip install numpy scipy
+      - name: Build complete validation catalog
+        run: python drumscribe/experiments/build_validation_catalog.py
+      - name: Score representative winners in canonical detail
+        run: |
+          mkdir -p drumscribe/experiments/detailed
+          python drumscribe/experiments/detailed_metrics.py             --pred-dir drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_balanced             --name composite-v2-c39-crash-balanced             --out drumscribe/experiments/detailed/composite-v2-c39-crash-balanced.json
+          python drumscribe/experiments/detailed_metrics.py             --pred-dir drumscribe/experiments/generated-search-separation/cycle42/c42_snare_guard             --name separation-c42-snare-guard             --out drumscribe/experiments/detailed/separation-c42-snare-guard.json
+          python drumscribe/experiments/detailed_metrics.py             --pred-dir drumscribe/experiments/generated-search-drumsep-rate/cycle48/c48_none             --name drumsep-rate-c48-none             --out drumscribe/experiments/detailed/drumsep-rate-c48-none.json
+      - name: Commit catalog and detailed metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/validation-history.json drumscribe/experiments/component-bank.json drumscribe/experiments/detailed
+          git diff --cached --quiet && exit 0
+          git commit -m "Record canonical DrumScribe validation catalog [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval
