@@ -1,13 +1,13 @@
-// Standard MIDI file type 0: channel 10 percussion, 120 BPM, PPQ 480.
-const PPQ=480, TICKS_PER_SECOND=960;
+// Standard MIDI file type 0: channel 10 percussion, PPQ 480.
+const PPQ=480;
 const bytes32=x=>[(x>>>24)&255,(x>>>16)&255,(x>>>8)&255,x&255];
 const vlq=x=>{const out=[x&127];while(x>>=7)out.unshift((x&127)|128);return out;};
-export function midiFile(events){
-  const packets=[{tick:0,order:0,data:[255,81,3,7,161,32]}];
+export function midiFile(events,bpm=120){\n  bpm=Number.isFinite(bpm)&&bpm>=30&&bpm<=300?bpm:120;\n  const ticksPerSecond=PPQ*bpm/60,tempo=Math.round(60000000/bpm);
+  const packets=[{tick:0,order:0,data:[255,81,3,(tempo>>16)&255,(tempo>>8)&255,tempo&255]}];
   for(const e of events){
-    const tick=Math.max(0,Math.round(e.time*TICKS_PER_SECOND));
+    const tick=Math.max(0,Math.round(e.time*ticksPerSecond));
     packets.push({tick,order:2,data:[0x99,e.note,Math.max(1,Math.min(127,e.velocity||90))]});
-    packets.push({tick:tick+Math.round(.07*TICKS_PER_SECOND),order:1,data:[0x89,e.note,0]});
+    packets.push({tick:tick+Math.round(.07*ticksPerSecond),order:1,data:[0x89,e.note,0]});
   }
   packets.sort((a,b)=>a.tick-b.tick||a.order-b.order||a.data[1]-b.data[1]);
   const track=[];let prev=0;
