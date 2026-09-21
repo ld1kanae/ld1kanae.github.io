@@ -147,3 +147,5 @@ def main():
     print("FINAL",json.dumps(report["final"],ensure_ascii=False,indent=2),flush=True)
 
 if __name__=="__main__":main()
+
+# trigger-after-tom-save-1
