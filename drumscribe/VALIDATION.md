@@ -764,3 +764,17 @@ Cycle 101: 時刻一致窓 35 / 60 / 90 ms
 Cycle 102: 周期支持 0.25 / 0.50 / 0.75
 
 単一detectorのride precisionが低いため、複数系統の合意でfalse positiveを落とせるか検証する。
+
+
+## Exhaustive experiment log
+
+全候補・全cycleの実験履歴は、手作業の追記漏れを避けるため自動生成する。
+
+- Human-readable: `drumscribe/experiments/EXPERIMENT_LOG.md`
+- Machine-readable: `drumscribe/experiments/experiment-log.json`
+- Reproducibility index: `drumscribe/experiments/validation-history.json`
+- Per-part retained leaders: `drumscribe/experiments/component-bank.json`
+- Song-by-song raw metrics: each `results*.json`
+- Canonical detailed re-score: `drumscribe/experiments/detailed-history/`
+
+各cycleは最低3候補、勝者、僅差候補、全パートF1、kick→snare / snare→kick、実装script/commit、result commit、params参照を記録する。生成MIDIが残る候補は標準評価器で再採点可能とする。
