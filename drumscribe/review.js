@@ -77,6 +77,8 @@ async function refresh(){
   const version=++refreshVersion;
   stopPlayback(false);
   const song=$('song').value,candidate=candidateById($('candidate').value);
+  currentSong=song;currentCandidate=candidate;
+  $('saveReview').disabled=true;
   $('candidateDescription').textContent=candidate.description;
   $('source').src=sourceUrl(song);
   $('midiDownload').href=midiUrl(candidate,song);
@@ -85,9 +87,9 @@ async function refresh(){
   $('chartDownload').download=song+'-chart.mid';
   const result=await metricsFor(candidate);
   if(version!==refreshVersion)return;
-  currentSong=song;currentCandidate=candidate;
   renderMetrics(result,song);
   loadReview();
+  $('saveReview').disabled=false;
   $('status').textContent='準備完了。音源の好きな位置へ移動して「音源 + MIDI」を押してください。';
 }
 
