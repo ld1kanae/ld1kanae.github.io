@@ -1,0 +1,57 @@
+name: DrumScribe cymbal fusion search
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/results-iterative-neural-separation.json"
+      - "drumscribe/experiments/results-iterative-component-hybrid.json"
+      - "drumscribe/experiments/results-iterative-pattern-consensus.json"
+      - "drumscribe/experiments/iterative_search_cymbal_fusion.py"
+      - ".github/workflows/drumscribe-cymbal-fusion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - name: Check prerequisites
+        id: prereq
+        run: |
+          if [ -f drumscribe/experiments/results-iterative-neural-separation.json ] && [ -f drumscribe/experiments/results-iterative-component-hybrid.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.prereq.outputs.ready == 'true'
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        if: steps.prereq.outputs.ready == 'true'
+        run: pip install numpy scipy
+      - name: Run cymbal fusion cycles 58 to 60
+        if: steps.prereq.outputs.ready == 'true'
+        run: python drumscribe/experiments/iterative_search_cymbal_fusion.py
+      - name: Refresh validation catalog
+        if: steps.prereq.outputs.ready == 'true'
+        run: python drumscribe/experiments/build_validation_catalog.py
+      - name: Commit fusion MIDI, metrics and catalog
+        if: steps.prereq.outputs.ready == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             drumscribe/experiments/generated-search-cymbal-fusion             drumscribe/experiments/results-iterative-cymbal-fusion.json             drumscribe/experiments/validation-history.json             drumscribe/experiments/component-bank.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record neural cymbal fusion PDCA results [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval
