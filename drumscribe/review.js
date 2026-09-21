@@ -391,5 +391,10 @@ window.__drumscribeReviewDebug=()=>({
   firstEventTime:playback?.events?.[0]?.time??currentMidiInfo.first,
   nextEventTime:playback?.events?.[playback?.index??0]?.time??null,
   mediaTime:$('source')?.currentTime??0,
+  contextTime:ctx?.currentTime??0,
+  playbackIndex:playback?.index??null,
+  sourceStart:playback?.sourceStart??null,
+  contextStart:playback?.ctxStart??null,
+  timerActive:Boolean(playback?.timer),
   sourcePaused:$('source')?.paused??true
 });
