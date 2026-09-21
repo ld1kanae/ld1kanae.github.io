@@ -1,0 +1,52 @@
+name: DrumScribe pedal component search
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/results-iterative-recall-repair.json"
+      - "drumscribe/experiments/iterative_search_pedal_component.py"
+      - ".github/workflows/drumscribe-pedal-component.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - name: Check prerequisite
+        id: prereq
+        run: |
+          if [ -f drumscribe/experiments/results-iterative-recall-repair.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.prereq.outputs.ready == 'true'
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        if: steps.prereq.outputs.ready == 'true'
+        run: pip install numpy scipy
+      - name: Run pedal component cycles 64 to 66
+        if: steps.prereq.outputs.ready == 'true'
+        run: python drumscribe/experiments/iterative_search_pedal_component.py
+      - name: Commit MIDI and metrics
+        if: steps.prereq.outputs.ready == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-pedal-component drumscribe/experiments/results-iterative-pedal-component.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record pedal component PDCA results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
