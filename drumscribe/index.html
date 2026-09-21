@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>DrumScribe — ドラム音源からMIDIへ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <a class="wordmark" href="./" aria-label="DrumScribe ホーム"><span class="mark">D<span class="mark-dot">.</span></span><span>DRUM<span class="bright">SCRIBE</span></span></a>
+    <a class="history" href="VALIDATION.md">検証履歴 ↗</a>
+  </header>
+  <div class="intro"><div class="eyebrow">AUDIO → DRUM MIDI</div><h1>耳で追う前に、<br><em>叩く位置</em>を見つける。</h1><p>ドラムだけの音源を読み込み、キック・スネア・ハイハット・タム・シンバルを推定してMIDIを作ります。解析と再生はこの端末内で行います。</p></div>
+  <section class="card import" aria-labelledby="import-title">
+    <div class="section-title"><span class="number">01</span><div><h2 id="import-title">音源を選ぶ</h2><p>WAV / MP3 / M4A / OGG など、ブラウザで再生できるドラム音源</p></div></div>
+    <label class="drop" id="drop"><input type="file" id="file" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac"><span class="drop-icon">↥</span><strong id="fileName">クリックして選択、またはここにドロップ</strong><small>ファイルはサーバーに送信されません</small></label>
+    <div class="import-bottom"><label for="example">検証用データ</label><select id="example"><option value="">選択してください</option><option value="arcaround">アルクアラウンド</option><option value="diamondvirgin">ダイヤモンドヴァージン</option><option value="kaiju">怪獣</option><option value="nanairo">なないろ</option><option value="ray">Ray</option></select><button id="analyze" class="primary" disabled>自動採譜する <span>→</span></button></div>
+    <p class="status" id="status" role="status" aria-live="polite">音源を選択してください。</p><progress id="progress" max="100" value="0" hidden></progress>
+  </section>
+  <section class="card result" id="result" hidden aria-labelledby="result-title">
+    <div class="section-title"><span class="number">02</span><div><h2 id="result-title">重ねて確かめる</h2><p id="resultSummary">採譜結果</p></div><button id="download" class="download">MIDIを書き出す ↓</button></div>
+    <div class="preview"><div class="preview-head"><div><span class="led"></span><strong id="previewTitle">プレビュー</strong><small> / ドラムのみ / MIDI</small></div><span id="clock">00:00 / 00:00</span></div><canvas id="timeline" height="180" aria-label="波形と採譜したノートの時間軸。クリックで再生位置を変更"></canvas><div class="transport"><button id="play" aria-label="再生または一時停止">▶ 再生</button><button id="stop" aria-label="停止">■ 停止</button><input id="seek" type="range" min="0" max="1000" value="0" aria-label="再生位置"><label class="offset">MIDI 補正 <input id="offset" type="number" value="0" step="10" min="-2000" max="2000" aria-label="MIDI 再生タイミング補正（ミリ秒）"> ms</label></div></div>
+    <div class="mix"><div class="mix-head"><span>TRACK</span><span>VOLUME</span><span>SOLO</span><span>MUTE</span></div><div class="track" data-track="audio"><span class="track-name"><i class="audio-dot"></i> ドラム音源</span><label><input class="volume" type="range" min="0" max="150" value="100" aria-label="ドラム音源の音量"><output>100%</output></label><button class="solo" aria-pressed="false">S</button><button class="mute" aria-pressed="false">M</button></div><div class="track" data-track="midi"><span class="track-name"><i class="midi-dot"></i> MIDI <small>参考ドラム音源</small></span><label><input class="volume" type="range" min="0" max="150" value="100" aria-label="MIDIの音量"><output>100%</output></label><button class="solo" aria-pressed="false">S</button><button class="mute" aria-pressed="false">M</button></div></div>
+    <p class="hint">S = ソロ、M = ミュート。時間軸をクリックするとその位置から確認できます。MIDI補正はプレビューだけに適用され、書き出すMIDIの音符時刻は変わりません。</p>
+  </section>
+  <footer><span>DRUMSCRIBE / PROTOTYPE</span><a href="https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe">ソースと検証履歴 ↗</a></footer>
+</main>
+<script type="module" src="app.js"></script>
+</body></html>
