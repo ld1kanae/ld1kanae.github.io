@@ -1,0 +1,4880 @@
+{
+  "schema": 1,
+  "cycles": [
+    {
+      "cycle": 16,
+      "candidates": {
+        "c16_logistic": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.72,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.5,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "logistic",
+          "songs": {
+            "arcaround": {
+              "tp": 765,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.433,
+              "recall": 0.546,
+              "f1": 0.483,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 140,
+                  "predicted": 451,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 41,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 15,
+                  "predicted": 570,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.009,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 3,
+                  "tom_to_snare": 2,
+                  "tom_to_ride": 7,
+                  "tom_to_kick": 2,
+                  "kick_to_ride": 321,
+                  "kick_to_snare": 39,
+                  "kick_to_hat": 137,
+                  "crash_to_ride": 37,
+                  "hat_to_ride": 125,
+                  "hat_to_crash": 9,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 91,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 29,
+                  "snare_to_ride": 25,
+                  "kick_to_tom": 2,
+                  "snare_to_kick": 19,
+                  "snare_to_tom": 4,
+                  "crash_to_hat": 7,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 20
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "ride": 40,
+                  "hat": 46,
+                  "kick": 2,
+                  "snare": 11
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 1.174,
+                "tom": 0.75,
+                "crash": 0.526,
+                "ride": 9.828,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1804,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.649,
+              "recall": 0.755,
+              "f1": 0.698,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 556,
+                  "predicted": 1415,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 3,
+                  "predicted": 63,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.006,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 324,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 34,
+                  "snare_to_hat": 140,
+                  "hat_to_crash": 8,
+                  "hat_to_ride": 30,
+                  "crash_to_hat": 61,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 89,
+                  "kick_to_crash": 3,
+                  "snare_to_ride": 8,
+                  "kick_to_ride": 3,
+                  "crash_to_ride": 6,
+                  "hat_to_kick": 7,
+                  "tom_to_ride": 2,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 84,
+                  "ride": 11,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.864,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.406,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1002,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.73,
+              "recall": 0.558,
+              "f1": 0.632,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 392,
+                  "predicted": 752,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 3,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 19,
+                  "tom_to_hat": 8,
+                  "tom_to_ride": 1,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64,
+                  "hat_to_ride": 1,
+                  "snare_to_ride": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.247,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.007,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1306,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.697,
+              "recall": 0.65,
+              "f1": 0.673,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 755,
+                  "predicted": 1039,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 55,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 122,
+                  "crash_to_ride": 4,
+                  "crash_to_hat": 25,
+                  "hat_to_tom": 45,
+                  "hat_to_ride": 28,
+                  "snare_to_hat": 40,
+                  "snare_to_ride": 19,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "kick_to_ride": 1,
+                  "crash_to_snare": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 71,
+                  "snare": 45,
+                  "ride": 3
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.785,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1198,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.732,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 571,
+                  "predicted": 828,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 4,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 69,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3,
+                  "snare_to_ride": 2
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 105,
+                  "kick": 60,
+                  "ride": 2
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.484,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6075,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6443,
+            "recall": 0.6023,
+            "f1": 0.6226,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2414,
+                "predicted": 4485,
+                "reference": 4778,
+                "precision": 0.5382,
+                "recall": 0.5052,
+                "f1": 0.5212,
+                "count_ratio": 0.9387
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 152,
+                "reference": 390,
+                "precision": 0.5132,
+                "recall": 0.2,
+                "f1": 0.2878,
+                "count_ratio": 0.3897
+              },
+              "ride": {
+                "tp": 18,
+                "predicted": 695,
+                "reference": 644,
+                "precision": 0.0259,
+                "recall": 0.028,
+                "f1": 0.0269,
+                "count_ratio": 1.0792
+              }
+            },
+            "macro_f1": 0.423,
+            "selection_score": 0.714496
+          }
+        },
+        "c16_rf": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.72,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.5,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "rf",
+          "songs": {
+            "arcaround": {
+              "tp": 821,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.464,
+              "recall": 0.586,
+              "f1": 0.518,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 210,
+                  "predicted": 927,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 42,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 1,
+                  "predicted": 93,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 10,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "kick_to_hat": 409,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 50,
+                  "crash_to_hat": 36,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 33,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 116,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 30,
+                  "kick_to_tom": 2,
+                  "crash_to_ride": 8,
+                  "snare_to_kick": 19,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 85,
+                  "kick": 2,
+                  "snare": 11,
+                  "ride": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.414,
+                "tom": 0.75,
+                "crash": 0.538,
+                "ride": 1.603,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1814,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.653,
+              "recall": 0.759,
+              "f1": 0.702,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 569,
+                  "predicted": 1475,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 3,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.005,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 326,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 36,
+                  "snare_to_hat": 148,
+                  "hat_to_crash": 8,
+                  "crash_to_hat": 66,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "hat_to_ride": 1,
+                  "kick_to_ride": 1,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1,
+                  "crash_to_ride": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 95,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.943,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.019,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1334,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.712,
+              "recall": 0.664,
+              "f1": 0.687,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 783,
+                  "predicted": 1093,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 26,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 57,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1,
+                  "hat_to_ride": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.826,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1197,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.731,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 831,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_ride": 1,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.486,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6169,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6543,
+            "recall": 0.6116,
+            "f1": 0.6322,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2525,
+                "predicted": 5081,
+                "reference": 4778,
+                "precision": 0.4969,
+                "recall": 0.5285,
+                "f1": 0.5122,
+                "count_ratio": 1.0634
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 153,
+                "reference": 390,
+                "precision": 0.5098,
+                "recall": 0.2,
+                "f1": 0.2873,
+                "count_ratio": 0.3923
+              },
+              "ride": {
+                "tp": 1,
+                "predicted": 98,
+                "reference": 644,
+                "precision": 0.0102,
+                "recall": 0.0016,
+                "f1": 0.0027,
+                "count_ratio": 0.1522
+              }
+            },
+            "macro_f1": 0.4174,
+            "selection_score": 0.720786
+          }
+        },
+        "c16_extra": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.72,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.5,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "extra",
+          "songs": {
+            "arcaround": {
+              "tp": 811,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.459,
+              "recall": 0.579,
+              "f1": 0.512,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 199,
+                  "predicted": 884,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 40,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 2,
+                  "predicted": 138,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 10,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "kick_to_hat": 383,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 77,
+                  "crash_to_hat": 28,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 42,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 116,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 28,
+                  "kick_to_tom": 2,
+                  "crash_to_ride": 16,
+                  "snare_to_kick": 19,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 85,
+                  "kick": 2,
+                  "snare": 11,
+                  "ride": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.302,
+                "tom": 0.75,
+                "crash": 0.513,
+                "ride": 2.379,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1800,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.648,
+              "recall": 0.753,
+              "f1": 0.697,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 554,
+                  "predicted": 1441,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 1,
+                  "predicted": 37,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.006,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 319,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 35,
+                  "snare_to_hat": 148,
+                  "hat_to_crash": 8,
+                  "hat_to_ride": 16,
+                  "crash_to_hat": 64,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "kick_to_ride": 7,
+                  "crash_to_ride": 3,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1,
+                  "tom_to_ride": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 86,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1,
+                  "ride": 9
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.899,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.239,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1333,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.712,
+              "recall": 0.664,
+              "f1": 0.687,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 782,
+                  "predicted": 1092,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 2,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 26,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 57,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "hat_to_ride": 2,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.825,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1195,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.73,
+              "recall": 0.48,
+              "f1": 0.579,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 568,
+                  "predicted": 828,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 4,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_ride": 3,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "crash_to_ride": 1,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.484,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6142,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6514,
+            "recall": 0.609,
+            "f1": 0.6295,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2496,
+                "predicted": 5000,
+                "reference": 4778,
+                "precision": 0.4992,
+                "recall": 0.5224,
+                "f1": 0.5105,
+                "count_ratio": 1.0465
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 151,
+                "reference": 390,
+                "precision": 0.5166,
+                "recall": 0.2,
+                "f1": 0.2884,
+                "count_ratio": 0.3872
+              },
+              "ride": {
+                "tp": 3,
+                "predicted": 181,
+                "reference": 644,
+                "precision": 0.0166,
+                "recall": 0.0047,
+                "f1": 0.0073,
+                "count_ratio": 0.2811
+              }
+            },
+            "macro_f1": 0.4181,
+            "selection_score": 0.718761
+          }
+        }
+      },
+      "ranking": [
+        "c16_rf",
+        "c16_extra",
+        "c16_logistic"
+      ],
+      "winner": "c16_rf",
+      "carried_close": [
+        "c16_rf",
+        "c16_extra",
+        "c16_logistic"
+      ]
+    },
+    {
+      "cycle": 17,
+      "candidates": {
+        "c17_strict": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.82,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.5,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "rf",
+          "songs": {
+            "arcaround": {
+              "tp": 838,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.474,
+              "recall": 0.599,
+              "f1": 0.529,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 228,
+                  "predicted": 988,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 44,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 30,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 10,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "kick_to_hat": 439,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 19,
+                  "crash_to_hat": 41,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 8,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 116,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 32,
+                  "kick_to_tom": 2,
+                  "crash_to_ride": 3,
+                  "snare_to_kick": 19,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 86,
+                  "kick": 2,
+                  "snare": 11
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.573,
+                "tom": 0.75,
+                "crash": 0.564,
+                "ride": 0.517,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1815,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.653,
+              "recall": 0.76,
+              "f1": 0.703,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 1477,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.005,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 326,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 36,
+                  "snare_to_hat": 148,
+                  "hat_to_crash": 8,
+                  "crash_to_hat": 67,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "hat_to_ride": 1,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 95,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.946,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.006,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1335,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.713,
+              "recall": 0.665,
+              "f1": 0.688,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 784,
+                  "predicted": 1094,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 26,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 57,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.827,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1197,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.731,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 831,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_ride": 1,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.486,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6188,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6563,
+            "recall": 0.6135,
+            "f1": 0.6342,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2545,
+                "predicted": 5145,
+                "reference": 4778,
+                "precision": 0.4947,
+                "recall": 0.5326,
+                "f1": 0.5129,
+                "count_ratio": 1.0768
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 155,
+                "reference": 390,
+                "precision": 0.5032,
+                "recall": 0.2,
+                "f1": 0.2862,
+                "count_ratio": 0.3974
+              },
+              "ride": {
+                "tp": 0,
+                "predicted": 32,
+                "reference": 644,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 0.0497
+              }
+            },
+            "macro_f1": 0.4169,
+            "selection_score": 0.722331
+          }
+        },
+        "c17_balanced": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.72,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.5,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "rf",
+          "songs": {
+            "arcaround": {
+              "tp": 821,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.464,
+              "recall": 0.586,
+              "f1": 0.518,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 210,
+                  "predicted": 927,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 42,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 1,
+                  "predicted": 93,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 10,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "kick_to_hat": 409,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 50,
+                  "crash_to_hat": 36,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 33,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 116,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 30,
+                  "kick_to_tom": 2,
+                  "crash_to_ride": 8,
+                  "snare_to_kick": 19,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 85,
+                  "kick": 2,
+                  "snare": 11,
+                  "ride": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.414,
+                "tom": 0.75,
+                "crash": 0.538,
+                "ride": 1.603,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1814,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.653,
+              "recall": 0.759,
+              "f1": 0.702,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 569,
+                  "predicted": 1475,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 3,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.005,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 326,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 36,
+                  "snare_to_hat": 148,
+                  "hat_to_crash": 8,
+                  "crash_to_hat": 66,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "hat_to_ride": 1,
+                  "kick_to_ride": 1,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1,
+                  "crash_to_ride": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 95,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.943,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.019,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1334,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.712,
+              "recall": 0.664,
+              "f1": 0.687,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 783,
+                  "predicted": 1093,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 26,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 57,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1,
+                  "hat_to_ride": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.826,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1197,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.731,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 831,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_ride": 1,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.486,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6169,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6543,
+            "recall": 0.6116,
+            "f1": 0.6322,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2525,
+                "predicted": 5081,
+                "reference": 4778,
+                "precision": 0.4969,
+                "recall": 0.5285,
+                "f1": 0.5122,
+                "count_ratio": 1.0634
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 153,
+                "reference": 390,
+                "precision": 0.5098,
+                "recall": 0.2,
+                "f1": 0.2873,
+                "count_ratio": 0.3923
+              },
+              "ride": {
+                "tp": 1,
+                "predicted": 98,
+                "reference": 644,
+                "precision": 0.0102,
+                "recall": 0.0016,
+                "f1": 0.0027,
+                "count_ratio": 0.1522
+              }
+            },
+            "macro_f1": 0.4174,
+            "selection_score": 0.720786
+          }
+        },
+        "c17_recall": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.62,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.5,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "rf",
+          "songs": {
+            "arcaround": {
+              "tp": 809,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.458,
+              "recall": 0.578,
+              "f1": 0.511,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 198,
+                  "predicted": 857,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 42,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 1,
+                  "predicted": 163,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 9,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "tom_to_ride": 1,
+                  "kick_to_hat": 366,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 93,
+                  "crash_to_hat": 27,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 49,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 115,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 30,
+                  "kick_to_tom": 2,
+                  "crash_to_ride": 17,
+                  "snare_to_ride": 1,
+                  "snare_to_kick": 19,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 85,
+                  "kick": 2,
+                  "snare": 11,
+                  "ride": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.232,
+                "tom": 0.75,
+                "crash": 0.538,
+                "ride": 2.81,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1801,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.648,
+              "recall": 0.754,
+              "f1": 0.697,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 555,
+                  "predicted": 1451,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 1,
+                  "predicted": 27,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.006,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 322,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 36,
+                  "snare_to_hat": 147,
+                  "hat_to_crash": 8,
+                  "hat_to_ride": 16,
+                  "crash_to_hat": 62,
+                  "tom_to_kick": 2,
+                  "crash_to_ride": 5,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "snare_to_ride": 1,
+                  "kick_to_ride": 4,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 95,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.912,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.174,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1327,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.708,
+              "recall": 0.661,
+              "f1": 0.684,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 776,
+                  "predicted": 1084,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 10,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 25,
+                  "crash_to_ride": 1,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 56,
+                  "hat_to_crash": 4,
+                  "hat_to_ride": 8,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1,
+                  "snare_to_ride": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.819,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1197,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.731,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 831,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_ride": 1,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.486,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6137,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6509,
+            "recall": 0.6085,
+            "f1": 0.629,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2492,
+                "predicted": 4978,
+                "reference": 4778,
+                "precision": 0.5006,
+                "recall": 0.5216,
+                "f1": 0.5109,
+                "count_ratio": 1.0419
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 153,
+                "reference": 390,
+                "precision": 0.5098,
+                "recall": 0.2,
+                "f1": 0.2873,
+                "count_ratio": 0.3923
+              },
+              "ride": {
+                "tp": 2,
+                "predicted": 201,
+                "reference": 644,
+                "precision": 0.01,
+                "recall": 0.0031,
+                "f1": 0.0047,
+                "count_ratio": 0.3121
+              }
+            },
+            "macro_f1": 0.4175,
+            "selection_score": 0.717801
+          }
+        }
+      },
+      "ranking": [
+        "c17_strict",
+        "c17_balanced",
+        "c17_recall"
+      ],
+      "winner": "c17_strict",
+      "carried_close": [
+        "c17_strict",
+        "c17_balanced",
+        "c17_recall"
+      ]
+    },
+    {
+      "cycle": 18,
+      "candidates": {
+        "c18_periodic_strict": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.82,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.7,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "rf",
+          "songs": {
+            "arcaround": {
+              "tp": 839,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.475,
+              "recall": 0.599,
+              "f1": 0.53,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 229,
+                  "predicted": 993,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 44,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 25,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 10,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "kick_to_hat": 442,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 16,
+                  "crash_to_hat": 42,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 7,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 116,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 32,
+                  "kick_to_tom": 2,
+                  "snare_to_kick": 19,
+                  "crash_to_ride": 2,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 86,
+                  "kick": 2,
+                  "snare": 11
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.586,
+                "tom": 0.75,
+                "crash": 0.564,
+                "ride": 0.431,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1815,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.653,
+              "recall": 0.76,
+              "f1": 0.703,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 1478,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.005,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 326,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 36,
+                  "snare_to_hat": 148,
+                  "hat_to_crash": 8,
+                  "crash_to_hat": 67,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 95,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.947,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1335,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.713,
+              "recall": 0.665,
+              "f1": 0.688,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 784,
+                  "predicted": 1094,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 26,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 57,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.827,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1198,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.732,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 571,
+                  "predicted": 832,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.487,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6190,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6565,
+            "recall": 0.6137,
+            "f1": 0.6344,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2547,
+                "predicted": 5152,
+                "reference": 4778,
+                "precision": 0.4944,
+                "recall": 0.5331,
+                "f1": 0.513,
+                "count_ratio": 1.0783
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 155,
+                "reference": 390,
+                "precision": 0.5032,
+                "recall": 0.2,
+                "f1": 0.2862,
+                "count_ratio": 0.3974
+              },
+              "ride": {
+                "tp": 0,
+                "predicted": 25,
+                "reference": 644,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 0.0388
+              }
+            },
+            "macro_f1": 0.4169,
+            "selection_score": 0.722531
+          }
+        },
+        "c18_periodic_medium": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.82,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.5,
+            "hr_add_missing": false,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "rf",
+          "songs": {
+            "arcaround": {
+              "tp": 838,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.474,
+              "recall": 0.599,
+              "f1": 0.529,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 228,
+                  "predicted": 988,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 44,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 30,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 10,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "kick_to_hat": 439,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 19,
+                  "crash_to_hat": 41,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 8,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 116,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 32,
+                  "kick_to_tom": 2,
+                  "crash_to_ride": 3,
+                  "snare_to_kick": 19,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 86,
+                  "kick": 2,
+                  "snare": 11
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.573,
+                "tom": 0.75,
+                "crash": 0.564,
+                "ride": 0.517,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1815,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.653,
+              "recall": 0.76,
+              "f1": 0.703,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 1477,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.005,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 326,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 36,
+                  "snare_to_hat": 148,
+                  "hat_to_crash": 8,
+                  "crash_to_hat": 67,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "hat_to_ride": 1,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 95,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.946,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.006,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1335,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.713,
+              "recall": 0.665,
+              "f1": 0.688,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 784,
+                  "predicted": 1094,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 26,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 57,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.827,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1197,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.731,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 831,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 1,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_ride": 1,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.486,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6188,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6563,
+            "recall": 0.6135,
+            "f1": 0.6342,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2545,
+                "predicted": 5145,
+                "reference": 4778,
+                "precision": 0.4947,
+                "recall": 0.5326,
+                "f1": 0.5129,
+                "count_ratio": 1.0768
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 155,
+                "reference": 390,
+                "precision": 0.5032,
+                "recall": 0.2,
+                "f1": 0.2862,
+                "count_ratio": 0.3974
+              },
+              "ride": {
+                "tp": 0,
+                "predicted": 32,
+                "reference": 644,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 0.0497
+              }
+            },
+            "macro_f1": 0.4169,
+            "selection_score": 0.722331
+          }
+        },
+        "c18_add_strong": {
+          "params": {
+            "ks_window": 0.04,
+            "layer_k": 0.52,
+            "layer_s": 0.56,
+            "layer_ratio_lo": 0.72,
+            "layer_ratio_hi": 1.38,
+            "snare_ratio": 1.65,
+            "snare_sim": 0.42,
+            "snare_margin": 0.22,
+            "snare_ratio2": 1.15,
+            "crash_window_beats": 0.15,
+            "crash_prefer_beats": 0.045,
+            "crash_score": 1.1,
+            "crash_sim": 0.34,
+            "ride_periodic": 0.8,
+            "ride_high_ratio": 0.6,
+            "ride_score": 1.0,
+            "ride_sim": 0.36,
+            "ride_vs_hat": 1.08,
+            "poly_window": 0.033,
+            "phase_mode": "all",
+            "ride_stream": "none",
+            "ride_stream_threshold": 0.3,
+            "ride_stream_sim": 0.32,
+            "ride_stream_vs_hat": 1.06,
+            "ride_direct_periodic": 0.65,
+            "crash_prob": 0.6,
+            "ride_prob": 0.62,
+            "ride_prob_floor": 0.3,
+            "ride_periodic_ml": 0.55,
+            "ride_vs_crash": 1.02,
+            "hr_prob": 0.82,
+            "hr_floor": 0.4,
+            "hr_periodic": 0.6,
+            "hr_add_missing": true,
+            "hr_add_prob": 0.88
+          },
+          "hatride_family": "rf",
+          "songs": {
+            "arcaround": {
+              "tp": 839,
+              "predicted": 1768,
+              "reference": 1400,
+              "precision": 0.475,
+              "recall": 0.599,
+              "f1": 0.53,
+              "by_group": {
+                "kick": {
+                  "tp": 498,
+                  "predicted": 533,
+                  "reference": 576
+                },
+                "snare": {
+                  "tp": 109,
+                  "predicted": 164,
+                  "reference": 292
+                },
+                "hat": {
+                  "tp": 229,
+                  "predicted": 993,
+                  "reference": 384
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 9,
+                  "reference": 12
+                },
+                "crash": {
+                  "tp": 3,
+                  "predicted": 44,
+                  "reference": 78
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 25,
+                  "reference": 58
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.01,
+              "confusion": {
+                "class_errors": {
+                  "tom_to_hat": 10,
+                  "tom_to_snare": 2,
+                  "tom_to_kick": 2,
+                  "kick_to_hat": 442,
+                  "kick_to_snare": 39,
+                  "kick_to_ride": 16,
+                  "crash_to_hat": 42,
+                  "hat_to_crash": 9,
+                  "hat_to_ride": 7,
+                  "hat_to_tom": 3,
+                  "snare_to_hat": 116,
+                  "hat_to_kick": 10,
+                  "hat_to_snare": 3,
+                  "kick_to_crash": 32,
+                  "kick_to_tom": 2,
+                  "snare_to_kick": 19,
+                  "crash_to_ride": 2,
+                  "snare_to_tom": 4,
+                  "crash_to_kick": 2,
+                  "ride_to_hat": 32
+                },
+                "kick_to_snare": 39,
+                "snare_to_kick": 19,
+                "unmatched_predicted": {
+                  "hat": 86,
+                  "kick": 2,
+                  "snare": 11
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.925,
+                "snare": 0.562,
+                "hat": 2.586,
+                "tom": 0.75,
+                "crash": 0.564,
+                "ride": 0.431,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.9752
+            },
+            "diamondvirgin": {
+              "tp": 1815,
+              "predicted": 2778,
+              "reference": 2389,
+              "precision": 0.653,
+              "recall": 0.76,
+              "f1": 0.703,
+              "by_group": {
+                "kick": {
+                  "tp": 692,
+                  "predicted": 718,
+                  "reference": 740
+                },
+                "snare": {
+                  "tp": 549,
+                  "predicted": 565,
+                  "reference": 608
+                },
+                "hat": {
+                  "tp": 570,
+                  "predicted": 1478,
+                  "reference": 759
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 57
+                },
+                "crash": {
+                  "tp": 4,
+                  "predicted": 17,
+                  "reference": 70
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 155
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.005,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 326,
+                  "tom_to_snare": 10,
+                  "tom_to_hat": 36,
+                  "snare_to_hat": 148,
+                  "hat_to_crash": 8,
+                  "crash_to_hat": 67,
+                  "tom_to_kick": 2,
+                  "ride_to_hat": 92,
+                  "kick_to_crash": 3,
+                  "hat_to_kick": 7,
+                  "crash_to_kick": 1,
+                  "kick_to_snare": 2,
+                  "ride_to_kick": 1,
+                  "snare_to_kick": 1,
+                  "hat_to_snare": 1
+                },
+                "kick_to_snare": 2,
+                "snare_to_kick": 1,
+                "unmatched_predicted": {
+                  "hat": 95,
+                  "kick": 13,
+                  "snare": 2,
+                  "crash": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 0.97,
+                "snare": 0.929,
+                "hat": 1.947,
+                "tom": 0.0,
+                "crash": 0.243,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 1.0468
+            },
+            "kaiju": {
+              "tp": 1003,
+              "predicted": 1373,
+              "reference": 1797,
+              "precision": 0.731,
+              "recall": 0.558,
+              "f1": 0.633,
+              "by_group": {
+                "kick": {
+                  "tp": 387,
+                  "predicted": 390,
+                  "reference": 390
+                },
+                "snare": {
+                  "tp": 196,
+                  "predicted": 197,
+                  "reference": 205
+                },
+                "hat": {
+                  "tp": 393,
+                  "predicted": 755,
+                  "reference": 603
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 23
+                },
+                "crash": {
+                  "tp": 27,
+                  "predicted": 31,
+                  "reference": 145
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 431
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.003,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 155,
+                  "hat_to_kick": 3,
+                  "snare_to_hat": 20,
+                  "tom_to_hat": 9,
+                  "ride_to_hat": 77,
+                  "kick_to_hat": 64
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "hat": 30,
+                  "snare": 1
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.0,
+                "snare": 0.961,
+                "hat": 1.252,
+                "tom": 0.0,
+                "crash": 0.214,
+                "ride": 0.0,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.2328
+            },
+            "nanairo": {
+              "tp": 1335,
+              "predicted": 1873,
+              "reference": 2009,
+              "precision": 0.713,
+              "recall": 0.665,
+              "f1": 0.688,
+              "by_group": {
+                "kick": {
+                  "tp": 484,
+                  "predicted": 600,
+                  "reference": 486
+                },
+                "snare": {
+                  "tp": 56,
+                  "predicted": 102,
+                  "reference": 155
+                },
+                "hat": {
+                  "tp": 784,
+                  "predicted": 1094,
+                  "reference": 1323
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 62,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 11,
+                  "predicted": 15,
+                  "reference": 45
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": 0.011,
+              "confusion": {
+                "class_errors": {
+                  "kick_to_hat": 123,
+                  "crash_to_hat": 26,
+                  "hat_to_tom": 45,
+                  "snare_to_hat": 57,
+                  "hat_to_crash": 4,
+                  "hat_to_kick": 61,
+                  "kick_to_tom": 13,
+                  "crash_to_tom": 1,
+                  "snare_to_tom": 3,
+                  "crash_to_snare": 1
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 0,
+                "unmatched_predicted": {
+                  "kick": 10,
+                  "hat": 74,
+                  "snare": 45
+                },
+                "kick_snare_double_supported": 0,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.235,
+                "snare": 0.658,
+                "hat": 0.827,
+                "tom": null,
+                "crash": 0.333,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.0448
+            },
+            "ray": {
+              "tp": 1198,
+              "predicted": 1637,
+              "reference": 2491,
+              "precision": 0.732,
+              "recall": 0.481,
+              "f1": 0.58,
+              "by_group": {
+                "kick": {
+                  "tp": 501,
+                  "predicted": 568,
+                  "reference": 520
+                },
+                "snare": {
+                  "tp": 93,
+                  "predicted": 93,
+                  "reference": 210
+                },
+                "hat": {
+                  "tp": 571,
+                  "predicted": 832,
+                  "reference": 1709
+                },
+                "tom": {
+                  "tp": 0,
+                  "predicted": 96,
+                  "reference": 0
+                },
+                "crash": {
+                  "tp": 33,
+                  "predicted": 48,
+                  "reference": 52
+                },
+                "ride": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                },
+                "other": {
+                  "tp": 0,
+                  "predicted": 0,
+                  "reference": 0
+                }
+              },
+              "median_error": -0.007,
+              "confusion": {
+                "class_errors": {
+                  "crash_to_hat": 27,
+                  "kick_to_hat": 28,
+                  "kick_to_tom": 21,
+                  "hat_to_tom": 72,
+                  "snare_to_hat": 71,
+                  "snare_to_kick": 7,
+                  "snare_to_tom": 3
+                },
+                "kick_to_snare": 0,
+                "snare_to_kick": 7,
+                "unmatched_predicted": {
+                  "hat": 107,
+                  "kick": 60
+                },
+                "kick_snare_double_supported": 4,
+                "kick_snare_double_unsupported": 0
+              },
+              "count_ratio": {
+                "kick": 1.092,
+                "snare": 0.443,
+                "hat": 0.487,
+                "tom": null,
+                "crash": 0.923,
+                "ride": null,
+                "other": null
+              },
+              "two_limb_violations": 0,
+              "phase_error_vs_midi_bar_beats": 0.064
+            }
+          },
+          "summary": {
+            "tp": 6190,
+            "predicted": 9429,
+            "reference": 10086,
+            "precision": 0.6565,
+            "recall": 0.6137,
+            "f1": 0.6344,
+            "kick_to_snare": 41,
+            "snare_to_kick": 27,
+            "two_limb_violations": 0,
+            "by_group": {
+              "kick": {
+                "tp": 2562,
+                "predicted": 2809,
+                "reference": 2712,
+                "precision": 0.9121,
+                "recall": 0.9447,
+                "f1": 0.9281,
+                "count_ratio": 1.0358
+              },
+              "snare": {
+                "tp": 1003,
+                "predicted": 1121,
+                "reference": 1470,
+                "precision": 0.8947,
+                "recall": 0.6823,
+                "f1": 0.7742,
+                "count_ratio": 0.7626
+              },
+              "hat": {
+                "tp": 2547,
+                "predicted": 5152,
+                "reference": 4778,
+                "precision": 0.4944,
+                "recall": 0.5331,
+                "f1": 0.513,
+                "count_ratio": 1.0783
+              },
+              "tom": {
+                "tp": 0,
+                "predicted": 167,
+                "reference": 92,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 1.8152
+              },
+              "crash": {
+                "tp": 78,
+                "predicted": 155,
+                "reference": 390,
+                "precision": 0.5032,
+                "recall": 0.2,
+                "f1": 0.2862,
+                "count_ratio": 0.3974
+              },
+              "ride": {
+                "tp": 0,
+                "predicted": 25,
+                "reference": 644,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "count_ratio": 0.0388
+              }
+            },
+            "macro_f1": 0.4169,
+            "selection_score": 0.722531
+          }
+        }
+      },
+      "ranking": [
+        "c18_periodic_strict",
+        "c18_add_strong",
+        "c18_periodic_medium"
+      ],
+      "winner": "c18_periodic_strict",
+      "carried_close": [
+        "c18_periodic_strict",
+        "c18_add_strong",
+        "c18_periodic_medium"
+      ]
+    }
+  ],
+  "final": {
+    "winner": "c18_periodic_strict",
+    "hatride_family": "rf",
+    "summary": {
+      "tp": 6190,
+      "predicted": 9429,
+      "reference": 10086,
+      "precision": 0.6565,
+      "recall": 0.6137,
+      "f1": 0.6344,
+      "kick_to_snare": 41,
+      "snare_to_kick": 27,
+      "two_limb_violations": 0,
+      "by_group": {
+        "kick": {
+          "tp": 2562,
+          "predicted": 2809,
+          "reference": 2712,
+          "precision": 0.9121,
+          "recall": 0.9447,
+          "f1": 0.9281,
+          "count_ratio": 1.0358
+        },
+        "snare": {
+          "tp": 1003,
+          "predicted": 1121,
+          "reference": 1470,
+          "precision": 0.8947,
+          "recall": 0.6823,
+          "f1": 0.7742,
+          "count_ratio": 0.7626
+        },
+        "hat": {
+          "tp": 2547,
+          "predicted": 5152,
+          "reference": 4778,
+          "precision": 0.4944,
+          "recall": 0.5331,
+          "f1": 0.513,
+          "count_ratio": 1.0783
+        },
+        "tom": {
+          "tp": 0,
+          "predicted": 167,
+          "reference": 92,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "count_ratio": 1.8152
+        },
+        "crash": {
+          "tp": 78,
+          "predicted": 155,
+          "reference": 390,
+          "precision": 0.5032,
+          "recall": 0.2,
+          "f1": 0.2862,
+          "count_ratio": 0.3974
+        },
+        "ride": {
+          "tp": 0,
+          "predicted": 25,
+          "reference": 644,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "count_ratio": 0.0388
+        }
+      },
+      "macro_f1": 0.4169,
+      "selection_score": 0.722531
+    },
+    "params": {
+      "ks_window": 0.04,
+      "layer_k": 0.52,
+      "layer_s": 0.56,
+      "layer_ratio_lo": 0.72,
+      "layer_ratio_hi": 1.38,
+      "snare_ratio": 1.65,
+      "snare_sim": 0.42,
+      "snare_margin": 0.22,
+      "snare_ratio2": 1.15,
+      "crash_window_beats": 0.15,
+      "crash_prefer_beats": 0.045,
+      "crash_score": 1.1,
+      "crash_sim": 0.34,
+      "ride_periodic": 0.8,
+      "ride_high_ratio": 0.6,
+      "ride_score": 1.0,
+      "ride_sim": 0.36,
+      "ride_vs_hat": 1.08,
+      "poly_window": 0.033,
+      "phase_mode": "all",
+      "ride_stream": "none",
+      "ride_stream_threshold": 0.3,
+      "ride_stream_sim": 0.32,
+      "ride_stream_vs_hat": 1.06,
+      "ride_direct_periodic": 0.65,
+      "crash_prob": 0.6,
+      "ride_prob": 0.62,
+      "ride_prob_floor": 0.3,
+      "ride_periodic_ml": 0.55,
+      "ride_vs_crash": 1.02,
+      "hr_prob": 0.82,
+      "hr_floor": 0.4,
+      "hr_periodic": 0.7,
+      "hr_add_missing": false,
+      "hr_add_prob": 0.88
+    }
+  }
+}
