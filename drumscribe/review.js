@@ -362,6 +362,13 @@ function resyncPlaybackClock(){
   playback.lastPos=t;
   playback.index=lowerBound(playback.events,t-.02);
 }
+async function playFromFirstMidi(){
+  if(currentMidiInfo.first==null)throw Error('MIDI打点がありません');
+  stopPlayback(true);
+  const src=$('source');
+  src.currentTime=Math.max(0,currentMidiInfo.first-.25);
+  await startPlayback();
+}
 function stopPlayback(pauseSource=true){
   if(!playback){if(pauseSource)$('source').pause();return}
   clearInterval(playback.timer);
@@ -373,7 +380,7 @@ function stopPlayback(pauseSource=true){
 
 $('song').addEventListener('change',refresh);
 $('candidate').addEventListener('change',refresh);
-$('syncPlay').addEventListener('click',()=>startPlayback().catch(e=>$('status').textContent='再生エラー: '+e.message));
+$('syncPlay').addEventListener('click',()=>startPlayback().catch(e=>$('status').textContent='再生エラー: '+e.message));\n$('jumpMidi').addEventListener('click',()=>playFromFirstMidi().catch(e=>$('status').textContent='再生エラー: '+e.message));
 $('stop').addEventListener('click',()=>stopPlayback(true));
 $('saveReview').addEventListener('click',saveReview);
 $('clearReview').addEventListener('click',clearReview);
