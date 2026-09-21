@@ -1,0 +1,44 @@
+name: DrumScribe experiment log
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/results*.json"
+      - "drumscribe/experiments/validation-history.json"
+      - "drumscribe/experiments/component-bank.json"
+      - "drumscribe/experiments/build_experiment_log.py"
+      - ".github/workflows/drumscribe-experiment-log.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rebuild validation catalog
+        run: python drumscribe/experiments/build_validation_catalog.py
+      - name: Build exhaustive experiment log
+        run: python drumscribe/experiments/build_experiment_log.py
+      - name: Commit experiment log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          python drumscribe/experiments/build_validation_catalog.py
+          python drumscribe/experiments/build_experiment_log.py
+          git add             drumscribe/experiments/validation-history.json             drumscribe/experiments/component-bank.json             drumscribe/experiments/EXPERIMENT_LOG.md             drumscribe/experiments/experiment-log.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Refresh exhaustive DrumScribe experiment log [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
