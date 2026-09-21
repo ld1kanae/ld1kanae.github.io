@@ -3,7 +3,7 @@ const STORE='drumscribe-review-v1';
 const SAMPLE_ROOT='../DruMaster/assets/drums/';
 let manifest,currentCandidate,currentSong,metricCache=new Map(),midiCache=new Map(),sampleCache=new Map();
 let ctx,gainNode,playback=null,refreshVersion=0;
-let playbackStats={loaded:0,failed:0,scheduled:0};
+let playbackStats={loaded:0,failed:0,scheduled:0,song:null,candidate:null};
 
 function readStore(){
   try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch{return {}}
@@ -287,7 +287,7 @@ async function startPlayback(){
   const c=await audioContext();
   await sourcePlay;
 
-  playbackStats={loaded:0,failed:0,scheduled:0};
+  playbackStats={loaded:0,failed:0,scheduled:0,song:currentSong,candidate:currentCandidate.id};
   $('status').textContent='MIDI音源を読み込み中…';
 
   const events=await midiEvents();
@@ -379,5 +379,7 @@ window.__drumscribeReviewDebug=()=>({
   loadedSamples:playbackStats.loaded,
   failedSamples:playbackStats.failed,
   scheduledNotes:playbackStats.scheduled,
+  song:playbackStats.song,
+  candidate:playbackStats.candidate,
   sourcePaused:$('source')?.paused??true
 });
