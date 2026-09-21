@@ -60,7 +60,7 @@ await page.locator('#stop').click();
 await page.selectOption('#song','kaiju');
 await page.waitForFunction(()=>document.querySelector('#song')?.value==='kaiju'&&!document.querySelector('#syncPlay')?.disabled);
 await page.waitForFunction(()=>document.querySelector('#source')?.dataset?.song==='kaiju'&&document.querySelector('#source')?.readyState>=2);
-await page.locator('#syncPlay').click();
+await page.locator('#jumpMidi').click();
 await page.waitForFunction(()=>{
   const d=window.__drumscribeReviewDebug?.();
   return d&&d.contextState==='running'&&d.loadedSamples>0&&!d.sourcePaused&&d.song==='kaiju'&&d.candidate==='v2-balanced';
