@@ -1,0 +1,39 @@
+name: DrumScribe hat fusion search
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_hat_fusion.py"
+      - ".github/workflows/drumscribe-hat-fusion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install numpy scipy
+      - name: Run hat-fusion cycles 67 to 69
+        run: python drumscribe/experiments/iterative_search_hat_fusion.py
+      - name: Commit MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-hat-fusion drumscribe/experiments/results-iterative-hat-fusion.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record hat fusion PDCA results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
