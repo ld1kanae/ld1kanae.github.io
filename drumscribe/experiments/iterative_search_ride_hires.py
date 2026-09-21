@@ -10,9 +10,9 @@ For each held-out song:
   - convert only existing hat hits inside predicted ride sections to ride
 Then write real MIDI and score against chart.mid.
 
-Cycle 82: 2 / 4 / 8 beat sections
-Cycle 83: logistic / random forest / extra trees
-Cycle 84: strict / balanced / recall thresholds
+Cycle 85: 2 / 4 / 8 beat sections
+Cycle 86: logistic / random forest / extra trees
+Cycle 87: strict / balanced / recall thresholds
 """
 from __future__ import annotations
 import importlib.util, json, math, subprocess
@@ -218,21 +218,21 @@ def main():
     data={s:load_song(s) for s in SONGS};root=EXP/"generated-search-ride-hires";report={"schema":1,"cycles":[]}
     res={}
     for beats in (2,4,8):
-        name=f"c82_{beats}beat";res[name]=evaluate(name,data,beats,"extra",.65,2,root/"cycle82");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+        name=f"c85_{beats}beat";res[name]=evaluate(name,data,beats,"extra",.65,2,root/"cycle85");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0];best=res[win]
-    report["cycles"].append({"cycle":82,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":85,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
 
     res={}
     for fam in ("logistic","rf","extra"):
-        name=f"c83_{fam}";res[name]=evaluate(name,data,best["beats"],fam,best["threshold"],best["run_need"],root/"cycle83");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+        name=f"c86_{fam}";res[name]=evaluate(name,data,best["beats"],fam,best["threshold"],best["run_need"],root/"cycle86");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0];best=res[win]
-    report["cycles"].append({"cycle":83,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":86,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
 
     res={}
-    for name,thr,run in [("c84_strict",.78,2),("c84_balanced",.64,2),("c84_recall",.52,1)]:
-        res[name]=evaluate(name,data,best["beats"],best["family"],thr,run,root/"cycle84");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+    for name,thr,run in [("c87_strict",.78,2),("c87_balanced",.64,2),("c87_recall",.52,1)]:
+        res[name]=evaluate(name,data,best["beats"],best["family"],thr,run,root/"cycle87");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0]
-    report["cycles"].append({"cycle":84,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":87,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
     report["final"]={"winner":win,"summary":res[win]["summary"],"beats":res[win]["beats"],"family":res[win]["family"],"threshold":res[win]["threshold"],"run_need":res[win]["run_need"],"detailed":res[win]["detailed"]}
     (EXP/"results-iterative-ride-hires.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     print("FINAL",json.dumps(report["final"],ensure_ascii=False,indent=2),flush=True)
