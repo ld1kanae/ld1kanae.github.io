@@ -12,6 +12,7 @@ if(candidateCount<3)throw new Error('candidate options missing: '+candidateCount
 
 await page.selectOption('#song','nanairo');
 await page.selectOption('#candidate','crash-ml');
+await page.waitForFunction(()=>document.querySelector('#candidate')?.value==='crash-ml'&&!document.querySelector('#saveReview')?.disabled);
 await page.waitForFunction(()=>document.querySelectorAll('#metricCards .metric').length>=10);
 
 const midiHref=await page.locator('#midiDownload').getAttribute('href');
@@ -28,6 +29,8 @@ await page.locator('#saveReview').click();
 await page.reload({waitUntil:'networkidle'});
 await page.selectOption('#song','nanairo');
 await page.selectOption('#candidate','crash-ml');
+await page.waitForFunction(()=>document.querySelector('#candidate')?.value==='crash-ml'&&!document.querySelector('#saveReview')?.disabled);
+await page.waitForFunction(()=>document.querySelector('#notes')?.value==='review-smoke-note');
 if(await page.locator('#notes').inputValue()!=='review-smoke-note')throw new Error('review did not persist');
 if(await page.locator('#overall').inputValue()!=='5')throw new Error('rating did not persist');
 
