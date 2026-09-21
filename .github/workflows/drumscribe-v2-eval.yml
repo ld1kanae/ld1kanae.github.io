@@ -6,14 +6,14 @@ on:
       - drumscribe-v2-eval
     paths:
       - "drumscribe/experiments/evaluate_v2.py"
-      - "drumscribe/experiments/evaluate_ml_cv.py"
+      - "drumscribe/experiments/evaluate_ml.py"
       - ".github/workflows/drumscribe-v2-eval.yml"
   pull_request:
     branches:
       - main
     paths:
       - "drumscribe/experiments/evaluate_v2.py"
-      - "drumscribe/experiments/evaluate_ml_cv.py"
+      - "drumscribe/experiments/evaluate_ml.py"
       - ".github/workflows/drumscribe-v2-eval.yml"
   workflow_dispatch:
 
@@ -36,16 +36,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
           python -m pip install --upgrade pip
-          pip install numpy scipy scikit-learn
-      - name: Run formal round 4 ML cross-validation
+          pip install numpy scipy
+      - name: Run leave-one-song-out learning experiment
         run: |
-          python drumscribe/experiments/evaluate_ml_cv.py
+          python drumscribe/experiments/evaluate_ml.py \
+            --repo-root . \
+            --output drumscribe/experiments/results-ml-loo.json
       - name: Commit evaluation results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add drumscribe/experiments/results-v2-round4-ml.json
+          git add drumscribe/experiments/results-ml-loo.json
           git diff --cached --quiet && exit 0
-          git commit -m "Record DrumScribe v2 round 4 ML results [skip ci]"
+          git commit -m "Record DrumScribe ML leave-one-out results [skip ci]"
           git pull --rebase origin drumscribe-v2-eval
           git push origin HEAD:drumscribe-v2-eval
