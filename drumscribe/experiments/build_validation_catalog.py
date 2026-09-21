@@ -28,6 +28,8 @@ def guess_script(result_path):
     mapping=[
       ("results-iterative-snare-veto.json","iterative_search_snare_veto.py"),
       ("results-iterative-best-fusion.json","iterative_search_best_fusion.py"),
+      ("results-iterative-crossstem-hat.json","iterative_search_crossstem_hat.py"),
+      ("results-iterative-crash-fallback.json","iterative_search_crash_fallback.py"),
       ("results-iterative-fusion-v2.json","iterative_search_fusion_v2.py"),
       ("results-iterative-pedal-repair.json","iterative_search_pedal_repair.py"),
       ("results-iterative-hat-fusion.json","iterative_search_hat_fusion.py"),
