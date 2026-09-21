@@ -20,6 +20,30 @@ GROUPS = {
 }
 ORDER=list(GROUPS)
 
+PITCH_OUT={"kick":36,"snare":38,"hat":42,"tom":45,"crash":49,"ride":51}
+
+def vlq_out(n):
+    out=[n&127]
+    while n>>7:
+        n>>=7;out.insert(0,(n&127)|128)
+    return bytes(out)
+
+def write_pred_midi(path,pred,bpm):
+    ppq=480;tps=ppq*bpm/60;tempo=round(60_000_000/bpm)
+    packets=[(0,0,bytes([255,81,3,(tempo>>16)&255,(tempo>>8)&255,tempo&255]))]
+    for t,g,*rest in pred:
+        pitch=PITCH_OUT[g];tick=max(0,round(t*tps))
+        score=float(rest[0]) if rest else .7
+        vel=max(1,min(127,round(60+60*max(0,min(1,score)))))
+        packets += [(tick,2,bytes([0x99,pitch,vel])),(tick+max(1,round(.06*tps)),1,bytes([0x89,pitch,0]))]
+    packets.sort(key=lambda x:(x[0],x[1],x[2][1] if len(x[2])>1 else 0))
+    body=bytearray();prev=0
+    for tick,_,data in packets:
+        body+=vlq_out(tick-prev)+data;prev=tick
+    body+=bytes([0,255,47,0]);path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
+    path.write_bytes(b"MThd"+(6).to_bytes(4,"big")+bytes([0,0,0,1,1,224])+b"MTrk"+len(body).to_bytes(4,"big")+body)
+
+
 def varlen(data,i):
     v=0
     while True:
@@ -226,6 +250,7 @@ def main():
     total=Counter()
     for held in SONGS:
         pred,_,_=predict_fold([data[s] for s in SONGS if s!=held],data[held])
+        write_pred_midi(Path("drumscribe/experiments/generated-round4-ml")/f"{held}.mid",pred,float(data[held]["meta"]["bpm"]))
         sc=score(pred,data[held]["truth"],data[held]["shift"]);cf=confusion(pred,data[held]["truth"],data[held]["shift"]);sc["confusion"]=cf
         out["songs"][held]=sc
         total.update(tp=sc["tp"],predicted=sc["predicted"],reference=sc["reference"],kick_to_snare=cf["kick_to_snare"],snare_to_kick=cf["snare_to_kick"])
