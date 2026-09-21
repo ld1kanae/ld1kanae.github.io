@@ -85,9 +85,8 @@ await page.selectOption('#song','nanairo');
 await page.selectOption('#candidate','v2-balanced');
 await page.waitForFunction(()=>document.querySelector('#candidate')?.value==='v2-balanced'&&!document.querySelector('#saveReview')?.disabled);
 
-await page.locator('#overall').fill('5');
+await page.locator('input[name="verdict"][value="zero"]').check();
 await page.locator('#notes').fill('review-smoke-note');
-await page.locator('#tags input').first().check();
 await page.locator('#saveReview').click();
 await page.reload({waitUntil:'networkidle'});
 await page.selectOption('#song','nanairo');
@@ -95,7 +94,7 @@ await page.selectOption('#candidate','v2-balanced');
 await page.waitForFunction(()=>document.querySelector('#candidate')?.value==='v2-balanced'&&!document.querySelector('#saveReview')?.disabled);
 await page.waitForFunction(()=>document.querySelector('#notes')?.value==='review-smoke-note');
 if(await page.locator('#notes').inputValue()!=='review-smoke-note')throw new Error('review did not persist');
-if(await page.locator('#overall').inputValue()!=='5')throw new Error('rating did not persist');
+if(!await page.locator('input[name="verdict"][value="zero"]').isChecked())throw new Error('binary verdict did not persist');
 
 console.log('review smoke OK',{songCount,candidateCount,midiBytes:bytes.length,playbackDebug,switchPlaybackDebug,candidateSwitchDebug});
 await browser.close();
