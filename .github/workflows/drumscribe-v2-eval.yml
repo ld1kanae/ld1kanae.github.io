@@ -45,4 +45,5 @@ jobs:
           git add drumscribe/experiments/results-v2-round1.json
           git diff --cached --quiet && exit 0
           git commit -m "Record DrumScribe v2 round 1 results [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
           git push origin HEAD:drumscribe-v2-eval
