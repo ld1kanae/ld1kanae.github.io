@@ -29,7 +29,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg libsndfile1
           python -m pip install --upgrade pip
-          pip install numpy scipy scikit-learn drumsep
+          pip install numpy scipy scikit-learn 'drumsep @ git+https://github.com/cukas/drumsep.git'
       - name: Run true stem-separation search cycles 43 to 45
         run: python drumscribe/experiments/iterative_search_drumsep.py
       - name: Commit separated stems, MIDI, and metrics
