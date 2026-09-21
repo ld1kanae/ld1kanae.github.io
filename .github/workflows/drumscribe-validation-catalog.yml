@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p drumscribe/experiments/detailed
           python drumscribe/experiments/detailed_metrics.py             --pred-dir drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_balanced             --name composite-v2-c39-crash-balanced             --out drumscribe/experiments/detailed/composite-v2-c39-crash-balanced.json
-          python drumscribe/experiments/detailed_metrics.py             --pred-dir drumscribe/experiments/generated-search-separation/cycle42/c42_snare_guard             --name separation-c42-snare-guard             --out drumscribe/experiments/detailed/separation-c42-snare-guard.json
+          python drumscribe/experiments/detailed_metrics.py             --pred-dir drumscribe/experiments/generated-search-separation/cycle42/c42_snare_roll_recall             --name separation-c42-snare-roll-recall             --out drumscribe/experiments/detailed/separation-c42-snare-guard.json
           python drumscribe/experiments/detailed_metrics.py             --pred-dir drumscribe/experiments/generated-search-drumsep-rate/cycle48/c48_none             --name drumsep-rate-c48-none             --out drumscribe/experiments/detailed/drumsep-rate-c48-none.json
       - name: Commit catalog and detailed metrics
         run: |
