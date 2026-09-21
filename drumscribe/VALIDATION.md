@@ -493,3 +493,80 @@ pedal-hatをoffにするとoverall F1だけは0.7082へ上がるが、1パート
 - Cycles 67–69: 44.1kHz high-resolution hat / guarded hat / consensusの最低3案でhat false positivesとrecallを比較。
 - Cycles 49–51: MDX23C neural 6-stem / DSP 5-stem / ensembleを比較中。特にride/crashを専用stemで改善できるか確認する。
 - neural結果取得後は、全体を置換せず、ride/crashなど**ニューラル分離が既存部品より明確に強いパートだけ融合**する。
+
+
+## Cycles 64–66 — snare recall + kick-confusion veto
+
+Cycle 61の高recall snareをそのまま採るとkick→snare誤認が100件超まで増えるため、kick同時刻veto・DSP snare合意・backbeat/repetition rescueを最低3案比較した。
+
+最良 `c66_repeat1`:
+- overall F1 **0.7040**
+- snare F1 **0.8107**
+- snare precision **0.8203**
+- snare recall **0.8014**
+- snare count ratio **0.9769**
+- kick→snare **42**
+
+Cycle 61の `snare_pattern` はsnare F1 0.8224と高いがkick→snare 103。veto版はsnare F1を僅かに落とす代わりに誤認を42まで戻した。ユーザーが以前問題視したkick→snare誤認を考慮し、veto版を実用部品として優先し、pattern版も高recall部品として保存する。
+
+## Cycles 67–69 — 44.1 kHz hi-hat fusion
+
+guarded hat、44.1 kHz high-resolution hat、両者consensusの最低3案を比較した。
+
+Cycle 67:
+- guarded: hat F1 0.6447
+- 44.1kHz: hat F1 **0.6705**, recall 0.7474
+- consensus: hat F1 0.6445
+
+44.1 kHz高域保持はhat検出に明確な改善要素。続いて、high-resolution候補を反復支持でrescueする3案を比較した。
+
+Cycle 69 `repeat3`:
+- overall F1 **0.7148**
+- hat F1 **0.6731**
+- hat precision 0.6148
+- hat recall **0.7435**
+- hat false-discovery rate **0.3852**
+- hat count ratio 1.2094
+
+総合とrecallは大きく改善したが、余計なhatも増えた。特に arcaround はhat reference 293に対しpredicted 837。よってこの段階では「最高総合F1」だけを理由に確定採用しない。
+
+## Cycles 70–72 — crash detector consensus + soft downbeat prior
+
+単純なmeasure-head hard rejectはCycle 54で失敗したため、soft/strict/balanced複数crash検出器の合意、小節頭prior、crash間隔を組み合わせた。
+
+最良 `c72_head18`:
+- overall F1 **0.7051**
+- crash F1 **0.3734**
+- crash precision **0.6689**
+- crash recall 0.2590
+- crash false-discovery rate **0.3311**
+- crash count ratio 0.3872
+
+旧crash部品:
+- F1 0.3517
+- precision 0.5723
+- false-discovery 0.4277
+
+したがって「小節頭では採用、それ以外では不採用をベースにする」というpriorは、**複数音響検出器の合意を優先し、小節頭をsoft rescue条件として使う**形なら有効。ただし最悪曲F1が0であるため、全曲固定置換せず旧crash部品も保持する。
+
+## Cycles 73–75 — hi-hat false-positive repair
+
+Cycle 69のhat recall改善を保持しつつ、余計打音を減らすため、
+- source consensus + repetition
+- adaptive bar density
+- strict adaptive
+を比較し、さらに密度閾値と反復supportを3案ずつ比較した。
+
+最良 `c75_repeat5`:
+- overall F1 **0.7156**
+- precision 0.7309 / recall 0.7010
+- hat F1 **0.6744**
+- hat precision **0.6216**
+- hat recall **0.7370**
+- hat false-discovery rate **0.3784**
+- hat miss rate 0.2630
+- hat count ratio 1.1855
+
+Cycle 69に比べ、hat recallを少し下げてfalse positivesを減らし、hat F1とoverall F1を僅かに上げた。現時点のhat部品候補として保持する。
+
+依然としてhat false-discovery約38%は高いため、今後も「総合F1」と「外れて鳴るhat率」を別指標で監視する。
