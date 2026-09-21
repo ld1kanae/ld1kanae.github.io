@@ -55,7 +55,14 @@ def load_group(src,song,group):
     if src is None:return []
     p=SOURCES[src]/f"{song}.mid"
     if not p.exists():raise FileNotFoundError(p)
-    return [(t,g,v,n) for t,g,v,n in ev.midi_events(p) if g==group]
+    out=[]
+    for row in ev.midi_events(p):
+        t,g,*rest=row
+        if g==group:
+            v=rest[0] if rest else 100
+            n=rest[1] if len(rest)>1 else 0
+            out.append((t,g,v,n))
+    return out
 
 def write_events(path,events,bpm):
     # Reuse common MIDI writer via minimal event dicts.
