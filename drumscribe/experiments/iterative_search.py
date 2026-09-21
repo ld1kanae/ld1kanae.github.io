@@ -50,11 +50,11 @@ def write_midi(path,events,bpm):
     path.write_bytes(b"MThd"+(6).to_bytes(4,"big")+bytes([0,0,0,1,1,224])+b"MTrk"+len(body).to_bytes(4,"big")+body)
 
 def peaks(signal,threshold,distance):
-    out=[]; minimum=max(1,int(distance*ev.SR/ev.HOP))
+    out=[]; minimum=max(1,int(distance*ev.SR/ev.HOP)); floor=ev.local_floor(signal,2.4)
     for t in range(2,len(signal)-2):
         if signal[t] <= signal[t-1] or signal[t] < signal[t+1] or signal[t] < threshold: continue
         if signal[t]-min(signal[t-2],signal[t+2]) < .07: continue
-        if signal[t] < 2.4*ev.local_floor(signal,2.4)[t]: continue
+        if signal[t] < floor[t]: continue
         out.append(t)
     out.sort(key=lambda p:signal[p],reverse=True)
     kept=[]
