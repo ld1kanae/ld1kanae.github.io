@@ -19,15 +19,9 @@ async function loadManifest(){
   $('candidate').innerHTML=manifest.candidates.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.label)+'</option>').join('');
   currentSong=$('song').value;
   currentCandidate=candidateById($('candidate').value);
-  renderTags();
   await refresh();
 }
 
-function renderTags(){
-  $('tags').innerHTML=manifest.tags.map((t,i)=>
-    '<label><input type="checkbox" data-tag="'+esc(t)+'" id="tag'+i+'"> '+esc(t)+'</label>'
-  ).join('');
-}
 
 async function metricsFor(c){
   if(metricCache.has(c.id))return metricCache.get(c.id);
@@ -144,7 +138,6 @@ document.addEventListener('input',e=>{
 });
 
 function reviewValue(){
-  const tags=[...$('tags').querySelectorAll('input:checked')].map(x=>x.dataset.tag);
   return {
     song:currentSong,
     candidate:currentCandidate.id,
@@ -156,7 +149,6 @@ function reviewValue(){
       cymbal:Number($('cymbal').value),
       naturalness:Number($('naturalness').value)
     },
-    tags,
     notes:$('notes').value.trim(),
     savedAt:new Date().toISOString()
   };
@@ -172,7 +164,6 @@ function loadReview(){
     $(id).value=v?.ratings?.[id]??3;rangeOutput($(id));
   }
   $('notes').value=v?.notes??'';
-  for(const input of $('tags').querySelectorAll('input'))input.checked=Boolean(v?.tags?.includes(input.dataset.tag));
   $('saveState').textContent=v?'保存済みレビューを読み込みました。':'未保存です。';
   renderExport();
 }
@@ -184,7 +175,7 @@ function clearReview(){
 function exported(){
   const store=readStore();
   return {
-    schema:2,
+    schema:3,
     manifestVersion:manifest?.version??null,
     exportedAt:new Date().toISOString(),
     purpose:'DrumScribe candidate human review',
@@ -380,7 +371,8 @@ function stopPlayback(pauseSource=true){
 
 $('song').addEventListener('change',refresh);
 $('candidate').addEventListener('change',refresh);
-$('syncPlay').addEventListener('click',()=>startPlayback().catch(e=>$('status').textContent='再生エラー: '+e.message));\n$('jumpMidi').addEventListener('click',()=>playFromFirstMidi().catch(e=>$('status').textContent='再生エラー: '+e.message));
+$('syncPlay').addEventListener('click',()=>startPlayback().catch(e=>$('status').textContent='再生エラー: '+e.message));
+$('jumpMidi').addEventListener('click',()=>playFromFirstMidi().catch(e=>$('status').textContent='再生エラー: '+e.message));
 $('stop').addEventListener('click',()=>stopPlayback(true));
 $('saveReview').addEventListener('click',saveReview);
 $('clearReview').addEventListener('click',clearReview);
