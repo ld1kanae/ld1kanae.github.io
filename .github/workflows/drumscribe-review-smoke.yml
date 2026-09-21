@@ -1,0 +1,36 @@
+name: DrumScribe review smoke
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/review.html"
+      - "drumscribe/review.js"
+      - "drumscribe/review.css"
+      - "drumscribe/review-manifest.json"
+      - "drumscribe/experiments/review_smoke.mjs"
+      - ".github/workflows/drumscribe-review-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python3 -m http.server 8000 >/tmp/review-http.log 2>&1 &
+          sleep 2
+      - name: Smoke test review page
+        run: node drumscribe/experiments/review_smoke.mjs
