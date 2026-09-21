@@ -1,4 +1,4 @@
-"""Cycles 91-93: actual periodic ride-run extraction.
+"""Cycles 97-99: actual periodic ride-run extraction.
 
 Unlike the earlier 'contiguous' experiment, this operates directly on the
 timestamps of an audio-derived ride candidate stream and requires consecutive
@@ -143,22 +143,22 @@ def rank(x):return sorted(x.items(),key=lambda kv:(kv[1]["summary"]["selection_s
 def main():
     root=EXP/"generated-search-ride-runs";report={"schema":1,"cycles":[]}
     res={}
-    for name,mode in [("c91_run","run"),("c91_section","section"),("c91_both","both")]:
-        res[name]=evaluate(name,mode,5,.16,True,root/"cycle91");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+    for name,mode in [("c97_run","run"),("c97_section","section"),("c97_both","both")]:
+        res[name]=evaluate(name,mode,5,.16,True,root/"cycle97");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0];best=res[win]
-    report["cycles"].append({"cycle":91,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":97,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
 
     res={}
-    for name,n in [("c92_run3",3),("c92_run5",5),("c92_run7",7)]:
-        res[name]=evaluate(name,best["mode"],n,best["tol"],True,root/"cycle92");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+    for name,n in [("c98_run3",3),("c98_run5",5),("c98_run7",7)]:
+        res[name]=evaluate(name,best["mode"],n,best["tol"],True,root/"cycle98");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0];best=res[win]
-    report["cycles"].append({"cycle":92,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":98,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
 
     res={}
-    for name,tol in [("c93_tol08",.08),("c93_tol16",.16),("c93_tol24",.24)]:
-        res[name]=evaluate(name,best["mode"],best["min_run"],tol,True,root/"cycle93");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+    for name,tol in [("c99_tol08",.08),("c99_tol16",.16),("c99_tol24",.24)]:
+        res[name]=evaluate(name,best["mode"],best["min_run"],tol,True,root/"cycle99");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0]
-    report["cycles"].append({"cycle":93,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":99,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
     report["final"]={"winner":win,"summary":res[win]["summary"],"mode":res[win]["mode"],"min_run":res[win]["min_run"],"tol":res[win]["tol"],"replace_hat":True,"detailed":res[win]["detailed"]}
     (EXP/"results-iterative-ride-runs.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     print("FINAL",json.dumps(report["final"],ensure_ascii=False,indent=2),flush=True)
