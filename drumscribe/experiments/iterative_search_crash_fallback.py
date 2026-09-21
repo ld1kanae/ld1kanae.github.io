@@ -4,9 +4,9 @@ Fixes the failure mode where the precision/downbeat crash component predicts
 zero or nearly zero crashes for an entire song. Fallback decisions use only
 prediction density, never chart.mid.
 
-Cycle 88: precision only / zero fallback to base / sparse fallback to recall.
-Cycle 89: sparse-ratio thresholds.
-Cycle 90: recall rescue spacing.
+Cycle 94: precision only / zero fallback to base / sparse fallback to recall.
+Cycle 95: sparse-ratio thresholds.
+Cycle 96: recall rescue spacing.
 """
 from __future__ import annotations
 import importlib.util,json,math
@@ -118,23 +118,23 @@ def rank(x):return sorted(x.items(),key=lambda kv:(kv[1]["summary"]["selection_s
 def main():
     root=EXP/"generated-search-crash-fallback";report={"schema":1,"cycles":[]}
     res={}
-    for name,mode in [("c88_precision","precision"),("c88_zero_base","zero_base"),("c88_sparse_recall","sparse_recall")]:
-        res[name]=evaluate(name,mode,.25,8,root/"cycle88");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+    for name,mode in [("c94_precision","precision"),("c94_zero_base","zero_base"),("c94_sparse_recall","sparse_recall")]:
+        res[name]=evaluate(name,mode,.25,8,root/"cycle94");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0];best=res[win]
-    report["cycles"].append({"cycle":88,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":94,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
 
     res={}
-    for name,q in [("c89_ratio10",.10),("c89_ratio25",.25),("c89_ratio50",.50)]:
-        res[name]=evaluate(name,"sparse_recall",q,best["spacing_bars"],root/"cycle89");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+    for name,q in [("c95_ratio10",.10),("c95_ratio25",.25),("c95_ratio50",.50)]:
+        res[name]=evaluate(name,"sparse_recall",q,best["spacing_bars"],root/"cycle95");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win2=rr[0][0];b2=res[win2]
-    report["cycles"].append({"cycle":89,"candidates":res,"ranking":[n for n,_ in rr],"winner":win2,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":95,"candidates":res,"ranking":[n for n,_ in rr],"winner":win2,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
     cur=max([best,b2],key=lambda x:x["summary"]["selection_score"])
 
     res={}
-    for name,gap in [("c90_gap4",4),("c90_gap8",8),("c90_gap12",12)]:
-        res[name]=evaluate(name,"section_rescue",cur.get("ratio",.25),gap,root/"cycle90");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
+    for name,gap in [("c96_gap4",4),("c96_gap8",8),("c96_gap12",12)]:
+        res[name]=evaluate(name,"section_rescue",cur.get("ratio",.25),gap,root/"cycle96");print("SUMMARY",name,json.dumps(res[name]["summary"],ensure_ascii=False),flush=True)
     rr=rank(res);win=rr[0][0]
-    report["cycles"].append({"cycle":90,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
+    report["cycles"].append({"cycle":96,"candidates":res,"ranking":[n for n,_ in rr],"winner":win,"carried_close":[n for n,r in rr if rr[0][1]["summary"]["selection_score"]-r["summary"]["selection_score"]<=.01]})
     final=max([best,b2,res[win]],key=lambda x:x["summary"]["selection_score"])
     report["final"]={"winner":"cross-cycle-best","summary":final["summary"],"mode":final["mode"],"ratio":final["ratio"],"spacing_bars":final["spacing_bars"],"detailed":final["detailed"]}
     (EXP/"results-iterative-crash-fallback.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
