@@ -38,4 +38,7 @@ jobs:
           git add drumscribe/experiments/CURRENT_PRECISION_REPORT.md drumscribe/experiments/current-precision-report.json
           git diff --cached --quiet && exit 0
           git commit -m "Refresh current detailed precision report [skip ci]"
-          git push origin HEAD:drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval || {
+            git pull --rebase origin drumscribe-v2-eval
+            git push origin HEAD:drumscribe-v2-eval
+          }
