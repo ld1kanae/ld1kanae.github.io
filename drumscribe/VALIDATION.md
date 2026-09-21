@@ -184,3 +184,34 @@ crash / ride分離も失敗した。nanairoのcrash数比は5.244、rayは5.385�
 Round 1の生データは experiments/results-v2-round1.json に保存した。
 
 **Round 2での修正方針:** kick/snare競合では低域比をより強く使い、kickを誤って落とさない。シンバルは音色テンプレート主導ではなく、既知BPMから得る小節位置と周期反復を主要特徴にする。小節頭付近はcrash、一定周期で連続する候補はride、それ以外の弱いシンバル候補は棄却する。
+
+
+### 正式Round 2 — 低域優先kick/snare競合 + BPM/小節/周期によるシンバル整理
+
+Round 1の失敗を受け、kick/snare競合は曖昧時にkickを優先し、シンバルは音色テンプレートだけでcrash/rideを二分せず、既知BPMから推定した小節位置と周期反復を主要条件に変更した。
+
+結果:
+
+| 指標 | 現行公開方式 | Round 1 | Round 2 |
+|---|---:|---:|---:|
+| Precision | 0.578 | 0.569 | **0.616** |
+| Recall | 0.657 | 0.608 | 0.609 |
+| F1 | **0.615** | 0.588 | **0.613** |
+| kick→snare | 未集計 | 176 | **42** |
+| snare→kick | 未集計 | 26 | 27 |
+| 不要なkick+snare二重検出 | 未集計 | 19 | **0** |
+
+Round 2では総合F1が現行方式とほぼ同水準まで回復し、kick→snare誤分類はRound 1の176件から42件へ減少した。kick数比は1.031で、Round 1の0.933より参照量へ近づいた。一方snare数比は0.773まで下がり、arcaround 0.565、ray 0.495など、競合処理がsnareを削り過ぎる曲が残った。
+
+シンバル量は大きく改善した。crash数比は全体0.869で、nanairoは5.244→1.889、rayは5.385→1.788。ただしcrash真陽性は7 / 339 / 390、rideは26 / 229 / 644に留まり、「量を合わせる」だけで正しい打点・クラスを取れていない。
+
+誤分類内訳を見ると、本物のシンバルがhatとして検出されている例が多い。特に kaiju では crash→hat 156件、ride→hat 76件、diamondvirginでは crash→hat 69件、ride→hat 90件だった。このため、Round 3では「cymbal_rawだけを分類する」方式をやめ、既存hat候補も含めて高域候補全体を後段再分類する。
+
+Round 2の生データは experiments/results-v2-round2.json に保存した。
+
+**Round 3での修正方針:**
+- kick/snare候補を音響段階で早期削除せず、BPMから推定した拍位置を加えて競合解決する。
+- 2拍・4拍付近ではsnareを優遇して、Round 2で失ったsnareを復元する。
+- 小節頭付近のhat候補でcrash音色の支持があるものをcrashへ再分類する。
+- 規則的に反復しride音色の支持があるhat候補をrideへ再分類する。
+- nanairo / rayのようにride参照がない曲でrideを大量生成しないよう、曲単位のride支持量も条件にする。
