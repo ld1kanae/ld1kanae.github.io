@@ -27,6 +27,9 @@ def guess_script(result_path):
     n=result_path.name
     mapping=[
       ("results-iterative-snare-veto.json","iterative_search_snare_veto.py"),
+      ("results-iterative-best-fusion.json","iterative_search_best_fusion.py"),
+      ("results-iterative-fusion-v2.json","iterative_search_fusion_v2.py"),
+      ("results-iterative-pedal-repair.json","iterative_search_pedal_repair.py"),
       ("results-iterative-hat-fusion.json","iterative_search_hat_fusion.py"),
       ("results-iterative-hat-precision.json","iterative_search_hat_precision.py"),
       ("results-iterative-crash-consensus.json","iterative_search_crash_consensus.py"),
