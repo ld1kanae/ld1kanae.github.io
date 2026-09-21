@@ -386,3 +386,110 @@ Cycle 51では勝者を土台に precision / balanced / recall+rhythm の3案を
 - snare / hat / tom / crash / ride は同時最大2音。3音以上なら確率上位2音のみ。
 - kickとpedal hi-hatは上記2音制約の対象外。
 - rideは単発音色だけで決めず、周期継続を主要根拠にする。
+
+
+## Cycles 52–54 — component bank hybrid
+
+過去の全候補から「総合勝者ではないが特定パートで強い」部品を抽出し、実際の生成MIDI同士をパート単位で再構成した。参照 `chart.mid` は合成には使用せず、合成MIDIを書いた後の採点だけに使用した。
+
+Cycle 52では最低3案:
+- `c52_robust`: 全曲安定性を重視したkick/snare/hat/tom/crash部品
+- `c52_precision`: precision寄りのkick/crash部品
+- `c52_recall`: recall寄りのsnare/hatにride候補も追加
+
+勝者 `c52_robust`:
+- overall F1 **0.6954** / precision 0.7523 / recall 0.6465
+- kick F1 **0.9590**
+- snare F1 **0.7642**
+- hat F1 **0.6445**
+- tom F1 **0.6345**
+- crash F1 **0.3511**
+- pedal_hat F1 **0.1735**
+- ride F1 **0.0000**
+- kick→snare 38
+
+旧総合約0.615を明確に上回ったため、component hybridを新しい本線に採用する。
+
+Cycle 53では two-hands / priority / no-poly-filter の3案を比較。two-handsとpriorityは同値、no-filterは僅かに低下したため、製品要件通り**手で叩く音は同時最大2音**を維持する。
+
+Cycle 54では crash source / measure-head tight / measure-head balanced の3案を比較。小節頭だけに後段で強く限定するとcrash recallが大幅に落ちたため、単純なhard rejectは不採用。小節頭prior自体は維持するが、**acoustic evidenceと組み合わせたsoft priorとして使う**。
+
+曲別の重要点:
+- arcaround: snare recall 0.363、hat precision 0.297、crash F1 0.057が弱点。
+- diamondvirgin: kick F1 0.943、snare F1 0.920で強い。
+- kaiju: kick 0.976、snare 0.973、tom 0.757と強い一方、ride 431 referenceに対し0予測。
+- nanairo: kick 0.999、hat 0.714。snare recall 0.355が弱点。
+- ray: crash F1 0.832で非常に強い。snare recall 0.429が弱点。
+
+この結果から、今後は「全曲一律閾値」よりも**強い核を保持し、不足部だけ別部品で補完する**方針を優先する。
+
+## Cycles 55–57 — loop / repetition consensus
+
+元の要件「フィル以外は反復することが多い」を、4/8小節相当の反復支持として後処理に導入した。global / local / multiresの最低3案、窓幅3案、support閾値3案を比較した。
+
+最高は `c57_support1`:
+- overall F1 **0.6931**
+- precision 0.7542 / recall 0.6411
+- kick F1 0.9590
+- snare F1 0.7642
+- hat F1 0.6445
+- tom F1 0.6345
+- crash F1 0.1876
+- ride 0
+
+component hybridの0.6954を超えなかったため、**全パート共通の反復削除フィルタとしては不採用**。特にcrashを反復/小節位置で後段削除するとrecall低下が大きい。
+
+ただし反復情報そのものは有用であり、以下に限定して部品利用する:
+- snare補完候補の支持
+- rideの継続区間判定
+- hatの孤立誤検出抑制
+- fill区間の保護
+
+## Cycles 61–63 — targeted recall repair
+
+component hybridの高precision核を保持し、LOSO-ML予測・DSP分離予測・反復支持から不足パートだけ補完した。
+
+Cycle 61 snare補完:
+- `snare_raw`: snare F1 0.8127 / recall 0.8810、ただし kick→snare 109
+- `snare_consensus`: snare F1 **0.8096** / precision 0.8181 / recall 0.8014、kick→snare **42**
+- `snare_pattern`: snare F1 **0.8224** / precision 0.7727 / recall 0.8789、ただし kick→snare 103
+
+総合選択では `snare_consensus` を採用する。理由は、ユーザーが明示したkick→snare誤認を大幅に抑えながらsnare recallを0.666→0.801へ上げたため。ただし `snare_pattern` は**snare単体の最良部品**としてcomponent bankに保持し、後段でkick vetoと組み合わせる。
+
+Cycle 62 tom補完:
+- raw: tom F1 0.6250
+- consensus: tom F1 **0.6369** / precision 0.7692 / recall 0.5435
+- fill-only: tom F1 0.6216
+
+既存tom F1 0.6345に対して僅差だが、consensusでrecallが0.500→0.543へ改善したため保持する。precisionは0.868→0.769へ低下しているので、旧tom核もcomponent bankに残す。
+
+Cycle 63 pedal-hat:
+- keep: pedal_hat F1 **0.1735**
+- periodic: 0.1175
+- off: 0.0000
+
+pedal-hatをoffにするとoverall F1だけは0.7082へ上がるが、1パートを完全放棄するため不採用。**全パート評価**に合わせて選択スコアへpedal_hatを明示的に含め、`keep` を正式勝者とした。
+
+正式なCycle 63勝者:
+- overall F1 **0.7039**
+- precision **0.7455**
+- recall **0.6667**
+- kick F1 **0.9590**
+- snare F1 **0.8096**
+- hat F1 **0.6451**
+- tom F1 **0.6369**
+- crash F1 **0.3517**
+- pedal_hat F1 **0.1735**
+- ride F1 **0.0000**
+- kick→snare **42**
+
+この時点で主な未解決は、ride、crash、pedal_hat、hat false positives。snareは実用候補域まで改善したが、arcaround/nanairo/rayの弱い曲を個別に確認し続ける。
+
+## Cycles 64+ — 次の分岐
+
+次の探索を並列化する。
+
+- Cycles 64–66: `snare_pattern` の高recallを使いつつ、kick同時刻veto / DSP consensus / backbeat+repeat rescueの最低3案でkick→snare誤認を抑える。
+- Cycles 67–69: 44.1kHz high-resolution hat / guarded hat / consensusの最低3案でhat false positivesとrecallを比較。
+- Cycles 49–51: MDX23C neural 6-stem / DSP 5-stem / ensembleを比較中。特にride/crashを専用stemで改善できるか確認する。
+- neural結果取得後は、全体を置換せず、ride/crashなど**ニューラル分離が既存部品より明確に強いパートだけ融合**する。
