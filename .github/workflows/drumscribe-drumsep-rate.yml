@@ -1,0 +1,43 @@
+name: DrumScribe drumsep rate benchmark
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_drumsep_rate.py"
+      - ".github/workflows/drumscribe-drumsep-rate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+          python -m pip install --upgrade pip
+          pip install numpy scipy scikit-learn 'drumsep @ git+https://github.com/cukas/drumsep.git'
+      - name: Run high-resolution true separation search cycles 46 to 48
+        run: python drumscribe/experiments/iterative_search_drumsep_rate.py
+      - name: Commit MIDI and metrics only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/generated-search-drumsep-rate drumscribe/experiments/results-iterative-drumsep-rate.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record high-resolution DrumScribe separation results [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval
