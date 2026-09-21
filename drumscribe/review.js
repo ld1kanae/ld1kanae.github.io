@@ -3,6 +3,7 @@ const STORE='drumscribe-review-v1';
 const SAMPLE_ROOT='../DruMaster/assets/drums/';
 let manifest,currentCandidate,currentSong,metricCache=new Map(),midiCache=new Map(),sampleCache=new Map();
 let ctx,gainNode,playback=null,refreshVersion=0;
+let playbackStats={loaded:0,failed:0,scheduled:0};
 
 function readStore(){
   try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch{return {}}
@@ -237,37 +238,77 @@ function lowerBound(events,t){
 }
 async function startPlayback(){
   stopPlayback(false);
-  const c=await audioContext(),events=await midiEvents(),src=$('source');
+  const src=$('source');
   const pos=src.currentTime||0;
-  const notes=[...new Set(events.map(e=>e.pitch))];
-  await Promise.all(notes.map(n=>sample(n).catch(()=>null)));
-  playback={events,index:lowerBound(events,pos-.02),ctxStart:c.currentTime,sourceStart:pos,nodes:new Set(),timer:null,lastPos:pos};
+
+  // Start the media element immediately while the click still counts as a
+  // user gesture. Safari/iOS can reject play() if we wait for MIDI/sample
+  // network/decode work first.
   src.volume=Number($('sourceVolume').value)/100;
-  await src.play();
+  const sourcePlay=src.paused?src.play():Promise.resolve();
+  const c=await audioContext();
+  await sourcePlay;
+
+  playbackStats={loaded:0,failed:0,scheduled:0};
+  $('status').textContent='MIDI音源を読み込み中…';
+
+  const events=await midiEvents();
+  const notes=[...new Set(events.map(e=>e.pitch))];
+  const loaded=await Promise.all(notes.map(async n=>{
+    try{await sample(n);playbackStats.loaded++;return true}
+    catch(err){console.warn('sample load failed',n,err);playbackStats.failed++;return false}
+  }));
+
+  if(!playbackStats.loaded){
+    src.pause();
+    throw Error('MIDI用ドラム音源を1つも読み込めませんでした');
+  }
+
+  const now=src.currentTime;
+  playback={
+    events,
+    index:lowerBound(events,now-.02),
+    ctxStart:c.currentTime,
+    sourceStart:now,
+    nodes:new Set(),
+    timer:null,
+    lastPos:now
+  };
+
   function tick(){
     if(!playback)return;
-    const now=src.currentTime;
-    if(Math.abs(now-playback.lastPos)>.65){
-      playback.index=lowerBound(events,now-.02);
-      playback.ctxStart=c.currentTime;playback.sourceStart=now;
+    const mediaNow=src.currentTime;
+    if(Math.abs(mediaNow-playback.lastPos)>.65){
+      playback.index=lowerBound(events,mediaNow-.02);
+      playback.ctxStart=c.currentTime;
+      playback.sourceStart=mediaNow;
     }
-    playback.lastPos=now;
+    playback.lastPos=mediaNow;
     if(src.paused)return;
-    const horizon=now+.28;
+
+    const horizon=mediaNow+.30;
     while(playback.index<events.length&&events[playback.index].time<=horizon){
       const e=events[playback.index++];
-      if(e.time<now-.03)continue;
+      if(e.time<mediaNow-.035)continue;
       const buf=sampleCache.get(e.pitch);
       if(!buf||typeof buf.then==='function')continue;
       const node=c.createBufferSource(),g=c.createGain();
-      node.buffer=buf;g.gain.value=Math.max(.12,Math.min(1,e.velocity/110));
+      node.buffer=buf;
+      g.gain.value=Math.max(.14,Math.min(1.15,e.velocity/105));
       node.connect(g);g.connect(gainNode);
-      node.start(c.currentTime+Math.max(0,e.time-now));
-      playback.nodes.add(node);node.onended=()=>playback?.nodes.delete(node);
+      node.start(c.currentTime+Math.max(0,e.time-mediaNow));
+      playback.nodes.add(node);
+      playbackStats.scheduled++;
+      node.onended=()=>playback?.nodes.delete(node);
     }
+
+    $('status').textContent=
+      currentCandidate.label+' / MIDI '+playbackStats.scheduled+'音再生'+
+      (playbackStats.failed?' / サンプル失敗 '+playbackStats.failed:'');
   }
-  playback.timer=setInterval(tick,55);tick();
-  $('status').textContent=currentCandidate.label+' を原音に重ねて再生中。';
+
+  playback.timer=setInterval(tick,45);
+  tick();
 }
 function stopPlayback(pauseSource=true){
   if(!playback){if(pauseSource)$('source').pause();return}
@@ -292,4 +333,13 @@ window.addEventListener('beforeunload',()=>stopPlayback(false));
 loadManifest().catch(e=>{
   console.error(e);
   $('status').textContent='比較ページの読み込みに失敗しました: '+e.message;
+});
+
+window.__drumscribeReviewDebug=()=>({
+  contextState:ctx?.state??'none',
+  playbackActive:Boolean(playback),
+  loadedSamples:playbackStats.loaded,
+  failedSamples:playbackStats.failed,
+  scheduledNotes:playbackStats.scheduled,
+  sourcePaused:$('source')?.paused??true
 });
