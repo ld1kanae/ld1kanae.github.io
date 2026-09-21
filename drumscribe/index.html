@@ -21,12 +21,12 @@
     <p class="status" id="status" role="status" aria-live="polite">音源を選択してください。</p><progress id="progress" max="100" value="0" hidden></progress>
   </section>
   <section class="card result" id="result" hidden aria-labelledby="result-title">
-    <div class="section-title"><span class="number">02</span><div><h2 id="result-title">重ねて確かめる</h2><p id="resultSummary">採譜結果</p></div><button id="download" class="download">MIDIを書き出す ↓</button></div>
+    <div class="section-title"><span class="number">02</span><div><h2 id="result-title">重ねて確かめる</h2><p id="resultSummary">採譜結果</p></div><a id="download" class="download" href="#" download>MIDIを書き出す ↓</a></div>
     <div class="preview"><div class="preview-head"><div><span class="led"></span><strong id="previewTitle">プレビュー</strong><small> / ドラムのみ / MIDI</small></div><span id="clock">00:00 / 00:00</span></div><canvas id="timeline" height="180" aria-label="波形と採譜したノートの時間軸。クリックで再生位置を変更"></canvas><div class="transport"><button id="play" aria-label="再生または一時停止">▶ 再生</button><button id="stop" aria-label="停止">■ 停止</button><input id="seek" type="range" min="0" max="1000" value="0" aria-label="再生位置"><label class="offset">MIDI 補正 <input id="offset" type="number" value="0" step="10" min="-2000" max="2000" aria-label="MIDI 再生タイミング補正（ミリ秒）"> ms</label></div></div>
     <div class="mix"><div class="mix-head"><span>TRACK</span><span>VOLUME</span><span>SOLO</span><span>MUTE</span></div><div class="track" data-track="audio"><span class="track-name"><i class="audio-dot"></i> ドラム音源</span><label><input class="volume" type="range" min="0" max="150" value="100" aria-label="ドラム音源の音量"><output>100%</output></label><button class="solo" aria-pressed="false">S</button><button class="mute" aria-pressed="false">M</button></div><div class="track" data-track="midi"><span class="track-name"><i class="midi-dot"></i> MIDI <small>参考ドラム音源</small></span><label><input class="volume" type="range" min="0" max="150" value="100" aria-label="MIDIの音量"><output>100%</output></label><button class="solo" aria-pressed="false">S</button><button class="mute" aria-pressed="false">M</button></div></div>
     <p class="hint">S = ソロ、M = ミュート。時間軸をクリックするとその位置から確認できます。MIDI補正はプレビューだけに適用され、書き出すMIDIの音符時刻は変わりません。</p>
   </section>
   <footer><span>DRUMSCRIBE / PROTOTYPE</span><a href="https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe">ソースと検証履歴 ↗</a></footer>
 </main>
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=20260921-download"></script>
 </body></html>

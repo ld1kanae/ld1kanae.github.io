@@ -1,13 +1,13 @@
 import {transcribe} from './transcribe.js';
 import {midiFile} from './midi.js';
 const $=id=>document.getElementById(id), status=$('status');
-let file=null,decoded=null,events=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null;
+let file=null,decoded=null,events=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,45,49];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
-function select(f){if(!f)return;pause();file=f;decoded=null;events=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;decoded=null;events=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 const drop=$('drop');
 for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
@@ -29,6 +29,9 @@ $('analyze').addEventListener('click',async()=>{
     if(decoded.duration>900)throw Error('15分以内の音源を選択してください。');
     events=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;});
     position=0;$('result').hidden=false;
+    if(downloadUrl)URL.revokeObjectURL(downloadUrl);
+    downloadUrl=URL.createObjectURL(new Blob([midiFile(events)],{type:'audio/midi'}));
+    $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
     $('previewTitle').textContent=file.name;$('resultSummary').textContent=`${fmt(decoded.duration)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}`;
     tell(`${events.length} ノートを推定しました。プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
@@ -81,11 +84,6 @@ for(const el of document.querySelectorAll('.track')){
   slider.addEventListener('input',()=>{t.volume=Number(slider.value)/100;el.querySelector('output').textContent=`${slider.value}%`;gainUpdate();});
   for(const kind of ['solo','mute'])el.querySelector(`.${kind}`).addEventListener('click',e=>{t[kind]=!t[kind];e.currentTarget.setAttribute('aria-pressed',String(t[kind]));gainUpdate();});
 }
-$('download').addEventListener('click',()=>{
-  if(!events.length)return;const blob=new Blob([midiFile(events)],{type:'audio/midi'}),url=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=url;link.download=`${(file?.name||'drums').replace(/\.[^.]+$/,'')}-drumscribe.mid`;link.hidden=true;
-  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-});
 const canvas=$('timeline');canvas.addEventListener('click',e=>{if(!decoded)return;seek((e.clientX-canvas.getBoundingClientRect().left)/canvas.clientWidth*decoded.duration);});
 new ResizeObserver(()=>draw()).observe(canvas);
 function draw(){
