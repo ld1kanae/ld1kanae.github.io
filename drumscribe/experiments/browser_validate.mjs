@@ -16,10 +16,9 @@ for(const song of songs){
   await page.selectOption('#example',song);
   await page.waitForFunction(() => {
     const b=document.querySelector('#analyze');
-    const bpm=document.querySelector('#bpm');
-    return b && !b.disabled && bpm && bpm.value;
+    return b && !b.disabled;
   });
-  console.log('BPM',song,await page.locator('#bpm').inputValue());
+  console.log('BPM_OVERRIDE',song,await page.locator('#bpm').inputValue());
   await page.click('#analyze');
   await page.waitForFunction(() => {
     const r=document.querySelector('#result');
@@ -27,6 +26,9 @@ for(const song of songs){
     return r && !r.hidden && s && s.textContent.includes('ノートを推定しました');
   },null,{timeout:20*60*1000});
   console.log('RESULT',song,await page.locator('#resultSummary').textContent());
+  const timing=await page.evaluate(()=>globalThis.__drumscribeResult||null);
+  await fs.writeFile(path.join(outDir,song+'.json'),JSON.stringify(timing,null,2));
+  console.log('TIMING',song,timing);
   const dlPromise=page.waitForEvent('download');
   await page.click('#download');
   const dl=await dlPromise;
