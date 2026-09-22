@@ -1,0 +1,42 @@
+name: DrumScribe cymbal decay diagnostic
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/cymbal_decay_diagnostic.py"
+      - ".github/workflows/drumscribe-cymbal-decay-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy
+      - name: Analyze temporal decay separability
+        run: python drumscribe/experiments/cymbal_decay_diagnostic.py
+      - name: Commit diagnostic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/results-cymbal-decay-diagnostic.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record cymbal decay diagnostic [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
