@@ -1,0 +1,49 @@
+name: DrumScribe GMD metal acoustic model
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/train_gmd_metal_acoustic.py"
+      - ".github/workflows/drumscribe-gmd-metal-acoustic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy scikit-learn mido remotezip requests
+      - name: Download GMD MIDI metadata
+        run: |
+          mkdir -p /tmp/gmd
+          curl -L --fail --retry 3 -o /tmp/gmd/groove.zip             https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip
+          echo "651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e  /tmp/gmd/groove.zip" | sha256sum -c -
+          unzip -q /tmp/gmd/groove.zip -d /tmp/gmd/data
+      - name: Train from range-streamed rock audio
+        run: |
+          python drumscribe/experiments/train_gmd_metal_acoustic.py             --midi-root /tmp/gmd/data             --url https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0.zip             --train-files 70 --val-files 25             --output drumscribe/models/gmd-metal-acoustic-logreg.json
+      - name: Commit aggregate model and validation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/models/gmd-metal-acoustic-logreg.json drumscribe/experiments/results-gmd-metal-acoustic.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Add GMD rock metal acoustic classifier [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
