@@ -21,10 +21,7 @@ $('example').addEventListener('change',async e=>{
     const blob=await r.blob();
     select(new File([blob],`${id}-drums.mp3`,{type:'audio/mpeg'}));
     $('example').value=id;
-    try{
-      const m=await fetch(`../DruMaster/songs/${id}/song.json`).then(x=>x.json());
-      if(m?.bpm)$('bpm').value=Number(m.bpm).toFixed(2);
-    }catch{}
+    $('bpm').value='';
   }catch(err){
     tell(`音源を取得できませんでした: ${err.message}`,true);
     $('analyze').disabled=!file;
@@ -40,14 +37,21 @@ $('analyze').addEventListener('click',async()=>{
     const rawBpm=$('bpm').value.trim();
     const bpm=rawBpm?Number(rawBpm):null;
     if(rawBpm&&(!Number.isFinite(bpm)||bpm<30||bpm>300))throw Error('基準BPMは30〜300で入力してください。');
-    events=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm});
+    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm});
+    events=transcription.events;
+    const detectedBpm=transcription.bpm;
     position=0;$('result').hidden=false;
     if(downloadUrl)URL.revokeObjectURL(downloadUrl);
-    downloadUrl=URL.createObjectURL(new Blob([midiFile(events,bpm||120)],{type:'audio/midi'}));
+    downloadUrl=URL.createObjectURL(new Blob([midiFile(events,detectedBpm,{
+      barPhaseSec:transcription.barPhaseSec,
+      numerator:transcription.numerator,
+      denominator:transcription.denominator
+    })],{type:'audio/midi'}));
     $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
     $('previewTitle').textContent=file.name;
-    $('resultSummary').textContent=`${fmt(decoded.duration)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
-    tell(`${events.length} ノートを推定しました。プレビューで確認し、MIDIを書き出せます。`);
+    $('resultSummary').textContent=`${fmt(decoded.duration)} / BPM ${detectedBpm.toFixed(3)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
+    globalThis.__drumscribeResult={...transcription,events:undefined};
+    tell(`${events.length} ノートを推定しました。BPM ${detectedBpm.toFixed(3)}。プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
   finally{$('analyze').disabled=false;$('progress').hidden=true;}
