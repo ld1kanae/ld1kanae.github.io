@@ -24,9 +24,17 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Serve repository
+      - name: Wait for GitHub Pages deployment
         run: |
-          python -m http.server 8000 >/tmp/drumscribe-review-http.log 2>&1 &
-          sleep 2
-      - name: Verify MIDI playback
+          for i in $(seq 1 90); do
+            if curl -fsSL "https://ld1kanae.github.io/drumscribe/review.html?ci=$GITHUB_SHA" | grep -q "review.js?v=20260923-c225-227-fix2"; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "latest review page was not deployed" >&2
+          exit 1
+      - name: Verify MIDI playback on live GitHub Pages
+        env:
+          DRUMSCRIBE_REVIEW_URL: "https://ld1kanae.github.io/drumscribe/review.html?ci=${{ github.sha }}"
         run: node drumscribe/experiments/review_playback_smoke.mjs
