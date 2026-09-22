@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "songs": [
     {
       "id": "arcaround",
@@ -24,69 +24,49 @@
   ],
   "candidates": [
     {
-      "id": "v2-balanced",
-      "label": "A / 新総合バランス",
-      "description": "stick hat / pedal hatを分離した新基準の総合案。Tom ML、measure-head限定Crash、Pedal Hatグリッド判定を統合。Rideは出さない。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_balanced",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
-      "cycle": 39,
-      "key": "c39_crash_balanced"
+      "id": "v6-integrated",
+      "label": "A / v6統合",
+      "description": "現在の全パート統合案。kick/snare/hat/tomの強い部品を維持し、pedal-hat・crash・rideの改善部品を追加。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-fusion-v6/cycle144/c144_adaptive",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-fusion-v6.json",
+      "cycle": 144,
+      "key": "c144_adaptive"
     },
     {
-      "id": "v2-crash-precision",
-      "label": "B / Crash精度寄り",
-      "description": "AよりCrashを厳しく採用する案。小節頭外Crashは同様に不採用。Crashの余計な音が気になる場合の比較用。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_strict",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
-      "cycle": 39,
-      "key": "c39_crash_strict"
+      "id": "v6-snare-recall",
+      "label": "B / Snare回収",
+      "description": "Aよりsnareの取りこぼしを減らす案。snare自体は強いがkick→snare誤認が増えるので、耳で有効区間を確認する比較用。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-fusion-v6/cycle143/c143_highrecall",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-fusion-v6.json",
+      "cycle": 143,
+      "key": "c143_highrecall"
     },
     {
-      "id": "v2-crash-recall",
-      "label": "C / Crash再現寄り",
-      "description": "AよりCrashを多めに拾う案。小節頭近傍というハード条件は維持しつつ、音響閾値と許容幅を緩める。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle39/c39_crash_recall",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
-      "cycle": 39,
-      "key": "c39_crash_recall"
+      "id": "ride-segment",
+      "label": "C / Ride区間強化",
+      "description": "高確度rideを種に、継続区間内のhatを周期グリッドでrideへ置換した案。kaiju/diamondvirginのride比較用。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-ride-segment/cycle138/c138_seed3",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-ride-segment.json",
+      "cycle": 138,
+      "key": "c138_seed3"
     },
     {
-      "id": "v2-ride-balanced",
-      "label": "D / Rideバランス",
-      "description": "Ride区間判定を有効にした案。総合値はAより低いが、Rideが必要な曲で演奏として自然かを耳で確認するために残す。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle37/c37_ride_balanced",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
-      "cycle": 37,
-      "key": "c37_ride_balanced"
+      "id": "pedal-adaptive",
+      "label": "D / Pedal HH強化",
+      "description": "pedal-hatが極端に少ない曲だけ周期的な候補を救済する案。通常曲では現行検出を維持。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-pedal-adaptive/cycle135/c135_sparse060",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-pedal-adaptive.json",
+      "cycle": 135,
+      "key": "c135_sparse060"
     },
     {
-      "id": "v2-ride-recall",
-      "label": "E / Ride回収寄り",
-      "description": "Rideを積極的に拾う案。誤検出も多いので、正しいRide区間を拾えている部分だけ折衷案へ取り込めるかを見る。",
-      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-composite-v2/cycle37/c37_ride_recall",
-      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-composite-v2.json",
-      "cycle": 37,
-      "key": "c37_ride_recall"
+      "id": "crash-context",
+      "label": "E / Crash補完",
+      "description": "通常のcrash候補が0になる曲だけ、kick支持のあるfallback候補を補う案。その他の曲は高precision側を維持。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-search-crash-context/cycle141/c141_support_only",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-crash-context.json",
+      "cycle": 141,
+      "key": "c141_support_only"
     }
-  ],
-  "tags": [
-    "kick→snare誤認",
-    "snare→kick誤認",
-    "snare取りこぼし",
-    "hat過多",
-    "hat不足",
-    "crash過多",
-    "crash不足",
-    "crash位置ずれ",
-    "ride過多",
-    "ride不足",
-    "tom誤検出",
-    "フィル不自然",
-    "同時発音不自然",
-    "タイミングずれ",
-    "この候補が一番良い",
-    "pedal hat過多",
-    "pedal hat不足",
-    "stick hat / pedal hat誤認"
   ]
 }
