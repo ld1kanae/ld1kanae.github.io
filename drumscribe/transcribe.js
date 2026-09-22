@@ -658,6 +658,76 @@ export async function transcribe(decoded,report=()=>{},options={}){
       return true;
     });
     adtofInfo.hatFilter={mode:'collision-periodic-v2',removed,absMin:.20,collisionRatio:.70,collisionWindowSec:.025,periodicRescue:4,weakRescue:2};
+
+    // GMD train-split symbolic prior + audio decay pedal-hat decoder.
+    // Fixed policy selected by the chart-scoring-only benchmark:
+    // prior_w=1.5, tail2_w=.35, tail3_w=.35, near8_w=-.25, threshold=.4.
+    // No DruMaster chart is read here.
+    try{
+      const gmd=await fetch('models/gmd-metal-prior.json').then(r=>{if(!r.ok)throw Error('GMD priorを読み込めません');return r.json();});
+      const beat=60/bpm,bar=4*beat,phase=barInfo.phaseSec;
+      const hatEvents=structural.filter(e=>e.group==='hat');
+      const hatTimes=hatEvents.map(e=>e.time).sort((a,b)=>a-b);
+      const kicks=structural.filter(e=>e.group==='kick').map(e=>e.time).sort((a,b)=>a-b);
+      const snares=structural.filter(e=>e.group==='snare').map(e=>e.time).sort((a,b)=>a-b);
+      const toms=structural.filter(e=>e.group==='tom').map(e=>e.time).sort((a,b)=>a-b);
+      const near=(xs,t,w)=>xs.some(v=>Math.abs(v-t)<=w);
+      const high=new Float64Array(frames);
+      const j0=Math.max(0,Math.ceil(1800*SIZE/RATE)),j1=Math.min(BINS,Math.floor(5400*SIZE/RATE)+1);
+      for(let t=0;t<frames;t++){
+        let sum=0,base=t*BINS;
+        for(let j=j0;j<j1;j++)sum+=spectrum[base+j];
+        high[t]=sum;
+      }
+      const meanRange=(arr,a,b)=>{
+        const aa=Math.max(0,a),bb=Math.min(arr.length,b);
+        if(bb<=aa)return 0;
+        let sum=0;for(let i=aa;i<bb;i++)sum+=arr[i];
+        return sum/(bb-aa);
+      };
+      const maxRange=(arr,a,b)=>{
+        const aa=Math.max(0,a),bb=Math.min(arr.length,b);
+        let m=0;for(let i=aa;i<bb;i++)if(arr[i]>m)m=arr[i];
+        return m;
+      };
+      let converted=0;
+      structural=structural.map(e=>{
+        if(e.group!=='hat')return e;
+        const t=e.time,fr=Math.max(0,Math.min(frames-1,Math.round(t*RATE/HOP)));
+        let x=(t-phase)%bar;if(x<0)x+=bar;
+        const slot=Math.round(x/(beat/4))%16;
+        const ctx=[];
+        if(near(kicks,t,.045))ctx.push('kick');
+        if(near(snares,t,.045))ctx.push('snare');
+        if(near(toms,t,.045))ctx.push('tom');
+        const ctxKey=ctx.length?ctx.join('+'):'none';
+        const prior=(gmd.context?.[slot+'|'+ctxKey]||gmd.slot16?.[String(slot)]||gmd.globalProb||{});
+        const ph=Math.max(1e-6,Number(prior.hat)||1e-6);
+        const pp=Math.max(1e-6,Number(prior.pedal_hat)||1e-6);
+        const pre=meanRange(high,fr-12,fr-3);
+        const on=maxRange(high,fr-1,fr+3);
+        const amp=Math.max(on-pre,1e-7);
+        const tail2=Math.max(0,meanRange(high,fr+11,fr+21)-pre)/amp;
+        const tail3=Math.max(0,meanRange(high,fr+21,fr+36)-pre)/amp;
+        const others=hatTimes.filter(v=>Math.abs(v-t)>.035);
+        const near8=near(others,t-beat/2,.055)||near(others,t+beat/2,.055);
+        const score=1.5*Math.log(pp/ph)-.35*Math.min(tail2,3)-.35*Math.min(tail3,3)-.25*(near8?1:0);
+        if(score>=.4){converted++;return {...e,group:'pedal_hat',pedalScore:score};}
+        return e;
+      });
+      adtofInfo.pedalPolicy={
+        mode:'gmd-symbolic-decay-v1',
+        converted,
+        priorWeight:1.5,
+        tail2Weight:.35,
+        tail3Weight:.35,
+        near8Weight:-.25,
+        threshold:.4
+      };
+    }catch(err){
+      console.warn('GMD pedal prior fallback',err);
+      adtofInfo.pedalPolicy={mode:'disabled',error:String(err?.message||err)};
+    }
   }
   const phase=barInfo.phaseSec;
   function measureHeadDistanceBeats(t){
@@ -759,7 +829,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     i=j;
   }
 
-  const noteOf={kick:36,snare:38,hat:42,tom:45,crash:49,ride:51};
+  const noteOf={kick:36,snare:38,hat:42,pedal_hat:44,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
     time:e.time,note:noteOf[e.group],group:e.group,
     velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score))))
