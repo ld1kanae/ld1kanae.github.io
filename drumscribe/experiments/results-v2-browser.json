@@ -3,12 +3,12 @@
   "source": "real browser-generated MIDI with audio-only tempo/bar estimation",
   "songs": {
     "arcaround": {
-      "tp": 806,
-      "predicted": 1829,
+      "tp": 807,
+      "predicted": 1819,
       "reference": 1400,
-      "precision": 0.441,
+      "precision": 0.444,
       "recall": 0.576,
-      "f1": 0.499,
+      "f1": 0.501,
       "by_group": {
         "kick": {
           "tp": 494,
@@ -16,12 +16,12 @@
           "reference": 576
         },
         "snare": {
-          "tp": 105,
-          "predicted": 161,
+          "tp": 107,
+          "predicted": 159,
           "reference": 292
         },
         "hat": {
-          "tp": 207,
+          "tp": 206,
           "predicted": 1087,
           "reference": 293
         },
@@ -32,12 +32,12 @@
         },
         "crash": {
           "tp": 0,
-          "predicted": 29,
+          "predicted": 22,
           "reference": 78
         },
         "ride": {
           "tp": 0,
-          "predicted": 15,
+          "predicted": 14,
           "reference": 58
         },
         "other": {
@@ -54,11 +54,11 @@
       "median_error": -0.01,
       "count_ratio": {
         "kick": 0.917,
-        "snare": 0.551,
+        "snare": 0.545,
         "hat": 3.71,
         "tom": 0.75,
-        "crash": 0.372,
-        "ride": 0.259,
+        "crash": 0.282,
+        "ride": 0.241,
         "other": null,
         "pedal_hat": 0.0
       },
@@ -68,19 +68,19 @@
           "tom_to_snare": 3,
           "tom_to_kick": 1,
           "kick_to_hat": 528,
-          "kick_to_snare": 42,
-          "kick_to_crash": 29,
+          "kick_to_snare": 38,
           "crash_to_hat": 29,
           "kick_to_tom": 5,
-          "snare_to_hat": 122,
-          "kick_to_ride": 15,
+          "snare_to_hat": 123,
+          "kick_to_ride": 14,
+          "kick_to_crash": 22,
           "hat_to_kick": 10,
           "snare_to_kick": 19,
           "snare_to_tom": 4,
           "crash_to_kick": 2,
           "ride_to_hat": 44
         },
-        "kick_to_snare": 42,
+        "kick_to_snare": 38,
         "snare_to_kick": 19,
         "unmatched_predicted": {
           "hat": 127,
@@ -94,26 +94,24 @@
         "estimated_bpm": 132.00295332390013,
         "truth_bpm": 132.000132,
         "bpm_error_percent": 0.0021373644536369077,
-        "bar_phase_sec": 0.8014025242331178,
+        "bar_phase_sec": 0.3444099079241476,
         "reference_bar_phase_sec": 0.3296349999981816,
-        "bar_error_sec": 0.4717675242349362,
-        "bar_error_beats": 1.037889591205413,
-        "export_offset_sec": -0.8014025242331178,
+        "bar_error_sec": 0.01477490792596603,
+        "bar_error_beats": 0.032504829941922705,
+        "export_offset_sec": -0.3444099079241476,
         "export_bar_pad": 0,
         "export_grid_residual_sec": 0.0,
         "export_grid_residual_beats": 0.0,
         "beat_phase_sec": 0.346228049063847,
         "bar_phase_info": {
-          "phaseSec": 0.8014025242331178,
-          "source": "agree",
-          "hypothesisDistance": 0.005312499999999835,
-          "legacyPhaseSec": 0.8014025242331178,
-          "rolesPhaseSec": 0.7989878055319546,
-          "legacyScore": 0.2079085728705328,
-          "rolesScore": 0.39599635720222665,
+          "phaseSec": 0.3444099079241476,
+          "source": "low_fallback",
+          "maxSnareContrast": 0.034785928785015456,
+          "selectedOffset": 0,
+          "coarsePhaseSec": 0.3462280490638472,
+          "selectionScore": 0.9278633906572363,
+          "refinedScore": 0.20524921075542718,
           "crashAnchors": 13,
-          "legacyAnchor": 0.16269623407310133,
-          "rolesAnchor": 0.16191884077111737,
           "gridCandidates": [
             {
               "offset": 0,
@@ -128,7 +126,8 @@
               "lowTop": 1.1631045793664867,
               "midMean": 0.8376201295266771,
               "highMean": 1.0924128833058258,
-              "highTop": 2.230902207308802
+              "highTop": 2.230902207308802,
+              "selectionScore": 0.9278633906572363
             },
             {
               "offset": 1,
@@ -143,7 +142,8 @@
               "lowTop": 1.1568486443881332,
               "midMean": 0.8706519575237601,
               "highMean": 1.1772958631474717,
-              "highTop": 2.376847369917508
+              "highTop": 2.376847369917508,
+              "selectionScore": 0.9206387131649724
             },
             {
               "offset": 2,
@@ -158,7 +158,8 @@
               "lowTop": 1.1644174271616443,
               "midMean": 0.8229177674550587,
               "highMean": 1.1685571917945896,
-              "highTop": 2.246401001667154
+              "highTop": 2.246401001667154,
+              "selectionScore": 0.9158588807425421
             },
             {
               "offset": 3,
@@ -173,7 +174,8 @@
               "lowTop": 1.14550650530848,
               "midMean": 0.8468857768926783,
               "highMean": 1.1567417824100832,
-              "highTop": 2.2680589823887267
+              "highTop": 2.2680589823887267,
+              "selectionScore": 0.917826660662652
             }
           ]
         },
@@ -264,10 +266,10 @@
       }
     },
     "diamondvirgin": {
-      "tp": 1748,
+      "tp": 1749,
       "predicted": 2592,
       "reference": 2389,
-      "precision": 0.674,
+      "precision": 0.675,
       "recall": 0.732,
       "f1": 0.702,
       "by_group": {
@@ -282,7 +284,7 @@
           "reference": 608
         },
         "hat": {
-          "tp": 538,
+          "tp": 539,
           "predicted": 1298,
           "reference": 755
         },
@@ -325,7 +327,7 @@
       },
       "confusion": {
         "class_errors": {
-          "kick_to_hat": 256,
+          "kick_to_hat": 254,
           "tom_to_snare": 9,
           "tom_to_hat": 30,
           "snare_to_hat": 119,
@@ -358,26 +360,24 @@
         "estimated_bpm": 135.07536988005626,
         "truth_bpm": 135.201213,
         "bpm_error_percent": 0.09307839563816503,
-        "bar_phase_sec": 0.5725969883975106,
+        "bar_phase_sec": 0.574186378825911,
         "reference_bar_phase_sec": 0.5561320026988219,
-        "bar_error_sec": 0.016464985698688706,
-        "bar_error_beats": 0.03710143397483942,
-        "export_offset_sec": -0.5725969883975106,
+        "bar_error_sec": 0.018054376127089045,
+        "bar_error_beats": 0.04068289253901135,
+        "export_offset_sec": -0.574186378825911,
         "export_bar_pad": 0,
         "export_grid_residual_sec": 0.0,
         "export_grid_residual_beats": 0.0,
         "beat_phase_sec": 0.13620867754304414,
         "bar_phase_info": {
-          "phaseSec": 0.5725969883975105,
-          "source": "agree",
-          "hypothesisDistance": 0.005312500000000295,
-          "legacyPhaseSec": 0.5725969883975105,
-          "rolesPhaseSec": 0.5749567820466639,
-          "legacyScore": 0.128147551594989,
-          "rolesScore": 0.23338340857407067,
+          "phaseSec": 0.574186378825911,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.46515124198100155,
+          "selectedOffset": 1,
+          "coarsePhaseSec": 0.5804051291483858,
+          "selectionScore": 0.21883204773237067,
+          "refinedScore": 0.23338606185253935,
           "crashAnchors": 0,
-          "legacyAnchor": 0,
-          "rolesAnchor": 0,
           "gridCandidates": [
             {
               "offset": 0,
@@ -407,7 +407,8 @@
               "lowTop": 1.1811229413555515,
               "midMean": 0.22922350025836485,
               "highMean": 1.2300425429573103,
-              "highTop": 2.3870189612911594
+              "highTop": 2.3870189612911594,
+              "selectionScore": 0.21883204773237067
             },
             {
               "offset": 2,
@@ -437,7 +438,8 @@
               "lowTop": 1.1139570513079244,
               "midMean": 0.28271046286778523,
               "highMean": 0.9547638807225785,
-              "highTop": 1.9719774876871417
+              "highTop": 1.9719774876871417,
+              "selectionScore": 0.15770631702624488
             }
           ]
         },
@@ -614,26 +616,24 @@
         "estimated_bpm": 180.0068159173802,
         "truth_bpm": 180.00504,
         "bpm_error_percent": 0.0009865931421701045,
-        "bar_phase_sec": 0.7846577879852521,
+        "bar_phase_sec": 0.7811110472868721,
         "reference_bar_phase_sec": 0.6973719989546958,
-        "bar_error_sec": 0.08728578903055628,
-        "bar_error_beats": 0.2618646990979474,
-        "export_offset_sec": -0.7846577879852521,
+        "bar_error_sec": 0.08373904833217627,
+        "bar_error_beats": 0.2512241790765887,
+        "export_offset_sec": -0.7811110472868721,
         "export_bar_pad": 0,
         "export_grid_residual_sec": 0.0,
         "export_grid_residual_beats": 0.0,
         "beat_phase_sec": 0.11913611376717535,
         "bar_phase_info": {
-          "phaseSec": 0.7846577879852521,
-          "source": "agree",
-          "hypothesisDistance": 0.010312500000000223,
-          "legacyPhaseSec": 0.7846577879852521,
-          "rolesPhaseSec": 0.7812204181454122,
-          "legacyScore": 0.29989479819269316,
-          "rolesScore": 0.6353638490628747,
+          "phaseSec": 0.7811110472868721,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.8693860098605396,
+          "selectedOffset": 2,
+          "coarsePhaseSec": 0.7857775372512605,
+          "selectionScore": 0.40989817597876843,
+          "refinedScore": 0.6353847022482448,
           "crashAnchors": 1,
-          "legacyAnchor": 3.1140498504477892e-09,
-          "rolesAnchor": 2.072524104632189e-09,
           "gridCandidates": [
             {
               "offset": 0,
@@ -648,7 +648,8 @@
               "lowTop": 1.0390049815177917,
               "midMean": 0.25259011692051947,
               "highMean": 0.7258786927155119,
-              "highTop": 1.7629614974323071
+              "highTop": 1.7629614974323071,
+              "selectionScore": 0.12073735007564118
             },
             {
               "offset": 1,
@@ -678,7 +679,8 @@
               "lowTop": 1.273640745564511,
               "midMean": 0.5053034019460795,
               "highMean": 1.1748910943602249,
-              "highTop": 2.2380483652416028
+              "highTop": 2.2380483652416028,
+              "selectionScore": 0.40989817597876843
             },
             {
               "offset": 3,
@@ -784,10 +786,10 @@
       }
     },
     "nanairo": {
-      "tp": 1402,
+      "tp": 1403,
       "predicted": 2217,
       "reference": 2009,
-      "precision": 0.632,
+      "precision": 0.633,
       "recall": 0.698,
       "f1": 0.664,
       "by_group": {
@@ -802,7 +804,7 @@
           "reference": 155
         },
         "hat": {
-          "tp": 858,
+          "tp": 859,
           "predicted": 1334,
           "reference": 1063
         },
@@ -832,7 +834,7 @@
           "reference": 260
         }
       },
-      "median_error": 0.01,
+      "median_error": 0.011,
       "count_ratio": {
         "kick": 1.241,
         "snare": 0.665,
@@ -846,7 +848,7 @@
       "confusion": {
         "class_errors": {
           "kick_to_crash": 7,
-          "kick_to_hat": 229,
+          "kick_to_hat": 228,
           "hat_to_ride": 55,
           "kick_to_ride": 59,
           "crash_to_hat": 50,
@@ -861,7 +863,7 @@
         "kick_to_snare": 0,
         "snare_to_kick": 0,
         "unmatched_predicted": {
-          "kick": 11,
+          "kick": 9,
           "hat": 116,
           "snare": 44
         },
@@ -872,26 +874,24 @@
         "estimated_bpm": 125.0064386919991,
         "truth_bpm": 125.029955,
         "bpm_error_percent": 0.018808539122410557,
-        "bar_phase_sec": 0.03869800668363177,
+        "bar_phase_sec": 0.037430571968605886,
         "reference_bar_phase_sec": 0.0335,
-        "bar_error_sec": 0.005198006683631767,
-        "bar_error_beats": 0.01083177569573632,
-        "export_offset_sec": -0.03869800668363177,
+        "bar_error_sec": 0.003930571968605884,
+        "bar_error_beats": 0.008190653939317585,
+        "export_offset_sec": -0.037430571968605886,
         "export_bar_pad": 0,
         "export_grid_residual_sec": 0.0,
         "export_grid_residual_beats": 0.0,
         "beat_phase_sec": 0.04031042362878321,
         "bar_phase_info": {
-          "phaseSec": 0.03869800668363177,
-          "source": "agree",
-          "hypothesisDistance": 0.0024999999999997698,
-          "legacyPhaseSec": 0.03869800668363177,
-          "rolesPhaseSec": 0.037498068491891356,
-          "legacyScore": 0.20926341722794467,
-          "rolesScore": 0.3989260680291623,
+          "phaseSec": 0.037430571968605886,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.5236118538445648,
+          "selectedOffset": 0,
+          "coarsePhaseSec": 0.04031042362878323,
+          "selectionScore": 0.2806399869215604,
+          "refinedScore": 0.39892249850001127,
           "crashAnchors": 0,
-          "legacyAnchor": 0,
-          "rolesAnchor": 0,
           "gridCandidates": [
             {
               "offset": 0,
@@ -906,7 +906,8 @@
               "lowTop": 1.114231683589794,
               "midMean": 0.4064805487504049,
               "highMean": 1.6644237755878954,
-              "highTop": 2.7794738522282354
+              "highTop": 2.7794738522282354,
+              "selectionScore": 0.2806399869215604
             },
             {
               "offset": 1,
@@ -936,7 +937,8 @@
               "lowTop": 1.114752800376327,
               "midMean": 0.4093393704158992,
               "highMean": 1.7722858987412122,
-              "highTop": 2.906534292079784
+              "highTop": 2.906534292079784,
+              "selectionScore": 0.27593049808336223
             },
             {
               "offset": 3,
@@ -1044,12 +1046,12 @@
       }
     },
     "ray": {
-      "tp": 1556,
-      "predicted": 2287,
+      "tp": 1561,
+      "predicted": 2270,
       "reference": 2491,
-      "precision": 0.68,
-      "recall": 0.625,
-      "f1": 0.651,
+      "precision": 0.688,
+      "recall": 0.627,
+      "f1": 0.656,
       "by_group": {
         "kick": {
           "tp": 485,
@@ -1068,12 +1070,12 @@
         },
         "tom": {
           "tp": 0,
-          "predicted": 17,
+          "predicted": 16,
           "reference": 0
         },
         "crash": {
-          "tp": 0,
-          "predicted": 51,
+          "tp": 5,
+          "predicted": 35,
           "reference": 52
         },
         "ride": {
@@ -1098,7 +1100,7 @@
         "snare": 0.481,
         "hat": 1.033,
         "tom": null,
-        "crash": 0.981,
+        "crash": 0.673,
         "ride": null,
         "other": null,
         "pedal_hat": 0.0
@@ -1106,12 +1108,12 @@
       "confusion": {
         "class_errors": {
           "crash_to_hat": 74,
-          "hat_to_crash": 48,
-          "hat_to_ride": 43,
-          "crash_to_ride": 4,
+          "hat_to_ride": 44,
+          "hat_to_crash": 27,
           "kick_to_hat": 132,
-          "kick_to_tom": 12,
-          "kick_to_ride": 76,
+          "kick_to_tom": 11,
+          "kick_to_ride": 77,
+          "crash_to_ride": 2,
           "snare_to_hat": 70,
           "snare_to_kick": 7,
           "snare_to_tom": 5,
@@ -1130,26 +1132,24 @@
         "estimated_bpm": 131.99993362508744,
         "truth_bpm": 132.000132,
         "bpm_error_percent": 0.000150283874391393,
-        "bar_phase_sec": 0.9386368356207417,
+        "bar_phase_sec": 0.027457400170322277,
         "reference_bar_phase_sec": 0.005,
-        "bar_error_sec": 0.8845431643810763,
-        "bar_error_beats": 1.9459969076333297,
-        "export_offset_sec": -0.9386368356207417,
+        "bar_error_sec": 0.022457400170322276,
+        "bar_error_beats": 0.04940632978098939,
+        "export_offset_sec": -0.027457400170322277,
         "export_bar_pad": 0,
         "export_grid_residual_sec": 0.0,
         "export_grid_residual_beats": 0.0,
         "beat_phase_sec": 0.030184674268978147,
         "bar_phase_info": {
-          "phaseSec": 0.9386368356207417,
-          "source": "legacy",
-          "hypothesisDistance": 1.9949999999999999,
-          "legacyPhaseSec": 0.9386368356207417,
-          "rolesPhaseSec": 0.027272740986559185,
-          "legacyScore": 0.22324867270327517,
-          "rolesScore": 0.48926100249132504,
+          "phaseSec": 0.027457400170322277,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.7868287669503973,
+          "selectedOffset": 0,
+          "coarsePhaseSec": 0.030184674268978195,
+          "selectionScore": 0.2865312412648681,
+          "refinedScore": 0.48927430063259303,
           "crashAnchors": 1,
-          "legacyAnchor": 1.404435436207426e-08,
-          "rolesAnchor": 1.2573186771518921e-09,
           "gridCandidates": [
             {
               "offset": 0,
@@ -1164,7 +1164,8 @@
               "lowTop": 1.1174459247028126,
               "midMean": 0.4043286197423686,
               "highMean": 1.3849315927788435,
-              "highTop": 2.4243638305103077
+              "highTop": 2.4243638305103077,
+              "selectionScore": 0.2865312412648681
             },
             {
               "offset": 1,
@@ -1194,7 +1195,8 @@
               "lowTop": 1.146499430432039,
               "midMean": 0.4324865607597606,
               "highMean": 1.5014026075565805,
-              "highTop": 2.4624813234104828
+              "highTop": 2.4624813234104828,
+              "selectionScore": 0.280257756407607
             },
             {
               "offset": 3,
@@ -1301,13 +1303,13 @@
     }
   },
   "summary": {
-    "tp": 6526,
-    "predicted": 10395,
+    "tp": 6534,
+    "predicted": 10368,
     "reference": 10086,
-    "precision": 0.628,
-    "recall": 0.647,
-    "f1": 0.637,
-    "kick_to_snare": 44,
+    "precision": 0.63,
+    "recall": 0.648,
+    "f1": 0.639,
+    "kick_to_snare": 40,
     "snare_to_kick": 27,
     "by_group": {
       "kick": {
@@ -1317,34 +1319,34 @@
         "count_ratio": 1.029
       },
       "snare": {
-        "tp": 943,
-        "predicted": 1061,
+        "tp": 945,
+        "predicted": 1059,
         "reference": 1470,
-        "count_ratio": 0.722
+        "count_ratio": 0.72
       },
       "hat": {
-        "tp": 3010,
+        "tp": 3011,
         "predicted": 5975,
         "reference": 4102,
         "count_ratio": 1.457
       },
       "tom": {
         "tp": 0,
-        "predicted": 68,
+        "predicted": 67,
         "reference": 92,
-        "count_ratio": 0.739
+        "count_ratio": 0.728
       },
       "crash": {
-        "tp": 7,
-        "predicted": 150,
+        "tp": 12,
+        "predicted": 127,
         "reference": 390,
-        "count_ratio": 0.385
+        "count_ratio": 0.326
       },
       "ride": {
         "tp": 24,
-        "predicted": 349,
+        "predicted": 348,
         "reference": 644,
-        "count_ratio": 0.542
+        "count_ratio": 0.54
       },
       "other": {
         "tp": 0,
@@ -1362,8 +1364,8 @@
     "timing": {
       "mean_bpm_error_percent": 0.023032235246154796,
       "max_bpm_error_percent": 0.09307839563816503,
-      "mean_bar_error_beats": 0.6587368815214532,
-      "max_bar_error_beats": 1.9459969076333297,
+      "mean_bar_error_beats": 0.07640177705556596,
+      "max_bar_error_beats": 0.2512241790765887,
       "max_export_grid_residual_beats": 0.0,
       "all_midi_time_signatures_4_4": true
     }
