@@ -1,0 +1,42 @@
+name: DrumScribe ADTOF ONNX export
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/export_adtof_onnx.py"
+      - ".github/workflows/drumscribe-adtof-onnx.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install "git+https://github.com/xavriley/ADTOF-pytorch.git" onnx onnxruntime
+      - name: Export and verify ADTOF ONNX
+        run: python drumscribe/experiments/export_adtof_onnx.py
+      - name: Commit model artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/models/adtof-frame-rnn.onnx drumscribe/models/adtof-filterbank.f32 drumscribe/models/adtof-model.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Add verified ADTOF browser model [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
