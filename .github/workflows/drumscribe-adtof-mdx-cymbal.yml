@@ -1,0 +1,43 @@
+name: DrumScribe ADTOF MDX cymbal
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_adtof_mdx_cymbal.py"
+      - ".github/workflows/drumscribe-adtof-mdx-cymbal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+          python -m pip install --upgrade pip
+          pip install numpy scipy mdxnet-infer
+      - name: Run ADTOF anchored MDX cycles 178 to 180
+        run: python drumscribe/experiments/iterative_search_adtof_mdx_cymbal.py
+      - name: Commit MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-adtof-mdx-cymbal drumscribe/experiments/results-iterative-adtof-mdx-cymbal.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record ADTOF anchored MDX cymbal results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
