@@ -67,6 +67,33 @@
       "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-iterative-crash-context.json",
       "cycle": 141,
       "key": "c141_support_only"
+    },
+    {
+      "id": "review-snare-guard",
+      "label": "F / キック近傍のスネア抑制",
+      "description": "レビュー後の試案。連続するキック拍にだけ重なるスネアを、反復するスネアの裏付けが弱い時に除外。正しい同時打撃も一部失う可能性があります。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-review-guards/adaptive_snare",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-human-review-ui.json",
+      "cycle": 145,
+      "key": "c145_snare"
+    },
+    {
+      "id": "review-rhythm-guard",
+      "label": "G / 連打と誤認の抑制",
+      "description": "Fに加え、孤立したハイハット、ライドの密集、弱いシンバル候補を抑制。曲全体の数値はわずかな改善で、聴感は未検証です。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-review-guards/review_strict",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-human-review-ui.json",
+      "cycle": 145,
+      "key": "c145_rhythm"
+    },
+    {
+      "id": "review-kick-veto",
+      "label": "H / キック優先・強",
+      "description": "キック漏れが疑わしい曲で同時刻のスネアを厳しく削る比較用。キック＋スネアの本当の同時打撃も多く消えるため、採用未定です。",
+      "midiBase": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/generated-review-guards/kick_veto",
+      "metricsFile": "https://raw.githubusercontent.com/ld1kanae/ld1kanae.github.io/drumscribe-v2-eval/drumscribe/experiments/results-human-review-ui.json",
+      "cycle": 145,
+      "key": "c145_kick_veto"
     }
   ]
 }
