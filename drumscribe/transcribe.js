@@ -352,6 +352,26 @@ function refineBarPhaseNear(events,bpm,center,mode){
   }
   return {phaseSec:bestPhase,score:bestScore};
 }
+function estimateBeatPhase(events,bpm){
+  const beat=60/bpm;
+  let xs=events.filter(e=>e.group==='kick');
+  if(!xs.length)xs=events.filter(e=>e.group==='kick'||e.group==='snare');
+  if(!xs.length)return {phaseSec:0,score:0,count:0};
+  const sigma=.10*beat;
+  let bestScore=-1,bestPhase=0;
+  for(let q=0;q<512;q++){
+    const phase=beat*q/512;
+    let sum=0;
+    for(const e of xs){
+      const d=circDistance(e.time,phase,beat);
+      sum+=Math.exp(-.5*(d/sigma)**2);
+    }
+    const score=sum/xs.length;
+    if(score>bestScore){bestScore=score;bestPhase=phase;}
+  }
+  return {phaseSec:bestPhase,score:bestScore,count:xs.length};
+}
+
 function estimateHybridBarPhase(events,sim,bpm,beatPhase,band){
   const rows=barGridCandidateFeatures(events,sim,band,bpm,beatPhase);
   const maxContrast=Math.max(...rows.map(r=>Math.abs(r.snareContrast)));
