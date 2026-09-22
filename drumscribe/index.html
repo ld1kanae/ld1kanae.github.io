@@ -16,7 +16,7 @@
   <section class="card import" aria-labelledby="import-title">
     <div class="section-title"><span class="number">01</span><div><h2 id="import-title">音源を選ぶ</h2><p>WAV / MP3 / M4A / OGG など、ブラウザで再生できるドラム音源</p></div></div>
     <label class="drop" id="drop"><input type="file" id="file" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac"><span class="drop-icon">↥</span><strong id="fileName">クリックして選択、またはここにドロップ</strong><small>ファイルはサーバーに送信されません</small></label>
-    <div class="import-bottom"><label for="example">検証用データ</label><select id="example"><option value="">選択してください</option><option value="arcaround">アルクアラウンド</option><option value="diamondvirgin">ダイヤモンドヴァージン</option><option value="kaiju">怪獣</option><option value="nanairo">なないろ</option><option value="ray">Ray</option></select><button id="analyze" class="primary" disabled>自動採譜する <span>→</span></button></div>
+    <div class="import-bottom"><label for="example">検証用データ</label><select id="example"><option value="">選択してください</option><option value="arcaround">アルクアラウンド</option><option value="diamondvirgin">ダイヤモンドヴァージン</option><option value="kaiju">怪獣</option><option value="nanairo">なないろ</option><option value="ray">Ray</option></select><label class="bpm-label" for="referenceBpm">基準 BPM <input id="referenceBpm" type="number" min="40" max="300" step="0.1" inputmode="decimal" placeholder="任意" aria-describedby="bpmHelp"></label><button id="analyze" class="primary" disabled>自動採譜する <span>→</span></button></div><p id="bpmHelp" class="hint">未入力なら指定BPMは使いません。入力すると反復判定と書き出すMIDIのテンポに反映します。ノートの時刻は音源を基準に保持します。</p>
     <p class="status" id="status" role="status" aria-live="polite">音源を選択してください。</p><progress id="progress" max="100" value="0" hidden></progress>
   </section>
   <section class="card result" id="result" hidden aria-labelledby="result-title">
@@ -27,5 +27,5 @@
   </section>
   <footer><span>DRUMSCRIBE / PROTOTYPE</span><a href="https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe">ソースと検証履歴 ↗</a></footer>
 </main>
-<script type="module" src="app.js?v=20260921-download"></script>
+<script type="module" src="app.js?v=20260922-separated"></script>
 </body></html>

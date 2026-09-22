@@ -4,7 +4,8 @@ const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
-const groupNotes=[36,38,42,45,49];
+const groupNotes=[36,38,42,46,45,48,49,51,60];
+let lastBpm=null;
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
 function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;decoded=null;events=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
@@ -24,15 +25,18 @@ async function audioContext(){if(!context){context=new AudioContext();tracks.aud
 $('analyze').addEventListener('click',async()=>{
   if(!file)return;pause();$('analyze').disabled=true;$('progress').hidden=false;$('progress').value=0;
   try{
+    const bpmText=$('referenceBpm').value.trim();
+    if(bpmText&&!$('referenceBpm').checkValidity())throw Error('基準BPMは40～300の範囲で入力してください。');
+    lastBpm=bpmText?Number(bpmText):null;
     const ac=await audioContext();tell('音源を読み込み中…');
     decoded=await ac.decodeAudioData(await file.arrayBuffer());
     if(decoded.duration>900)throw Error('15分以内の音源を選択してください。');
-    events=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;});
+    events=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{referenceBpm:lastBpm});
     position=0;$('result').hidden=false;
     if(downloadUrl)URL.revokeObjectURL(downloadUrl);
-    downloadUrl=URL.createObjectURL(new Blob([midiFile(events)],{type:'audio/midi'}));
+    downloadUrl=URL.createObjectURL(new Blob([midiFile(events,lastBpm)],{type:'audio/midi'}));
     $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
-    $('previewTitle').textContent=file.name;$('resultSummary').textContent=`${fmt(decoded.duration)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}`;
+    $('previewTitle').textContent=file.name;$('resultSummary').textContent=`${fmt(decoded.duration)} / ${events.length} ノート / キック ${events.filter(e=>e.group==='kick').length}・スネア ${events.filter(e=>e.group==='snare').length}・ハイハット ${events.filter(e=>e.group==='hat').length}・タム ${events.filter(e=>e.group==='tom').length}・シンバル ${events.filter(e=>e.group==='cymbal').length}・その他 ${events.filter(e=>e.group==='other').length}`;
     tell(`${events.length} ノートを推定しました。プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
@@ -97,7 +101,7 @@ function draw(){
     c.moveTo(x,h*.32-peak*h*.27);c.lineTo(x,h*.32+peak*h*.27);
   }c.stroke();c.globalAlpha=1;
   c.fillStyle='#203144';c.fillRect(0,h*.64,w,h*.36);
-  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',tom:'#e8ca83',cymbal:'#8dd3a0'},offset=Number($('offset').value||0)/1000;
-  for(const e of events){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,tom:3,cymbal:4}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.058),Math.max(1.5*dpr,w/1500),4*dpr);}
+  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',tom:'#e8ca83',cymbal:'#8dd3a0',other:'#f9a9cc'},offset=Number($('offset').value||0)/1000;
+  for(const e of events){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,tom:3,cymbal:4,other:5}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.052),Math.max(1.5*dpr,w/1500),4*dpr);}
   const cursor=now()/decoded.duration*w;c.fillStyle='#eaf7fc';c.fillRect(cursor,0,2*dpr,h);
 }
