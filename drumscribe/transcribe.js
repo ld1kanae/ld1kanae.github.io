@@ -342,44 +342,43 @@ function barGridCandidateFeatures(events,sim,band,bpm,beatPhase){
   }
   return rows;
 }
-function estimateHybridBarPhase(events,sim,bpm,beatPhase,band){
-  const legacy=estimateBarHypothesis(events,bpm,'legacy');
-  const roles=estimateBarHypothesis(events,bpm,'roles');
+function refineBarPhaseNear(events,bpm,center,mode){
   const beat=60/bpm,bar=4*beat;
-  const hypothesisDistance=circDistance(legacy.phaseSec,roles.phaseSec,bar)/beat;
-  const anchors=crashAnchors(events,sim);
-  const legacyAnchor=crashAnchorScore(anchors,legacy.phaseSec,bpm);
-  const rolesAnchor=crashAnchorScore(anchors,roles.phaseSec,bpm);
-  let chosen=legacy,source='legacy';
-  if(hypothesisDistance<.45)source='agree';
-  else if(anchors.length&&rolesAnchor>legacyAnchor){chosen=roles;source='roles_crash';}
-  return {
-    phaseSec:chosen.phaseSec,source,hypothesisDistance,
-    legacyPhaseSec:legacy.phaseSec,rolesPhaseSec:roles.phaseSec,
-    legacyScore:legacy.score,rolesScore:roles.score,
-    crashAnchors:anchors.length,legacyAnchor,rolesAnchor,
-    gridCandidates:barGridCandidateFeatures(events,sim,band,bpm,beatPhase)
-  };
-}
-function estimateBeatPhase(events,bpm){
-  const beat=60/bpm;
-  let xs=events.filter(e=>e.group==='kick');
-  if(!xs.length)xs=events.filter(e=>e.group==='kick'||e.group==='snare');
-  if(!xs.length)return {phaseSec:0,score:0,count:0};
-  const sigma=.10*beat;
-  let bestScore=-1,bestPhase=0;
-  for(let q=0;q<512;q++){
-    const phase=beat*q/512;
-    let sum=0;
-    for(const e of xs){
-      const d=circDistance(e.time,phase,beat);
-      sum+=Math.exp(-.5*(d/sigma)**2);
-    }
-    const score=sum/xs.length;
+  let bestPhase=((center%bar)+bar)%bar,bestScore=-Infinity;
+  for(let i=0;i<=120;i++){
+    const d=(-.12+.24*i/120)*beat,phase=((center+d)%bar+bar)%bar;
+    const score=scoreBarHypothesis(events,bpm,phase,mode);
     if(score>bestScore){bestScore=score;bestPhase=phase;}
   }
-  return {phaseSec:bestPhase,score:bestScore,count:xs.length};
+  return {phaseSec:bestPhase,score:bestScore};
 }
+function estimateHybridBarPhase(events,sim,bpm,beatPhase,band){
+  const rows=barGridCandidateFeatures(events,sim,band,bpm,beatPhase);
+  const maxContrast=Math.max(...rows.map(r=>Math.abs(r.snareContrast)));
+  let pool,source,refineMode;
+  if(maxContrast>=.15){
+    pool=rows.filter(r=>r.snareContrast>0);
+    if(!pool.length)pool=rows;
+    for(const r of pool)r.selectionScore=r.kickHead+.05*r.lowMean;
+    pool.sort((a,b)=>b.selectionScore-a.selectionScore);
+    source='backbeat_kick';
+    refineMode='roles';
+  }else{
+    pool=rows.slice();
+    for(const r of pool)r.selectionScore=r.lowMean;
+    pool.sort((a,b)=>b.selectionScore-a.selectionScore);
+    source='low_fallback';
+    refineMode='legacy';
+  }
+  const coarse=pool[0];
+  const refined=refineBarPhaseNear(events,bpm,coarse.phaseSec,refineMode);
+  return {
+    phaseSec:refined.phaseSec,source,maxSnareContrast:maxContrast,
+    selectedOffset:coarse.offset,coarsePhaseSec:coarse.phaseSec,
+    selectionScore:coarse.selectionScore,refinedScore:refined.score,
+    crashAnchors:crashAnchors(events,sim).length,
+    gridCandidates:rows
+  };
 
 const twiddles=[];
 for(let length=2;length<=SIZE;length*=2){
