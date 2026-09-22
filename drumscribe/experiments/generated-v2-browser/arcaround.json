@@ -159,9 +159,20 @@
     ]
   },
   "adtofInfo": {
-    "enabled": false,
-    "fallback": true,
-    "error": "no available backend found. ERR: [wasm] TypeError: Failed to fetch dynamically imported module: http://127.0.0.1:8000/drumscribe/vendor/ort/ort-wasm-simd-threaded.jsep.mjs"
+    "enabled": true,
+    "fallback": false,
+    "thresholdScale": 1.15,
+    "backend": "onnxruntime-web/wasm",
+    "frames": 26337,
+    "coreFrames": 3000,
+    "overlapFrames": 200,
+    "counts": {
+      "kick": 587,
+      "snare": 147,
+      "tom": 22,
+      "hat": 507,
+      "cymbal": 13
+    }
   },
   "numerator": 4,
   "denominator": 4,
