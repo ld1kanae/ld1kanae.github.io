@@ -1,0 +1,82 @@
+name: DrumScribe neural parallel search
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_neural_separation.py"
+      - "drumscribe/experiments/prepare_neural_stem_song.py"
+      - "drumscribe/experiments/evaluate_neural_parallel.py"
+      - ".github/workflows/drumscribe-neural-parallel.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    strategy:
+      fail-fast: false
+      matrix:
+        song: [arcaround, diamondvirgin, kaiju, nanairo, ray]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install separation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+          python -m pip install --upgrade pip
+          pip install numpy scipy scikit-learn mdxnet-infer 'drumsep @ git+https://github.com/cukas/drumsep.git'
+      - name: Separate one song
+        run: |
+          python drumscribe/experiments/prepare_neural_stem_song.py             --song "${{ matrix.song }}"             --out drumscribe/experiments/neural-stem-cache             --cache /tmp/mdx-model-cache
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neural-stem-${{ matrix.song }}
+          path: drumscribe/experiments/neural-stem-cache/${{ matrix.song }}
+          retention-days: 1
+          compression-level: 0
+
+  evaluate:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install evaluation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+          python -m pip install --upgrade pip
+          pip install numpy scipy scikit-learn mdxnet-infer 'drumsep @ git+https://github.com/cukas/drumsep.git'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: neural-stem-*
+          path: drumscribe/experiments/neural-stem-cache
+          merge-multiple: true
+      - name: Run cycles 130 to 132
+        run: |
+          python drumscribe/experiments/evaluate_neural_parallel.py             --cache drumscribe/experiments/neural-stem-cache
+      - name: Commit MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-neural-parallel drumscribe/experiments/results-iterative-neural-parallel.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record parallel neural separation PDCA results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
