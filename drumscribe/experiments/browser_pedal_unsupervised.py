@@ -13,7 +13,7 @@ rule has produced predictions.
 """
 from __future__ import annotations
 
-import importlib.util, json, math
+import importlib.util, json, math, bisect
 from pathlib import Path
 from collections import Counter
 import numpy as np
@@ -34,16 +34,30 @@ def browser_rows(song):
 
 
 def near(xs,t,w):
-    return any(abs(x-t)<=w for x in xs)
+    if not xs:return False
+    i=bisect.bisect_left(xs,t-w)
+    return i<len(xs) and xs[i]<=t+w
 
 
 def periodic(times,t,bpm):
     if len(times)<3:return 0.
     best=0.
     for step in (30/bpm,60/bpm,120/bpm):
-        n=sum(any(abs(x-(t+k*step))<=.065 for x in times) for k in (-2,-1,1,2))
+        n=sum(near(times,t+k*step,.065) for k in (-2,-1,1,2))
         best=max(best,n/4)
     return best
+
+
+def match(pred,truth,tol=.08):
+    pred=sorted(pred);truth=sorted(truth);used=set();tp=0
+    for x in pred:
+        j=bisect.bisect_left(truth,x)
+        opts=[k for k in (j-1,j,j+1) if 0<=k<len(truth) and k not in used]
+        if not opts:continue
+        k=min(opts,key=lambda q:abs(x-truth[q]))
+        if abs(x-truth[k])<=tol:
+            used.add(k);tp+=1
+    return tp
 
 
 def prepare(song,tmpl):
@@ -63,11 +77,25 @@ def prepare(song,tmpl):
           "ratio":ps/(abs(hs)+1e-4),
           "high_ratio":b3/(b2+1e-5),
         })
+    meta=json.loads((ROOT/"DruMaster/songs"/song/"song.json").read_text())
+    truth=ev.midi_events(ROOT/"DruMaster/songs"/song/"chart.mid")
+    shift=float(meta["playback"]["stemOffsetSec"])+float(meta["playback"].get("midiOffsetSec",0))
+    truth_hat=sorted(t+shift for t,g,*_ in truth if g=="hat")
+    truth_pedal=sorted(t+shift for t,g,*_ in truth if g=="pedal_hat")
+    fixed_tp=fixed_pred=fixed_ref=0
+    for g in ev.ORDER:
+        if g in ("hat","pedal_hat"):continue
+        pp=sorted(t for t,gg in events if gg==g)
+        tt=sorted(t+shift for t,gg,*_ in truth if gg==g)
+        fixed_tp+=match(pp,tt);fixed_pred+=len(pp);fixed_ref+=len(tt)
     return {
       "bpm":float(side["bpm"]),
       "events":events,
       "hats":hats,
-      "features":rows
+      "features":rows,
+      "truth_hat":truth_hat,
+      "truth_pedal":truth_pedal,
+      "fixed_tp":fixed_tp,"fixed_pred":fixed_pred,"fixed_ref":fixed_ref,
     }
 
 
@@ -101,34 +129,36 @@ def build(d,margin,ratio,high_ratio,per_thr,mode):
 def evaluate(data,cfg):
     tot=Counter();songs={}
     for song,d in data.items():
-        pred,chosen=build(d,**cfg)
-        meta=json.loads((ROOT/"DruMaster/songs"/song/"song.json").read_text())
-        truth=ev.midi_events(ROOT/"DruMaster/songs"/song/"chart.mid")
-        shift=float(meta["playback"]["stemOffsetSec"])+float(meta["playback"].get("midiOffsetSec",0))
-        sc=ev.score([(t,g,0,0) for t,g in pred],truth,shift)
+        _,chosen=build(d,**cfg)
+        chosen=sorted(chosen)
+        hand=[t for t in d["hats"] if not near(chosen,t,.025)]
+        htp=match(hand,d["truth_hat"])
+        ptp=match(chosen,d["truth_pedal"])
+        tp=d["fixed_tp"]+htp+ptp
+        pred=d["fixed_pred"]+len(hand)+len(chosen)
+        ref=d["fixed_ref"]+len(d["truth_hat"])+len(d["truth_pedal"])
         songs[song]={
           "converted":len(chosen),
-          "overall_f1":2*sc["tp"]/(sc["predicted"]+sc["reference"]) if sc["predicted"]+sc["reference"] else 0,
-          "hat":sc["by_group"]["hat"],
-          "pedal_hat":sc["by_group"]["pedal_hat"],
+          "overall_f1":2*tp/(pred+ref) if pred+ref else 0,
+          "hat":{"tp":htp,"predicted":len(hand),"reference":len(d["truth_hat"])},
+          "pedal_hat":{"tp":ptp,"predicted":len(chosen),"reference":len(d["truth_pedal"])},
         }
-        tot.update(tp=sc["tp"],pred=sc["predicted"],ref=sc["reference"])
-        for g,x in sc["by_group"].items():
-            tot[f"{g}_tp"]+=x["tp"];tot[f"{g}_pred"]+=x["predicted"];tot[f"{g}_ref"]+=x["reference"]
-    def part(g):
-        a,b,c=tot[f"{g}_tp"],tot[f"{g}_pred"],tot[f"{g}_ref"]
-        return {"tp":a,"predicted":b,"reference":c,
-                "precision":a/b if b else 0,"recall":a/c if c else 0,
-                "f1":2*a/(b+c) if b+c else 0}
+        tot.update(tp=tp,pred=pred,ref=ref,
+                   hat_tp=htp,hat_pred=len(hand),hat_ref=len(d["truth_hat"]),
+                   ped_tp=ptp,ped_pred=len(chosen),ped_ref=len(d["truth_pedal"]))
+    def pstat(tp,pred,ref):
+        return {"tp":tp,"predicted":pred,"reference":ref,
+                "precision":tp/pred if pred else 0,"recall":tp/ref if ref else 0,
+                "f1":2*tp/(pred+ref) if pred+ref else 0}
     return {
       "tp":tot["tp"],"predicted":tot["pred"],"reference":tot["ref"],
       "precision":tot["tp"]/tot["pred"] if tot["pred"] else 0,
       "recall":tot["tp"]/tot["ref"] if tot["ref"] else 0,
       "f1":2*tot["tp"]/(tot["pred"]+tot["ref"]) if tot["pred"]+tot["ref"] else 0,
-      "hat":part("hat"),"pedal_hat":part("pedal_hat"),
+      "hat":pstat(tot["hat_tp"],tot["hat_pred"],tot["hat_ref"]),
+      "pedal_hat":pstat(tot["ped_tp"],tot["ped_pred"],tot["ped_ref"]),
       "songs":songs
     }
-
 
 def main():
     tmpl=ev.templates(ROOT/"DruMaster/assets/drums")
