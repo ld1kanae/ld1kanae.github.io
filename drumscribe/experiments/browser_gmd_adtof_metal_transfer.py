@@ -28,6 +28,8 @@ from adtof_pytorch.audio import create_adtof_processor
 ROOT=Path(".");EXP=ROOT/"drumscribe/experiments";BASE=EXP/"generated-v2-browser"
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
 MODEL=json.loads((ROOT/"drumscribe/models/gmd-adtof-metal-logreg.json").read_text())
+OUTDIR=EXP/"generated-gmd-adtof-metal-transfer"
+PITCH_OUT={"kick":36,"snare":38,"hat":42,"pedal_hat":44,"tom":45,"crash":49,"ride":51}
 CLASSES=MODEL["classes"];CI={g:i for i,g in enumerate(CLASSES)}
 MEAN=np.asarray(MODEL["mean"],float);SCALE=np.asarray(MODEL["scale"],float)
 COEF=np.asarray(MODEL["coef"],float);INTER=np.asarray(MODEL["intercept"],float)
@@ -54,6 +56,32 @@ def hidden_and_output(model,x_np):
 def feature(h,a,fr):
     fr=max(0,min(len(h)-1,fr));lo=max(0,fr-2);hi=min(len(h),fr+3)
     return np.concatenate([h[fr],a[fr],h[lo:hi].mean(0),a[lo:hi].mean(0),a[lo:hi].max(0)]).astype(np.float32)
+
+def vlq(n):
+    out=[n&127]
+    while n>>7:
+        n>>=7;out.insert(0,(n&127)|128)
+    return bytes(out)
+
+def write_midi(path,pred,bpm):
+    ppq=480;tps=ppq*bpm/60;tempo=round(60_000_000/bpm)
+    packets=[(0,0,bytes([255,81,3,(tempo>>16)&255,(tempo>>8)&255,tempo&255])),
+             (0,0,bytes([255,88,4,4,2,24,8]))]
+    for t,g in pred:
+        if g not in PITCH_OUT:continue
+        tick=max(0,round(t*tps));pitch=PITCH_OUT[g]
+        packets += [(tick,2,bytes([0x99,pitch,100])),(tick+max(1,round(.06*tps)),1,bytes([0x89,pitch,0]))]
+    packets.sort(key=lambda x:(x[0],x[1],x[2][1] if len(x[2])>1 else 0))
+    body=bytearray();prev=0
+    for tick,_,data in packets:
+        body+=vlq(tick-prev)+data;prev=tick
+    body+=bytes([0,255,47,0]);path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
+    path.write_bytes(b"MThd"+(6).to_bytes(4,"big")+bytes([0,0,0,1,1,224])+b"MTrk"+len(body).to_bytes(4,"big")+body)
+
+def score_midi(song,pred,out_path,bpm):
+    write_midi(out_path,pred,bpm)
+    parsed=[(t,g) for t,g,*_ in rep.ev.midi_events(out_path)]
+    return rep.truth_score(song,parsed)
 
 def softmax(z):
     z=z-np.max(z);e=np.exp(z);return e/e.sum()
@@ -144,11 +172,14 @@ def main():
     ]
     fixed_rows=[]
     for cfg in fixed:
-        scores={};diag={}
+        scores={};diag={};name=cfg["name"]
         for s in SONGS:
-            pred,ch=relabel(data[s],cfg);sc=score(s,pred);scores[s]=sc;diag[s]=ch
+            pred,ch=relabel(data[s],cfg)
+            sc=score_midi(s,pred,OUTDIR/"fixed"/name/f"{s}.mid",float(data[s]["side"]["bpm"]))
+            scores[s]=sc;diag[s]=ch
         ag=aggregate(scores)
         fixed_rows.append({"config":cfg,"objective":objective(ag),"summary":ag,"diag":diag,
+          "midiDir":str(OUTDIR/"fixed"/name),
           "songs":{s:{"f1":scores[s]["f1"],"hat":scores[s]["by_group"]["hat"],"ride":scores[s]["by_group"]["ride"]} for s in SONGS}})
 
     configs=[];i=0
@@ -175,9 +206,11 @@ def main():
             valid=ag["f1"]>=bag["f1"]-.002 and ag["precision"]>=bag["precision"]-.015
             rank.append((valid,objective(ag),ag["f1"],z["id"]))
         rank.sort(reverse=True);bid=rank[0][3];z=next(x for x in rows if x["id"]==bid)
-        sc=cache[bid][h];held[h]=sc
+        pred,ch=relabel(data[h],z["config"])
+        sc=score_midi(h,pred,OUTDIR/"nested-loo"/f"{h}.mid",float(data[h]["side"]["bpm"]))
+        held[h]=sc
         loo[h]={"selectedId":bid,"config":z["config"],"heldF1":sc["f1"],
-                "hat":sc["by_group"]["hat"],"ride":sc["by_group"]["ride"],"diag":z["diag"][h]}
+                "hat":sc["by_group"]["hat"],"ride":sc["by_group"]["ride"],"diag":ch}
     loo_ag=aggregate(held)
 
     mc={};tot=Counter();n=0
@@ -190,6 +223,7 @@ def main():
       "description":"GMD-only frozen ADTOF embedding transfer; existing hat/ride relabel only; charts scoring-only.",
       "externalValidation":MODEL["training"],
       "baseline":baseline,
+      "generatedMidiRoot":str(OUTDIR),
       "fixed":fixed_rows,
       "top":rows[:40],
       "nestedLOO":{"aggregate":loo_ag,"objective":objective(loo_ag),"songs":loo},
