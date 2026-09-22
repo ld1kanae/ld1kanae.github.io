@@ -39,7 +39,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin drumscribe-v2-eval
-          git add drumscribe/experiments/results-browser-gmd-adtof-metal-transfer.json
+          git add drumscribe/experiments/results-browser-gmd-adtof-metal-transfer.json drumscribe/experiments/generated-gmd-adtof-metal-transfer
           git diff --cached --quiet && exit 0
           git commit -m "Record GMD ADTOF metal transfer benchmark [skip ci]"
           git push origin HEAD:drumscribe-v2-eval
