@@ -23,8 +23,11 @@ for(const song of songs){
   await page.waitForFunction(() => {
     const r=document.querySelector('#result');
     const s=document.querySelector('#status');
-    return r && !r.hidden && s && s.textContent.includes('ノートを推定しました');
+    const text=s?.textContent||'';
+    return (r && !r.hidden && text.includes('ノートを推定しました')) || text.includes('採譜できませんでした');
   },null,{timeout:20*60*1000});
+  const status=await page.locator('#status').textContent();
+  if(status.includes('採譜できませんでした'))throw new Error(song+': '+status);
   console.log('RESULT',song,await page.locator('#resultSummary').textContent());
   const timing=await page.evaluate(()=>globalThis.__drumscribeResult||null);
   await fs.writeFile(path.join(outDir,song+'.json'),JSON.stringify(timing,null,2));
