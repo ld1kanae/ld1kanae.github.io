@@ -625,6 +625,40 @@ export async function transcribe(decoded,report=()=>{},options={}){
     console.warn('ADTOF fallback',err);
     adtofInfo={enabled:false,fallback:true,error:String(err?.message||err)};
   }
+  // Fixed hi-hat overtrigger suppressor selected by the current
+  // audio-only browser search. It only removes weak hats colliding with
+  // kick/snare unless a strong repeating hat pattern supports the event.
+  if(adtofInfo.enabled){
+    const hats=structural.filter(e=>e.group==='hat');
+    const hatTimes=hats.map(e=>e.time).sort((a,b)=>a-b);
+    const bodyTimes=structural.filter(e=>e.group==='kick'||e.group==='snare').map(e=>e.time).sort((a,b)=>a-b);
+    const beat=60/bpm;
+    const nearTime=(xs,t,w)=>xs.some(x=>Math.abs(x-t)<=w);
+    const repSupport=t=>{
+      let best=0;
+      for(const step of [beat/4,beat/2,beat]){
+        let n=0;
+        for(const k of [-2,-1,1,2]){
+          const target=t+k*step;
+          if(hatTimes.some(x=>Math.abs(x-target)<=.045))n++;
+        }
+        best=Math.max(best,n);
+      }
+      return best;
+    };
+    let removed=0;
+    structural=structural.filter(e=>{
+      if(e.group!=='hat')return true;
+      const fr=Math.max(0,Math.min(frames-1,Math.round(e.time*RATE/HOP)));
+      const hs=sim[TEMPLATE_INDEX.hat][fr]||0;
+      const body=Math.max(sim[TEMPLATE_INDEX.kick][fr]||0,sim[TEMPLATE_INDEX.snare][fr]||0);
+      const rep=repSupport(e.time);
+      if(hs<.20&&rep<2){removed++;return false;}
+      if(nearTime(bodyTimes,e.time,.025)&&hs<.70*Math.max(.03,body)&&rep<4){removed++;return false;}
+      return true;
+    });
+    adtofInfo.hatFilter={mode:'collision-periodic-v2',removed,absMin:.20,collisionRatio:.70,collisionWindowSec:.025,periodicRescue:4,weakRescue:2};
+  }
   const phase=barInfo.phaseSec;
   function measureHeadDistanceBeats(t){
     if(!(bpm>=30&&bpm<=300))return Infinity;
