@@ -162,9 +162,11 @@ def main():
                         results.append({"config":{"scale":scale,"peakPct":pct,"prom":prom,"keepCurrent":keep,
                                                    "seedMargin":seed,"barFrac":frac,"eventMargin":em},
                                         "summary":sc2,"cymbalDiag":cy_diag,"hatRideDiag":hdiag,"crashPeaks":len(peaks)})
+        def gf(x):
+            return 2*x["tp"]/(x["predicted"]+x["reference"]) if x["predicted"]+x["reference"] else 0.
         def obj(z):
-            s=z["summary"];r=s["by_group"]["ride"];c=s["by_group"]["crash"];h=s["by_group"]["hat"]
-            return s["f1"]+.09*r["f1"]+.06*c["f1"]+.02*h["f1"]
+            s=z["summary"];r=s["by_group"]["ride"];cc=s["by_group"]["crash"];h=s["by_group"]["hat"]
+            return s["f1"]+.09*gf(r)+.06*gf(cc)+.02*gf(h)
         for z in results:z["objective"]=obj(z)
         results.sort(key=lambda z:(z["objective"],z["summary"]["f1"]),reverse=True)
 
