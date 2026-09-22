@@ -1,0 +1,32 @@
+name: DrumScribe review playback smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/review.html"
+      - "drumscribe/review.js"
+      - "drumscribe/review-manifest.json"
+      - "drumscribe/experiments/review_playback_smoke.mjs"
+      - ".github/workflows/drumscribe-review-playback.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-review-http.log 2>&1 &
+          sleep 2
+      - name: Verify MIDI playback
+        run: node drumscribe/experiments/review_playback_smoke.mjs
