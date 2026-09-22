@@ -600,6 +600,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   const barInfo=estimateHybridBarPhase(base,sim,bpm,beatInfo.phaseSec,band);
   const cym=base.filter(e=>e.group==='cymbal_raw');
   let structural=base.filter(e=>e.group!=='cymbal_raw');
+  let adtofCymbal=[];
   let adtofInfo={enabled:false,fallback:true};
   try{
     const ad=await transcribeAdtof(decoded,(message,p)=>{
@@ -607,6 +608,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       report(message,mapped);
     },{thresholdScale:1.15});
     const replacement=ad.events.filter(e=>e.group!=='cymbal');
+    adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
     if(replacement.length){
       structural=replacement;
       adtofInfo={
@@ -630,33 +632,81 @@ export async function transcribe(decoded,report=()=>{},options={}){
     let x=(t-phase)%bar;if(x<0)x+=bar;
     return Math.min(x,bar-x)/beat;
   }
+  // Raw spectral cymbals are retained only as class evidence. They are no
+  // longer emitted directly: this removes the over-ringing failure mode.
   const cymTimes=cym.map(e=>e.time);
-  function periodicSupport(i){
-    if(!(bpm>=30&&bpm<=300)||cymTimes.length<3)return 0;
-    const t=cymTimes[i];let best=0;
+  function periodicSupportTimes(times,t){
+    if(!(bpm>=30&&bpm<=300)||times.length<3)return 0;
+    let best=0;
     for(const step of [30/bpm,60/bpm,120/bpm]){
       let count=0;
       for(const k of [-2,-1,1,2]){
         const target=t+k*step;
-        if(cymTimes.some(x=>Math.abs(x-target)<=.07))count++;
+        if(times.some(x=>Math.abs(x-target)<=.07))count++;
       }
       best=Math.max(best,count/4);
     }
     return best;
   }
+  const rawCrashEvidence=[],rawRideEvidence=[];
+  for(const e of cym){
+    const headDistance=measureHeadDistanceBeats(e.time);
+    const per=periodicSupportTimes(cymTimes,e.time);
+    const crash=headDistance<=.14;
+    const ride=per>=.75&&band[3][e.frame]>=.55*band[2][e.frame];
+    if(crash&&(!ride||headDistance<=.055))rawCrashEvidence.push(e.time);
+    else if(ride)rawRideEvidence.push(e.time);
+  }
 
   const final=[...structural];
-  for(let i=0;i<cym.length;i++){
-    const e=cym[i];
-    if(bpm>=30&&bpm<=300){
-      const headDistance=measureHeadDistanceBeats(e.time),per=periodicSupport(i);
-      // Crash is a hard measure-head prior: no off-beat exception.
+  if(adtofInfo.enabled&&adtofCymbal.length){
+    const adTimes=adtofCymbal.map(e=>e.time);
+    const selected=[];
+    for(const e of adtofCymbal){
+      const headDistance=measureHeadDistanceBeats(e.time);
+      const per=periodicSupportTimes(adTimes,e.time);
+      const crashSupport=rawCrashEvidence.some(t=>Math.abs(t-e.time)<=.07);
+      const rideSupport=rawRideEvidence.some(t=>Math.abs(t-e.time)<=.07);
+      let group=null;
+      // Winner of the corrected audio-time search:
+      // head <= .30 beat => crash; otherwise require complete periodic
+      // support or independent ride evidence; residual raw crash evidence may
+      // rescue a crash. Raw candidates never emit by themselves.
+      if(headDistance<=.30)group='crash';
+      else if(per>=1.0||rideSupport)group='ride';
+      else if(crashSupport)group='crash';
+      if(group)selected.push({...e,group,confidence:e.confidence*(1+(group==='crash'?.35:.25)*Math.max(per,headDistance<=.30?1:0))});
+    }
+    selected.sort((a,b)=>a.time-b.time);
+    const ded=[];
+    for(const e of selected){
+      const prev=ded[ded.length-1];
+      if(prev&&e.time-prev.time<.05){
+        if(e.group==='crash'&&prev.group==='ride')ded[ded.length-1]=e;
+        continue;
+      }
+      ded.push(e);
+    }
+    final.push(...ded);
+    adtofInfo.cymbalPolicy={
+      mode:'adtof-barhead-periodic',
+      broad:adtofCymbal.length,
+      emitted:ded.length,
+      crash:ded.filter(e=>e.group==='crash').length,
+      ride:ded.filter(e=>e.group==='ride').length,
+      rawCrashEvidence:rawCrashEvidence.length,
+      rawRideEvidence:rawRideEvidence.length
+    };
+  }else{
+    // Fallback preserves the previous browser behavior only when ADTOF could
+    // not run, so the app remains usable on unsupported browsers.
+    for(let i=0;i<cym.length;i++){
+      const e=cym[i],headDistance=measureHeadDistanceBeats(e.time);
+      const per=periodicSupportTimes(cymTimes,e.time);
       const crash=headDistance<=.14;
       const ride=per>=.75&&band[3][e.frame]>=.55*band[2][e.frame];
-      if(crash&&(!ride||headDistance<=.055))final.push({...e,group:'crash',confidence:e.confidence*(1+.45*(1-headDistance/.14))});
-      else if(ride)final.push({...e,group:'ride',confidence:e.confidence*(1+.3*per)});
-    }else if(e.score>=1.25){
-      final.push({...e,group:'crash'});
+      if(crash&&(!ride||headDistance<=.055))final.push({...e,group:'crash'});
+      else if(ride)final.push({...e,group:'ride'});
     }
   }
 
