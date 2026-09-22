@@ -19,6 +19,7 @@ import importlib.util
 import json
 import math
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 
 ROOT = Path(".")
@@ -71,10 +72,12 @@ METAL_SOURCES = {
 }
 
 
+@lru_cache(maxsize=None)
 def rows(path, song):
     return [(t, g) for t, g, *_ in ev.midi_events(path / f"{song}.mid")]
 
 
+@lru_cache(maxsize=None)
 def meta(song):
     return json.loads((ROOT / "DruMaster/songs" / song / "song.json").read_text())
 
