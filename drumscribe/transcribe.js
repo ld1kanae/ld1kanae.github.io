@@ -8,7 +8,7 @@ const THRESHOLDS=[.58,.70,.19,1.5,1.0];
 const DISTANCES=[.075,.075,.055,.09,.12];
 const EDGES=[35,140,900,3000,5500];
 const wait=()=>new Promise(resolve=>setTimeout(resolve,0));
-const TEMPLATE_GROUPS=['kick','snare','hat','tom','crash','ride'];
+const TEMPLATE_GROUPS=['kick','snare','hat','tom','crash','ride','pedal_hat'];
 const TEMPLATE_INDEX=Object.fromEntries(TEMPLATE_GROUPS.map((g,i)=>[g,i]));
 
 function percentile(values,q){
