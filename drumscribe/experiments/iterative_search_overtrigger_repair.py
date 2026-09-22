@@ -562,8 +562,7 @@ def main():
         "arb_window": best["arb_window"],
         "detailed": best["detailed"],
     }
-    (EXP / "results-iterative-overtrigger-repair.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "
-")
+    (EXP / "results-iterative-overtrigger-repair.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\\n")
     print("FINAL", json.dumps(report["final"], ensure_ascii=False, indent=2), flush=True)
 
 
