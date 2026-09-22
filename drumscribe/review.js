@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 const STORE='drumscribe-review-v1';
 const SAMPLE_ROOT='../DruMaster/assets/drums/';
-let manifest,currentCandidate,currentSong,metricCache=new Map(),midiCache=new Map(),sampleCache=new Map();
+let manifest,currentCandidate,currentSong,metricCache=new Map(),midiCache=new Map(),timingCache=new Map(),sampleCache=new Map();
 let ctx,gainNode,playback=null,refreshVersion=0,currentMidiInfo={count:0,first:null};
 let playbackStats={loaded:0,failed:0,scheduled:0,song:null,candidate:null,autoJumped:false};
 
@@ -26,8 +26,13 @@ async function loadManifest(){
 async function metricsFor(c){
   if(metricCache.has(c.id))return metricCache.get(c.id);
   const data=await fetch(c.metricsFile).then(r=>r.json());
-  const cycle=data.cycles.find(x=>x.cycle===c.cycle);
-  const result=cycle?.candidates?.[c.key];
+  let result;
+  if(c.directResult&&data?.songs&&data?.by_group){
+    result={songs:data.songs,summary:data};
+  }else{
+    const cycle=data.cycles?.find(x=>x.cycle===c.cycle);
+    result=cycle?.candidates?.[c.key];
+  }
   if(!result)throw Error('評価結果を読めません: '+c.label);
   metricCache.set(c.id,result);
   return result;
@@ -234,10 +239,23 @@ function parseMidi(buf){
   return notes.map(n=>({time:sec(n.tick),pitch:n.pitch,velocity:n.velocity})).sort((a,b)=>a.time-b.time);
 }
 
+async function timingFor(candidate,song){
+  if(!candidate.timingBase)return null;
+  const url=candidate.timingBase+'/'+song+'.json';
+  if(timingCache.has(url))return timingCache.get(url);
+  const value=await fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('同期情報取得失敗');return r.json()});
+  timingCache.set(url,value);
+  return value;
+}
 async function midiEvents(candidate=currentCandidate,song=currentSong){
   const url=midiUrl(candidate,song);
   if(midiCache.has(url))return midiCache.get(url);
-  const events=parseMidi(await fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('MIDI取得失敗');return r.arrayBuffer()}));
+  let events=parseMidi(await fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('MIDI取得失敗');return r.arrayBuffer()}));
+  const timing=await timingFor(candidate,song);
+  if(timing&&Number.isFinite(Number(timing.exportOffsetSec))){
+    const off=Number(timing.exportOffsetSec);
+    events=events.map(e=>({...e,time:Math.max(0,e.time-off)}));
+  }
   midiCache.set(url,events);return events;
 }
 async function audioContext(){
