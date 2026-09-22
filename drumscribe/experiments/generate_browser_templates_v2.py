@@ -14,7 +14,7 @@ EXP=ROOT/"drumscribe/experiments"
 spec=importlib.util.spec_from_file_location("ev",EXP/"evaluate_v2.py")
 ev=importlib.util.module_from_spec(spec);spec.loader.exec_module(ev)
 
-GROUPS=["kick","snare","hat","tom","crash","ride"]
+GROUPS=["kick","snare","hat","tom","crash","ride","pedal_hat"]
 
 def main():
     tmpl=ev.templates(ROOT/"DruMaster/assets/drums")  # bins x ORDER
