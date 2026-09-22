@@ -1,0 +1,58 @@
+name: DrumScribe GMD metal prior
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/build_gmd_metal_prior.py"
+      - ".github/workflows/drumscribe-gmd-metal-prior.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install parser
+        run: pip install mido
+      - name: Download Groove MIDI Dataset (MIDI only)
+        run: |
+          mkdir -p /tmp/gmd
+          curl -L --fail --retry 3             -o /tmp/gmd/groove.zip             https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip
+          echo "651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e  /tmp/gmd/groove.zip" | sha256sum -c -
+          unzip -q /tmp/gmd/groove.zip -d /tmp/gmd/data
+      - name: Build symbolic metal prior
+        run: |
+          python drumscribe/experiments/build_gmd_metal_prior.py             --gmd-root /tmp/gmd/data             --output drumscribe/models/gmd-metal-prior.json
+      - name: Write attribution
+        run: |
+          mkdir -p drumscribe/models
+          cat > drumscribe/models/gmd-metal-prior-LICENSE.txt <<'TXT'
+          This derived aggregate model uses the Groove MIDI Dataset v1.0.0
+          by Google LLC, licensed under CC BY 4.0.
+          Dataset: https://magenta.tensorflow.org/datasets/groove
+          Paper: Jon Gillick, Adam Roberts, Jesse Engel, Douglas Eck, and
+          David Bamman, "Learning to Groove with Inverse Sequence Transformations,"
+          ICML 2019.
+          This repository stores aggregate statistics only, not the source MIDI files.
+          TXT
+      - name: Commit prior
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/models/gmd-metal-prior.json drumscribe/models/gmd-metal-prior-LICENSE.txt
+          git diff --cached --quiet && exit 0
+          git commit -m "Add GMD symbolic metal arrangement prior [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
