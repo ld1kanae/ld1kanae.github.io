@@ -1,0 +1,38 @@
+name: DrumScribe hat density guard v10
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_hat_density_guard_v10.py"
+      - ".github/workflows/drumscribe-hat-density-guard-v10.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run density-guarded hat cycles
+        run: python drumscribe/experiments/iterative_search_hat_density_guard_v10.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/results-iterative-hat-density-guard-v10.json
+          git add drumscribe/experiments/generated-search-hat-density-guard-v10
+          git diff --cached --quiet && exit 0
+          git commit -m "Record density-guarded hat cycles 222-224 [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
