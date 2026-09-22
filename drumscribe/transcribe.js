@@ -7,6 +7,175 @@ const THRESHOLDS=[.58,.70,.19,1.5,1.0];
 const DISTANCES=[.075,.075,.055,.09,.12];
 const EDGES=[35,140,900,3000,5500];
 const wait=()=>new Promise(resolve=>setTimeout(resolve,0));
+const TEMPLATE_GROUPS=['kick','snare','hat','tom','crash','ride'];
+const TEMPLATE_INDEX=Object.fromEntries(TEMPLATE_GROUPS.map((g,i)=>[g,i]));
+
+function percentile(values,q){
+  const a=Array.from(values).sort((x,y)=>x-y);
+  if(!a.length)return 0;
+  return a[Math.max(0,Math.min(a.length-1,Math.floor(q*(a.length-1))))]||0;
+}
+function rhythmPeaks(signal,pct=.8,minDistanceSec=.11,prominence=.06,maxCount=1400){
+  const threshold=percentile(signal,pct),minFrames=Math.max(1,Math.round(minDistanceSec*RATE/HOP));
+  const candidates=[];
+  for(let i=2;i<signal.length-2;i++){
+    const v=signal[i];
+    if(v<threshold||v<=signal[i-1]||v<signal[i+1])continue;
+    if(v-Math.min(signal[i-2],signal[i+2])<prominence)continue;
+    candidates.push(i);
+  }
+  candidates.sort((a,b)=>signal[b]-signal[a]);
+  const kept=[];
+  for(const p of candidates){
+    if(kept.some(q=>Math.abs(q-p)<minFrames))continue;
+    kept.push(p);
+    if(kept.length>=maxCount)break;
+  }
+  kept.sort((a,b)=>a-b);
+  return kept.map(frame=>({frame,time:frame*HOP/RATE,weight:Math.max(1e-7,signal[frame])}));
+}
+function tempoHistogramFromSnare(mid){
+  const peaks=rhythmPeaks(mid,.72,.11,.06,1800);
+  const lo=50,hi=220,step=.25,n=Math.round((hi-lo)/step)+1,hist=new Float64Array(n);
+  for(let i=0;i<peaks.length;i++){
+    const a=peaks[i];
+    for(let j=i+1;j<Math.min(peaks.length,i+12);j++){
+      const dt=peaks[j].time-a.time;
+      if(dt>3)break;
+      if(dt<.28)continue;
+      const w=Math.sqrt(a.weight*peaks[j].weight)/Math.pow(j-i,.55);
+      for(let mult=1;mult<=3;mult++){
+        const bpm=120*mult/dt;
+        if(bpm<lo||bpm>hi)continue;
+        const k=Math.round((bpm-lo)/step);
+        hist[k]+=w/Math.pow(mult,.45);
+      }
+    }
+  }
+  let best=0;
+  for(let i=1;i<hist.length;i++)if(hist[i]>hist[best])best=i;
+  return {bpm:lo+best*step,score:hist[best],peaks,hist,lo,step};
+}
+function tempoHistogramFallback(low,mid){
+  const mix=new Float32Array(low.length);
+  for(let i=0;i<mix.length;i++)mix[i]=1.1*low[i]+mid[i];
+  const peaks=rhythmPeaks(mix,.76,.10,.06,1800);
+  const lo=50,hi=220,step=.25,n=Math.round((hi-lo)/step)+1,hist=new Float64Array(n);
+  for(let i=0;i<peaks.length;i++){
+    for(let j=i+1;j<Math.min(peaks.length,i+16);j++){
+      const dt=peaks[j].time-peaks[i].time;
+      if(dt>2.5)break;
+      if(dt<.18)continue;
+      const w=Math.sqrt(peaks[i].weight*peaks[j].weight)/Math.pow(j-i,.5);
+      for(let mult=1;mult<=4;mult++){
+        const bpm=60*mult/dt;
+        if(bpm<lo||bpm>hi)continue;
+        hist[Math.round((bpm-lo)/step)]+=w/Math.pow(mult,.35);
+      }
+    }
+  }
+  let best=0;
+  for(let i=1;i<hist.length;i++)if(hist[i]>hist[best])best=i;
+  return {bpm:lo+best*step,score:hist[best],peaks};
+}
+function phaseCoherence(peaks,bpm){
+  if(!peaks.length)return 0;
+  let cr=0,ci=0,sw=0;
+  const factor=2*Math.PI*bpm/60;
+  for(const p of peaks){
+    const w=Math.max(1e-7,p.weight),a=factor*p.time;
+    cr+=w*Math.cos(a);ci+=w*Math.sin(a);sw+=w;
+  }
+  return Math.hypot(cr,ci)/(sw||1);
+}
+function circularPhase(peaks,period){
+  if(!peaks.length)return 0;
+  let cr=0,ci=0;
+  for(const p of peaks){
+    const a=2*Math.PI*p.time/period,w=p.weight;
+    cr+=w*Math.cos(a);ci+=w*Math.sin(a);
+  }
+  let a=Math.atan2(ci,cr);
+  if(a<0)a+=2*Math.PI;
+  return a/(2*Math.PI)*period;
+}
+function robustGridFit(peaks,bpm){
+  if(peaks.length<8)return {bpm,phaseSec:0,used:0};
+  let period=60/bpm,phase=circularPhase(peaks,period),used=[];
+  for(let iter=0;iter<4;iter++){
+    const limit=Math.min(.095,.18*period);
+    used=[];
+    for(const p of peaks){
+      const n=Math.round((p.time-phase)/period),res=p.time-(phase+n*period);
+      if(Math.abs(res)<=limit)used.push({p,n});
+    }
+    if(used.length<8)break;
+    let sw=0,sn=0,st=0,snn=0,snt=0;
+    for(const {p,n} of used){
+      const w=Math.max(1e-6,p.weight);
+      sw+=w;sn+=w*n;st+=w*p.time;snn+=w*n*n;snt+=w*n*p.time;
+    }
+    const det=sw*snn-sn*sn;
+    if(Math.abs(det)<1e-12)break;
+    const nextPhase=(st*snn-sn*snt)/det;
+    const nextPeriod=(sw*snt-sn*st)/det;
+    if(!(nextPeriod>0))break;
+    phase=nextPhase;period=nextPeriod;
+  }
+  const fitBpm=60/period;
+  return {bpm:fitBpm,phaseSec:((phase%period)+period)%period,used:used.length};
+}
+function estimateTempoFromBands(band){
+  const coarseSnare=tempoHistogramFromSnare(band[1]);
+  const fallback=tempoHistogramFallback(band[0],band[1]);
+  let coarse=coarseSnare.bpm;
+  // The snare recurrence is the primary metrical cue. Fall back only when it
+  // is too sparse to be meaningful.
+  if(coarseSnare.peaks.length<8||coarseSnare.score<=0)coarse=fallback.bpm;
+  const kick=rhythmPeaks(band[0],.75,.10,.05,1200);
+  const snare=rhythmPeaks(band[1],.80,.12,.07,1200);
+  const span=Math.max(1.2,coarse*.012),steps=1600;
+  let bestBpm=coarse,best=-Infinity;
+  for(let i=0;i<=steps;i++){
+    const bpm=coarse-span+2*span*i/steps;
+    const score=.68*phaseCoherence(snare,bpm)+.32*phaseCoherence(kick,bpm);
+    if(score>best){best=score;bestBpm=bpm;}
+  }
+  const fitPeaks=rhythmPeaks(band[1],.82,.12,.08,1000);
+  const fit=robustGridFit(fitPeaks,bestBpm);
+  const finalBpm=Math.abs(fit.bpm-bestBpm)/bestBpm<=.004?fit.bpm:bestBpm;
+  return {
+    bpm:Math.max(30,Math.min(300,finalBpm)),
+    coarseBpm:coarse,
+    spectralBpm:bestBpm,
+    phaseSec:fit.phaseSec,
+    confidence:Math.max(0,Math.min(1,best)),
+    snarePeaks:coarseSnare.peaks.length
+  };
+}
+function circDistance(t,phase,period){
+  let x=(t-phase)%period;if(x<0)x+=period;
+  return Math.min(x,period-x);
+}
+function estimateBeatPhase(events,bpm){
+  const beat=60/bpm;
+  let xs=events.filter(e=>e.group==='kick');
+  if(!xs.length)xs=events.filter(e=>e.group==='kick'||e.group==='snare');
+  if(!xs.length)return {phaseSec:0,score:0,count:0};
+  const sigma=.10*beat;
+  let bestScore=-1,bestPhase=0;
+  for(let q=0;q<512;q++){
+    const phase=beat*q/512;
+    let sum=0;
+    for(const e of xs){
+      const d=circDistance(e.time,phase,beat);
+      sum+=Math.exp(-.5*(d/sigma)**2);
+    }
+    const score=sum/xs.length;
+    if(score>bestScore){bestScore=score;bestPhase=phase;}
+  }
+  return {phaseSec:bestPhase,score:bestScore,count:xs.length};
+}
 
 const twiddles=[];
 for(let length=2;length<=SIZE;length*=2){
@@ -109,13 +278,13 @@ export async function transcribe(decoded,report=()=>{},options={}){
       if(t%450===0){report('周波数を調べています…',10+36*t/frames);await wait();}
     }
   }
-  const sampleTemplates=await fetch('templates.json').then(r=>{if(!r.ok)throw Error('参照サンプルを読み込めません');return r.json();});
+  const sampleTemplates=await fetch('templates-v2.json').then(r=>{if(!r.ok)throw Error('参照サンプルを読み込めません');return r.json();});
   const band=new Array(4).fill(0).map(()=>new Float32Array(frames));
-  const sim=new Array(5).fill(0).map(()=>new Float32Array(frames));
-  const white=new Float32Array(BINS),vectors=new Array(5).fill(0).map(()=>new Float32Array(BINS));
+  const sim=new Array(TEMPLATE_GROUPS.length).fill(0).map(()=>new Float32Array(frames));
+  const white=new Float32Array(BINS),vectors=new Array(TEMPLATE_GROUPS.length).fill(0).map(()=>new Float32Array(BINS));
   const avg=Array.from(mean,x=>x/frames),floor=Array.from(avg).sort((a,b)=>a-b)[Math.floor(BINS*.35)]||.001;
   for(let j=0;j<BINS;j++)white[j]=Math.pow(Math.max(avg[j],floor,.001),.6);
-  for(let k=0;k<5;k++){
+  for(let k=0;k<TEMPLATE_GROUPS.length;k++){
     let norm=0;for(let j=0;j<BINS;j++){const x=sampleTemplates.spectra[k][j]/white[j];vectors[k][j]=x;norm+=x*x;}
     norm=Math.sqrt(norm)+1e-8;for(let j=0;j<BINS;j++)vectors[k][j]/=norm;
   }
@@ -130,7 +299,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     }
     norm=Math.sqrt(norm)+1e-8;
     // Only two similarity gates survive the experiment: tom and cymbal.
-    for(let k of [0,1,3,4]){let dot=0;for(let j=0;j<BINS;j++)dot+=vectors[k][j]*rise[j];sim[k][t]=dot/norm;}
+    for(let k=0;k<TEMPLATE_GROUPS.length;k++){let dot=0;for(let j=0;j<BINS;j++)dot+=vectors[k][j]*rise[j];sim[k][t]=dot/norm;}
     if(t%500===0){report('打点の候補を整理中…',48+29*t/frames);await wait();}
   }
   for(let b=0;b<4;b++){
