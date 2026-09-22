@@ -80,6 +80,10 @@ def guess_script(result_path):
             return p if p.exists() else None
     if n.startswith("results-v2"):
         return EXP/"evaluate_v2.py"
+    if n.startswith("results-iterative-") and n.endswith(".json"):
+        stem=n[len("results-iterative-"):-len(".json")].replace("-","_")
+        p=EXP/f"iterative_search_{stem}.py"
+        if p.exists():return p
     return None
 
 def iter_candidates(obj):
