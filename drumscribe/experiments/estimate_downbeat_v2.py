@@ -60,10 +60,9 @@ def event_grid_score(events,phase,bpm):
             "snare_back":snback,
             "combined":1.65*crash_align+.65*crash_gap+.55*kick1+.20*kick3+.36*snback}
 
-def estimate(song,env,band,bpm,mode):
+def estimate(song,env,band,bpm,beat,mode):
     events=rows(song)
-    # continuous beat phase from raw audio, then only four bar-level choices
-    beat=v3.grid_features(env,band,bpm)["phase_sec"]
+    # beat phase comes from BPM v3's robust full-song grid fit
     p=60/bpm;bar=4*p
     opts=[]
     for off in range(4):
@@ -114,8 +113,10 @@ def main():
     totals={m:[] for m in ("crash","combined","adaptive")}
     for song in SONGS:
         env,band=v1.onset_envelope(ROOT/"DruMaster/songs"/song/"drums.mp3")
-        bpm=v3.estimate(env,band)["bpm"]
-        preds={m:estimate(song,env,band,bpm,m) for m in totals}
+        bpm_info=v3.estimate(env,band)
+        bpm=bpm_info["bpm"]
+        beat=float(bpm_info["grid_fit"]["phase_sec"])
+        preds={m:estimate(song,env,band,bpm,beat,m) for m in totals}
 
         meta=json.loads((ROOT/"DruMaster/songs"/song/"song.json").read_text())
         truth=float(meta["bpm"]);ts=meta.get("timeSignature") or {"numerator":4,"denominator":4}
