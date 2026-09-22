@@ -35,6 +35,7 @@ jobs:
         run: |
           mkdir -p drumscribe/vendor/ort
           cp /tmp/ortpkg/node_modules/onnxruntime-web/dist/ort.min.js drumscribe/vendor/ort/
+          cp /tmp/ortpkg/node_modules/onnxruntime-web/dist/ort.wasm.min.js drumscribe/vendor/ort/
           cp /tmp/ortpkg/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm drumscribe/vendor/ort/
           cp /tmp/ortpkg/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs drumscribe/vendor/ort/
           cp /tmp/ortpkg/version.txt drumscribe/vendor/ort/version.txt
