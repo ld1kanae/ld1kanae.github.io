@@ -264,7 +264,9 @@ function lowerBound(events,t){
 async function startPlayback(){
   stopPlayback(false);
   const src=$('source');
-  if(src.readyState<2)throw Error('音源の準備が完了していません');
+  // Seeking to the first MIDI hit temporarily lowers readyState while the
+  // browser buffers the new location. play() waits for that buffer itself.
+  if(!src.src||src.error)throw Error('音源を読み込めません');
 
   // The comparison MIDI may legitimately have a long drumless intro. When
   // starting from the beginning, jump just before its first hit so switching
