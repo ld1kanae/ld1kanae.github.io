@@ -1,4 +1,5 @@
-import {transcribeAdtof} from './adtof.js';\nimport {filterHighResHats} from './hat-forest.js';
+import {transcribeAdtof} from './adtof.js';
+import {filterHighResHats} from './hat-forest.js';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;
