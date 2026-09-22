@@ -1,0 +1,43 @@
+name: DrumScribe nested 44k hat fusion v9
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_hat_nested_fusion_v9.py"
+      - ".github/workflows/drumscribe-hat-nested-fusion-v9.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy scikit-learn
+      - name: Run nested hat fusion cycles
+        run: python drumscribe/experiments/iterative_search_hat_nested_fusion_v9.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/results-iterative-hat-nested-fusion-v9.json
+          git add drumscribe/experiments/generated-search-hat-nested-fusion-v9
+          git diff --cached --quiet && exit 0
+          git commit -m "Record nested 44k hat fusion cycles 219-221 [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
