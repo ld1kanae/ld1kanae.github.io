@@ -1,0 +1,4902 @@
+{
+  "schema": 1,
+  "description": "External GMD ADTOF embedding pedal supplement; no new onset; charts scoring-only.",
+  "externalValidation": {
+    "trainFiles": 45,
+    "validationFiles": 16,
+    "trainCounts": {
+      "crash": 168,
+      "hat": 3750,
+      "pedal_hat": 623,
+      "ride": 1312
+    },
+    "validationCounts": {
+      "pedal_hat": 400,
+      "hat": 988,
+      "crash": 41,
+      "ride": 139
+    },
+    "classes": [
+      "crash",
+      "hat",
+      "pedal_hat",
+      "ride"
+    ],
+    "featureDim": 255,
+    "validationReport": {
+      "crash": {
+        "precision": 0.5352112676056338,
+        "recall": 0.926829268292683,
+        "f1-score": 0.6785714285714286,
+        "support": 41.0
+      },
+      "hat": {
+        "precision": 0.9544994944388271,
+        "recall": 0.9554655870445344,
+        "f1-score": 0.9549822964087,
+        "support": 988.0
+      },
+      "pedal_hat": {
+        "precision": 0.9257142857142857,
+        "recall": 0.81,
+        "f1-score": 0.864,
+        "support": 400.0
+      },
+      "ride": {
+        "precision": 0.8544303797468354,
+        "recall": 0.9712230215827338,
+        "f1-score": 0.9090909090909091,
+        "support": 139.0
+      },
+      "accuracy": 0.9190051020408163,
+      "macro avg": {
+        "precision": 0.8174638568763956,
+        "recall": 0.9158794692299879,
+        "f1-score": 0.8516611585177595,
+        "support": 1568.0
+      },
+      "weighted avg": {
+        "precision": 0.9273218747116815,
+        "recall": 0.9190051020408163,
+        "f1-score": 0.9204767689967223,
+        "support": 1568.0
+      }
+    },
+    "validationConfusion": [
+      [
+        38,
+        0,
+        0,
+        3
+      ],
+      [
+        18,
+        944,
+        25,
+        1
+      ],
+      [
+        14,
+        43,
+        324,
+        19
+      ],
+      [
+        1,
+        2,
+        1,
+        135
+      ]
+    ],
+    "validationAccuracy": 0.9190051020408163
+  },
+  "baseline": {
+    "tp": 7495,
+    "predicted": 8606,
+    "reference": 10086,
+    "precision": 0.8709040204508482,
+    "recall": 0.7431092603608963,
+    "f1": 0.8019473571581425,
+    "by_group": {
+      "kick": {
+        "tp": 2636,
+        "predicted": 2765,
+        "reference": 2712,
+        "precision": 0.9533453887884268,
+        "recall": 0.971976401179941,
+        "f1": 0.9625707504108089,
+        "count_ratio": 1.0195427728613569
+      },
+      "snare": {
+        "tp": 1261,
+        "predicted": 1377,
+        "reference": 1470,
+        "precision": 0.915758896151053,
+        "recall": 0.8578231292517007,
+        "f1": 0.8858447488584474,
+        "count_ratio": 0.936734693877551
+      },
+      "hat": {
+        "tp": 3163,
+        "predicted": 3829,
+        "reference": 4102,
+        "precision": 0.8260642465395664,
+        "recall": 0.7710872745002438,
+        "f1": 0.7976295549111083,
+        "count_ratio": 0.9334470989761092
+      },
+      "tom": {
+        "tp": 69,
+        "predicted": 89,
+        "reference": 92,
+        "precision": 0.7752808988764045,
+        "recall": 0.75,
+        "f1": 0.7624309392265194,
+        "count_ratio": 0.967391304347826
+      },
+      "crash": {
+        "tp": 127,
+        "predicted": 167,
+        "reference": 390,
+        "precision": 0.7604790419161677,
+        "recall": 0.32564102564102565,
+        "f1": 0.45601436265709155,
+        "count_ratio": 0.4282051282051282
+      },
+      "ride": {
+        "tp": 103,
+        "predicted": 193,
+        "reference": 644,
+        "precision": 0.533678756476684,
+        "recall": 0.15993788819875776,
+        "f1": 0.24611708482676226,
+        "count_ratio": 0.2996894409937888
+      },
+      "other": {
+        "tp": 0,
+        "predicted": 0,
+        "reference": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "count_ratio": null
+      },
+      "pedal_hat": {
+        "tp": 136,
+        "predicted": 186,
+        "reference": 676,
+        "precision": 0.7311827956989247,
+        "recall": 0.20118343195266272,
+        "f1": 0.31554524361948955,
+        "count_ratio": 0.27514792899408286
+      }
+    }
+  },
+  "matchedDiagnostic": {
+    "aggregate": {
+      "hat|pedal_hat": 159,
+      "hat|hat": 3020,
+      "pedal_hat|pedal_hat": 2,
+      "pedal_hat|hat": 41
+    },
+    "songs": {
+      "arcaround": {
+        "hat|pedal_hat": 46,
+        "hat|hat": 118,
+        "pedal_hat|pedal_hat": 1,
+        "pedal_hat|hat": 4
+      },
+      "diamondvirgin": {
+        "hat|hat": 194,
+        "hat|pedal_hat": 50
+      },
+      "kaiju": {
+        "hat|hat": 513,
+        "hat|pedal_hat": 41,
+        "pedal_hat|hat": 1
+      },
+      "nanairo": {
+        "hat|hat": 944,
+        "hat|pedal_hat": 6,
+        "pedal_hat|hat": 18
+      },
+      "ray": {
+        "pedal_hat|hat": 18,
+        "hat|hat": 1251,
+        "hat|pedal_hat": 16,
+        "pedal_hat|pedal_hat": 1
+      }
+    }
+  },
+  "fixed": [
+    {
+      "config": {
+        "name": "p80_m20",
+        "prob": 0.8,
+        "margin": 0.2,
+        "rideMargin": 0.1
+      },
+      "objective": 0.8445883530450216,
+      "summary": {
+        "tp": 7424,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8626539623518475,
+        "recall": 0.7360697997223875,
+        "f1": 0.7943505242884656,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3091,
+            "predicted": 3737,
+            "reference": 4102,
+            "precision": 0.8271340647578271,
+            "recall": 0.7535348610433935,
+            "f1": 0.7886209975762215,
+            "count_ratio": 0.9110190151145783
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 278,
+            "reference": 676,
+            "precision": 0.49280575539568344,
+            "recall": 0.20266272189349113,
+            "f1": 0.28721174004192873,
+            "count_ratio": 0.41124260355029585
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 33,
+        "diamondvirgin": 25,
+        "kaiju": 24,
+        "nanairo": 2,
+        "ray": 8
+      },
+      "songs": {
+        "arcaround": {
+          "f1": 0.65,
+          "hat": {
+            "tp": 135,
+            "predicted": 354,
+            "reference": 293
+          },
+          "pedal_hat": {
+            "tp": 1,
+            "predicted": 43,
+            "reference": 91
+          }
+        },
+        "diamondvirgin": {
+          "f1": 0.782,
+          "hat": {
+            "tp": 219,
+            "predicted": 228,
+            "reference": 755
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 28,
+            "reference": 4
+          }
+        },
+        "kaiju": {
+          "f1": 0.755,
+          "hat": {
+            "tp": 541,
+            "predicted": 656,
+            "reference": 594
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 26,
+            "reference": 9
+          }
+        },
+        "nanairo": {
+          "f1": 0.838,
+          "hat": {
+            "tp": 947,
+            "predicted": 1139,
+            "reference": 1063
+          },
+          "pedal_hat": {
+            "tp": 62,
+            "predicted": 77,
+            "reference": 260
+          }
+        },
+        "ray": {
+          "f1": 0.872,
+          "hat": {
+            "tp": 1249,
+            "predicted": 1360,
+            "reference": 1397
+          },
+          "pedal_hat": {
+            "tp": 74,
+            "predicted": 104,
+            "reference": 312
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "name": "p90_m30",
+        "prob": 0.9,
+        "margin": 0.3,
+        "rideMargin": 0.2
+      },
+      "objective": 0.8491551152756288,
+      "summary": {
+        "tp": 7453,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8660237043922845,
+        "recall": 0.738945072377553,
+        "f1": 0.7974534560239674,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3120,
+            "predicted": 3774,
+            "reference": 4102,
+            "precision": 0.8267090620031796,
+            "recall": 0.7606045831301804,
+            "f1": 0.7922803453529711,
+            "count_ratio": 0.9200390053632375
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 241,
+            "reference": 676,
+            "precision": 0.5684647302904564,
+            "recall": 0.20266272189349113,
+            "f1": 0.29880043620501634,
+            "count_ratio": 0.35650887573964496
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 19,
+        "diamondvirgin": 17,
+        "kaiju": 12,
+        "nanairo": 1,
+        "ray": 6
+      },
+      "songs": {
+        "arcaround": {
+          "f1": 0.66,
+          "hat": {
+            "tp": 148,
+            "predicted": 368,
+            "reference": 293
+          },
+          "pedal_hat": {
+            "tp": 1,
+            "predicted": 29,
+            "reference": 91
+          }
+        },
+        "diamondvirgin": {
+          "f1": 0.786,
+          "hat": {
+            "tp": 227,
+            "predicted": 236,
+            "reference": 755
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 20,
+            "reference": 4
+          }
+        },
+        "kaiju": {
+          "f1": 0.759,
+          "hat": {
+            "tp": 548,
+            "predicted": 668,
+            "reference": 594
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 14,
+            "reference": 9
+          }
+        },
+        "nanairo": {
+          "f1": 0.838,
+          "hat": {
+            "tp": 947,
+            "predicted": 1140,
+            "reference": 1063
+          },
+          "pedal_hat": {
+            "tp": 62,
+            "predicted": 76,
+            "reference": 260
+          }
+        },
+        "ray": {
+          "f1": 0.873,
+          "hat": {
+            "tp": 1250,
+            "predicted": 1362,
+            "reference": 1397
+          },
+          "pedal_hat": {
+            "tp": 74,
+            "predicted": 102,
+            "reference": 312
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "name": "p95_m40",
+        "prob": 0.95,
+        "margin": 0.4,
+        "rideMargin": 0.25
+      },
+      "objective": 0.8520825486205382,
+      "summary": {
+        "tp": 7472,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8682314664187776,
+        "recall": 0.7408288717033512,
+        "f1": 0.7994864112989514,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3139,
+            "predicted": 3795,
+            "reference": 4102,
+            "precision": 0.827140974967062,
+            "recall": 0.765236470014627,
+            "f1": 0.7949854375079144,
+            "count_ratio": 0.9251584592881521
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 220,
+            "reference": 676,
+            "precision": 0.6227272727272727,
+            "recall": 0.20266272189349113,
+            "f1": 0.30580357142857145,
+            "count_ratio": 0.3254437869822485
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 14,
+        "diamondvirgin": 8,
+        "kaiju": 6,
+        "nanairo": 1,
+        "ray": 5
+      },
+      "songs": {
+        "arcaround": {
+          "f1": 0.664,
+          "hat": {
+            "tp": 153,
+            "predicted": 373,
+            "reference": 293
+          },
+          "pedal_hat": {
+            "tp": 1,
+            "predicted": 24,
+            "reference": 91
+          }
+        },
+        "diamondvirgin": {
+          "f1": 0.79,
+          "hat": {
+            "tp": 236,
+            "predicted": 245,
+            "reference": 755
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 11,
+            "reference": 4
+          }
+        },
+        "kaiju": {
+          "f1": 0.762,
+          "hat": {
+            "tp": 552,
+            "predicted": 674,
+            "reference": 594
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 8,
+            "reference": 9
+          }
+        },
+        "nanairo": {
+          "f1": 0.838,
+          "hat": {
+            "tp": 947,
+            "predicted": 1140,
+            "reference": 1063
+          },
+          "pedal_hat": {
+            "tp": 62,
+            "predicted": 76,
+            "reference": 260
+          }
+        },
+        "ray": {
+          "f1": 0.873,
+          "hat": {
+            "tp": 1251,
+            "predicted": 1363,
+            "reference": 1397
+          },
+          "pedal_hat": {
+            "tp": 74,
+            "predicted": 101,
+            "reference": 312
+          }
+        }
+      }
+    }
+  ],
+  "top": [
+    {
+      "id": 144,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 144,
+        "prob": 0.96,
+        "margin": 0,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 145,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 145,
+        "prob": 0.96,
+        "margin": 0,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 146,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 146,
+        "prob": 0.96,
+        "margin": 0,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 147,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 147,
+        "prob": 0.96,
+        "margin": 0,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 148,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 148,
+        "prob": 0.96,
+        "margin": 0.1,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 149,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 149,
+        "prob": 0.96,
+        "margin": 0.1,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 150,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 150,
+        "prob": 0.96,
+        "margin": 0.1,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 151,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 151,
+        "prob": 0.96,
+        "margin": 0.1,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 152,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 152,
+        "prob": 0.96,
+        "margin": 0.2,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 153,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 153,
+        "prob": 0.96,
+        "margin": 0.2,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 154,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 154,
+        "prob": 0.96,
+        "margin": 0.2,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 155,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 155,
+        "prob": 0.96,
+        "margin": 0.2,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 156,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 156,
+        "prob": 0.96,
+        "margin": 0.3,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 157,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 157,
+        "prob": 0.96,
+        "margin": 0.3,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 158,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 158,
+        "prob": 0.96,
+        "margin": 0.3,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 159,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 159,
+        "prob": 0.96,
+        "margin": 0.3,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 160,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 160,
+        "prob": 0.96,
+        "margin": 0.4,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 161,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 161,
+        "prob": 0.96,
+        "margin": 0.4,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 162,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 162,
+        "prob": 0.96,
+        "margin": 0.4,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 163,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 163,
+        "prob": 0.96,
+        "margin": 0.4,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 164,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 164,
+        "prob": 0.96,
+        "margin": 0.55,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 165,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 165,
+        "prob": 0.96,
+        "margin": 0.55,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 166,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 166,
+        "prob": 0.96,
+        "margin": 0.55,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 167,
+      "eligible": false,
+      "objective": 0.8525025357029791,
+      "config": {
+        "id": 167,
+        "prob": 0.96,
+        "margin": 0.55,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7474,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.8684638624215664,
+        "recall": 0.7410271663692247,
+        "f1": 0.799700406591055,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3141,
+            "predicted": 3800,
+            "reference": 4102,
+            "precision": 0.8265789473684211,
+            "recall": 0.7657240370550951,
+            "f1": 0.7949886104783599,
+            "count_ratio": 0.9263773768893223
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 215,
+            "reference": 676,
+            "precision": 0.6372093023255814,
+            "recall": 0.20266272189349113,
+            "f1": 0.3075196408529742,
+            "count_ratio": 0.3180473372781065
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 12,
+        "diamondvirgin": 8,
+        "kaiju": 4,
+        "nanairo": 0,
+        "ray": 5
+      }
+    },
+    {
+      "id": 120,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 120,
+        "prob": 0.92,
+        "margin": 0,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 121,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 121,
+        "prob": 0.92,
+        "margin": 0,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 122,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 122,
+        "prob": 0.92,
+        "margin": 0,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 123,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 123,
+        "prob": 0.92,
+        "margin": 0,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 124,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 124,
+        "prob": 0.92,
+        "margin": 0.1,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 125,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 125,
+        "prob": 0.92,
+        "margin": 0.1,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 126,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 126,
+        "prob": 0.92,
+        "margin": 0.1,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 127,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 127,
+        "prob": 0.92,
+        "margin": 0.1,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 128,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 128,
+        "prob": 0.92,
+        "margin": 0.2,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 129,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 129,
+        "prob": 0.92,
+        "margin": 0.2,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 130,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 130,
+        "prob": 0.92,
+        "margin": 0.2,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 131,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 131,
+        "prob": 0.92,
+        "margin": 0.2,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 132,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 132,
+        "prob": 0.92,
+        "margin": 0.3,
+        "rideMargin": 0
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 133,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 133,
+        "prob": 0.92,
+        "margin": 0.3,
+        "rideMargin": 0.1
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 134,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 134,
+        "prob": 0.92,
+        "margin": 0.3,
+        "rideMargin": 0.2
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    },
+    {
+      "id": 135,
+      "eligible": false,
+      "objective": 0.8497899340429778,
+      "config": {
+        "id": 135,
+        "prob": 0.92,
+        "margin": 0.3,
+        "rideMargin": 0.35
+      },
+      "summary": {
+        "tp": 7457,
+        "predicted": 8606,
+        "reference": 10086,
+        "precision": 0.866488496397862,
+        "recall": 0.7393416617093,
+        "f1": 0.7978814466081746,
+        "by_group": {
+          "kick": {
+            "tp": 2636,
+            "predicted": 2765,
+            "reference": 2712,
+            "precision": 0.9533453887884268,
+            "recall": 0.971976401179941,
+            "f1": 0.9625707504108089,
+            "count_ratio": 1.0195427728613569
+          },
+          "snare": {
+            "tp": 1261,
+            "predicted": 1377,
+            "reference": 1470,
+            "precision": 0.915758896151053,
+            "recall": 0.8578231292517007,
+            "f1": 0.8858447488584474,
+            "count_ratio": 0.936734693877551
+          },
+          "hat": {
+            "tp": 3124,
+            "predicted": 3779,
+            "reference": 4102,
+            "precision": 0.8266737232071977,
+            "recall": 0.7615797172111165,
+            "f1": 0.7927927927927928,
+            "count_ratio": 0.9212579229644076
+          },
+          "tom": {
+            "tp": 69,
+            "predicted": 89,
+            "reference": 92,
+            "precision": 0.7752808988764045,
+            "recall": 0.75,
+            "f1": 0.7624309392265194,
+            "count_ratio": 0.967391304347826
+          },
+          "crash": {
+            "tp": 127,
+            "predicted": 167,
+            "reference": 390,
+            "precision": 0.7604790419161677,
+            "recall": 0.32564102564102565,
+            "f1": 0.45601436265709155,
+            "count_ratio": 0.4282051282051282
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 193,
+            "reference": 644,
+            "precision": 0.533678756476684,
+            "recall": 0.15993788819875776,
+            "f1": 0.24611708482676226,
+            "count_ratio": 0.2996894409937888
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count_ratio": null
+          },
+          "pedal_hat": {
+            "tp": 137,
+            "predicted": 236,
+            "reference": 676,
+            "precision": 0.5805084745762712,
+            "recall": 0.20266272189349113,
+            "f1": 0.30043859649122806,
+            "count_ratio": 0.34911242603550297
+          }
+        }
+      },
+      "converted": {
+        "arcaround": 17,
+        "diamondvirgin": 16,
+        "kaiju": 10,
+        "nanairo": 1,
+        "ray": 6
+      }
+    }
+  ],
+  "nestedLOO": {
+    "aggregate": {
+      "tp": 7474,
+      "predicted": 8606,
+      "reference": 10086,
+      "precision": 0.8684638624215664,
+      "recall": 0.7410271663692247,
+      "f1": 0.799700406591055,
+      "by_group": {
+        "kick": {
+          "tp": 2636,
+          "predicted": 2765,
+          "reference": 2712,
+          "precision": 0.9533453887884268,
+          "recall": 0.971976401179941,
+          "f1": 0.9625707504108089,
+          "count_ratio": 1.0195427728613569
+        },
+        "snare": {
+          "tp": 1261,
+          "predicted": 1377,
+          "reference": 1470,
+          "precision": 0.915758896151053,
+          "recall": 0.8578231292517007,
+          "f1": 0.8858447488584474,
+          "count_ratio": 0.936734693877551
+        },
+        "hat": {
+          "tp": 3141,
+          "predicted": 3800,
+          "reference": 4102,
+          "precision": 0.8265789473684211,
+          "recall": 0.7657240370550951,
+          "f1": 0.7949886104783599,
+          "count_ratio": 0.9263773768893223
+        },
+        "tom": {
+          "tp": 69,
+          "predicted": 89,
+          "reference": 92,
+          "precision": 0.7752808988764045,
+          "recall": 0.75,
+          "f1": 0.7624309392265194,
+          "count_ratio": 0.967391304347826
+        },
+        "crash": {
+          "tp": 127,
+          "predicted": 167,
+          "reference": 390,
+          "precision": 0.7604790419161677,
+          "recall": 0.32564102564102565,
+          "f1": 0.45601436265709155,
+          "count_ratio": 0.4282051282051282
+        },
+        "ride": {
+          "tp": 103,
+          "predicted": 193,
+          "reference": 644,
+          "precision": 0.533678756476684,
+          "recall": 0.15993788819875776,
+          "f1": 0.24611708482676226,
+          "count_ratio": 0.2996894409937888
+        },
+        "other": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "count_ratio": null
+        },
+        "pedal_hat": {
+          "tp": 137,
+          "predicted": 215,
+          "reference": 676,
+          "precision": 0.6372093023255814,
+          "recall": 0.20266272189349113,
+          "f1": 0.3075196408529742,
+          "count_ratio": 0.3180473372781065
+        }
+      }
+    },
+    "objective": 0.8525025357029791,
+    "songs": {
+      "arcaround": {
+        "selectedId": 167,
+        "config": {
+          "id": 167,
+          "prob": 0.96,
+          "margin": 0.55,
+          "rideMargin": 0.35
+        },
+        "heldF1": 0.665,
+        "hat": {
+          "tp": 155,
+          "predicted": 375,
+          "reference": 293
+        },
+        "pedal_hat": {
+          "tp": 1,
+          "predicted": 22,
+          "reference": 91
+        },
+        "converted": 12
+      },
+      "diamondvirgin": {
+        "selectedId": 167,
+        "config": {
+          "id": 167,
+          "prob": 0.96,
+          "margin": 0.55,
+          "rideMargin": 0.35
+        },
+        "heldF1": 0.79,
+        "hat": {
+          "tp": 236,
+          "predicted": 245,
+          "reference": 755
+        },
+        "pedal_hat": {
+          "tp": 0,
+          "predicted": 11,
+          "reference": 4
+        },
+        "converted": 8
+      },
+      "kaiju": {
+        "selectedId": 167,
+        "config": {
+          "id": 167,
+          "prob": 0.96,
+          "margin": 0.55,
+          "rideMargin": 0.35
+        },
+        "heldF1": 0.762,
+        "hat": {
+          "tp": 552,
+          "predicted": 676,
+          "reference": 594
+        },
+        "pedal_hat": {
+          "tp": 0,
+          "predicted": 6,
+          "reference": 9
+        },
+        "converted": 4
+      },
+      "nanairo": {
+        "selectedId": 167,
+        "config": {
+          "id": 167,
+          "prob": 0.96,
+          "margin": 0.55,
+          "rideMargin": 0.35
+        },
+        "heldF1": 0.838,
+        "hat": {
+          "tp": 947,
+          "predicted": 1141,
+          "reference": 1063
+        },
+        "pedal_hat": {
+          "tp": 62,
+          "predicted": 75,
+          "reference": 260
+        },
+        "converted": 0
+      },
+      "ray": {
+        "selectedId": 167,
+        "config": {
+          "id": 167,
+          "prob": 0.96,
+          "margin": 0.55,
+          "rideMargin": 0.35
+        },
+        "heldF1": 0.873,
+        "hat": {
+          "tp": 1251,
+          "predicted": 1363,
+          "reference": 1397
+        },
+        "pedal_hat": {
+          "tp": 74,
+          "predicted": 101,
+          "reference": 312
+        },
+        "converted": 5
+      }
+    }
+  }
+}
