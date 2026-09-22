@@ -434,5 +434,17 @@ export async function transcribe(decoded,report=()=>{},options={}){
     velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score))))
   }));
   report('完了しました',100);
-  return events.sort((a,b)=>a.time-b.time||a.note-b.note);
+  return {
+    events:events.sort((a,b)=>a.time-b.time||a.note-b.note),
+    bpm,
+    tempoInfo,
+    beatPhaseSec:beatInfo.phaseSec,
+    beatPhaseScore:beatInfo.score,
+    // The current internal phase is still used only for cymbal classification.
+    // Export alignment is enabled only after the dedicated bar-phase benchmark
+    // selects a browser-equivalent estimator.
+    barPhaseSec:null,
+    numerator:4,
+    denominator:4
+  };
 }
