@@ -6,7 +6,9 @@ const consoleErrors=[];
 page.on('console',msg=>{ if(msg.type()==='error') consoleErrors.push(msg.text()); });
 page.on('pageerror',err=>consoleErrors.push(String(err)));
 
-await page.goto('http://127.0.0.1:8000/drumscribe/review.html',{waitUntil:'domcontentloaded'});
+const url=process.env.DRUMSCRIBE_REVIEW_URL||'http://127.0.0.1:8000/drumscribe/review.html';
+console.log('URL',url);
+await page.goto(url,{waitUntil:'domcontentloaded'});
 await page.waitForFunction(()=>document.querySelector('#candidate')?.options.length>0,{},{timeout:30000});
 
 const selected=await page.locator('#candidate').inputValue();
