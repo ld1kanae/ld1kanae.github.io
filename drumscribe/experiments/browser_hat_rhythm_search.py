@@ -17,33 +17,42 @@ SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
 spec=importlib.util.spec_from_file_location("ev",EXP/"evaluate_v2.py")
 ev=importlib.util.module_from_spec(spec);spec.loader.exec_module(ev)
 
+def near_sorted(xs,t,w):
+    import bisect
+    i=bisect.bisect_left(xs,t-w)
+    return i<len(xs) and xs[i]<=t+w
+
 def load(song):
     side=json.loads((EXP/"generated-v2-browser"/f"{song}.json").read_text())
     off=float(side.get("exportOffsetSec",0) or 0)
     pred=[(t-off,g,p) for t,g,p in ev.midi_events(EXP/"generated-v2-browser"/f"{song}.mid")]
-    return pred,side
-
-def near(xs,t,w):return any(abs(x-t)<=w for x in xs)
-
-def support(hats,t,beat,tol=.04):
-    best=0
-    for step in (beat/4,beat/2,beat):
-        n=0
-        for k in (-2,-1,1,2):
-            target=t+k*step
-            if near(hats,target,tol):n+=1
-        best=max(best,n)
-    return best
-
-def filt(pred,side,scope,window,gate,rescue,tol):
     hats=sorted(t for t,g,*_ in pred if g=="hat")
     kicks=sorted(t for t,g,*_ in pred if g=="kick")
     snares=sorted(t for t,g,*_ in pred if g=="snare")
     beat=60/float(side["bpm"])
-    conflicts=[]
-    for t in hats:
-        c=near(kicks,t,window) or (scope=="both" and near(snares,t,window))
-        if c:conflicts.append(t)
+    windows=(.015,.020,.025,.030,.035,.045)
+    tols=(.025,.035,.045,.055)
+    collisions={}
+    for scope in ("kick","both"):
+        for w in windows:
+            collisions[(scope,w)]={t:(near_sorted(kicks,t,w) or (scope=="both" and near_sorted(snares,t,w))) for t in hats}
+    reps={}
+    for tol in tols:
+        rr={}
+        for t in hats:
+            best=0
+            for step in (beat/4,beat/2,beat):
+                n=0
+                for k in (-2,-1,1,2):
+                    if near_sorted(hats,t+k*step,tol):n+=1
+                best=max(best,n)
+            rr[t]=best
+        reps[tol]=rr
+    return {"pred":pred,"side":side,"hats":hats,"collisions":collisions,"reps":reps}
+
+def filt(data,scope,window,gate,rescue,tol):
+    pred=data["pred"];hats=data["hats"];coll=data["collisions"][(scope,window)];repmap=data["reps"][tol]
+    conflicts=[t for t in hats if coll[t]]
     frac=len(conflicts)/max(1,len(hats))
     active=frac>=gate
     out=[];removed=0;rescued=0
@@ -51,11 +60,9 @@ def filt(pred,side,scope,window,gate,rescue,tol):
         t,g,*_=row
         if g!="hat" or not active:
             out.append(row);continue
-        c=near(kicks,t,window) or (scope=="both" and near(snares,t,window))
-        if not c:
+        if not coll[t]:
             out.append(row);continue
-        rep=support(hats,t,beat,tol)
-        if rep>=rescue:
+        if repmap[t]>=rescue:
             out.append(row);rescued+=1
         else:
             removed+=1
@@ -75,7 +82,8 @@ def match_tp(pred,truth,tol=.08):
 
 def prepare_scoring(cache):
     songdata={};const=Counter()
-    for song,(pred,side) in cache.items():
+    for song,data in cache.items():
+        pred=data["pred"]
         meta=json.loads((ROOT/"DruMaster/songs"/song/"song.json").read_text())
         truth=ev.midi_events(ROOT/"DruMaster/songs"/song/"chart.mid")
         shift=float(meta["playback"]["stemOffsetSec"])+float(meta["playback"].get("midiOffsetSec",0))
@@ -91,8 +99,8 @@ def prepare_scoring(cache):
 
 def aggregate_hat(cache,scoring,const,cfg):
     diag={};hat_tp=hat_pred=hat_ref=0
-    for song,(pred,side) in cache.items():
-        p,d=filt(pred,side,*cfg);diag[song]=d
+    for song,data in cache.items():
+        p,d=filt(data,*cfg);diag[song]=d
         ph=[t for t,g,*_ in p if g=="hat"];th=scoring[song]["truth_hat"]
         tp=match_tp(ph,th);hat_tp+=tp;hat_pred+=len(ph);hat_ref+=len(th)
     total_tp=const["tp"]+hat_tp;total_pred=const["pred"]+hat_pred;total_ref=const["ref"]+hat_ref
