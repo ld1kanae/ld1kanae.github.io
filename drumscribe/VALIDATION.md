@@ -1390,3 +1390,83 @@ production候補の固定設定:
 
 注意: この数値はc216統合MIDI（土台に後段ride/pedal部品を含む）上のoffline評価。公開browser `transcribe.js` はまだこの44.1 kHz ExtraTrees、およびc216の全ride/pedal統合を再現していない。production browserの性能として0.812767を主張しない。
 
+
+
+## 2026-09-23 — c225–227 production条件の実Chromium完走確認
+
+Cycles 225–227で固定した44.1 kHz hi-hat ExtraTrees production条件を、実際の `drumscribe/transcribe.js` に統合し、real Chromiumで5曲を `drums.mp3 -> MIDI` 生成してから `chart.mid` と再照合した。
+
+統合直後の最初のbrowser validationは採譜アルゴリズムの重さではなく実装不具合で失敗した。
+
+- `transcribe.js` 先頭のimport間に改行ではなくリテラル `\\n` が混入し、moduleがロードされずAnalyze有効化待ちでtimeout。
+- これを修正後、`pruned` を `const` で宣言したままhigh-res hat結果を再代入しており、`Assignment to constant variable` で停止。
+- `pruned` をmutable bufferへ修正。
+- JS syntax workflow成功。
+- real Chromium workflowで5曲のMIDI生成、参照比較、結果commitまで成功。
+
+### 実browser結果
+
+旧real-browser baseline:
+- TP **7495** / predicted **8606** / reference **10086**
+- precision **0.8710**
+- recall **0.7431**
+- F1 **0.801947**
+- hat TP **3163** / predicted **3829** / reference **4102**
+- hat precision **0.826064** / recall **0.771087** / F1 **0.797630**
+- hat FDR **0.173936**
+
+44.1 kHz fixed-threshold hat filter統合後:
+- TP **7449** / predicted **8186** / reference **10086**
+- precision **0.909968**
+- recall **0.738548**
+- F1 **0.815346**
+- hat TP **3117** / predicted **3409** / reference **4102**
+- hat precision **0.914344**
+- hat recall **0.759873**
+- hat F1 **0.829983**
+- hat FDR **0.085656**
+- kick→snare **2**
+- snare→kick **28**
+
+旧browserからの差分:
+- overall F1 **+0.013399**
+- overall precision **+0.039064**
+- overall recall **-0.004561**
+- predicted notes **-420**
+- TP **-46**
+- hat F1 **+0.032353**
+- hat precision **+0.088280**
+- hat recall **-0.011214**
+- hat FDR **0.173936 -> 0.085656**
+
+hat以外のkick / snare / tom / crash / ride / pedal-hatの集計値は旧browser baselineから変化していない。したがって今回のoverall改善は、主に不要hatを削った効果。
+
+曲別hat F1:
+- arcaround: **0.482353 -> 0.507881**
+- diamondvirgin: **0.484127 -> 0.484127**（hat/kick density guardでfilter非適用）
+- kaiju: **0.869702 -> 0.910941**
+- nanairo: **0.859347 -> 0.913043**
+- ray: **0.907052 -> 0.928811**
+
+production filterの実際の発動:
+- arcaround: 387 -> **278** hats
+- diamondvirgin: 253 -> **253** hats（low-density skip）
+- kaiju: 680 -> **585** hats
+- nanairo: 1141 -> **1007** hats
+- ray: 1368 -> **1286** hats
+
+BPM/bar推定は従来browser validationと同一:
+- mean BPM error **0.023032%**
+- max BPM error **0.093078%**
+- mean bar error **0.076402 beat**
+- max bar error **0.251224 beat**
+- export grid residual max **0 beat**
+- 全MIDI 4/4 time signature付与確認
+
+### 採用判定
+
+今回の実browser統合版を、旧browser版より良いproduction実装として残す。hat以外を悪化させず、hat F1とFDR、overall F1が改善したため。
+
+ただしこのreal-browser 5曲値 **0.815346** は、Cycles 225–227でproduction hyperparameterをLOO選定した後、最終配布モデルを5曲全体で再学習した重みを同じ5曲に適用した値であり、未知曲への独立推定値ではない。未知曲相当のheld-out指標としては、固定production ruleのLOO値 **overall F1 0.812767 / hat F1 0.809379** を引き続き採用する。
+
+今回の一周では新しいアルゴリズム系列へ進まず、c225–227で既に選抜済みのproduction候補を実browserで成立させるところまでで停止する。
