@@ -153,3 +153,29 @@ Relevant benchmark:
   insufficient; section persistence is necessary.
 
 These failures are retained as experiment JSON/scripts rather than deleted.
+
+
+## Acceptance criteria for browser integration
+
+A metal/cymbal experiment is not integrated merely because one class recall
+increases. It must satisfy all of the following in the current evaluation
+framework:
+
+1. prediction for a held-out song must not use that song's `chart.mid`;
+2. any project-MIDI-trained hyperparameter/model must be selected by nested
+   leave-one-song-out, or the production rule must be derived from external
+   GMD/audio-only evidence;
+3. compare against the latest real-Chromium baseline, not an older offline
+   generator;
+4. preserve the already validated BPM/bar-phase/export-grid path;
+5. protect the current pedal-hat decoder unless a replacement improves it
+   under held-out evaluation;
+6. reject broad low-threshold ADTOF candidate expansion if it raises metal
+   recall by producing excessive hats/false positives;
+7. after porting, rerun the real-browser five-song validation before treating
+   the change as accepted.
+
+Current lesson: low-threshold ADTOF hat+cymbal candidates have high oracle
+coverage for metal onsets, but unconstrained sequence decoding loses overall
+precision. The remaining task is therefore primarily class/state decoding,
+not simply generating more high-frequency onsets.
