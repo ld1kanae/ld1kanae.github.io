@@ -1,0 +1,39 @@
+name: DrumScribe current adaptive snare
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/browser_snare_adaptive_current.py"
+      - ".github/workflows/drumscribe-browser-snare-adaptive-current.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install numpy scipy
+      - name: Benchmark adaptive snare
+        run: python drumscribe/experiments/browser_snare_adaptive_current.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/results-browser-snare-adaptive-current.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record current adaptive snare benchmark [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
