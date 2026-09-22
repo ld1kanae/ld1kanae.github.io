@@ -27,8 +27,8 @@ async function metricsFor(c){
   if(metricCache.has(c.id))return metricCache.get(c.id);
   const data=await fetch(c.metricsFile).then(r=>r.json());
   let result;
-  if(c.directResult&&data?.songs&&data?.by_group){
-    result={songs:data.songs,summary:data};
+  if(c.directResult&&data?.songs){
+    result={songs:data.songs,summary:data.summary||data};
   }else{
     const cycle=data.cycles?.find(x=>x.cycle===c.cycle);
     result=cycle?.candidates?.[c.key];
