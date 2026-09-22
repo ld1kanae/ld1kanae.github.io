@@ -1184,4 +1184,158 @@ MDX6/DrumSep型6ステムはkaijuで:
 
 分離自体には金物候補生成源として明確な価値がある。一方、1曲の分離だけで約682秒、全処理約1073秒と重い。またride recallは依然低い。
 
-結論: **全パート置換には使わず、将来のcrash/ride補完専用候補として保持**。ブラウザ必須経路にそのまま載せるのは現時点では非現実的。
+結論: **全パート置換には使わず、将来のcrash/ride補完専用候補として保持**。ブラウザ必須経路にそのまま載せるのは現時点では非現実的。\n
+
+## Cycles 198–224 — browser hat / pedal再統合と44.1 kHz nested-LOO hat分類
+
+Cycle 197以後の結果JSON/生成MIDIを再確認し、未記録だった後半系列を補足した。ここでいうLOO/nested-LOOは、held-out曲の `chart.mid` を予測器の学習・閾値選択に使わず、最終採点だけに使う。
+
+### Cycles 198–200 — hat meta LOO
+
+`results-iterative-hat-meta-loo.json`:
+- Cycle 198: logistic
+- Cycle 199: threshold探索
+- Cycle 200: repeat rescue
+- 最終 overall F1 **0.807468**
+- hat F1 **0.798064**
+- hat FDR **0.139108**
+
+hat precisionは上がったが、曲別worst F1が悪化するため、この系列単独を最終土台にはしない。
+
+### Cycles 207–209 — prediction-density adaptive hat
+
+`results-iterative-hat-adaptive-v2.json`:
+- whole-song hat/kick ratio 1.2 / 1.5 / 1.8
+- local 8-bar ratio
+- block size 4 / 8 / 16 bar
+- cross-cycle best overall F1 **0.808955**
+- hat F1 **0.801860**
+
+この時点のwhole-song判定では arcaround のhat/kick比 **0.6593**、diamondvirgin **0.3441** のため、1.2以上の高密度曲だけがfilter対象だった。arcaroundのhat過剰はこのguardでは残った。
+
+### Cycles 210–212 — pedal sparse gate
+
+`results-iterative-pedal-sparse-gate.json`:
+- cross-cycle overall F1 **0.806967**
+- pedal_hat F1 **0.565476**
+- hat F1 **0.795587**
+
+pedal部品としては改善し、後段のbest-mergeで再利用する。
+
+### Cycles 213–215 — multiclass hat LOO
+
+`results-iterative-hat-multiclass-loo.json`:
+- overall F1 **0.809006**
+- hat F1 **0.801969**
+- hat FDR **0.144515**
+
+改善幅は小さく、単独でbest-mergeを置き換えるほどではなかった。
+
+### Cycles 216–218 — best merge v8
+
+`results-iterative-best-merge-v8.json`:
+- Cycle 216: hat / pedal / bothを比較。bothが勝者
+- Cycle 217: hat threshold 1.2 / 1.5 / 1.8
+- Cycle 218: pedal minimum count 5 / 20 / 50
+- cross-cycle best overall: TP **7752**, predicted **9062**, reference **10086**
+- precision **0.855440**
+- recall **0.768590**
+- F1 **0.809693**
+- hat F1 **0.801860**
+- pedal_hat F1 **0.566964**
+- kick→snare **2**
+- two-limb violation **0**
+
+この時点のcanonical scoreは **0.583224**。
+
+### 44.1 kHz hat ExtraTrees size sweep
+
+`results-browser-hat-44k-size-loo.json` は `generated-v2-browser` を土台に、44.1 kHzのスペクトル + browser-native rhythm特徴を使うExtraTreesをfully nested LOOで比較した。
+
+medium (160 trees / depth 12 / min leaf 4):
+- overall F1 **0.804157**
+- hat precision **0.857380**
+- hat recall **0.754754**
+- hat F1 **0.802800**
+
+micro 32-treeでもhat F1 0.800207まで出ており、将来のbrowser model軽量化候補として残す。
+
+### Cycles 219–221 — nested 44.1 kHz hat fusion v9
+
+`results-iterative-hat-nested-fusion-v9.json`。
+
+Cycle 219（最低3案）:
+- classifier hat全面replace
+- current hatとのintersection
+- union
+- 変更なしbaseもguard用に併記
+
+Cycle 220:
+- micro / medium / full forest
+
+Cycle 221:
+- no repeat rescue
+- repeat 0.75 + 35 ms
+- repeat 1.00 + 60 ms
+
+Cycle 221 `c221_rep100_w60`:
+- overall F1 **0.811196**
+- hat TP **3032** / predicted **3427** / reference **4102**
+- hat precision **0.884739**
+- hat recall **0.739152**
+- hat F1 **0.805419**
+- hat FDR **0.115261**
+- hat worst-song F1 **0.404211**
+- canonical score **0.584611**
+
+aggregateでは改善したが、diamondvirginのhatを削り過ぎ、hat worst-song F1がbaseの0.473526から0.404211へ低下。したがって全曲一律適用は最終採用しない。
+
+### Cycles 222–224 — low-density guard v10
+
+`results-iterative-hat-density-guard-v10.json`。
+
+Cycle 222は、Cycle 221のnested filterを使うかどうかを**予測MIDIだけから得る whole-song hat/kick比**で決める。曲名ルールやtarget chartは使用しない。
+
+比較:
+- threshold 0.45
+- threshold 0.55
+- threshold 0.65
+
+5曲では3閾値が完全に同一出力になった。理由はbase比率が:
+- arcaround **0.6593** → filter ON
+- diamondvirgin **0.3441** → filter OFF
+- kaiju **1.5359** → ON
+- nanairo **2.2716** → ON
+- ray **2.2215** → ON
+
+となり、0.45–0.65の全候補でON/OFF集合が同じため。結果JSON上は0.65がwinnerだが、**0.65自体が他の2値より優れている証拠ではなくtie**である。
+
+Cycle 222 whole-song guard:
+- overall TP **7725** / predicted **8900** / reference **10086**
+- precision **0.867978**
+- recall **0.765913**
+- overall F1 **0.813758**
+- hat TP **3077** / predicted **3478** / reference **4102**
+- hat precision **0.884704**
+- hat recall **0.750122**
+- hat F1 **0.811873**
+- hat FDR **0.115296**
+- hat worst-song F1 **0.473526**
+- canonical score **0.587469**
+- kick→snare **2**
+- two-limb violation **0**
+
+base Cycle 216–218のoverall F1 0.809693 → **0.813758**、hat F1 0.801860 → **0.811873**、hat FDR 0.147253 → **0.115296**。worst-song hat F1は **0.473526** を維持した。
+
+Cycle 223のlocal 8-bar guardとCycle 224の4/8/16-bar比較は、diamondvirginの一部区間を再び削り、hat F1 0.8055–0.8069程度へ回帰したため不採用。**whole-song low-density guardを現時点の評価上の最良候補とする。**
+
+workflow初回2回は依存パッケージ不足（numpy、次にscipy）で採譜処理開始前に停止した。workflowを修正し、3回目は全candidate生成・MIDI再読込・採点・結果commitまで成功した。失敗runはアルゴリズム結果として数えない。
+
+生成物:
+- `results-iterative-hat-nested-fusion-v9.json`
+- `generated-search-hat-nested-fusion-v9/`
+- `results-iterative-hat-density-guard-v10.json`
+- `generated-search-hat-density-guard-v10/`
+
+注意: Cycles 219–224は**offline検証アルゴリズムの更新**であり、44.1 kHz ExtraTrees本体はまだ `transcribe.js` のbrowser production pathへ移植していない。公開アプリの精度がこの数値へ更新済みという意味ではない。
+\n
