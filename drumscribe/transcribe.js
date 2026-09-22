@@ -153,9 +153,160 @@ function estimateTempoFromBands(band){
     snarePeaks:coarseSnare.peaks.length
   };
 }
+function eventIntervalCandidates(times,kind){
+  const lo=50,hi=220,step=.25,n=Math.round((hi-lo)/step)+1,hist=new Float64Array(n);
+  const maxNext=kind==='kick'?18:12;
+  for(let i=0;i<times.length;i++){
+    for(let j=i+1;j<Math.min(times.length,i+maxNext);j++){
+      const dt=times[j]-times[i];
+      if(dt>(kind==='kick'?2.6:3.2))break;
+      if(dt<.16)continue;
+      if(kind==='snare'){
+        for(let mult=1;mult<=3;mult++){
+          const bpm=120*mult/dt;
+          if(bpm<lo||bpm>hi)continue;
+          hist[Math.round((bpm-lo)/step)]+=1/Math.pow(j-i,.55)/Math.pow(mult,.45);
+        }
+      }else{
+        for(let mult=1;mult<=4;mult++){
+          const bpm=60*mult/dt;
+          if(bpm<lo||bpm>hi)continue;
+          hist[Math.round((bpm-lo)/step)]+=1/Math.pow(j-i,.5)/Math.pow(mult,.35);
+        }
+      }
+    }
+  }
+  const rows=[];
+  for(let i=1;i<n-1;i++)if(hist[i]>=hist[i-1]&&hist[i]>=hist[i+1])rows.push({value:hist[i],bpm:lo+i*step});
+  rows.sort((a,b)=>b.value-a.value);
+  return rows.slice(0,15);
+}
+function eventPhaseCoherence(times,bpm){
+  if(!times.length)return 0;
+  let cr=0,ci=0;
+  const f=2*Math.PI*bpm/60;
+  for(const t of times){const a=f*t;cr+=Math.cos(a);ci+=Math.sin(a);}
+  return Math.hypot(cr,ci)/times.length;
+}
+function estimateEventTempoFamily(events){
+  const kick=events.filter(e=>e.group==='kick').map(e=>e.time).sort((a,b)=>a-b);
+  const snare=events.filter(e=>e.group==='snare').map(e=>e.time).sort((a,b)=>a-b);
+  const kh=eventIntervalCandidates(kick,'kick'),sh=eventIntervalCandidates(snare,'snare');
+  if(!kh.length&&!sh.length)return {bpm:0,score:0,candidates:[]};
+  const kmax=kh[0]?.value||1,smax=sh[0]?.value||1,pool=[];
+  for(const rows of [kh,sh]){
+    for(const row of rows.slice(0,10)){
+      for(const ratio of [.5,1,2]){
+        const bpm=row.bpm*ratio;
+        if(bpm>=50&&bpm<=220)pool.push(bpm);
+      }
+    }
+  }
+  const unique=[];
+  for(const bpm of pool)if(!unique.some(x=>Math.abs(x-bpm)<.7))unique.push(bpm);
+  const nearValue=(rows,bpm)=>{
+    let best=0;
+    for(const r of rows)if(Math.abs(r.bpm-bpm)<.8)best=Math.max(best,r.value);
+    return best;
+  };
+  const scored=unique.map(bpm=>{
+    const kickHist=nearValue(kh,bpm)/Math.max(kmax,1e-9);
+    const snareHist=nearValue(sh,bpm)/Math.max(smax,1e-9);
+    const kickCoh=eventPhaseCoherence(kick,bpm),snareCoh=eventPhaseCoherence(snare,bpm);
+    const score=.55*snareHist+.20*kickHist+.15*snareCoh+.10*kickCoh;
+    return {bpm,score,kickHist,snareHist,kickCoh,snareCoh};
+  }).sort((a,b)=>b.score-a.score);
+  return {bpm:scored[0]?.bpm||0,score:scored[0]?.score||0,candidates:scored.slice(0,8)};
+}
+function refineTempoAround(band,center){
+  const kick=rhythmPeaks(band[0],.75,.10,.05,1200);
+  const snare=rhythmPeaks(band[1],.80,.12,.07,1200);
+  const span=Math.max(1.2,center*.012),steps=1600;
+  let bestBpm=center,best=-Infinity;
+  for(let i=0;i<=steps;i++){
+    const bpm=center-span+2*span*i/steps;
+    const score=.68*phaseCoherence(snare,bpm)+.32*phaseCoherence(kick,bpm);
+    if(score>best){best=score;bestBpm=bpm;}
+  }
+  const fitPeaks=rhythmPeaks(band[1],.82,.12,.08,1000);
+  const fit=robustGridFit(fitPeaks,bestBpm);
+  const bpm=Math.abs(fit.bpm-bestBpm)/bestBpm<=.004?fit.bpm:bestBpm;
+  return {bpm,coarseBpm:center,spectralBpm:bestBpm,phaseSec:fit.phaseSec,confidence:Math.max(0,Math.min(1,best)),fitUsed:fit.used};
+}
 function circDistance(t,phase,period){
   let x=(t-phase)%period;if(x<0)x+=period;
   return Math.min(x,period-x);
+}
+function scoreBarHypothesis(events,bpm,phase,mode){
+  const beat=60/bpm,bar=4*beat,sigma=Math.max(.025,.10*beat);
+  let total=0,den=0;
+  for(const e of events){
+    if(e.group!=='kick'&&e.group!=='snare')continue;
+    const pos=((e.time-phase)%bar+bar)%bar;
+    let targets,weight;
+    if(mode==='legacy'){targets=[0];weight=e.group==='kick'?1.8:.75;}
+    else{
+      targets=e.group==='kick'?[0,2*beat]:[beat,3*beat];
+      weight=e.group==='kick'?1.25:1.0;
+    }
+    let d=Infinity;
+    for(const target of targets)d=Math.min(d,circDistance(pos,target,bar));
+    total+=weight*Math.min(2.2,Math.sqrt(Math.max(e.score||0,0)))*Math.exp(-.5*(d/sigma)**2);
+    den+=weight;
+  }
+  return total/Math.max(1e-9,den);
+}
+function estimateBarHypothesis(events,bpm,mode){
+  const beat=60/bpm,bar=4*beat;
+  let bestScore=-Infinity,bestPhase=0;
+  for(let q=0;q<512;q++){
+    const phase=bar*q/512,score=scoreBarHypothesis(events,bpm,phase,mode);
+    if(score>bestScore){bestScore=score;bestPhase=phase;}
+  }
+  const center=bestPhase;
+  for(let i=0;i<=80;i++){
+    const d=(-.10+.20*i/80)*beat,phase=((center+d)%bar+bar)%bar;
+    const score=scoreBarHypothesis(events,bpm,phase,mode);
+    if(score>bestScore){bestScore=score;bestPhase=phase;}
+  }
+  return {phaseSec:bestPhase,score:bestScore};
+}
+function crashAnchors(events,sim){
+  const out=[];
+  for(const e of events){
+    if(e.group!=='cymbal_raw')continue;
+    const cs=sim[TEMPLATE_INDEX.crash][e.frame],rs=sim[TEMPLATE_INDEX.ride][e.frame],hs=sim[TEMPLATE_INDEX.hat][e.frame];
+    if(cs>=.39&&cs>=1.45*rs&&cs>=1.30*hs)out.push({time:e.time,strength:cs});
+  }
+  return out;
+}
+function crashAnchorScore(anchors,phase,bpm){
+  if(!anchors.length)return 0;
+  const beat=60/bpm,bar=4*beat,sigma=.16*beat;
+  let sum=0;
+  for(const a of anchors){
+    const d=circDistance(a.time,phase,bar);
+    sum+=(.5+a.strength)*Math.exp(-.5*(d/sigma)**2);
+  }
+  return sum/anchors.length;
+}
+function estimateHybridBarPhase(events,sim,bpm){
+  const legacy=estimateBarHypothesis(events,bpm,'legacy');
+  const roles=estimateBarHypothesis(events,bpm,'roles');
+  const beat=60/bpm,bar=4*beat;
+  const hypothesisDistance=circDistance(legacy.phaseSec,roles.phaseSec,bar)/beat;
+  const anchors=crashAnchors(events,sim);
+  const legacyAnchor=crashAnchorScore(anchors,legacy.phaseSec,bpm);
+  const rolesAnchor=crashAnchorScore(anchors,roles.phaseSec,bpm);
+  let chosen=legacy,source='legacy';
+  if(hypothesisDistance<.45)source='agree';
+  else if(anchors.length&&rolesAnchor>legacyAnchor){chosen=roles;source='roles_crash';}
+  return {
+    phaseSec:chosen.phaseSec,source,hypothesisDistance,
+    legacyPhaseSec:legacy.phaseSec,rolesPhaseSec:roles.phaseSec,
+    legacyScore:legacy.score,rolesScore:roles.score,
+    crashAnchors:anchors.length,legacyAnchor,rolesAnchor
+  };
 }
 function estimateBeatPhase(events,bpm){
   const beat=60/bpm;
@@ -356,27 +507,26 @@ export async function transcribe(decoded,report=()=>{},options={}){
   }
 
   const base=raw.filter((_,i)=>alive.has(i));
-  const tempoInfo=(manualBpm>=30&&manualBpm<=300)
-    ?{bpm:manualBpm,coarseBpm:manualBpm,spectralBpm:manualBpm,phaseSec:0,confidence:1,source:'manual'}
-    :{...estimateTempoFromBands(band),source:'audio'};
-  const bpm=tempoInfo.bpm;
-  const beatInfo=estimateBeatPhase(base,bpm);
-  const cym=base.filter(e=>e.group==='cymbal_raw');
-  const structural=base.filter(e=>e.group!=='cymbal_raw');
-  let phase=0;
-  if(bpm>=30&&bpm<=300){
-    const beat=60/bpm,bar=beat*4,sigma=Math.max(.035,beat*.11);
-    let bestScore=-1;
-    for(let i=0;i<96;i++){
-      const ph=bar*i/96;let score=0;
-      for(const e of base){
-        const weight=e.group==='cymbal_raw'?3.2:(e.group==='kick'?1.8:(e.group==='snare'?0.8:0.1));
-        const x=(e.time-ph)%bar,d0=Math.abs(x),d=Math.min(d0,bar-d0);
-        score+=weight*e.score*Math.exp(-.5*(d/sigma)**2);
-      }
-      if(score>bestScore){bestScore=score;phase=ph;}
+  let tempoInfo;
+  if(manualBpm>=30&&manualBpm<=300){
+    tempoInfo={bpm:manualBpm,coarseBpm:manualBpm,spectralBpm:manualBpm,phaseSec:0,confidence:1,source:'manual'};
+  }else{
+    const initial=estimateTempoFromBands(band);
+    const eventFamily=estimateEventTempoFamily(base);
+    const familyGap=eventFamily.bpm?Math.abs(initial.bpm/eventFamily.bpm-1):0;
+    if(initial.confidence<.10&&eventFamily.bpm&&familyGap>.08){
+      const corrected=refineTempoAround(band,eventFamily.bpm);
+      tempoInfo={...corrected,source:'audio-event-corrected',initialBpm:initial.bpm,initialConfidence:initial.confidence,eventFamily};
+    }else{
+      tempoInfo={...initial,source:'audio',eventFamily};
     }
   }
+  const bpm=tempoInfo.bpm;
+  const beatInfo=estimateBeatPhase(base,bpm);
+  const barInfo=estimateHybridBarPhase(base,sim,bpm);
+  const cym=base.filter(e=>e.group==='cymbal_raw');
+  const structural=base.filter(e=>e.group!=='cymbal_raw');
+  const phase=barInfo.phaseSec;
   function measureHeadDistanceBeats(t){
     if(!(bpm>=30&&bpm<=300))return Infinity;
     const beat=60/bpm,bar=beat*4;
@@ -440,10 +590,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
     tempoInfo,
     beatPhaseSec:beatInfo.phaseSec,
     beatPhaseScore:beatInfo.score,
-    // The current internal phase is still used only for cymbal classification.
-    // Export alignment is enabled only after the dedicated bar-phase benchmark
-    // selects a browser-equivalent estimator.
-    barPhaseSec:null,
+    barPhaseSec:barInfo.phaseSec,
+    barPhaseInfo:barInfo,
     numerator:4,
     denominator:4
   };
