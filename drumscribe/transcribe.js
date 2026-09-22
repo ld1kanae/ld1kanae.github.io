@@ -379,6 +379,7 @@ function estimateHybridBarPhase(events,sim,bpm,beatPhase,band){
     crashAnchors:crashAnchors(events,sim).length,
     gridCandidates:rows
   };
+}
 
 const twiddles=[];
 for(let length=2;length<=SIZE;length*=2){
