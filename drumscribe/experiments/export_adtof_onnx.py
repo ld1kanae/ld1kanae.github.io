@@ -63,6 +63,7 @@ def export(m,n):
             },
             opset_version=17,
             do_constant_folding=True,
+            dynamo=False,
         )
 
 
