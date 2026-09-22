@@ -61,35 +61,60 @@ def filt(pred,side,scope,window,gate,rescue,tol):
             removed+=1
     return out,{"hat_count":len(hats),"conflicts":len(conflicts),"conflict_fraction":frac,"active":active,"removed":removed,"rescued":rescued}
 
-def summary(scores):
-    tot=Counter()
-    for sc in scores.values():
-        tot.update(tp=sc["tp"],predicted=sc["predicted"],reference=sc["reference"])
-        for g,x in sc["by_group"].items():
-            tot[f"{g}_tp"]+=x["tp"];tot[f"{g}_pred"]+=x["predicted"];tot[f"{g}_ref"]+=x["reference"]
-    tp,n,r=tot["tp"],tot["predicted"],tot["reference"]
-    out={"tp":tp,"predicted":n,"reference":r,"precision":tp/n if n else 0,"recall":tp/r if r else 0,
-         "f1":2*tp/(n+r) if n+r else 0,"by_group":{}}
-    for g in ev.ORDER:
-        a,b,c=tot[f"{g}_tp"],tot[f"{g}_pred"],tot[f"{g}_ref"]
-        out["by_group"][g]={"tp":a,"predicted":b,"reference":c,"precision":a/b if b else 0,
-          "recall":a/c if c else 0,"f1":2*a/(b+c) if b+c else 0,"count_ratio":b/c if c else None}
-    return out
+def match_tp(pred,truth,tol=.08):
+    a=sorted(pred);b=sorted(truth);i=j=tp=0
+    while i<len(a) and j<len(b):
+        d=a[i]-b[j]
+        if abs(d)<=tol:
+            tp+=1;i+=1;j+=1
+        elif d<0:
+            i+=1
+        else:
+            j+=1
+    return tp
 
-def evaluate(cache,cfg):
-    scope,window,gate,rescue,tol=cfg
-    scores={};diag={}
+def prepare_scoring(cache):
+    songdata={};const=Counter()
     for song,(pred,side) in cache.items():
-        p,d=filt(pred,side,*cfg);diag[song]=d
         meta=json.loads((ROOT/"DruMaster/songs"/song/"song.json").read_text())
         truth=ev.midi_events(ROOT/"DruMaster/songs"/song/"chart.mid")
         shift=float(meta["playback"]["stemOffsetSec"])+float(meta["playback"].get("midiOffsetSec",0))
-        scores[song]=ev.score(p,truth,shift)
-    return summary(scores),diag
+        base=ev.score(pred,truth,shift)
+        bh=base["by_group"]["hat"]
+        const.update(tp=base["tp"]-bh["tp"],pred=base["predicted"]-bh["predicted"],ref=base["reference"]-bh["reference"])
+        for g,x in base["by_group"].items():
+            if g!="hat":
+                const[f"{g}_tp"]+=x["tp"];const[f"{g}_pred"]+=x["predicted"];const[f"{g}_ref"]+=x["reference"]
+        truth_hat=sorted(t+shift for t,g,*_ in truth if g=="hat")
+        songdata[song]={"truth_hat":truth_hat,"hat_ref":len(truth_hat)}
+    return songdata,const
+
+def aggregate_hat(cache,scoring,const,cfg):
+    diag={};hat_tp=hat_pred=hat_ref=0
+    for song,(pred,side) in cache.items():
+        p,d=filt(pred,side,*cfg);diag[song]=d
+        ph=[t for t,g,*_ in p if g=="hat"];th=scoring[song]["truth_hat"]
+        tp=match_tp(ph,th);hat_tp+=tp;hat_pred+=len(ph);hat_ref+=len(th)
+    total_tp=const["tp"]+hat_tp;total_pred=const["pred"]+hat_pred;total_ref=const["ref"]+hat_ref
+    hp=hat_tp/hat_pred if hat_pred else 0;hr=hat_tp/hat_ref if hat_ref else 0;hf=2*hat_tp/(hat_pred+hat_ref) if hat_pred+hat_ref else 0
+    out={"tp":total_tp,"predicted":total_pred,"reference":total_ref,
+         "precision":total_tp/total_pred if total_pred else 0,
+         "recall":total_tp/total_ref if total_ref else 0,
+         "f1":2*total_tp/(total_pred+total_ref) if total_pred+total_ref else 0,
+         "by_group":{"hat":{"tp":hat_tp,"predicted":hat_pred,"reference":hat_ref,
+           "precision":hp,"recall":hr,"f1":hf,"count_ratio":hat_pred/hat_ref if hat_ref else None}}}
+    for g in ev.ORDER:
+        if g=="hat":continue
+        a,b,cc=const[f"{g}_tp"],const[f"{g}_pred"],const[f"{g}_ref"]
+        out["by_group"][g]={"tp":a,"predicted":b,"reference":cc,
+          "precision":a/b if b else 0,"recall":a/cc if cc else 0,
+          "f1":2*a/(b+cc) if b+cc else 0,"count_ratio":b/cc if cc else None}
+    return out,diag
 
 def main():
     cache={s:load(s) for s in SONGS}
-    baseline,_=evaluate(cache,("kick",.02,2.0,99,.04))
+    scoring,const=prepare_scoring(cache)
+    baseline,_=aggregate_hat(cache,scoring,const,("kick",.02,2.0,99,.04))
     bh=baseline["by_group"]["hat"]
     rows=[]
     for scope in ("kick","both"):
@@ -98,7 +123,7 @@ def main():
         for rescue in (1,2,3,4):
          for tol in (.025,.035,.045,.055):
           cfg=(scope,window,gate,rescue,tol)
-          s,d=evaluate(cache,cfg);h=s["by_group"]["hat"]
+          s,d=aggregate_hat(cache,scoring,const,cfg);h=s["by_group"]["hat"]
           eligible=h["recall"]>=max(.60,bh["recall"]-.16)
           objective=s["f1"]+.20*h["f1"]-.025*abs((h["count_ratio"] or 1)-1)
           rows.append((eligible,objective,s["f1"],h["f1"],cfg,s,d))
