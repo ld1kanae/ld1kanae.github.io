@@ -1,0 +1,42 @@
+name: DrumScribe hat meta LOO
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_hat_meta_loo.py"
+      - ".github/workflows/drumscribe-hat-meta-loo.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy scikit-learn
+      - name: Run cycles 198 to 200
+        run: python drumscribe/experiments/iterative_search_hat_meta_loo.py
+      - name: Commit MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-hat-meta-loo drumscribe/experiments/results-iterative-hat-meta-loo.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record hat meta LOO PDCA cycles [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
