@@ -1,3 +1,4 @@
+import {transcribeAdtof} from './adtof.js';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;
@@ -598,7 +599,30 @@ export async function transcribe(decoded,report=()=>{},options={}){
   const beatInfo=estimateBeatPhase(base,bpm);
   const barInfo=estimateHybridBarPhase(base,sim,bpm,beatInfo.phaseSec,band);
   const cym=base.filter(e=>e.group==='cymbal_raw');
-  const structural=base.filter(e=>e.group!=='cymbal_raw');
+  let structural=base.filter(e=>e.group!=='cymbal_raw');
+  let adtofInfo={enabled:false,fallback:true};
+  try{
+    const ad=await transcribeAdtof(decoded,(message,p)=>{
+      const mapped=92+Math.max(0,Math.min(1,(p-58)/42))*6;
+      report(message,mapped);
+    },{thresholdScale:1.15});
+    const replacement=ad.events.filter(e=>e.group!=='cymbal');
+    if(replacement.length){
+      structural=replacement;
+      adtofInfo={
+        enabled:true,fallback:false,
+        thresholdScale:ad.thresholdScale,
+        backend:ad.backend,
+        frames:ad.frames,
+        coreFrames:ad.coreFrames,
+        overlapFrames:ad.overlapFrames,
+        counts:Object.fromEntries(['kick','snare','tom','hat','cymbal'].map(g=>[g,ad.events.filter(e=>e.group===g).length]))
+      };
+    }
+  }catch(err){
+    console.warn('ADTOF fallback',err);
+    adtofInfo={enabled:false,fallback:true,error:String(err?.message||err)};
+  }
   const phase=barInfo.phaseSec;
   function measureHeadDistanceBeats(t){
     if(!(bpm>=30&&bpm<=300))return Infinity;
@@ -665,6 +689,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     beatPhaseScore:beatInfo.score,
     barPhaseSec:barInfo.phaseSec,
     barPhaseInfo:barInfo,
+    adtofInfo,
     numerator:4,
     denominator:4
   };
