@@ -1082,3 +1082,106 @@ real Chromium最終5曲:
 途中でbar-phase refactor時に `estimateBeatPhase()` 本体が消える実装欠落が発生した。JS構文チェックでは検出できなかったため復元し、real-browser validatorも「採譜できませんでした」を即時failureとして扱うよう変更した。最終real Chromium validationは成功。
 
 タイミング修正後のブラウザ総合F1は **0.639**。これはタイミングの問題ではなく主に分類/過検出の差で、特にhat predicted/reference **1.457** が次の主要修正対象。
+
+
+## Cycles 195–197 — browser core + retained ride/pedal component fusion
+
+土台は実Chromiumで生成した `generated-v2-browser`。browser base は overall F1 **0.801947** で、kick/snare/hat/tom/crashは強い一方、pedal-hat F1 **0.3155**、ride F1 **0.2461** が弱かった。
+
+別系列 `component-merge-v7` は総合では弱いが、pedal-hat F1 **0.5222**、ride F1 **0.3503** と金物部品が強いため、browser baseへ金物だけ差し替えるPDCAを実施した。全候補は実MIDIを書き出し、再読込後に `chart.mid` と照合。
+
+Cycle 195 — 最低3案以上:
+- browser base維持
+- ride部品のみ
+- pedal-hat部品のみ
+- ride + pedal-hat
+
+勝者は pedal-hat部品のみ。overall F1 **0.805448**。pedal-hat F1は **0.3155 → 0.5222**、hat/crashは維持。
+
+Cycle 196 — ride差替え3案:
+- ride-only
+- hat+ride pair
+- periodic rideのみ
+
+`periodic` が勝者。rideは **TP174 / predicted356 / reference644**, precision **0.4888**, recall **0.2702**, F1 **0.3480**。hat pair全面置換はhat回帰のためguard不合格。
+
+Cycle 197 — pedal-hat差替え3案:
+- component pedal全採用
+- periodic pedal
+- browser pedal + component pedal merge
+
+`c197_merge` が勝者。**新しい正式土台**:
+- overall: TP **7784**, predicted **9221**, reference **10086**
+- precision **0.84416**
+- recall **0.77176**
+- F1 **0.80634**
+- kick→snare **2**
+- two-limb violation **0**
+- kick F1 **0.96257**
+- snare F1 **0.88585**
+- hat F1 **0.79559**
+- pedal_hat F1 **0.55923**
+- tom F1 **0.76243**
+- crash F1 **0.45601**
+- ride F1 **0.34800**
+
+曲別の主要弱点:
+- arcaround: snare F1 **0.597**, hat **0.482**, crash **0.049**, ride **0**, pedal_hat **0**
+- diamondvirgin: snare **0.966**, ride **0.543** は強いがhat recall不足
+- kaiju: kick/snare/hat/tomは非常に強い。crash **0.343**, ride **0.232** が弱い
+- nanairo: overall **0.833**。snare precision不足
+- ray: overall **0.889**。snare **0.983**, hat **0.907**, crash **0.905**, pedal_hat **0.715** と強い
+
+生データ:
+- `results-iterative-browser-component-fusion.json`
+- `generated-search-browser-component-fusion/`
+
+## 外部分類・構造補完の直近不採用結果
+
+### GMD + frozen ADTOF metal classifier
+
+外部GMD rock/punkのみで学習した4クラス分類器は、外部validationでは:
+- hat F1 **0.955**
+- pedal_hat **0.864**
+- ride **0.909**
+- crash **0.679**
+
+しかしDruMaster 5曲へ既存hat/rideの再ラベル用途で転移すると、固定4案・nested LOOともほぼbrowser baseから変化しなかった。DruMaster上でtrue rideがhatとして出ている事例の多くを依然hatと判定しており、分布差が大きい。
+
+したがって **外部分類器単独のhat↔ride置換は不採用**。表現特徴は補助特徴として保持する。
+
+生データ:
+- `results-gmd-adtof-metal-logreg.json`
+- `results-browser-gmd-adtof-metal-transfer.json`
+- `generated-gmd-adtof-metal-transfer/`
+
+### ADTOF structural crash augmentation
+
+browser base crash:
+- TP127 / predicted167 / reference390
+- precision **0.7605**
+- recall **0.3256**
+- F1 **0.4560**
+
+小節頭 + generic cymbal activation + kick/fill条件を多数探索したが、最良固定案でも TP **+1** 程度、crash F1 **0.4588**。nested LOOでは逆にF1 **0.4374**へ低下。
+
+**現行crashを維持**。単純な構造追加はほぼ頭打ち。
+
+### ride-state / ride-section propagation
+
+nested LOO ride-stateは ride predicted407 / TP0 となり失敗。
+ADTOF section propagationも ride TP153 / predicted678 / F1 **0.2315** で、rayにreference 0にもかかわらず252 rideを生成する重大な誤検出があった。
+
+したがって全面的なride section置換は不採用。rideは c197 の periodic component（F1 **0.3480**）を現時点の部品ベストとして保持する。
+
+### MDX6 separated metal — kaiju単曲診断
+
+MDX6/DrumSep型6ステムはkaijuで:
+- baseline F1 **0.763**
+- best candidate F1 **0.789**
+- crash: TP30/pred30 → **TP73/pred74**
+- ride: 0 → **TP18/pred22**（別設定ではTP33/pred38）
+
+分離自体には金物候補生成源として明確な価値がある。一方、1曲の分離だけで約682秒、全処理約1073秒と重い。またride recallは依然低い。
+
+結論: **全パート置換には使わず、将来のcrash/ride補完専用候補として保持**。ブラウザ必須経路にそのまま載せるのは現時点では非現実的。
