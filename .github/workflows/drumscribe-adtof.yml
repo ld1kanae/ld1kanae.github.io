@@ -1,0 +1,46 @@
+name: DrumScribe ADTOF search
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_adtof.py"
+      - ".github/workflows/drumscribe-adtof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+      - name: Install ADTOF and evaluation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy
+          pip install 'git+https://github.com/xavriley/ADTOF-pytorch.git'
+      - name: Run ADTOF cycles 163 to 165
+        run: python drumscribe/experiments/iterative_search_adtof.py
+      - name: Commit MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-adtof drumscribe/experiments/results-iterative-adtof.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record ADTOF PDCA results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
