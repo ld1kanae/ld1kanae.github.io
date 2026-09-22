@@ -74,6 +74,7 @@ def replace_ride(rows,comp,mode,bpm):
     base_hat=[t for t,g in rows if g=="hat"]
     cride=[t for t,g in comp if g=="ride"]
     chat=[t for t,g in comp if g=="hat"]
+    if mode=="keep":return list(rows)
     if mode=="off":return [x for x in rows if x[1]!="ride"]
     if mode=="ride_only":
         out=[x for x in rows if x[1]!="ride"]+[(t,"ride") for t in cride]
@@ -94,6 +95,7 @@ def replace_ride(rows,comp,mode,bpm):
 
 def replace_pedal(rows,comp,mode,bpm):
     cped=[t for t,g in comp if g=="pedal_hat"]
+    if mode=="keep":return list(rows)
     if mode=="off":return [x for x in rows if x[1]!="pedal_hat"]
     if mode=="all":
         return enforce([x for x in rows if x[1]!="pedal_hat"]+[(t,"pedal_hat") for t in cped])
@@ -154,25 +156,16 @@ def choose(res,baseline,targets):
 
 def main():
     root=EXP/"generated-search-browser-component-fusion";report={"schema":1,"cycles":[]}
-    baseline=evaluate("baseline","off","all",root/"baseline")
+    baseline=evaluate("baseline","keep","keep",root/"baseline")
 
     res={}
     for name,rm,pm in [
-      ("c195_browser_base","off","all"),
-      ("c195_ride","pair","all"),
-      ("c195_pedal","off","all"),
+      ("c195_browser_base","keep","keep"),
+      ("c195_ride","pair","keep"),
+      ("c195_pedal","keep","all"),
       ("c195_both","pair","all"),
     ]:
-        # browser_base/pedal share pedal=all because all=component pedal;
-        # explicit true browser baseline is stored separately above.
-        if name=="c195_browser_base":
-            r=evaluate(name,"off","off",root/"cycle195")
-            # Restore browser pedal instead of off by writing directly from browser.
-            # Re-evaluate using helper below isn't necessary for ranking; this row is
-            # diagnostic only and true baseline is in report.
-            res[name]=r
-        else:
-            res[name]=evaluate(name,rm,pm,root/"cycle195")
+        res[name]=evaluate(name,rm,pm,root/"cycle195")
         print("SUMMARY",name,json.dumps({"f1":res[name]["summary"]["f1"],
           "ride":res[name]["summary"]["by_group"]["ride"],"pedal":res[name]["summary"]["by_group"]["pedal_hat"],
           "hat":res[name]["summary"]["by_group"]["hat"],"crash":res[name]["summary"]["by_group"]["crash"]},ensure_ascii=False),flush=True)
