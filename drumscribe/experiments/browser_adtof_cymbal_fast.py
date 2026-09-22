@@ -20,7 +20,15 @@ ev=importlib.util.module_from_spec(spec);spec.loader.exec_module(ev)
 
 
 def rows(path,song):
-    return [(t,g) for t,g,*_ in ev.midi_events(path/f"{song}.mid")]
+    rr=[(t,g) for t,g,*_ in ev.midi_events(path/f"{song}.mid")]
+    # Browser MIDI is exported in musical/bar-aligned coordinates. All search
+    # features and reference scoring operate on the original audio timeline,
+    # so restore only generated-v2-browser events by undoing exportOffsetSec.
+    if path == BASE:
+        side=json.loads((BASE/f"{song}.json").read_text())
+        off=float(side.get("exportOffsetSec",0) or 0)
+        rr=[(t-off,g) for t,g in rr]
+    return rr
 
 
 def near(xs,t,w):
