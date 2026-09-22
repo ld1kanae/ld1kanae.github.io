@@ -28,7 +28,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          pip install "git+https://github.com/xavriley/ADTOF-pytorch.git" onnx onnxruntime
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --no-deps "git+https://github.com/xavriley/ADTOF-pytorch.git"
+          pip install librosa pretty_midi numpy onnx onnxruntime onnxscript
       - name: Export and verify ADTOF ONNX
         run: python drumscribe/experiments/export_adtof_onnx.py
       - name: Commit model artifacts
