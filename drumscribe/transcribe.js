@@ -1,4 +1,4 @@
-import {transcribeAdtof} from './adtof.js';
+import {transcribeAdtof} from './adtof.js';\nimport {filterHighResHats} from './hat-forest.js';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;
@@ -828,6 +828,14 @@ export async function transcribe(decoded,report=()=>{},options={}){
     pruned.push(...exempt,...limb.slice(0,2));
     i=j;
   }
+
+  // Cycles 225-227: fixed-threshold 44.1 kHz ExtraTrees suppressor.
+  // Apply after cymbal/pedal classification and the initial two-hand pass,
+  // because the model was trained on the final browser event context. It only
+  // removes hats, so it cannot create a new hand-polyphony violation.
+  const highHat=await filterHighResHats(decoded,pruned,bpm,barInfo.phaseSec,(message,p)=>report(message,p));
+  pruned=highHat.events;
+  adtofInfo.hatHighRes=highHat.info;
 
   const noteOf={kick:36,snare:38,hat:42,pedal_hat:44,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
