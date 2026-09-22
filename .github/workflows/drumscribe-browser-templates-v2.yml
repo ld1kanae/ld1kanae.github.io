@@ -1,0 +1,42 @@
+name: DrumScribe browser templates v2
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/generate_browser_templates_v2.py"
+      - ".github/workflows/drumscribe-browser-templates-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ffmpeg and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy
+      - name: Generate browser templates
+        run: python drumscribe/experiments/generate_browser_templates_v2.py
+      - name: Commit templates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/templates-v2.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Generate browser crash ride templates [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
