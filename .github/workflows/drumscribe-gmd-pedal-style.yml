@@ -1,0 +1,43 @@
+name: DrumScribe GMD pedal style decoder
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/browser_gmd_pedal_style.py"
+      - "drumscribe/models/gmd-metal-style-prior.json"
+      - ".github/workflows/drumscribe-gmd-pedal-style.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy
+      - name: Search style-conditioned pedal decoder
+        run: python drumscribe/experiments/browser_gmd_pedal_style.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/results-browser-gmd-pedal-style.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record style-conditioned GMD pedal decoder [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
