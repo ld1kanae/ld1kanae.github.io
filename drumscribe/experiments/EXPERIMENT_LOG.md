@@ -2,8 +2,8 @@
 
 このファイルは build_experiment_log.py で自動生成する。候補を手作業で省略しない。
 
-- 集録 result files: 43
-- 集録 candidates: 350
+- 集録 result files: 63
+- 集録 candidates: 527
 - 生の曲別データ: 各 results*.json
 - 標準詳細評価: detailed_metrics.py / detailed-history/
 - 再現用索引: validation-history.json
@@ -21,18 +21,18 @@
 
 |候補|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-|results-iterative-pedal-structural.json:98:c98_per75|0.7205|0.7502|0.6930|0.9590|0.8107|0.6744|0.0255|0.6369|0.3734|0.0000|
-|results-iterative-pedal-structural.json:99:c99_strict|0.7205|0.7508|0.6926|0.9590|0.8107|0.6744|0.0144|0.6369|0.3734|0.0000|
-|results-iterative-pedal-structural.json:97:c97_poly|0.7203|0.7496|0.6932|0.9590|0.8107|0.6744|0.0306|0.6369|0.3734|0.0000|
-|results-iterative-pedal-structural.json:98:c98_per50|0.7203|0.7496|0.6932|0.9590|0.8107|0.6744|0.0306|0.6369|0.3734|0.0000|
-|results-iterative-pedal-structural.json:99:c99_recall|0.7203|0.7496|0.6932|0.9590|0.8107|0.6744|0.0306|0.6369|0.3734|0.0000|
-|results-iterative-pedal-structural.json:99:c99_union|0.7203|0.7496|0.6932|0.9590|0.8107|0.6744|0.0306|0.6369|0.3734|0.0000|
-|results-iterative-pedal-structural.json:98:c98_per25|0.7202|0.7493|0.6932|0.9590|0.8107|0.6744|0.0305|0.6369|0.3734|0.0000|
-|results-iterative-tom-consensus.json:103:c103_fill|0.7197|0.7171|0.7222|0.9590|0.8107|0.6746|0.3870|0.6587|0.3734|0.0000|
-|results-iterative-tom-consensus.json:104:c104_w40|0.7197|0.7171|0.7222|0.9590|0.8107|0.6746|0.3870|0.6587|0.3734|0.0000|
-|results-iterative-tom-consensus.json:104:c104_w60|0.7197|0.7171|0.7222|0.9590|0.8107|0.6746|0.3870|0.6587|0.3734|0.0000|
-|results-iterative-tom-consensus.json:104:c104_w80|0.7197|0.7171|0.7222|0.9590|0.8107|0.6746|0.3870|0.6587|0.3734|0.0000|
-|results-iterative-tom-consensus.json:105:c105_density5|0.7197|0.7171|0.7222|0.9590|0.8107|0.6746|0.3870|0.6587|0.3734|0.0000|
+|results-iterative-fusion-v5.json:129:c129_highrecall|0.7252|0.7181|0.7324|0.9590|0.8253|0.6800|0.3870|0.6667|0.3734|0.1628|
+|results-human-review-guards.json:None:review_strict|0.7245|-|-|-|-|-|-|-|-|-|
+|results-human-review-ui.json:145:c145_rhythm|0.7245|-|-|-|-|-|-|-|-|-|
+|results-iterative-hat-adaptive.json:124:c124_t20|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|
+|results-iterative-hat-adaptive.json:125:c125_pat2|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|
+|results-iterative-hat-adaptive.json:125:c125_intersection|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|
+|results-iterative-hat-adaptive.json:126:c126_t20|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|
+|results-iterative-fusion-v6.json:143:c143_highrecall|0.7242|0.7157|0.7329|0.9590|0.8253|0.6746|0.3920|0.6667|0.3951|0.2792|
+|results-human-review-guards.json:None:density|0.7241|-|-|-|-|-|-|-|-|-|
+|results-iterative-hat-adaptive.json:125:c125_pat8|0.7234|0.7261|0.7207|0.9590|0.8107|0.6822|0.3870|0.6667|0.3734|0.0000|
+|results-human-review-guards.json:None:hat|0.7231|-|-|-|-|-|-|-|-|-|
+|results-iterative-fusion-v4.json:123:c123_highrecall|0.7231|0.7129|0.7335|0.9590|0.8253|0.6749|0.3870|0.6667|0.3734|0.0000|
 
 ## 現在のパート別保持候補
 
@@ -40,14 +40,52 @@
 |---|---|---:|---:|---:|---:|---:|
 |kick|results-iterative-pattern-consensus.json:56:c56_window8|0.9589|0.9510|0.9668|0.9623|0.9395|
 |snare|results-iterative-best-fusion.json:80:c80_snare_pattern|0.8253|0.7778|0.8789|0.8203|0.5471|
-|hat|results-iterative-pattern-consensus.json:56:c56_window2|0.6468|0.6490|0.6446|0.6188|0.4227|
+|hat|results-iterative-fusion-v5.json:127:c127_fallback|0.6804|0.6472|0.7172|0.6407|0.4264|
 |pedal_hat|results-iterative-pedal-component.json:64:c64_recall|0.2996|0.1964|0.6317|0.2306|0.0000|
 |tom|results-iterative-component-hybrid.json:52:c52_robust|0.6345|0.8679|0.5000|0.6142|0.4706|
-|crash|results-iterative-crash-fallback.json:88:c88_zero_base|0.3891|0.5816|0.2923|0.4022|0.0566|
-|ride|results-iterative-component-hybrid.json:52:c52_recall|0.0890|0.0753|0.1087|0.0943|0.0588|
+|crash|results-iterative-crash-context.json:139:c139_kick|0.3958|0.6129|0.2923|0.4065|0.0566|
+|ride|results-iterative-ride-fallback.json:119:c119_per50|0.1525|0.2058|0.1211|0.1453|0.0724|
 |other|results-iterative-best-fusion.json:79:c79_crash_base|0.0000|0.0000|0.0000|-|-|
 
 ## 全result / cycle / candidate
+
+### drumscribe/experiments/results-human-review-guards.json
+
+- implementation: -
+- script commit: -
+- result commit: 0f5e47805fccf5626bdbd36856df85d304612bfb
+
+#### Cycle None
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|review_strict|-|0.7245|-|-|-|-|-|-|-|-|-|21|-|
+|density|-|0.7241|-|-|-|-|-|-|-|-|-|37|-|
+|hat|-|0.7231|-|-|-|-|-|-|-|-|-|42|-|
+|all|-|0.7227|-|-|-|-|-|-|-|-|-|37|-|
+|adaptive_snare|-|0.7210|-|-|-|-|-|-|-|-|-|21|-|
+|kick_veto|-|0.7209|-|-|-|-|-|-|-|-|-|4|-|
+|baseline|-|0.7208|-|-|-|-|-|-|-|-|-|42|-|
+|snare|-|0.7207|-|-|-|-|-|-|-|-|-|37|-|
+|metal|-|0.7207|-|-|-|-|-|-|-|-|-|42|-|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-human-review-guards.json / experiment-log.json
+
+### drumscribe/experiments/results-human-review-ui.json
+
+- implementation: -
+- script commit: -
+- result commit: 0f5e47805fccf5626bdbd36856df85d304612bfb
+
+#### Cycle 145
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c145_rhythm|-|0.7245|-|-|-|-|-|-|-|-|-|21|-|
+|c145_snare|-|0.7210|-|-|-|-|-|-|-|-|-|21|-|
+|c145_kick_veto|-|0.7209|-|-|-|-|-|-|-|-|-|4|-|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-human-review-ui.json / experiment-log.json
 
 ### drumscribe/experiments/results-iterative-anchor.json
 
@@ -134,7 +172,7 @@
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 |c52_robust|winner, close, part-leader|0.6954|0.7523|0.6465|0.9590|0.7642|0.6445|0.1735|0.6345|0.3511|0.0000|38|25|
 |c52_precision|close|0.6944|0.7547|0.6430|0.9578|0.7642|0.6445|0.1735|0.6345|0.2874|0.0000|38|27|
-|c52_recall|part-leader|0.6687|0.6281|0.7151|0.9537|0.6759|0.6703|0.1735|0.6345|0.3464|0.0890|51|27|
+|c52_recall|-|0.6687|0.6281|0.7151|0.9537|0.6759|0.6703|0.1735|0.6345|0.3464|0.0890|51|27|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-component-hybrid.json / experiment-log.json
 
@@ -230,6 +268,42 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-composite.json / experiment-log.json
 
+### drumscribe/experiments/results-iterative-crash-barhead.json
+
+- implementation: drumscribe/experiments/iterative_search_crash_barhead.py
+- script commit: f2709da55ee68d00dc4367f9cc480991d54e02e3
+- result commit: 04368f7ae9654c96db1310052bad910411482e34
+
+#### Cycle 145
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c145_ratio|winner|0.7053|0.6958|0.7151|0.9590|0.8107|0.6793|0.3870|0.6667|0.1101|0.1608|42|25|
+|c145_hybrid|-|0.7015|0.6876|0.7159|0.9590|0.8107|0.6798|0.3870|0.6667|0.1124|0.1607|42|25|
+|c145_flux|-|0.7004|0.6853|0.7162|0.9590|0.8107|0.6796|0.3870|0.6667|0.1172|0.1608|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-barhead.json / experiment-log.json
+
+#### Cycle 146
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c146_p82|-|0.7074|0.7007|0.7144|0.9590|0.8107|0.6793|0.3870|0.6667|0.0988|0.1630|42|25|
+|c146_p70|winner|0.7053|0.6958|0.7151|0.9590|0.8107|0.6793|0.3870|0.6667|0.1101|0.1608|42|25|
+|c146_p55|-|0.7043|0.6938|0.7151|0.9590|0.8107|0.6793|0.3870|0.6667|0.1065|0.1608|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-barhead.json / experiment-log.json
+
+#### Cycle 147
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c147_r10|-|0.7063|0.6985|0.7143|0.9590|0.8107|0.6795|0.3870|0.6667|0.0900|0.1630|42|25|
+|c147_r18|winner|0.7053|0.6958|0.7151|0.9590|0.8107|0.6793|0.3870|0.6667|0.1101|0.1608|42|25|
+|c147_r28|-|0.6999|0.6864|0.7139|0.9590|0.8107|0.6792|0.3870|0.6667|0.0697|0.1608|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-barhead.json / experiment-log.json
+
 ### drumscribe/experiments/results-iterative-crash-consensus.json
 
 - implementation: drumscribe/experiments/iterative_search_crash_consensus.py
@@ -266,6 +340,42 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-consensus.json / experiment-log.json
 
+### drumscribe/experiments/results-iterative-crash-context.json
+
+- implementation: drumscribe/experiments/iterative_search_crash_context.py
+- script commit: 5bdbf4947d77bb0e9816d44dac8250b63e45115e
+- result commit: 90abee856ca881b288c4a51bccf31033646085c8
+
+#### Cycle 139
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c139_kick|winner, part-leader|0.7219|0.7214|0.7224|0.9590|0.8107|0.6798|0.3870|0.6667|0.3958|0.1628|42|25|
+|c139_all|-|0.7215|0.7207|0.7224|0.9590|0.8107|0.6798|0.3870|0.6667|0.3891|0.1628|42|25|
+|c139_kick_snare|-|0.7215|0.7207|0.7224|0.9590|0.8107|0.6798|0.3870|0.6667|0.3891|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-context.json / experiment-log.json
+
+#### Cycle 140
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c140_w060|winner|0.7220|0.7218|0.7222|0.9590|0.8107|0.6798|0.3870|0.6667|0.3951|0.1628|42|25|
+|c140_w100|-|0.7219|0.7214|0.7224|0.9590|0.8107|0.6798|0.3870|0.6667|0.3958|0.1628|42|25|
+|c140_w140|-|0.7218|0.7212|0.7224|0.9590|0.8107|0.6798|0.3870|0.6667|0.3938|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-context.json / experiment-log.json
+
+#### Cycle 141
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c141_support_only|winner|0.7220|0.7218|0.7222|0.9590|0.8107|0.6798|0.3870|0.6667|0.3951|0.1628|42|25|
+|c141_head15|-|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c141_head25|-|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-context.json / experiment-log.json
+
 ### drumscribe/experiments/results-iterative-crash-fallback.json
 
 - implementation: drumscribe/experiments/iterative_search_crash_fallback.py
@@ -277,7 +387,7 @@
 |Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 |c88_precision|winner, close|0.7193|0.7170|0.7217|0.9590|0.8107|0.6744|0.3865|0.6369|0.3734|0.0000|42|25|
-|c88_zero_base|close, part-leader|0.7190|0.7151|0.7230|0.9590|0.8107|0.6744|0.3865|0.6369|0.3891|0.0000|42|25|
+|c88_zero_base|close|0.7190|0.7151|0.7230|0.9590|0.8107|0.6744|0.3865|0.6369|0.3891|0.0000|42|25|
 |c88_sparse_recall|close|0.7184|0.7145|0.7223|0.9590|0.8107|0.6735|0.3865|0.6369|0.3824|0.0000|42|25|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-crash-fallback.json / experiment-log.json
@@ -410,6 +520,225 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v2.json / experiment-log.json
 
+### drumscribe/experiments/results-iterative-fusion-v3.json
+
+- implementation: drumscribe/experiments/iterative_search_fusion_v3.py
+- script commit: 975e9458106a7bf3ea3059d0cd3cdceb15d3ef93
+- result commit: 8bed53a7ce830e0258cca2e681771cf9d29620c2
+
+#### Cycle 118
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c118_tom_snare|winner|0.7204|0.7162|0.7246|0.9590|0.8133|0.6747|0.3870|0.6667|0.3734|0.0000|45|25|
+|c118_snare|-|0.7200|0.7161|0.7241|0.9590|0.8133|0.6745|0.3870|0.6369|0.3734|0.0000|45|25|
+|c118_tom|-|0.7197|0.7173|0.7222|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.0000|42|25|
+|c118_base|-|0.7194|0.7171|0.7217|0.9590|0.8107|0.6744|0.3870|0.6369|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v3.json / experiment-log.json
+
+#### Cycle 119
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c119_ride_off|winner|0.7204|0.7162|0.7246|0.9590|0.8133|0.6747|0.3870|0.6667|0.3734|0.0000|45|25|
+|c119_ride_gate|-|0.7186|0.7145|0.7228|0.9590|0.8133|0.6718|0.3870|0.6667|0.3734|0.0941|45|25|
+|c119_ride_consensus|-|0.7186|0.7144|0.7228|0.9590|0.8133|0.6723|0.3870|0.6667|0.3734|0.0315|45|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v3.json / experiment-log.json
+
+#### Cycle 120
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c120_crash_precision|winner|0.7204|0.7162|0.7246|0.9590|0.8133|0.6747|0.3870|0.6667|0.3734|0.0000|45|25|
+|c120_crash_zero|-|0.7200|0.7143|0.7259|0.9590|0.8133|0.6747|0.3870|0.6667|0.3891|0.0000|45|25|
+|c120_crash_recall|-|0.7194|0.7137|0.7252|0.9590|0.8133|0.6738|0.3870|0.6667|0.3824|0.0000|45|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v3.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-fusion-v4.json
+
+- implementation: drumscribe/experiments/iterative_search_fusion_v4.py
+- script commit: 49b2965a2bc8428e2b58d94159cfcb114206b2da
+- result commit: d5aea2e0a171fd74c7b3eb6f7eaf0d31258d3ce0
+
+#### Cycle 121
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c121_off|winner|0.7197|0.7173|0.7222|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.0000|42|25|
+|c121_adaptive|-|0.7173|0.7120|0.7227|0.9590|0.8107|0.6701|0.3870|0.6667|0.3734|0.1628|42|25|
+|c121_fallback|-|0.7170|0.7113|0.7228|0.9590|0.8107|0.6711|0.3870|0.6667|0.3734|0.1605|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v4.json / experiment-log.json
+
+#### Cycle 122
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c122_balanced|-|0.7197|0.7173|0.7222|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.0000|42|25|
+|c122_precision|winner|0.7197|0.7173|0.7222|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.0000|42|25|
+|c122_fallback|-|0.7194|0.7154|0.7235|0.9590|0.8107|0.6746|0.3870|0.6667|0.3891|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v4.json / experiment-log.json
+
+#### Cycle 123
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c123_highrecall|-|0.7231|0.7129|0.7335|0.9590|0.8253|0.6749|0.3870|0.6667|0.3734|0.0000|103|25|
+|c123_balanced|winner|0.7197|0.7173|0.7222|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.0000|42|25|
+|c123_safe|-|0.7194|0.7160|0.7228|0.9590|0.8071|0.6747|0.3870|0.6667|0.3734|0.0000|44|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v4.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-fusion-v5.json
+
+- implementation: drumscribe/experiments/iterative_search_fusion_v5.py
+- script commit: 6bfd837a7963440492e19da4de293ba0fc2df0cf
+- result commit: 5afebe2e69b6bcfb825c560a96a57b5f5f93cb29
+
+#### Cycle 127
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c127_tight|-|0.7226|0.7263|0.7189|0.9590|0.8107|0.6815|0.3870|0.6667|0.3734|0.0941|42|25|
+|c127_adaptive|winner|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c127_fallback|part-leader|0.7213|0.7215|0.7212|0.9590|0.8107|0.6804|0.3870|0.6667|0.3734|0.1605|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v5.json / experiment-log.json
+
+#### Cycle 128
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c128_balanced|-|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c128_precision|winner|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c128_fallback|-|0.7215|0.7207|0.7224|0.9590|0.8107|0.6798|0.3870|0.6667|0.3891|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v5.json / experiment-log.json
+
+#### Cycle 129
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c129_highrecall|-|0.7252|0.7181|0.7324|0.9590|0.8253|0.6800|0.3870|0.6667|0.3734|0.1628|103|25|
+|c129_balanced|winner|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c129_safe|-|0.7215|0.7213|0.7217|0.9590|0.8071|0.6798|0.3870|0.6667|0.3734|0.1628|44|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v5.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-fusion-v6.json
+
+- implementation: drumscribe/experiments/iterative_search_fusion_v6.py
+- script commit: b569726f85eb5f11bc43b47e0efea54d9f05f72c
+- result commit: d49594ff7bdbcf3d52c884cc197f720eed00e2e5
+
+#### Cycle 142
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c142_pedal_crash|-|0.7221|0.7214|0.7229|0.9590|0.8107|0.6798|0.3920|0.6667|0.3951|0.1628|42|25|
+|c142_base|-|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c142_all_three|winner|0.7208|0.7201|0.7216|0.9590|0.8107|0.6743|0.3920|0.6667|0.3951|0.2792|42|25|
+|c142_pedal_ride|-|0.7207|0.7209|0.7205|0.9590|0.8107|0.6743|0.3920|0.6667|0.3734|0.2792|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v6.json / experiment-log.json
+
+#### Cycle 143
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c143_highrecall|-|0.7242|0.7157|0.7329|0.9590|0.8253|0.6746|0.3920|0.6667|0.3951|0.2792|103|25|
+|c143_balanced|winner|0.7208|0.7201|0.7216|0.9590|0.8107|0.6743|0.3920|0.6667|0.3951|0.2792|42|25|
+|c143_safe|-|0.7205|0.7188|0.7222|0.9590|0.8071|0.6744|0.3920|0.6667|0.3951|0.2792|44|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v6.json / experiment-log.json
+
+#### Cycle 144
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c144_adaptive|winner|0.7208|0.7201|0.7216|0.9590|0.8107|0.6743|0.3920|0.6667|0.3951|0.2792|42|25|
+|c144_crossstem|-|0.7105|0.7324|0.6900|0.9590|0.8107|0.6450|0.3920|0.6667|0.3951|0.2792|42|25|
+|c144_pattern|-|0.7063|0.7269|0.6868|0.9590|0.8107|0.6346|0.3920|0.6667|0.3951|0.2792|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-fusion-v6.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-guarded-fusion.json
+
+- implementation: drumscribe/experiments/iterative_search_guarded_fusion.py
+- script commit: 8662ba0394191b5b1a783292550846757028d46f
+- result commit: bdaa023c644f9a367a86be90862002ae53465160
+
+#### Cycle 109
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c109_tom|-|0.7197|0.7173|0.7222|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.0000|42|25|
+|c109_base|-|0.7194|0.7171|0.7217|0.9590|0.8107|0.6744|0.3870|0.6369|0.3734|0.0000|42|25|
+|c109_tom_ride|winner|0.7180|0.7156|0.7204|0.9590|0.8107|0.6717|0.3870|0.6667|0.3734|0.0941|42|25|
+|c109_ride|-|0.7177|0.7154|0.7199|0.9590|0.8107|0.6715|0.3870|0.6369|0.3734|0.0941|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-guarded-fusion.json / experiment-log.json
+
+#### Cycle 110
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c110_snare_pattern|-|0.7213|0.7113|0.7317|0.9590|0.8253|0.6719|0.3870|0.6667|0.3734|0.0941|103|25|
+|c110_snare_base|-|0.7180|0.7156|0.7204|0.9590|0.8107|0.6717|0.3870|0.6667|0.3734|0.0941|42|25|
+|c110_snare_veto|winner|0.7180|0.7156|0.7204|0.9590|0.8107|0.6717|0.3870|0.6667|0.3734|0.0941|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-guarded-fusion.json / experiment-log.json
+
+#### Cycle 111
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c111_crash_precision|-|0.7180|0.7156|0.7204|0.9590|0.8107|0.6717|0.3870|0.6667|0.3734|0.0941|42|25|
+|c111_crash_zero|winner|0.7177|0.7137|0.7217|0.9590|0.8107|0.6717|0.3870|0.6667|0.3891|0.0941|42|25|
+|c111_crash_recall|-|0.7170|0.7131|0.7210|0.9590|0.8107|0.6708|0.3870|0.6667|0.3824|0.0941|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-guarded-fusion.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-hat-adaptive.json
+
+- implementation: drumscribe/experiments/iterative_search_hat_adaptive.py
+- script commit: d8153e31b16c88dfad9556a9b9012312c2555701
+- result commit: 59cfa2e67e2f57c8297363bc420e719eb066f261
+
+#### Cycle 124
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c124_t20|winner|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|42|25|
+|c124_t17|-|0.7110|0.7317|0.6915|0.9590|0.8107|0.6508|0.3870|0.6667|0.3734|0.0000|42|25|
+|c124_t12|-|0.7096|0.7335|0.6873|0.9590|0.8107|0.6469|0.3870|0.6667|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-hat-adaptive.json / experiment-log.json
+
+#### Cycle 125
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c125_pat2|winner|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|42|25|
+|c125_intersection|-|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|42|25|
+|c125_pat8|-|0.7234|0.7261|0.7207|0.9590|0.8107|0.6822|0.3870|0.6667|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-hat-adaptive.json / experiment-log.json
+
+#### Cycle 126
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c126_t20|winner|0.7243|0.7280|0.7206|0.9590|0.8107|0.6842|0.3870|0.6667|0.3734|0.0000|42|25|
+|c126_t22|-|0.7197|0.7173|0.7222|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.0000|42|25|
+|c126_t18|-|0.7148|0.7281|0.7019|0.9590|0.8107|0.6608|0.3870|0.6667|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-hat-adaptive.json / experiment-log.json
+
 ### drumscribe/experiments/results-iterative-hat-fusion.json
 
 - implementation: drumscribe/experiments/iterative_search_hat_fusion.py
@@ -445,6 +774,42 @@
 |c69_none|-|0.7041|0.7460|0.6666|0.9590|0.8130|0.6445|0.1735|0.6369|0.3517|0.0000|42|25|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-hat-fusion.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-hat-kick-gate.json
+
+- implementation: drumscribe/experiments/iterative_search_hat_kick_gate.py
+- script commit: e147628169c49bfbeac45824a3f38d3310eba8f0
+- result commit: 7e9276a0ba2e734ac6a3f8014b27503429f6d7cd
+
+#### Cycle 115
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c115_support25|winner|0.7174|0.7232|0.7117|0.9590|0.8107|0.6686|0.3870|0.6369|0.3734|0.0000|42|25|
+|c115_support45|-|0.7173|0.7231|0.7117|0.9590|0.8107|0.6685|0.3870|0.6369|0.3734|0.0000|42|25|
+|c115_support70|-|0.7171|0.7226|0.7117|0.9590|0.8107|0.6680|0.3870|0.6369|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-hat-kick-gate.json / experiment-log.json
+
+#### Cycle 116
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c116_kick20|winner|0.7181|0.7204|0.7158|0.9590|0.8107|0.6708|0.3870|0.6369|0.3734|0.0000|42|25|
+|c116_kick55|-|0.7175|0.7238|0.7114|0.9590|0.8107|0.6689|0.3870|0.6369|0.3734|0.0000|42|25|
+|c116_kick35|-|0.7174|0.7232|0.7117|0.9590|0.8107|0.6686|0.3870|0.6369|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-hat-kick-gate.json / experiment-log.json
+
+#### Cycle 117
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c117_rescue4|winner|0.7199|0.7182|0.7216|0.9590|0.8107|0.6754|0.3870|0.6369|0.3734|0.0000|42|25|
+|c117_rescue3|-|0.7197|0.7178|0.7216|0.9590|0.8107|0.6750|0.3870|0.6369|0.3734|0.0000|42|25|
+|c117_rescue2|-|0.7195|0.7173|0.7216|0.9590|0.8107|0.6745|0.3870|0.6369|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-hat-kick-gate.json / experiment-log.json
 
 ### drumscribe/experiments/results-iterative-hat-precision.json
 
@@ -577,7 +942,7 @@
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 |c56_window8|winner, close, part-leader|0.6914|0.7558|0.6372|0.9589|0.7526|0.6450|0.1735|0.6345|0.1876|0.0000|38|25|
 |c56_window4|close|0.6889|0.7576|0.6317|0.9578|0.7376|0.6450|0.1735|0.6345|0.1876|0.0000|37|25|
-|c56_window2|close, part-leader|0.6881|0.7615|0.6276|0.9574|0.7273|0.6468|0.1735|0.6345|0.1876|0.0000|37|25|
+|c56_window2|close|0.6881|0.7615|0.6276|0.9574|0.7273|0.6468|0.1735|0.6345|0.1876|0.0000|37|25|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-pattern-consensus.json / experiment-log.json
 
@@ -591,10 +956,46 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-pattern-consensus.json / experiment-log.json
 
+### drumscribe/experiments/results-iterative-pedal-adaptive.json
+
+- implementation: drumscribe/experiments/iterative_search_pedal_adaptive.py
+- script commit: 630156623735284e16ce3c275e58f996b7916e96
+- result commit: 743982cc2d63f4eef261be03ca9a0af366730f91
+
+#### Cycle 133
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c133_base|winner|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c133_anti_hat|-|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c133_consensus|-|0.7000|0.6726|0.7297|0.9590|0.8107|0.6798|0.3186|0.6667|0.3734|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-pedal-adaptive.json / experiment-log.json
+
+#### Cycle 134
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c134_per25|-|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c134_per50|-|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+|c134_per75|winner|0.7219|0.7226|0.7211|0.9590|0.8107|0.6798|0.3870|0.6667|0.3734|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-pedal-adaptive.json / experiment-log.json
+
+#### Cycle 135
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c135_sparse015|-|0.7220|0.7222|0.7218|0.9590|0.8107|0.6798|0.3920|0.6667|0.3734|0.1628|42|25|
+|c135_sparse030|-|0.7220|0.7222|0.7218|0.9590|0.8107|0.6798|0.3920|0.6667|0.3734|0.1628|42|25|
+|c135_sparse060|winner|0.7220|0.7222|0.7218|0.9590|0.8107|0.6798|0.3920|0.6667|0.3734|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-pedal-adaptive.json / experiment-log.json
+
 ### drumscribe/experiments/results-iterative-pedal-component.json
 
-- implementation: -
-- script commit: -
+- implementation: drumscribe/experiments/iterative_search_pedal_component.py
+- script commit: 799012e628910987cb2d759ff599ff1e6775c28f
 - result commit: c57c5024065e9451de359850d4cbd389341105d6
 
 #### Cycle 64
@@ -843,6 +1244,42 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-recall-repair.json / experiment-log.json
 
+### drumscribe/experiments/results-iterative-ride-adaptive.json
+
+- implementation: drumscribe/experiments/iterative_search_ride_adaptive.py
+- script commit: 45a93483271e6cc4999268cba07624b4f55bb451
+- result commit: 0b2e67ff0f88542aa0fc0625d8399c27eb25481f
+
+#### Cycle 115
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c115_ratio030|winner, close|0.7187|0.7159|0.7215|0.9590|0.8107|0.6721|0.3870|0.6667|0.3741|0.1202|42|25|
+|c115_ratio060|close|0.7187|0.7159|0.7215|0.9590|0.8107|0.6721|0.3870|0.6667|0.3741|0.1202|42|25|
+|c115_ratio015|close|0.7181|0.7157|0.7204|0.9590|0.8107|0.6718|0.3870|0.6667|0.3741|0.0941|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-adaptive.json / experiment-log.json
+
+#### Cycle 116
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c116_radius8|close|0.7187|0.7159|0.7215|0.9590|0.8107|0.6721|0.3870|0.6667|0.3741|0.1202|42|25|
+|c116_radius4|close|0.7185|0.7159|0.7211|0.9590|0.8107|0.6719|0.3870|0.6667|0.3741|0.1111|42|25|
+|c116_oldrecall|winner, close|0.7173|0.7121|0.7226|0.9590|0.8107|0.6701|0.3870|0.6667|0.3741|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-adaptive.json / experiment-log.json
+
+#### Cycle 117
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c117_hat30|winner, close|0.7174|0.7121|0.7227|0.9590|0.8107|0.6701|0.3870|0.6667|0.3741|0.1628|42|25|
+|c117_hat50|close|0.7173|0.7121|0.7226|0.9590|0.8107|0.6701|0.3870|0.6667|0.3741|0.1628|42|25|
+|c117_hat80|close|0.7172|0.7121|0.7224|0.9590|0.8107|0.6698|0.3870|0.6667|0.3741|0.1628|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-adaptive.json / experiment-log.json
+
 ### drumscribe/experiments/results-iterative-ride-consensus.json
 
 - implementation: drumscribe/experiments/iterative_search_ride_consensus.py
@@ -915,10 +1352,46 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-contiguous.json / experiment-log.json
 
+### drumscribe/experiments/results-iterative-ride-fallback.json
+
+- implementation: drumscribe/experiments/iterative_search_ride_fallback.py
+- script commit: 20a1f7d502f5d07fc8502de7fe0ae6c775e0a177
+- result commit: 8c924cb6fd685d4c532ac1dec23aed38a38c5628
+
+#### Cycle 118
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c118_ratio10|winner, close|0.7156|0.7085|0.7229|0.9590|0.8107|0.6733|0.3870|0.6667|0.3741|0.1522|42|25|
+|c118_ratio15|close|0.7156|0.7085|0.7229|0.9590|0.8107|0.6733|0.3870|0.6667|0.3741|0.1522|42|25|
+|c118_ratio20|close|0.7156|0.7085|0.7229|0.9590|0.8107|0.6733|0.3870|0.6667|0.3741|0.1522|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-fallback.json / experiment-log.json
+
+#### Cycle 119
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c119_per100|winner, close|0.7162|0.7098|0.7228|0.9590|0.8107|0.6719|0.3870|0.6667|0.3741|0.1547|42|25|
+|c119_per75|close|0.7156|0.7085|0.7229|0.9590|0.8107|0.6733|0.3870|0.6667|0.3741|0.1522|42|25|
+|c119_per50|close, part-leader|0.7148|0.7069|0.7228|0.9590|0.8107|0.6752|0.3870|0.6667|0.3741|0.1525|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-fallback.json / experiment-log.json
+
+#### Cycle 120
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c120_density7|winner, close|0.7170|0.7114|0.7228|0.9590|0.8107|0.6711|0.3870|0.6667|0.3741|0.1605|42|25|
+|c120_density5|close|0.7162|0.7098|0.7228|0.9590|0.8107|0.6719|0.3870|0.6667|0.3741|0.1547|42|25|
+|c120_density3|close|0.7154|0.7081|0.7228|0.9590|0.8107|0.6723|0.3870|0.6667|0.3741|0.1499|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-fallback.json / experiment-log.json
+
 ### drumscribe/experiments/results-iterative-ride-grid.json
 
-- implementation: -
-- script commit: -
+- implementation: drumscribe/experiments/iterative_search_ride_grid.py
+- script commit: 0ecc25ccf38edd1b59f7131e562a1243e75d633d
 - result commit: 3141432d1e849a6eddf4e30ad7bcf710d857e721
 
 #### Cycle 100
@@ -953,8 +1426,8 @@
 
 ### drumscribe/experiments/results-iterative-ride-hires.json
 
-- implementation: -
-- script commit: -
+- implementation: drumscribe/experiments/iterative_search_ride_hires.py
+- script commit: c5611207db32b476be70993f35374ef338fc0c46
 - result commit: 860f8d892b1b688d28d84f45f7c32121410ed7b9
 
 #### Cycle 85
@@ -1025,8 +1498,8 @@
 
 ### drumscribe/experiments/results-iterative-ride-pairwise.json
 
-- implementation: -
-- script commit: -
+- implementation: drumscribe/experiments/iterative_search_ride_pairwise.py
+- script commit: a507edd76a7be526cfa677d78a9fd21cc065f355
 - result commit: 6f50db46ca515146468e1d4ecc418d1bb8cc4a1f
 
 #### Cycle 106
@@ -1061,8 +1534,8 @@
 
 ### drumscribe/experiments/results-iterative-ride-runs.json
 
-- implementation: -
-- script commit: -
+- implementation: drumscribe/experiments/iterative_search_ride_runs.py
+- script commit: f250f097fa3caf1099a02a9122921cad969748a5
 - result commit: 7b775a46038e3b67bf8badae636e319e260bfe5e
 
 #### Cycle 91
@@ -1130,6 +1603,78 @@
 |c21_recall|-|0.6010|0.6219|0.5814|0.9281|0.7742|0.4820|-|0.0000|0.2868|0.0904|41|27|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-section.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-ride-seed-expand.json
+
+- implementation: drumscribe/experiments/iterative_search_ride_seed_expand.py
+- script commit: 4ffcb6189ea73335fa150e6e3f464825f5428284
+- result commit: 8a5f2793675bea609be2fb0f4dac90673220f159
+
+#### Cycle 109
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c109_radius2|winner, close|0.7141|0.7087|0.7196|0.9590|0.8107|0.6708|0.3870|0.6369|0.3741|0.1016|42|25|
+|c109_radius4|close|0.7130|0.7067|0.7193|0.9590|0.8107|0.6700|0.3870|0.6369|0.3741|0.1102|42|25|
+|c109_radius8|close|0.7102|0.7024|0.7182|0.9590|0.8107|0.6686|0.3870|0.6369|0.3741|0.1118|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-seed-expand.json / experiment-log.json
+
+#### Cycle 110
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c110_per75|winner, close|0.7157|0.7119|0.7195|0.9590|0.8107|0.6711|0.3870|0.6369|0.3741|0.0922|42|25|
+|c110_per50|close|0.7141|0.7087|0.7196|0.9590|0.8107|0.6708|0.3870|0.6369|0.3741|0.1016|42|25|
+|c110_per25|close|0.7140|0.7083|0.7197|0.9590|0.8107|0.6709|0.3870|0.6369|0.3741|0.1030|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-seed-expand.json / experiment-log.json
+
+#### Cycle 111
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c111_seed3|winner, close|0.7164|0.7129|0.7199|0.9590|0.8107|0.6716|0.3870|0.6369|0.3741|0.0917|42|25|
+|c111_seed2|close|0.7161|0.7125|0.7198|0.9590|0.8107|0.6716|0.3870|0.6369|0.3741|0.0909|42|25|
+|c111_seed1|close|0.7157|0.7119|0.7195|0.9590|0.8107|0.6711|0.3870|0.6369|0.3741|0.0922|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-seed-expand.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-ride-segment.json
+
+- implementation: drumscribe/experiments/iterative_search_ride_segment.py
+- script commit: f565b47b1ad2679fd80ff5763f8ebde355438a17
+- result commit: 58a5e9f680e39236547f9f4c76d40db18c730000
+
+#### Cycle 136
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c136_extend1|-|0.7212|0.7220|0.7204|0.9590|0.8107|0.6783|0.3870|0.6667|0.3734|0.1894|42|25|
+|c136_extend2|-|0.7212|0.7220|0.7204|0.9590|0.8107|0.6772|0.3870|0.6667|0.3734|0.2280|42|25|
+|c136_extend4|winner|0.7204|0.7212|0.7196|0.9590|0.8107|0.6742|0.3870|0.6667|0.3734|0.2806|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-segment.json / experiment-log.json
+
+#### Cycle 137
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c137_tol10|winner|0.7205|0.7213|0.7197|0.9590|0.8107|0.6742|0.3870|0.6667|0.3734|0.2792|42|25|
+|c137_tol18|-|0.7204|0.7212|0.7196|0.9590|0.8107|0.6742|0.3870|0.6667|0.3734|0.2806|42|25|
+|c137_tol26|-|0.7204|0.7212|0.7196|0.9590|0.8107|0.6746|0.3870|0.6667|0.3734|0.2793|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-segment.json / experiment-log.json
+
+#### Cycle 138
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c138_seed2|-|0.7205|0.7213|0.7197|0.9590|0.8107|0.6742|0.3870|0.6667|0.3734|0.2792|42|25|
+|c138_seed3|winner|0.7205|0.7213|0.7197|0.9590|0.8107|0.6742|0.3870|0.6667|0.3734|0.2792|42|25|
+|c138_seed4|-|0.7197|0.7205|0.7189|0.9590|0.8107|0.6733|0.3870|0.6667|0.3734|0.2669|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-ride-segment.json / experiment-log.json
 
 ### drumscribe/experiments/results-iterative-ride-song-gate.json
 
@@ -1276,6 +1821,114 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-separation.json / experiment-log.json
 
+### drumscribe/experiments/results-iterative-snare-adaptive.json
+
+- implementation: drumscribe/experiments/iterative_search_snare_adaptive.py
+- script commit: 7707555ec6c3f683a4f560a312914ee76646dff5
+- result commit: 21422e6bc9f1dd0a76374f0e6b1e5b6500c3a04a
+
+#### Cycle 148
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c148_r115|-|0.7214|0.7188|0.7240|0.9590|0.8130|0.6743|0.3920|0.6667|0.3951|0.2792|45|25|
+|c148_r130|winner|0.7214|0.7188|0.7240|0.9590|0.8130|0.6743|0.3920|0.6667|0.3951|0.2792|45|25|
+|c148_r145|-|0.7204|0.7187|0.7221|0.9590|0.8070|0.6743|0.3920|0.6667|0.3951|0.2792|45|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-adaptive.json / experiment-log.json
+
+#### Cycle 149
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c149_k25|-|0.7227|0.7169|0.7285|0.9590|0.8186|0.6743|0.3920|0.6667|0.3951|0.2792|89|25|
+|c149_k65|winner|0.7215|0.7191|0.7240|0.9590|0.8141|0.6743|0.3920|0.6667|0.3951|0.2792|44|25|
+|c149_k45|-|0.7214|0.7188|0.7240|0.9590|0.8130|0.6743|0.3920|0.6667|0.3951|0.2792|45|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-adaptive.json / experiment-log.json
+
+#### Cycle 150
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c150_repeat2|winner|0.7215|0.7191|0.7240|0.9590|0.8141|0.6743|0.3920|0.6667|0.3951|0.2792|44|25|
+|c150_backbeat|-|0.7213|0.7178|0.7249|0.9590|0.8117|0.6743|0.3920|0.6667|0.3951|0.2792|72|25|
+|c150_consensus|-|0.7205|0.7193|0.7218|0.9590|0.8082|0.6743|0.3920|0.6667|0.3951|0.2792|43|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-adaptive.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-snare-additive.json
+
+- implementation: drumscribe/experiments/iterative_search_snare_additive.py
+- script commit: f82fbc3e2cccd27b759e588245481bc7bb0bbe28
+- result commit: 430de55ccdb4b345d539ddb6c600e90fed9ebfda
+
+#### Cycle 112
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c112_veto35|winner|0.7197|0.7151|0.7243|0.9590|0.8102|0.6745|0.3870|0.6369|0.3734|0.0000|46|25|
+|c112_veto70|-|0.7191|0.7159|0.7223|0.9590|0.8074|0.6745|0.3870|0.6369|0.3734|0.0000|44|25|
+|c112_veto50|-|0.7188|0.7153|0.7223|0.9590|0.8049|0.6745|0.3870|0.6369|0.3734|0.0000|46|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-additive.json / experiment-log.json
+
+#### Cycle 113
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c113_none|-|0.7197|0.7151|0.7243|0.9590|0.8102|0.6745|0.3870|0.6369|0.3734|0.0000|46|25|
+|c113_repeat|-|0.7197|0.7151|0.7243|0.9590|0.8102|0.6745|0.3870|0.6369|0.3734|0.0000|46|25|
+|c113_dsp|winner|0.7194|0.7171|0.7217|0.9590|0.8107|0.6744|0.3870|0.6369|0.3734|0.0000|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-additive.json / experiment-log.json
+
+#### Cycle 114
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c114_repeat3|winner|0.7200|0.7161|0.7241|0.9590|0.8133|0.6745|0.3870|0.6369|0.3734|0.0000|45|25|
+|c114_repeat1|-|0.7197|0.7151|0.7243|0.9590|0.8102|0.6745|0.3870|0.6369|0.3734|0.0000|46|25|
+|c114_repeat2|-|0.7197|0.7151|0.7243|0.9590|0.8102|0.6745|0.3870|0.6369|0.3734|0.0000|46|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-additive.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-snare-safe-fusion.json
+
+- implementation: drumscribe/experiments/iterative_search_snare_safe_fusion.py
+- script commit: ea01122ef8fb15915fa54bd1acb809d6546b9a29
+- result commit: 818afdc8369e2a01400c03df7c71f4e732cf670a
+
+#### Cycle 112
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c112_backbeat_rescue|close|0.7194|0.7131|0.7259|0.9590|0.8046|0.6747|0.3870|0.6667|0.3741|0.0000|77|25|
+|c112_hard_veto|winner, close|0.7190|0.7153|0.7228|0.9590|0.8041|0.6747|0.3870|0.6667|0.3741|0.0000|46|25|
+|c112_dsp_rescue|close|0.7190|0.7153|0.7228|0.9590|0.8041|0.6747|0.3870|0.6667|0.3741|0.0000|46|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-safe-fusion.json / experiment-log.json
+
+#### Cycle 113
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c113_k25|close|0.7216|0.7136|0.7297|0.9590|0.8177|0.6747|0.3870|0.6667|0.3741|0.0000|90|25|
+|c113_k65|winner, close|0.7194|0.7160|0.7228|0.9590|0.8071|0.6747|0.3870|0.6667|0.3741|0.0000|44|25|
+|c113_k45|close|0.7190|0.7153|0.7228|0.9590|0.8041|0.6747|0.3870|0.6667|0.3741|0.0000|46|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-safe-fusion.json / experiment-log.json
+
+#### Cycle 114
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c114_d30|winner, close|0.7194|0.7160|0.7228|0.9590|0.8071|0.6747|0.3870|0.6667|0.3741|0.0000|44|25|
+|c114_d60|close|0.7194|0.7160|0.7228|0.9590|0.8071|0.6747|0.3870|0.6667|0.3741|0.0000|44|25|
+|c114_d90|close|0.7194|0.7160|0.7228|0.9590|0.8071|0.6747|0.3870|0.6667|0.3741|0.0000|44|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-snare-safe-fusion.json / experiment-log.json
+
 ### drumscribe/experiments/results-iterative-snare-veto.json
 
 - implementation: drumscribe/experiments/iterative_search_snare_veto.py
@@ -1350,8 +2003,8 @@
 
 ### drumscribe/experiments/results-iterative-tom-fusion.json
 
-- implementation: -
-- script commit: -
+- implementation: drumscribe/experiments/iterative_search_tom_fusion.py
+- script commit: 7e129f0de77142435457f452889db4fa9a13d010
 - result commit: 2002b3dd584777b371f00c5827c71cdaff7cdaf1
 
 #### Cycle 103
@@ -1383,6 +2036,42 @@
 |c105_cluster4|close|0.7194|0.7171|0.7217|0.9590|0.8107|0.6744|0.3870|0.6369|0.3734|0.0000|42|25|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-iterative-tom-fusion.json / experiment-log.json
+
+### drumscribe/experiments/results-iterative-tom-raw-fill.json
+
+- implementation: drumscribe/experiments/iterative_search_tom_raw_fill.py
+- script commit: 84256f62d1687aa60de1cb714d48f3a7e0f51053
+- result commit: 32ea45d18ab457460dbdf8ddd390af370705b292
+
+#### Cycle 151
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c151_seed|winner|0.7203|0.7183|0.7223|0.9590|0.8107|0.6743|0.3920|0.6200|0.3951|0.2792|42|25|
+|c151_barend|-|0.7145|0.7074|0.7218|0.9590|0.8107|0.6743|0.3920|0.3266|0.3951|0.2792|42|25|
+|c151_union|-|0.7142|0.7063|0.7224|0.9590|0.8107|0.6743|0.3920|0.3369|0.3951|0.2792|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-tom-raw-fill.json / experiment-log.json
+
+#### Cycle 152
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c152_p65|-|0.7203|0.7183|0.7223|0.9590|0.8107|0.6743|0.3920|0.6200|0.3951|0.2792|42|25|
+|c152_p75|-|0.7203|0.7183|0.7223|0.9590|0.8107|0.6743|0.3920|0.6200|0.3951|0.2792|42|25|
+|c152_p85|winner|0.7203|0.7183|0.7223|0.9590|0.8107|0.6743|0.3920|0.6200|0.3951|0.2792|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-tom-raw-fill.json / experiment-log.json
+
+#### Cycle 153
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|c153_d120|winner|0.7207|0.7194|0.7221|0.9590|0.8107|0.6743|0.3920|0.6593|0.3951|0.2792|42|25|
+|c153_d85|-|0.7203|0.7183|0.7223|0.9590|0.8107|0.6743|0.3920|0.6200|0.3951|0.2792|42|25|
+|c153_d55|-|0.7198|0.7169|0.7227|0.9590|0.8107|0.6743|0.3920|0.5867|0.3951|0.2792|42|25|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-iterative-tom-raw-fill.json / experiment-log.json
 
 ### drumscribe/experiments/results-iterative-tom.json
 
