@@ -158,8 +158,8 @@ def main():
             rank.append((valid,objective(a),a["f1"],cfg["id"],a))
         rank.sort(reverse=True);valid,objv,_,bid,inner=rank[0];cfg=next(c for c in cfgs if c["id"]==bid)
         mod=train(data,outer,cfg["family"]);p=mod.pred(data[h]["X"]);pred=build(data[h],p,cfg);sc=score(h,pred);held[h]=sc
-        details[h]={"config":cfg,"innerEligible":valid,"innerObjective":objv,"inner":inner,"heldF1":sc["f1"],"hat":sc["by_group"]["hat"],
-                    "kept":sum(p>=cfg["thr"]),"candidates":len(p)}
+        details[h]={"config":cfg,"innerEligible":bool(valid),"innerObjective":float(objv),"inner":inner,"heldF1":float(sc["f1"]),"hat":sc["by_group"]["hat"],
+                    "kept":int(np.sum(p>=cfg["thr"])),"candidates":int(len(p))}
         print("HELD",h,json.dumps(details[h],ensure_ascii=False),flush=True)
     ag=aggregate(held)
     out={"schema":1,"description":"Fully nested LOO hat suppressor on generated-v2-browser; charts scoring-only.",
