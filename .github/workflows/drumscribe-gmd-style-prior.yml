@@ -1,0 +1,46 @@
+name: DrumScribe GMD style metal prior
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/build_gmd_style_prior.py"
+      - ".github/workflows/drumscribe-gmd-style-prior.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install parser
+        run: pip install mido
+      - name: Download GMD MIDI only
+        run: |
+          mkdir -p /tmp/gmd
+          curl -L --fail --retry 3 -o /tmp/gmd/groove.zip             https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip
+          echo "651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e  /tmp/gmd/groove.zip" | sha256sum -c -
+          unzip -q /tmp/gmd/groove.zip -d /tmp/gmd/data
+      - name: Build style/fill prior
+        run: |
+          python drumscribe/experiments/build_gmd_style_prior.py             --gmd-root /tmp/gmd/data             --output drumscribe/models/gmd-metal-style-prior.json
+      - name: Commit aggregate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/models/gmd-metal-style-prior.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Add GMD style and fill metal prior [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
