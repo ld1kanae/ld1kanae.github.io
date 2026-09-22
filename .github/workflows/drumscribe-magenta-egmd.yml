@@ -41,6 +41,8 @@ jobs:
               onsets_frames_transcription_transcribe                 --model_dir=/tmp/egmd                 --config=drums                 --load_audio_with_librosa=True                 "/work/drumscribe/experiments/generated-magenta-egmd/$s.wav"
             done
           '
+          sudo chown -R "$(id -u):$(id -g)" drumscribe/experiments/generated-magenta-egmd
+          find drumscribe/experiments/generated-magenta-egmd -type f -exec chmod 0644 {} +
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
