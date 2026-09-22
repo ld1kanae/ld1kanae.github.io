@@ -1,0 +1,49 @@
+name: DrumScribe GMD ADTOF metal embedding model
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/train_gmd_adtof_metal.py"
+      - ".github/workflows/drumscribe-gmd-adtof-metal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CPU inference stack
+        run: |
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --no-deps "git+https://github.com/xavriley/ADTOF-pytorch.git"
+          pip install librosa pretty_midi numpy scipy scikit-learn mido remotezip requests
+      - name: Download GMD MIDI metadata
+        run: |
+          mkdir -p /tmp/gmd
+          curl -L --fail --retry 3 -o /tmp/gmd/groove.zip             https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip
+          echo "651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e  /tmp/gmd/groove.zip" | sha256sum -c -
+          unzip -q /tmp/gmd/groove.zip -d /tmp/gmd/data
+      - name: Train frozen-embedding classifier
+        run: |
+          python drumscribe/experiments/train_gmd_adtof_metal.py             --midi-root /tmp/gmd/data             --url https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0.zip             --train-files 45 --val-files 16             --output drumscribe/models/gmd-adtof-metal-logreg.json
+      - name: Commit model and external validation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/models/gmd-adtof-metal-logreg.json drumscribe/experiments/results-gmd-adtof-metal-logreg.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Add GMD metal classifier on ADTOF embeddings [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
