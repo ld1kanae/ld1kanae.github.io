@@ -1,0 +1,44 @@
+name: DrumScribe structural crash augmentation
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/adtof_structural_crash_augmentation.py"
+      - ".github/workflows/drumscribe-adtof-structural-crash.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CPU inference stack
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --no-deps "git+https://github.com/xavriley/ADTOF-pytorch.git"
+          pip install librosa pretty_midi numpy scipy
+      - name: Benchmark structural crash augmentation
+        run: python drumscribe/experiments/adtof_structural_crash_augmentation.py
+      - name: Commit benchmark
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/results-adtof-structural-crash-augmentation.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record structural ADTOF crash augmentation [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
