@@ -1,0 +1,39 @@
+name: DrumScribe pedal refine v3
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/iterative_search_pedal_refine_v3.py"
+      - ".github/workflows/drumscribe-pedal-refine-v3.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install numpy scipy
+      - name: Run pedal refinement cycles 190 to 192
+        run: python drumscribe/experiments/iterative_search_pedal_refine_v3.py
+      - name: Commit MIDI and metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-search-pedal-refine-v3 drumscribe/experiments/results-iterative-pedal-refine-v3.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record pedal refinement v3 results [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
