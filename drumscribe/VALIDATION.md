@@ -1031,3 +1031,54 @@ current baseに:
 | H / キック優先・強 | 0.7209 | 4 | 1 | 104 / 165 |
 
 GはハイハットのTP / 推定が2851 / 4354から2846 / 4278へ、ライドは148 / 416から93 / 232へ変わる。ライドの誤音と同時に正しい音も55件失う。Hはキック周辺のスネア誤認をさらに減らすが、同曲の正しいスネアを21件失う。いずれも**聴取による再評価前であり、アプリの既定方式には採用していない**。比較用MIDIは [`generated-review-guards/`](experiments/generated-review-guards/) の `adaptive_snare` / `review_strict` / `kick_veto` に保存。全方式の曲別・楽器別結果は [`results-human-review-guards.json`](experiments/results-human-review-guards.json)。
+
+
+## 2026-09-22 — BPM / beat / bar-grid auto estimation
+
+ユーザー確認で、従来の生成MIDIはBPMと小節頭を自動推定せず、検証曲では `song.json` のBPMに依存していたことを確認した。以後、採譜入力として `song.json` / `chart.mid` を使わず、予測後の採点だけに使用するタイミング探索を追加した。
+
+### BPM探索
+
+音声のみから以下を順に比較した。
+
+1. onset自己相関 / interval histogram / local consensus
+2. snare recurrenceによるhalf/double tempo解消
+3. snare recurrenceを粗BPMとし、全曲長のkick/snare phase coherenceとrobust grid fitで精密化
+4. ブラウザ実装ではband近似差によるoutlierを、予測kick/snare event interval consensusで検出して再精密化
+
+Python v3の5曲結果:
+- arcaround: 132.0032 vs reference 132.0001
+- diamondvirgin: 135.0754 vs 135.2012
+- kaiju: 180.0068 vs 180.0050
+- nanairo: 125.0069 vs 125.0300
+- ray: 131.9999 vs 132.0001
+
+real Chromium最終結果:
+- mean BPM error **0.0230%**
+- max BPM error **0.0931%**
+- nanairoでは初回ブラウザ推定167.632 BPMをevent-family consensusが125.25側へ戻し、最終 **125.0064 BPM**。
+
+### beat phase / bar head
+
+beat phaseは予測kick eventのGaussian phase alignmentを基準とした。4/4のbar headは次を比較した。
+
+- kick/snare共通周期
+- kick=1/3拍・snare=2/4拍のrole構造
+- crash template anchor
+- kick/snare候補 + crash tie-break
+- 最終ブラウザ版: snare parityが強い場合は2/4拍構造で候補を絞り、kick accentで1拍目/3拍目を選択。parityが弱い場合はlow-band measure-head energyへfallback。
+
+real Chromium最終5曲:
+- arcaround bar error **0.0325 beat**
+- diamondvirgin **0.0407 beat**
+- kaiju **0.2512 beat**
+- nanairo **0.0082 beat**
+- ray **0.0494 beat**
+- mean **0.0764 beat**
+- max **0.2512 beat**
+
+書き出しMIDIでは検出bar phaseをMIDI measure boundaryへ移し、tempo meta eventと4/4 time-signature meta eventを付加する。検証5曲のexport grid residualは **0 beat**。
+
+途中でbar-phase refactor時に `estimateBeatPhase()` 本体が消える実装欠落が発生した。JS構文チェックでは検出できなかったため復元し、real-browser validatorも「採譜できませんでした」を即時failureとして扱うよう変更した。最終real Chromium validationは成功。
+
+タイミング修正後のブラウザ総合F1は **0.639**。これはタイミングの問題ではなく主に分類/過検出の差で、特にhat predicted/reference **1.457** が次の主要修正対象。
