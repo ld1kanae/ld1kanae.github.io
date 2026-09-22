@@ -78,3 +78,9 @@
 | ray | 0.577 | 0.677 | 1,664 / 2,426 / 2,491 |
 
 Webモジュール相当の新版の楽器別TP / 推定 / 参照は、キック2,640 / 2,893 / 2,712、スネア1,283 / 1,616 / 1,470、ハイハット2,800 / 5,276 / 4,778、タム13 / 230 / 92、シンバル89 / 1,115 / 1,034。全体の数値は改善したが、`kaiju` では下がり、タム・シンバルも依然として低い。入力音源に対する精度保証とは扱わない。
+
+## 聴取レビュー後の比較候補
+
+2026-09-22に共有された50件の聴取レビューを受け、既存の候補比較ページにF/G/Hの3案を追加した。スネアとキックの誤認、ハイハットと金物の連打に着目した**既存の候補MIDIに対する後処理**であり、このページの既定採譜方式には未採用。公開レビュー文の転載は行っていない。
+
+検証用ブランチの[実装と曲別結果](https://github.com/ld1kanae/ld1kanae.github.io/tree/drumscribe-v2-eval/drumscribe/experiments)、[15個の比較用MIDI](https://github.com/ld1kanae/ld1kanae.github.io/tree/drumscribe-v2-eval/drumscribe/experiments/generated-review-guards)と[検証履歴](https://github.com/ld1kanae/ld1kanae.github.io/blob/drumscribe-v2-eval/drumscribe/VALIDATION.md)を参照。5曲合計F1（80ms）は元のv6案0.7208、F案0.7210、G案0.7245、H案0.7209。キック→スネア誤認は42件からF/Gで21件、Hで4件に減るが、正しいスネアも減る。数値評価は同じ5曲の検証譜面に対して行い、聴感上の改善は未確認。
