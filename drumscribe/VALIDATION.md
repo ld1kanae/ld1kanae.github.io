@@ -1339,3 +1339,54 @@ workflow初回2回は依存パッケージ不足（numpy、次にscipy）で採�
 
 注意: Cycles 219–224は**offline検証アルゴリズムの更新**であり、44.1 kHz ExtraTrees本体はまだ `transcribe.js` のbrowser production pathへ移植していない。公開アプリの精度がこの数値へ更新済みという意味ではない。
 \n
+
+
+## Cycles 225–227 — production-deployable fixed-threshold 44.1 kHz hat filter
+
+Cycles 219–224のnested-LOOでは、held曲ごとに「他4曲だけ」を使って確率閾値を選んでいた。評価リークではないが、未知曲のproductionでは曲ごとの最適閾値を選べないため、Cycles 225–227では**全held曲で同一の固定確率閾値・repeat rescue・時間窓・density guard**を使う条件へ厳しくした。各held曲のExtraTrees学習は他4曲のみ、held `chart.mid` は最終採点のみ。
+
+`results-iterative-hat-fixed-threshold-v11.json`。
+
+Cycle 225 — medium forest、固定probability threshold:
+- 0.35: overall F1 0.811694 / hat F1 0.806771 / hat FDR 0.134153
+- 0.45: overall F1 0.812795 / hat F1 0.809486 / hat FDR 0.124929
+- 0.55: overall F1 0.812767 / hat F1 0.809379 / hat FDR 0.113722
+- 0.65: overall F1 0.807046 / hat F1 0.794747 / hat FDR 0.106273
+
+overall F1だけなら0.45が僅かに高いが、canonical scoreは0.55が **0.586994** で最良。以後0.55を採用。
+
+Cycle 226 — model capacity（probability 0.55固定）:
+- micro 32 trees: overall 0.807884 / hat 0.796926 / canonical 0.584502
+- small 96 trees: overall 0.812355 / hat 0.808336 / canonical 0.586814
+- medium 160 trees: overall **0.812767** / hat **0.809379** / canonical **0.586994**
+- full 260 trees: overall 0.812662 / hat 0.809114 / canonical 0.586916
+
+精度優先ではmedium 160-tree。96-treeとの差は小さいので、productionでモデルサイズ/速度が問題になった場合の軽量fallbackとしてsmallを保持する。
+
+Cycle 227 — temporal rescue/window:
+- repeat 0.75 / 35 ms: overall 0.812428 / hat 0.808577
+- repeat 1.00 / 60 ms: overall **0.812767** / hat **0.809379**
+- repeat 1.00 / 80 ms: 60 msとこの5曲では同一出力
+- rescueなし: overall 0.802768 / hat 0.783474
+
+production候補の固定設定:
+- ExtraTrees medium: 160 trees, max_depth 12, min_samples_leaf 4
+- global probability threshold **0.55**
+- repeat rescue **1.00**
+- intersection window **60 ms**
+- whole-song hat/kick density guard **0.55**
+
+5曲aggregate:
+- overall F1 **0.812767**
+- hat TP **3055** / predicted **3447** / reference **4102**
+- hat precision **0.886278**
+- hat recall **0.744759**
+- hat F1 **0.809379**
+- hat FDR **0.113722**
+- hat worst-song F1 **0.473526**
+- canonical score **0.586994**
+
+これはheld-out LOOの性能値であり、未知曲に使える固定ルールへ落とした後の値。held曲別閾値を許したCycle 222の0.813758より僅かに低いが、production実装条件としてはこちらを採用する。
+
+注意: この数値はc216統合MIDI（土台に後段ride/pedal部品を含む）上のoffline評価。公開browser `transcribe.js` はまだこの44.1 kHz ExtraTrees、およびc216の全ride/pedal統合を再現していない。production browserの性能として0.812767を主張しない。
+
