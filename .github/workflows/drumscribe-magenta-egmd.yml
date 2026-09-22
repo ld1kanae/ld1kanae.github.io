@@ -1,0 +1,60 @@
+name: DrumScribe Magenta E-GMD baseline
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/evaluate_magenta_egmd.py"
+      - ".github/workflows/drumscribe-magenta-egmd.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - name: Run pretrained Magenta E-GMD model
+        run: |
+          mkdir -p drumscribe/experiments/generated-magenta-egmd
+          docker run --rm -v "$PWD":/work -w /work tensorflow/tensorflow:1.15.5-py3 bash -lc '
+            set -eux
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y wget unzip ffmpeg libsndfile1 libsndfile1-dev libasound2-dev libjack-dev git
+            python -m pip install "pip<21" "setuptools<58" "protobuf<4"
+            cd /tmp
+            wget -q https://github.com/magenta/magenta/archive/94529798dfbbb14c27ddfd76f23027dc8e2ce185.zip -O magenta.zip
+            unzip -q magenta.zip
+            python -m pip install -e /tmp/magenta-94529798dfbbb14c27ddfd76f23027dc8e2ce185
+            wget -q https://storage.googleapis.com/magentadata/models/onsets_frames_transcription/e-gmd_checkpoint.zip -O egmd.zip
+            mkdir -p /tmp/egmd
+            unzip -q egmd.zip -d /tmp/egmd
+            for s in arcaround diamondvirgin kaiju nanairo ray; do
+              ffmpeg -v error -y -i "/work/DruMaster/songs/$s/drums.mp3" -ar 44100 -ac 1 -sample_fmt s16 "/work/drumscribe/experiments/generated-magenta-egmd/$s.wav"
+              onsets_frames_transcription_transcribe                 --model_dir=/tmp/egmd                 --config=drums                 --load_audio_with_librosa=True                 "/work/drumscribe/experiments/generated-magenta-egmd/$s.wav"
+            done
+          '
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Score against held-out reference
+        run: |
+          pip install numpy scipy
+          python drumscribe/experiments/evaluate_magenta_egmd.py
+      - name: Commit benchmark
+        run: |
+          rm -f drumscribe/experiments/generated-magenta-egmd/*.wav
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/generated-magenta-egmd drumscribe/experiments/results-magenta-egmd.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record Magenta E-GMD baseline [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
