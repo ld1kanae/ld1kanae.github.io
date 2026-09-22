@@ -1,0 +1,42 @@
+name: DrumScribe browser hat filter search
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/browser_hat_filter_search.py"
+      - ".github/workflows/drumscribe-browser-hat-filter.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ffmpeg and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy
+      - name: Search hat filters
+        run: python drumscribe/experiments/browser_hat_filter_search.py
+      - name: Commit benchmark
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/experiments/results-browser-hat-filter-search.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record browser hat filter search [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
