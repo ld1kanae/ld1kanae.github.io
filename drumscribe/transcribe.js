@@ -820,7 +820,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // pedal_hat class is also intended to be exempt.
   const limited=new Set(['snare','hat','tom','crash','ride']);
   const ordered=final.slice().sort((a,b)=>a.time-b.time);
-  const pruned=[];
+  let pruned=[];
   for(let i=0;i<ordered.length;){
     const start=ordered[i].time,cluster=[];let j=i;
     while(j<ordered.length&&ordered[j].time-start<=.035)cluster.push(ordered[j++]);
