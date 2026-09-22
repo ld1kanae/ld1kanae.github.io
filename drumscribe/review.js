@@ -279,32 +279,48 @@ function lowerBound(events,t){
   while(lo<hi){const m=(lo+hi)>>1;if(events[m].time<t)lo=m+1;else hi=m}
   return lo;
 }
-async function startPlayback(){
+async function seekMedia(src,target){
+  target=Math.max(0,Math.min(Number(src.duration)||target,target));
+  if(Math.abs((src.currentTime||0)-target)<.15)return;
+  await new Promise(resolve=>{
+    let done=false;
+    const finish=()=>{if(done)return;done=true;clearTimeout(timer);src.removeEventListener('seeked',finish);resolve();};
+    const timer=setTimeout(finish,2500);
+    src.addEventListener('seeked',finish,{once:true});
+    try{
+      if(typeof src.fastSeek==='function')src.fastSeek(target);
+      else src.currentTime=target;
+    }catch{finish();}
+  });
+  // Some media stacks report seeked before currentTime settles. Re-apply once
+  // after playback has started if the requested position was not reached.
+  if(Math.abs((src.currentTime||0)-target)>1){
+    try{src.currentTime=target}catch{}
+    await new Promise(resolve=>setTimeout(resolve,80));
+  }
+}
+async function startPlayback(startAt=null){
   stopPlayback(false);
   const src=$('source');
-  // Seeking to the first MIDI hit temporarily lowers readyState while the
-  // browser buffers the new location. play() waits for that buffer itself.
   if(!src.src||src.error)throw Error('音源を読み込めません');
 
-  // The comparison MIDI may legitimately have a long drumless intro. When
-  // starting from the beginning, jump just before its first hit so switching
-  // songs never looks like a broken MIDI player.
   const cachedEvents=midiCache.get(midiUrl(currentCandidate,currentSong));
   let autoJumped=false;
-  if((src.currentTime||0)<.5&&cachedEvents?.length&&cachedEvents[0].time>3){
-    try{src.currentTime=Math.max(0,cachedEvents[0].time-.25);autoJumped=true}catch{}
+  let target=Number.isFinite(startAt)?Math.max(0,startAt):null;
+  if(target==null&&(src.currentTime||0)<.5&&cachedEvents?.length&&cachedEvents[0].time>3){
+    target=Math.max(0,cachedEvents[0].time-.25);
+    autoJumped=true;
   }
-  const pos=src.currentTime||0;
 
-  // Start the media element immediately while the click still counts as a
-  // user gesture. Safari/iOS can reject play() if we wait for MIDI/sample
-  // network/decode work first.
   src.volume=Number($('sourceVolume').value)/100;
+  // Initiate play while still inside the user's click activation, then wait
+  // for the requested seek before establishing the MIDI playback clock.
   const sourcePlay=src.paused?src.play():Promise.resolve();
   const c=await audioContext();
   await sourcePlay;
+  if(target!=null)await seekMedia(src,target);
 
-  playbackStats={loaded:0,failed:0,scheduled:0,song:currentSong,candidate:currentCandidate.id,autoJumped};
+  playbackStats={loaded:0,failed:0,scheduled:0,song:currentSong,candidate:currentCandidate.id,autoJumped:autoJumped||target!=null};
   $('status').textContent='MIDI音源を読み込み中…';
 
   const events=await midiEvents(currentCandidate,currentSong);
@@ -370,10 +386,7 @@ function resyncPlaybackClock(){
 }
 async function playFromFirstMidi(){
   if(currentMidiInfo.first==null)throw Error('MIDI打点がありません');
-  stopPlayback(true);
-  const src=$('source');
-  src.currentTime=Math.max(0,currentMidiInfo.first-.25);
-  await startPlayback();
+  await startPlayback(Math.max(0,currentMidiInfo.first-.25));
 }
 function stopPlayback(pauseSource=true){
   if(!playback){if(pauseSource)$('source').pause();return}
