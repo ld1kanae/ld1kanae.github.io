@@ -77,7 +77,7 @@ def candidate_frames(onset,sr,hop,min_dist=.035):
     floor=np.maximum(.055,2.0*median_filter(onset,size=151))
     return [int(i) for i in pp if onset[i]>=floor[i]]
 
-def feature_at(S,R,onset,freqs,fr,times):
+def feature_at(S,R,onset,freqs,fr,candidate_times,hop,sr):
     spec=S[:,fr]+1e-8;total=float(np.sum(spec))+1e-8
     bands=[]
     for lo,hi in [(20,150),(150,500),(500,2000),(2000,5000),(5000,10000),(10000,16000),(16000,22000)]:
@@ -88,16 +88,16 @@ def feature_at(S,R,onset,freqs,fr,times):
     for rad in (2,5,12):
         lo=max(0,fr-rad);hi=min(len(onset),fr+rad+1)
         local += [float(onset[fr]),float(np.mean(onset[lo:hi])),float(np.max(onset[lo:hi]))]
-    t=times[fr];rec=[]
+    t=fr*hop/sr;rec=[]
     for step in (.125,.25,.5,1.0):
-        rec.append(float(any(abs(x-(t-step))<.055 or abs(x-(t+step))<.055 for x in times)))
+        rec.append(float(any(abs(float(x)-(t-step))<.055 or abs(float(x)-(t+step))<.055 for x in candidate_times)))
     return np.asarray(local+bands+[centroid,flat]+rec,dtype="f4")
 
 def load_stream(path):
     x=ffmpeg_mono(path);S,R,onset,freqs,hop=stft_features(x)
     frs=candidate_frames(onset,44100,hop)
     times=np.asarray(frs)*hop/44100
-    feats=np.stack([feature_at(S,R,onset,freqs,fr,times) for fr in frs]) if frs else np.zeros((0,22),dtype="f4")
+    feats=np.stack([feature_at(S,R,onset,freqs,fr,times,hop,44100) for fr in frs]) if frs else np.zeros((0,22),dtype="f4")
     return {"frames":frs,"times":times.astype("f4"),"X":feats,"onset":onset}
 
 def normalize_stems(method,dsp,mdx):
