@@ -42,15 +42,28 @@ $('analyze').addEventListener('click',async()=>{
     const detectedBpm=transcription.bpm;
     position=0;$('result').hidden=false;
     if(downloadUrl)URL.revokeObjectURL(downloadUrl);
+    const numerator=Number(transcription.numerator)||4,denominator=Number(transcription.denominator)||4;
+    const beatSec=60/detectedBpm*4/denominator,barSec=beatSec*numerator;
+    const phaseRaw=Number(transcription.barPhaseSec);
+    const barPhaseSec=Number.isFinite(phaseRaw)?((phaseRaw%barSec)+barSec)%barSec:null;
+    let exportOffsetSec=0,exportBarPad=0;
+    if(Number.isFinite(barPhaseSec)&&events.length){
+      const minMusical=Math.min(...events.map(e=>e.time-barPhaseSec));
+      if(minMusical<0)exportBarPad=Math.ceil(-minMusical/barSec);
+      exportOffsetSec=exportBarPad*barSec-barPhaseSec;
+    }
     downloadUrl=URL.createObjectURL(new Blob([midiFile(events,detectedBpm,{
-      barPhaseSec:transcription.barPhaseSec,
-      numerator:transcription.numerator,
-      denominator:transcription.denominator
+      barPhaseSec,
+      numerator,
+      denominator
     })],{type:'audio/midi'}));
     $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
     $('previewTitle').textContent=file.name;
     $('resultSummary').textContent=`${fmt(decoded.duration)} / BPM ${detectedBpm.toFixed(3)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
-    globalThis.__drumscribeResult={...transcription,events:undefined};
+    globalThis.__drumscribeResult={
+      ...transcription,events:undefined,
+      barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec
+    };
     tell(`${events.length} ノートを推定しました。BPM ${detectedBpm.toFixed(3)}。プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
