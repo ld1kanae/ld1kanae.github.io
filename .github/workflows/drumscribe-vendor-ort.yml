@@ -1,0 +1,49 @@
+name: DrumScribe vendor ONNX Runtime Web
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - ".github/workflows/drumscribe-vendor-ort.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install ONNX Runtime Web
+        run: |
+          mkdir -p /tmp/ortpkg
+          cd /tmp/ortpkg
+          npm init -y >/dev/null
+          npm install onnxruntime-web@latest
+          node -e "const p=require('./node_modules/onnxruntime-web/package.json'); console.log(p.version); require('fs').writeFileSync('version.txt',p.version+'\n')"
+          find node_modules/onnxruntime-web/dist -maxdepth 1 -type f -printf '%f\n' | sort
+      - name: Copy browser runtime assets
+        run: |
+          mkdir -p drumscribe/vendor/ort
+          cp /tmp/ortpkg/node_modules/onnxruntime-web/dist/ort.min.js drumscribe/vendor/ort/
+          cp /tmp/ortpkg/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm drumscribe/vendor/ort/
+          cp /tmp/ortpkg/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs drumscribe/vendor/ort/
+          cp /tmp/ortpkg/version.txt drumscribe/vendor/ort/version.txt
+      - name: Commit runtime assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/vendor/ort
+          git diff --cached --quiet && exit 0
+          git commit -m "Vendor ONNX Runtime Web assets [skip ci]"
+          git push origin HEAD:drumscribe-v2-eval
