@@ -80,21 +80,30 @@ def prepare_song(song):
         pp=sorted(t for t,gg in b if gg==g)
         tt=sorted(t+shift for t,gg,*_ in truth if gg==g)
         fixed_tp+=match(pp,tt);fixed_pred+=len(pp);fixed_ref+=len(tt)
+    bpm=float(side["bpm"]);phase=float(side["barPhaseSec"]);beat=60/bpm;bar=4*beat
+    ad_feat=[{
+      "t":t,
+      "hd":circ(t,phase,bar)/beat,
+      "per":periodic(ad,t,bpm),
+      "cs":near(cur_cr,t,.07),
+      "rs":near(cur_ri,t,.07),
+    } for t in ad]
+    cur_cr_feat=[{"t":t,"hd":circ(t,phase,bar)/beat} for t in cur_cr]
+    cur_ri_feat=[{"t":t,"per":periodic(cur_ri,t,bpm)} for t in cur_ri]
     return {
-      "bpm":float(side["bpm"]),"phase":float(side["barPhaseSec"]),
-      "ad":ad,"cur_cr":cur_cr,"cur_ri":cur_ri,
+      "bpm":bpm,"phase":phase,
+      "ad":ad,"ad_feat":ad_feat,
+      "cur_cr":cur_cr,"cur_cr_feat":cur_cr_feat,
+      "cur_ri":cur_ri,"cur_ri_feat":cur_ri_feat,
       "truth_cr":truth_cr,"truth_ri":truth_ri,
       "fixed_tp":fixed_tp,"fixed_pred":fixed_pred,"fixed_ref":fixed_ref,
     }
 
 
 def predict(d,head,rp,cm,am,margin):
-    bpm=d["bpm"];phase=d["phase"];beat=60/bpm;bar=4*beat
     chosen=[]
-    for t in d["ad"]:
-        hd=circ(t,phase,bar)/beat
-        per=periodic(d["ad"],t,bpm)
-        cs=near(d["cur_cr"],t,.07);rs=near(d["cur_ri"],t,.07)
+    for f in d["ad_feat"]:
+        t=f["t"];hd=f["hd"];per=f["per"];cs=f["cs"];rs=f["rs"]
         cscore=(2.2 if hd<=head else 0)+(0.7 if cs else 0)
         rscore=1.45*per+(0.8 if rs else 0)+(0.25 if hd>head else 0)
         if am=="hard_head":
@@ -112,16 +121,16 @@ def predict(d,head,rp,cm,am,margin):
         chosen.append((t,g))
 
     if cm!="none":
-        for g,arr in (("crash",d["cur_cr"]),("ride",d["cur_ri"])):
-            for t in arr:
-                if any(abs(t-x)<=.07 for x,_ in chosen):continue
-                hd=circ(t,phase,bar)/beat
-                if g=="crash":
-                    keep=(cm=="loose" and hd<=.22) or (cm=="strict" and hd<=.12)
-                else:
-                    per=periodic(d["cur_ri"],t,bpm)
-                    keep=(cm=="loose" and per>=.50) or (cm=="strict" and per>=.75)
-                if keep:chosen.append((t,g))
+        for f in d["cur_cr_feat"]:
+            t=f["t"]
+            if any(abs(t-x)<=.07 for x,_ in chosen):continue
+            keep=(cm=="loose" and f["hd"]<=.22) or (cm=="strict" and f["hd"]<=.12)
+            if keep:chosen.append((t,"crash"))
+        for f in d["cur_ri_feat"]:
+            t=f["t"]
+            if any(abs(t-x)<=.07 for x,_ in chosen):continue
+            keep=(cm=="loose" and f["per"]>=.50) or (cm=="strict" and f["per"]>=.75)
+            if keep:chosen.append((t,"ride"))
     chosen.sort()
     ded=[]
     for t,g in chosen:
