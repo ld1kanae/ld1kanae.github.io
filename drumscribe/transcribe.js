@@ -309,7 +309,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     for(let t=0;t<frames;t++)band[b][t]=clean[t]/scale;
   }
   report('ノートに変換中…',82);await wait();
-  const bpm=Number(options?.bpm)||0;
+  const manualBpm=Number(options?.bpm)||0;
   const signals=[band[0],band[1],band[3],band[1],band[2]];
   const raw=[],groupNames=['kick','snare','hat','tom','cymbal_raw'];
   for(let k=0;k<5;k++){
@@ -321,7 +321,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       if(k===0&&band[0][t]<.48*band[1][t])continue;
       if(k===1&&band[1][t]<.62*band[0][t])continue;
       if(k===3&&(sim[3][t]<.44||sim[3][t]<.85*Math.max(sim[0][t],sim[1][t])))continue;
-      if(k===4&&sim[4][t]<.39)continue;
+      if(k===4&&Math.max(sim[TEMPLATE_INDEX.crash][t],sim[TEMPLATE_INDEX.ride][t])<.39)continue;
       peaks.push(t);
     }
     peaks.sort((a,b)=>s[b]-s[a]);const kept=[];
@@ -330,7 +330,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       let confidence=s[p]/THRESHOLDS[k];
       if(k===0||k===1)confidence+=.45*sim[k][p];
       if(k===3)confidence+=.6*sim[3][p];
-      if(k===4)confidence+=.7*sim[4][p];
+      if(k===4)confidence+=.7*Math.max(sim[TEMPLATE_INDEX.crash][p],sim[TEMPLATE_INDEX.ride][p]);
       raw.push({time:p*HOP/RATE,frame:p,group:groupNames[k],score:s[p],confidence});
     }
     report('ノートに変換中…',82+10*(k+1)/5);await wait();
@@ -356,6 +356,11 @@ export async function transcribe(decoded,report=()=>{},options={}){
   }
 
   const base=raw.filter((_,i)=>alive.has(i));
+  const tempoInfo=(manualBpm>=30&&manualBpm<=300)
+    ?{bpm:manualBpm,coarseBpm:manualBpm,spectralBpm:manualBpm,phaseSec:0,confidence:1,source:'manual'}
+    :{...estimateTempoFromBands(band),source:'audio'};
+  const bpm=tempoInfo.bpm;
+  const beatInfo=estimateBeatPhase(base,bpm);
   const cym=base.filter(e=>e.group==='cymbal_raw');
   const structural=base.filter(e=>e.group!=='cymbal_raw');
   let phase=0;
