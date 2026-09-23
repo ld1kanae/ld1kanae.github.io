@@ -20,7 +20,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install numpy scipy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install numpy scipy
       - name: Evaluate three tom pitch hypotheses
         run: python drumscribe/experiments/evaluate_tom_pitch_v69.py
       - name: Upload result
