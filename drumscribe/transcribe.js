@@ -1,6 +1,7 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v4';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v2';
+import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;
@@ -591,16 +592,40 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const initial=estimateTempoFromBands(band);
     const eventFamily=estimateEventTempoFamily(base);
     const familyGap=eventFamily.bpm?Math.abs(initial.bpm/eventFamily.bpm-1):0;
-    if(initial.confidence<.10&&eventFamily.bpm&&familyGap>.08){
+    const ratio=eventFamily.bpm?initial.bpm/eventFamily.bpm:0;
+    const initialFamilyCandidate=(eventFamily.candidates||[]).reduce((best,row)=>{
+      const d=Math.abs(row.bpm-initial.bpm);
+      return !best||d<best.d?{d,row}:best;
+    },null)?.row;
+    const familyMargin=eventFamily.score-(initialFamilyCandidate?.score||0);
+    const octaveDown=ratio>=1.90&&ratio<=2.10&&eventFamily.score>=.58&&familyMargin>=.12;
+    if(octaveDown){
       const corrected=refineTempoAround(band,eventFamily.bpm);
-      tempoInfo={...corrected,source:'audio-event-corrected',initialBpm:initial.bpm,initialConfidence:initial.confidence,eventFamily};
+      tempoInfo={...corrected,source:'audio-event-octave-corrected',initialBpm:initial.bpm,initialConfidence:initial.confidence,eventFamily,familyMargin};
+    }else if(initial.confidence<.10&&eventFamily.bpm&&familyGap>.08){
+      const corrected=refineTempoAround(band,eventFamily.bpm);
+      tempoInfo={...corrected,source:'audio-event-corrected',initialBpm:initial.bpm,initialConfidence:initial.confidence,eventFamily,familyMargin};
     }else{
-      tempoInfo={...initial,source:'audio',eventFamily};
+      tempoInfo={...initial,source:'audio',eventFamily,familyMargin};
     }
   }
   const bpm=tempoInfo.bpm;
   const beatInfo=estimateBeatPhase(base,bpm);
-  const barInfo=estimateHybridBarPhase(base,sim,bpm,beatInfo.phaseSec,band);
+  let barInfo=estimateHybridBarPhase(base,sim,bpm,beatInfo.phaseSec,band);
+  if(tempoInfo.source==='audio-event-octave-corrected'){
+    const gmdKst=await estimateGmdBarPhase(base,bpm);
+    if(gmdKst.accepted){
+      barInfo={
+        ...barInfo,
+        acousticPhaseSec:barInfo.phaseSec,
+        phaseSec:gmdKst.phaseSec,
+        source:'gmd-kst-gated',
+        gmdKst
+      };
+    }else{
+      barInfo={...barInfo,gmdKst};
+    }
+  }
   const cym=base.filter(e=>e.group==='cymbal_raw');
   let structural=base.filter(e=>e.group!=='cymbal_raw');
   let adtofCymbal=[];
