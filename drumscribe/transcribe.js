@@ -16,7 +16,7 @@ const EDGES=[35,140,900,3000,5500];
 const wait=()=>new Promise(resolve=>setTimeout(resolve,0));
 function thresholdMul(options,key){
   const v=Number(options?.thresholdMultipliers?.[key]);
-  return Number.isFinite(v)&&v>0?v:1;
+  return Number.isFinite(v)&&v>=0&&v<=2?v:1;
 }
 const TEMPLATE_GROUPS=['kick','snare','hat','tom','crash','ride','pedal_hat'];
 const TEMPLATE_INDEX=Object.fromEntries(TEMPLATE_GROUPS.map((g,i)=>[g,i]));
@@ -726,11 +726,11 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const snareAfterBase=[...snareEvents,...rescued];
     const egmdRescued=[];
     const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
-    const egmdThreshold=egmdSnareSupport[0]?.modelThreshold||1;
+    const egmdThreshold=egmdSnareSupport[0]?.modelThreshold??1;
     egmdDiag.aboveThreshold=egmdSnareSupport.filter(e=>(e.probability||0)>=egmdThreshold).length;
     if(adaptiveSnareRescue){
       for(const e of egmdSnareSupport){
-        if((e.probability||0)<(e.modelThreshold||1))continue;
+        if((e.probability||0)<(e.modelThreshold??1))continue;
         if(nearEvent(snareAfterBase,e.time,.035))continue;
         egmdDiag.notExisting++;
         if(!nearEvent(kickEvents,e.time,.035))continue;
