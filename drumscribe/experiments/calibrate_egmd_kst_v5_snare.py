@@ -101,9 +101,16 @@ def precision_tier(y,pr,floor):
     if best is None:return {"eligible":False,"precisionFloor":floor}
     return {"eligible":True,"precisionFloor":floor,"threshold":best[1],**best[2]}
 
+def selected_metrics(y,mask):
+    mask=np.asarray(mask,dtype=bool); y=np.asarray(y,dtype=np.int8)
+    pred=int(np.sum(mask)); tp=int(np.sum(mask&(y==1))); fp=pred-tp
+    return {"selected":pred,"true":tp,"false":fp,"precision":tp/pred if pred else None}
+
 def main():
     frozen=json.loads((ROOT/"drumscribe/models/egmd-kst-reclassifier-v5.json").read_text())
+    frozen_v4=json.loads((ROOT/"drumscribe/models/egmd-kst-reclassifier-v4.json").read_text())
     snare_model=frozen["models"]["snare"]
+    snare_model_v4=frozen_v4["models"]["snare"]
     rows=v3.read_csv_url(EGMD_CSV)
     train_kits,held_kits=kit_partition(rows)
     if held_kits!=frozen.get("heldOutKits"):
@@ -120,6 +127,7 @@ def main():
         val,_,manifest=v4.collect(z,names,varows,base_model,processor,"calibration")
     vr=val["snare"]; y=np.asarray([x[2] for x in vr],np.int8)
     pr=probs_from_frozen(vr,snare_model)
+    pr4=probs_from_frozen(vr,snare_model_v4)
 
     original_thr=float(snare_model["threshold"])
     check=metric(y,pr,original_thr)
@@ -130,6 +138,26 @@ def main():
         raise RuntimeError(f"frozen validation reconstruction mismatch: {actual_triplet} != {expected_triplet}")
 
     tiers={str(f):precision_tier(y,pr,f) for f in (.95,.975,.99)}
+    p975=float(tiers["0.975"]["threshold"])
+    v4thr=float(snare_model_v4["threshold"])
+    act=np.asarray([x[3] for x in vr],dtype=np.float64)
+    near_kick=np.asarray([bool(x[5]["nearKickTruth"]) for x in vr],dtype=bool)
+    v5_only=(pr>=p975)&(pr4<v4thr)
+    diagnostics={
+      "definition":{"v5Threshold":p975,"v4Threshold":v4thr},
+      "all":selected_metrics(y,v5_only),
+      "nearKickTruth":selected_metrics(y,v5_only&near_kick),
+      "notNearKickTruth":selected_metrics(y,v5_only&~near_kick),
+      "activationLt008":selected_metrics(y,v5_only&(act<.08)),
+      "activation008to012":selected_metrics(y,v5_only&(act>=.08)&(act<.12)),
+      "activationLt012":selected_metrics(y,v5_only&(act<.12)),
+      "activationGe012":selected_metrics(y,v5_only&(act>=.12)),
+      "nearKickActivationLt012":selected_metrics(y,v5_only&near_kick&(act<.12)),
+      "nearKickActivationGe012":selected_metrics(y,v5_only&near_kick&(act>=.12)),
+      "p648to070":selected_metrics(y,v5_only&(pr<.70)),
+      "p070to080":selected_metrics(y,v5_only&(pr>=.70)&(pr<.80)),
+      "p080plus":selected_metrics(y,v5_only&(pr>=.80)),
+    }
     report={
       "schema":1,
       "kind":"egmd-kst-v5-frozen-snare-calibration",
@@ -143,6 +171,7 @@ def main():
       "validationPositive":int(np.sum(y==1)),
       "original":{"threshold":original_thr,**check},
       "precisionTiers":tiers,
+      "v5OnlyP975Diagnostics":diagnostics,
       "manifest":manifest,
     }
     out=EXP/"results-egmd-kst-v5-snare-calibration.json"
