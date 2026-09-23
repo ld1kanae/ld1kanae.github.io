@@ -1302,3 +1302,13 @@ production既定を `ride-open-decay-rescue` に更新。
 - strict Ride F1は0になる。これはRideをOpenへ丸める明示要件に沿った設計判断。
 - `OPENHAT_DEFAULT_VS_COMBINED_V46.md` のstrict metal macro guardrailは、Rideを保持する用途ではcombinedを採用しないという意味。現在の用途ではRide識別を優先しない。
 - 完全同期Diamond Virgin pairはopen→open教師468件を含む。保存場所は `experiments/reference-sync/README.md`。
+
+
+## 2026-09-24 Review voice dictation
+- `feedback.html` review popover has `#reviewVoice` microphone control next to playback/cancel/save.
+- `feedback.js` uses `SpeechRecognition || webkitSpeechRecognition` with `lang='ja-JP'`, continuous recognition, and interim results.
+- Voice input appends to the existing review textarea instead of replacing prior text, so it also works while editing a saved review.
+- Starting voice input pauses DrumScribe playback to reduce microphone bleed.
+- The microphone button toggles to a stop state while listening. Unsupported browsers disable the button; permission/no-speech errors are shown in the review status line.
+- Closing the editor or saving aborts any active recognizer while preserving the text currently visible in the textarea.
+- Browser smoke injects a fake SpeechRecognition implementation and verifies recognized Japanese text reaches `#reviewText`.
