@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {rescoreKstByArrangement} from './index.js';
+import {rescoreKstByArrangement,arrangementKstPolicyV46R1} from './index.js';
 
 const sections=[
   {index:0,startSec:0,endSec:8,duration:8,group:'A',label:'A',occurrence:1,repeatSimilarity:1},
@@ -10,7 +10,7 @@ const slotPrior={lift:{
   snare:new Array(16).fill(1),
   tom:new Array(16).fill(1),
 }};
-slotPrior.lift.snare[8]=1.5;
+slotPrior.lift.snare[8]=1.7;
 
 const baseline=[
   {time:9,note:38,group:'snare',velocity:90},
@@ -43,7 +43,32 @@ const blocked=rescoreKstByArrangement(
 assert.equal(blocked.additions.length,0);
 assert.equal(blocked.info.rejectedHand,1);
 
+const residualDiagnostics={kstCandidates:{
+  kick:[],
+  snare:[{time:5,group:'snare',score:.22,confidence:.70,egmdProbability:.96,egmdModelThreshold:.67}],
+  tom:[],
+}};
+const fixedResidual=rescoreKstByArrangement(baseline,residualDiagnostics,{sections},{
+  bpm:120,numerator:4,denominator:4,slotPrior,
+});
+assert.equal(fixedResidual.additions.length,0);
+
+const residualAccepted=rescoreKstByArrangement(baseline,residualDiagnostics,{sections},{
+  bpm:120,numerator:4,denominator:4,slotPrior,policy:arrangementKstPolicyV46R1,
+});
+assert.equal(residualAccepted.additions.length,1);
+assert.equal(residualAccepted.additions[0].egmdResidualRescued,true);
+assert.equal(residualAccepted.info.acceptedEgmdResidual,1);
+
+const residualLowProbability=rescoreKstByArrangement(baseline,{kstCandidates:{
+  kick:[],snare:[{time:5,group:'snare',score:.22,confidence:.70,egmdProbability:.90,egmdModelThreshold:.67}],tom:[]
+}},{sections},{
+  bpm:120,numerator:4,denominator:4,slotPrior,policy:arrangementKstPolicyV46R1,
+});
+assert.equal(residualLowProbability.additions.length,0);
+
 console.log(JSON.stringify({
   accepted:accepted.additions.map(e=>({time:e.time,group:e.group,label:e.arrangementLabel})),
+  residualAccepted:residualAccepted.additions.map(e=>({time:e.time,group:e.group,p:e.egmdProbability,lift:e.gmdSlotLift})),
   rejectedHand:blocked.info.rejectedHand,
 }));
