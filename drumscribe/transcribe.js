@@ -1005,7 +1005,10 @@ export async function transcribe(decoded,report=()=>{},options={}){
   const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:44,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
     time:e.time,note:noteOf[e.group],group:e.group,
-    velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score))))
+    velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score)))),
+    ...(Number.isFinite(Number(e.openHatProbability))?{openHatProbability:Number(e.openHatProbability)}:{}),
+    ...(Number.isFinite(Number(e.openHatBaseProbability))?{openHatBaseProbability:Number(e.openHatBaseProbability)}:{}),
+    ...(e.rideRoundedToHat?{rideRoundedToHat:true}:{})
   }));
   report('完了しました',100);
   return {
