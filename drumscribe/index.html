@@ -21,21 +21,21 @@
       <summary>採譜感度を調整 <span>すべて 1.0 = 現行デフォルト</span></summary>
       <p class="threshold-help">既存の判定閾値に掛ける倍率です。大きいほど厳しく（ノートが減る方向）、小さいほど拾いやすくなります。タイミング窓やBPM推定値は変更しません。</p>
       <div class="threshold-group"><strong>キック / スネア / タム</strong><div class="threshold-grid">
-        <label>バスドラム <input id="thresholdKick" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>スネア <input id="thresholdSnare" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>弱スネア救済 <input id="thresholdSnareRescue" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>E-GMDスネア救済 <input id="thresholdEgmdSnare" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>タム <input id="thresholdTom" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>バスドラム <input id="thresholdKick" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>スネア <input id="thresholdSnare" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>弱スネア救済 <input id="thresholdSnareRescue" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>E-GMDスネア救済 <input id="thresholdEgmdSnare" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>タム <input id="thresholdTom" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
       </div></div>
       <div class="threshold-group"><strong>ハイハット / シンバル</strong><div class="threshold-grid">
-        <label>HH打点 <input id="thresholdHat" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>HH衝突抑制 <input id="thresholdHatCollision" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>HH高域再判定 <input id="thresholdHatFilter" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>Open HH <input id="thresholdOpenHat" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>Ride→Open HH（音色＋文脈） <input id="thresholdRideOpen" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>重なりOpen HH救済 <input id="thresholdOpenHatOverlay" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>シンバル打点 <input id="thresholdCymbal" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>Crash後段ゲート <input id="thresholdCymbalGate" type="number" min="0.50" max="1.50" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>HH打点 <input id="thresholdHat" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>HH衝突抑制 <input id="thresholdHatCollision" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>HH高域再判定 <input id="thresholdHatFilter" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>Open HH <input id="thresholdOpenHat" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>Ride→Open HH（音色＋文脈） <input id="thresholdRideOpen" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>重なりOpen HH救済 <input id="thresholdOpenHatOverlay" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>シンバル打点 <input id="thresholdCymbal" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label>Crash後段ゲート <input id="thresholdCymbalGate" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
       </div></div>
       <div class="threshold-actions"><button type="button" id="thresholdReset">すべて 1.0 に戻す</button></div>
     </details>
@@ -55,5 +55,5 @@
   <footer><span>DRUMSCRIBE / PROTOTYPE</span><a href="https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe">ソースと検証履歴 ↗</a></footer>
 </main>
 <script src="vendor/ort/ort.wasm.min.js?v=1.30.0"></script>
-<script type="module" src="app.js?v=20260924-threshold-ui-v2"></script>
+<script type="module" src="app.js?v=20260924-threshold-range-v3"></script>
 </body></html>
