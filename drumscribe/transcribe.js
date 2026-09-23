@@ -1,4 +1,5 @@
-import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v4';
+import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v5-current-eval';
+const EGMD_EVAL_POLICY='v4-baseline';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v2';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
@@ -673,9 +674,9 @@ export async function transcribe(decoded,report=()=>{},options={}){
     }
     if(rescued.length)structural.push(...rescued);
 
-    // E-GMD v4 is trained on a larger independent train/validation corpus and
-    // disjoint drum kits. It is used only as a second opinion on low-threshold
-    // snare candidates. Existing kick/tom decisions are left untouched.
+    // Frozen E-GMD v5 transfer evaluation. The workflow patches only
+    // EGMD_EVAL_POLICY; model thresholds remain those selected on external
+    // E-GMD validation, never on DruMaster chart.mid.
     const egmdTimes=egmdSnareSupport.map(e=>e.time);
     const repeatedEgmdAtSlot=t=>{
       const s=slot16(t),b=barIndex(t);let n=0;
@@ -688,29 +689,45 @@ export async function transcribe(decoded,report=()=>{},options={}){
     };
     const snareAfterBase=[...snareEvents,...rescued];
     const egmdRescued=[];
-    const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
-    const egmdThreshold=egmdSnareSupport[0]?.modelThreshold||1;
-    egmdDiag.aboveThreshold=egmdSnareSupport.filter(e=>(e.probability||0)>=egmdThreshold).length;
+    const egmdDiag={policy:EGMD_EVAL_POLICY,v4Pass:0,v5Pass:0,v5High:0,selected:0,notExisting:0,nearKick:0,repeat:0};
     if(adaptiveSnareRescue){
       for(const e of egmdSnareSupport){
-        if((e.probability||0)<(e.modelThreshold||1))continue;
+        const v4Pass=(e.probability||0)>=(e.modelThreshold||1);
+        const v5Pass=(e.probabilityV5||0)>=(e.modelThresholdV5||1);
+        const v5High=(e.probabilityV5||0)>=.90;
+        if(v4Pass)egmdDiag.v4Pass++;
+        if(v5Pass)egmdDiag.v5Pass++;
+        if(v5High)egmdDiag.v5High++;
+
+        let selected=false,source='v4',minRepeat=1,confidence=e.probability||0;
+        if(EGMD_EVAL_POLICY==='v5-replace'){
+          selected=v5Pass; source='v5'; confidence=e.probabilityV5||0;
+        }else if(EGMD_EVAL_POLICY==='v4-v5-intersection'){
+          selected=v4Pass&&v5Pass; source='v4+v5'; confidence=Math.min(e.probability||0,e.probabilityV5||0);
+        }else if(EGMD_EVAL_POLICY==='v4-v5-high-supplement'){
+          selected=v4Pass||v5High;
+          source=v4Pass?'v4':'v5-high';
+          confidence=v4Pass?(e.probability||0):(e.probabilityV5||0);
+          minRepeat=v4Pass?1:2;
+        }else{
+          selected=v4Pass;
+        }
+        if(!selected)continue;
+        egmdDiag.selected++;
         if(nearEvent(snareAfterBase,e.time,.035))continue;
         egmdDiag.notExisting++;
         if(!nearEvent(kickEvents,e.time,.035))continue;
         egmdDiag.nearKick++;
-        // The E-GMD model already uses clip-normalized activation, residual,
-        // local context and class-ratio features. Do not re-apply the old
-        // absolute activation floor here.
-        egmdDiag.acoustic++;
         const repeat=repeatedEgmdAtSlot(e.time);
-        if(repeat<1)continue;
+        if(repeat<minRepeat)continue;
         egmdDiag.repeat++;
         egmdRescued.push({
           ...e,
           group:'snare',
-          confidence:e.probability,
+          confidence,
           rescuedSnare:true,
           egmdRescued:true,
+          egmdEnsembleSource:source,
           repeatSupport:repeat
         });
         snareAfterBase.push(e);
@@ -732,7 +749,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v4-modelgate+kick-tom-veto-v3',
+      mode:`layered-snare-rescue+egmd-${EGMD_EVAL_POLICY}+kick-tom-veto-v3`,
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
@@ -743,7 +760,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
       egmdSnareRescued:egmdRescued.length,
       egmdModel:adtofInfo.egmdKstModel||null,
       egmdDiag,
-      egmdRescueDetails:egmdRescued.map(e=>({time:e.time,probability:e.probability,score:e.score,kickActivation:e.kickActivation,repeatSupport:e.repeatSupport})),
+      egmdPolicy:EGMD_EVAL_POLICY,
+      egmdRescueDetails:egmdRescued.map(e=>({time:e.time,probability:e.probability,probabilityV5:e.probabilityV5,source:e.egmdEnsembleSource,score:e.score,kickActivation:e.kickActivation,repeatSupport:e.repeatSupport})),
       snareMinActivation:.12,
       snareKickRatio:.25,
       snareRepeatBars:2,
