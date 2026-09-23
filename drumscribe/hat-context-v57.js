@@ -443,3 +443,67 @@ export async function rescoreHatSyncCandidateV66(decoded,events,options={}){
     trainingRows:Number(model.trainingRows)||null
   }};
 }
+
+
+let hatMp3DomainModelPromiseV68=null;
+async function loadHatMp3DomainModelV68(){
+  if(!hatMp3DomainModelPromiseV68){
+    hatMp3DomainModelPromiseV68=fetch(new URL('./models/hat-mp3-domain-rf-v68.json',import.meta.url))
+      .then(r=>{if(!r.ok)throw Error('MP3ドメイン・ハイハットモデルを読み込めません');return r.json();});
+  }
+  return hatMp3DomainModelPromiseV68;
+}
+
+// v68: production-domain articulation model.
+// Acoustic feature design comes from synchronized WAV/MIDI experiments, while
+// the classifier is fitted on actual repository MP3 DrumScribe candidate
+// distributions. Runtime uses audio + generated candidate metadata only.
+export async function rescoreHatMp3DomainV68(decoded,events,options={}){
+  if(options.enabled===false)return {events,info:{enabled:false,variant:'off'}};
+  const candidates=events.filter(e=>
+    (e.group==='hat'||e.group==='open_hat')&&Number.isFinite(Number(e.openHatProbability))
+  );
+  if(candidates.length<2)return {events,info:{enabled:false,reason:'insufficient-hat-candidates',candidates:candidates.length}};
+  const [model,samples]=await Promise.all([loadHatMp3DomainModelV68(),monoAt44100(decoded)]);
+  const w=workspace();
+  const art=events.filter(e=>['hat','open_hat','pedal_hat','ride'].includes(e.group))
+    .slice().sort((a,b)=>a.time-b.time);
+  const nextMap=new Map();
+  for(let i=0;i<art.length;i++)nextMap.set(art[i],art[i+1]?.time);
+  const raw=candidates.map(e=>features(samples,e.time,nextMap.get(e),w));
+  const rawRank=rankColumnsV64(raw),rawZ=robustZColumnsV64(raw);
+  const base=candidates.map(e=>Number(e.openHatProbability));
+  const baseRank=rank01(base),baseZ=robustZ01(base);
+  const idx=new Map(candidates.map((e,i)=>[e,i]));
+  const openThreshold=Number(model.confidenceThreshold)||.65;
+  const closedThreshold=Number(model.closedThreshold)||.35;
+  let scored=0,changed=0,promoted=0,demoted=0;
+  const out=events.map(e=>{
+    const i=idx.get(e);if(i==null)return e;
+    const row={};
+    for(let j=0;j<raw[i].length;j++){
+      row['raw'+j]=raw[i][j];
+      row['rank'+j]=rawRank[i][j];
+      row['z'+j]=rawZ[i][j];
+    }
+    row.base_p=base[i];row.base_rank=baseRank[i];row.base_z=baseZ[i];
+    row.score=Number(e.score)||0;row.confidence=Number(e.confidence)||0;
+    row.current_open=e.group==='open_hat'?1:0;
+    const p=fusionForestProbability(model,row);scored++;
+    const meta={hatMp3DomainProbability:p,hatMp3DomainV68:true};
+    if(p>=openThreshold&&e.group!=='open_hat'){
+      changed++;promoted++;return {...e,...meta,group:'open_hat',note:46};
+    }
+    if(p<=closedThreshold&&e.group==='open_hat'){
+      changed++;demoted++;return {...e,...meta,group:'hat',note:42};
+    }
+    return {...e,...meta};
+  });
+  return {events:out,info:{
+    enabled:true,variant:'mp3-domain-rf-v68',
+    candidates:candidates.length,scored,changed,promoted,demoted,
+    openThreshold,closedThreshold,modelTrees:Number(model.treeCount)||model.trees.length,
+    reviewSpecificInputsUsed:false,patternParityUsed:false,
+    trainingRows:Number(model.trainingRows)||null
+  }};
+}
