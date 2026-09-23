@@ -1,5 +1,5 @@
 import {transcribe} from './transcribe.js?v=20260923-proof-v34';
-import {midiFile} from './midi.js?v=20260923-grid-v29';
+import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
