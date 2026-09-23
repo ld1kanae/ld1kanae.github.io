@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "experiment": "nanairo synchronized open-hat acoustic check v40",
+  "source": {
+    "midi": "なないろ_tempo-mapped_sync.mid",
+    "wav": "なないろ_tempo-mapped_sync.wav",
+    "midiSha256": "ab4a84377bfd678192040fbb00e17face55cf6aed5528a4699bf9ffa47b898a0",
+    "wavSha256": "d07eefee87cb9a78518cb856228ce3e2032c96c226184bca2ff83af54c2baf50",
+    "alignment": "user-provided exact synchronized pair"
+  },
+  "audio": {
+    "sampleRate": 44100,
+    "channels": 2,
+    "durationSec": 251.01802721088436
+  },
+  "midi": {
+    "ppq": 480,
+    "tracks": 18,
+    "tempoEvents": 419,
+    "noteCounts": {
+      "36": 486,
+      "38": 155,
+      "42": 823,
+      "44": 260,
+      "46": 240,
+      "49": 44,
+      "51": 0,
+      "57": 1
+    }
+  },
+  "openTransitions": {
+    "openEvents": 240,
+    "nextHatArticulation": {
+      "42": 154,
+      "44": 86,
+      "46": 0
+    },
+    "medianGapSec": 0.23994000000001847,
+    "limitation": "No open->open example exists in this aligned pair; it directly supports open->closed/pedal choke-side analysis, not open-only repeated-open learning."
+  },
+  "highBandDecay": {
+    "bandHz": [
+      5000,
+      18000
+    ],
+    "method": "Hann-window FFT band RMS ratio relative to 0-25ms onset window",
+    "closed42": {
+      "n": 823,
+      "mid80to140msMedian": 0.24821910281844078,
+      "late150to220msMedian": 0.184101564919908
+    },
+    "open46": {
+      "n": 240,
+      "mid80to140msMedian": 0.5303988514052818,
+      "late150to220msMedian": 0.3977310137305866
+    },
+    "pedal44": {
+      "n": 260,
+      "mid80to140msMedian": 0.2954571121454729,
+      "late150to220msMedian": 0.1559629737136487
+    }
+  },
+  "blockedTimeCv": {
+    "task": "GM42 vs GM46 only",
+    "folds": 5,
+    "features": "log high-band RMS ratios at 25-60, 60-120, 120-180, 180-230ms relative to onset",
+    "classifier": "standardized logistic regression, class_weight=balanced",
+    "confusionMatrix": {
+      "tn": 817,
+      "fp": 6,
+      "fn": 0,
+      "tp": 240
+    },
+    "precisionOpen": 0.975609756097561,
+    "recallOpen": 1,
+    "f1Open": 0.9876543209876543,
+    "caveat": "Single-song synchronized diagnostic, not an unknown-song production estimate."
+  },
+  "designDecision": [
+    "Retain local decay/timbre as strong acoustic evidence.",
+    "Treat pedal separately from stick-closed; do not merge GM44 into GM42.",
+    "Use next-hit choke/persistence only as a conservative borderline sequence feature.",
+    "Use GMD for open-only/open-dominant and transition examples missing from this song."
+  ]
+}
