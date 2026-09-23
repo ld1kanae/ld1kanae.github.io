@@ -1142,7 +1142,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       const openProbRaw=Number(h?.openHatProbability);
       const alternatingProb=Number(h?.alternatingHatProbability);
       const openProb=Number.isFinite(openProbRaw)?openProbRaw:
-        (Number.isFinite(alternatingProb)?alternatingProb:(h?.group==='open_hat'?.60:(virtualHat?.35:.20)));
+        (Number.isFinite(alternatingProb)?alternatingProb:(h?.group==='open_hat' ? .60 : (virtualHat ? .35 : .20)));
       const crashSim=Number(ev.crashSimilarity)||0;
       const hatSim=Number(ev.hatSimilarity)||0;
       const margin=crashSim-hatSim;
