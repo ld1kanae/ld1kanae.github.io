@@ -662,7 +662,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       const k=nearEvent(kickEvents,e.time,.035);
       if(!k)continue;
       const repeat=repeatedAtSlot(e.time);
-      if(e.score<.12||e.score<.25*(k.score||0)||repeat<3)continue;
+      if(e.score<.12||e.score<.25*(k.score||0)||repeat<2)continue;
       rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat});
     }
     if(rescued.length)structural.push(...rescued);
@@ -690,7 +690,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       snareRescued:rescued.length,
       snareMinActivation:.12,
       snareKickRatio:.25,
-      snareRepeatBars:3,
+      snareRepeatBars:2,
       tomKickRemoved,
       tomStrongKeep:1.45,
       tomRunWindowSec:.24
