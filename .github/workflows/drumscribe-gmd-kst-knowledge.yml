@@ -6,13 +6,24 @@ on:
     branches:
       - drumscribe-gmd-kst-section-v1-20260923
     paths:
-      - "drumscribe/experiments/gmd-kst/**"
+      - "drumscribe/experiments/gmd-kst/build_gmd_kst_knowledge.py"
+      - "drumscribe/experiments/gmd-kst/evaluate_gmd_kst_genre.py"
+      - "drumscribe/experiments/gmd-kst/evaluate_gmd_kst_prior_heldout.py"
+      - "drumscribe/experiments/gmd-kst/test_section_analysis.mjs"
+      - "drumscribe/experiments/gmd-kst/test_gmd_kst_prior.mjs"
+      - "drumscribe/experiments/gmd-kst/test_gmd_kst_genre.mjs"
+      - "drumscribe/experiments/gmd-kst/analyze_example_offvocals.mjs"
       - "drumscribe/section-analysis.js"
       - "drumscribe/gmd-kst-prior.js"
+      - "drumscribe/gmd-kst-genre.js"
       - ".github/workflows/drumscribe-gmd-kst-knowledge.yml"
 
 permissions:
   contents: write
+
+concurrency:
+  group: drumscribe-gmd-kst-knowledge-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -81,7 +92,8 @@ jobs:
             echo "Knowledge files unchanged."
           else
             git commit -m "drumscribe: build GMD KST knowledge v1"
-            git push
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
       - name: Upload generated knowledge
         uses: actions/upload-artifact@v4
