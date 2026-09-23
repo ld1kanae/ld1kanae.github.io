@@ -67,7 +67,7 @@ def evaluate(d,items,hx,hy,gx,gy,variant,kind):
         outer=[s for s in SONGS if s!=held]
         th,inner=ctx.inner_choose(d,items,outer,kind,hx,hy,gx,gy,variant,12000+oi*30)
         model,minfo=ctx.fit_selector(items,outer,kind,13000+oi)
-        bo,bc,bdiag=ctx.production_base(d,held,outer,hx,hy,gx,gy,14000+oi)
+        bo,bc,bdiag=ctx.production_base(d,held,outer,hx,hy,gx,gy,11000+oi)
         add,sdiag=ctx.select_student(d,held,items[held],model,variant,th,bo,bdiag)
         m=ctx.articulation(sorted(bo+add),bc,d[held]["refs"])
         per[held]=m;folds[held]={"threshold":th,"metrics":m,"base":bdiag,"selector":sdiag,
@@ -82,7 +82,7 @@ def guarded(d,items,hx,hy,gx,gy):
     for oi,held in enumerate(SONGS):
         outer=[s for s in SONGS if s!=held]
         model,minfo=ctx.fit_selector(items,outer,"forest_context",15000+oi)
-        bo,bc,bdiag=ctx.production_base(d,held,outer,hx,hy,gx,gy,16000+oi)
+        bo,bc,bdiag=ctx.production_base(d,held,outer,hx,hy,gx,gy,11000+oi)
         add,sdiag=ctx.select_student(d,held,items[held],model,"guarded_rank_diagnostic",None,bo,bdiag)
         m=ctx.articulation(sorted(bo+add),bc,d[held]["refs"])
         per[held]=m;folds[held]={"metrics":m,"base":bdiag,"selector":sdiag,
