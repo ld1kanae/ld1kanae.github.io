@@ -160,12 +160,18 @@ def acoustic_rows(audio,notes):
 
 
 def balanced_cap(X,y,limit=MAX_EXT_PER_CLASS,seed=0):
-    rng=np.random.default_rng(seed);pick=[]
-    for cls in (0,1):
-        ids=np.flatnonzero(y==cls)
-        if len(ids)>limit:ids=rng.choice(ids,limit,replace=False)
-        pick.extend(map(int,ids))
-    pick=np.asarray(sorted(pick),dtype=int)
+    """Return an exactly class-balanced external subset.
+
+    External augmentation must not teach the local model that 'closed' is simply
+    more likely because the sampled clips contain many more closed hits.
+    """
+    rng=np.random.default_rng(seed)
+    ids0=np.flatnonzero(y==0);ids1=np.flatnonzero(y==1)
+    n=min(limit,len(ids0),len(ids1))
+    if n==0:return X[:0],y[:0]
+    a=rng.choice(ids0,n,replace=False) if len(ids0)>n else ids0
+    b=rng.choice(ids1,n,replace=False) if len(ids1)>n else ids1
+    pick=np.asarray(sorted(np.concatenate([a,b]).astype(int)),dtype=int)
     return X[pick],y[pick]
 
 
