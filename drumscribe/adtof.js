@@ -44,7 +44,7 @@ async function loadAssets(){
     const [meta,fbBuf,kstModel]=await Promise.all([
       fetch(new URL('./models/adtof-model.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('ADTOF metadataを読み込めません');return r.json();}),
       fetch(new URL('./models/adtof-filterbank.f32',import.meta.url)).then(r=>{if(!r.ok)throw Error('ADTOF filterbankを読み込めません');return r.arrayBuffer();}),
-      fetch(new URL('./models/egmd-kst-reclassifier-v3.json',import.meta.url))
+      fetch(new URL('./models/egmd-kst-reclassifier-v4.json',import.meta.url))
         .then(r=>r.ok?r.json():null).catch(()=>null),
     ]);
     const filterbank=new Float32Array(fbBuf);
