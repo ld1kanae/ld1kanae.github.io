@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1220">
   <title>DrumScribe — ドラム音源からMIDIへ</title>
-  <link rel="stylesheet" href="style.css?v=20260924-threshold-controls-v1">
+  <link rel="stylesheet" href="style.css?v=20260924-threshold-copy-v4">
 </head>
 <body>
 <main>
@@ -19,23 +19,23 @@
     <div class="arrangement-source"><label class="arrangement-file-button">構造解析用 offvocal / 伴奏（任意）<input type="file" id="arrangementFile" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac"></label><span id="arrangementFileName">未選択 — ドラム音源のみでも採譜できます</span></div>
     <details class="threshold-controls" id="thresholdControls">
       <summary>採譜感度を調整 <span>すべて 1.0 = 現行デフォルト</span></summary>
-      <p class="threshold-help">既存の判定閾値に掛ける倍率です。大きいほど厳しく（ノートが減る方向）、小さいほど拾いやすくなります。タイミング窓やBPM推定値は変更しません。</p>
+      <p class="threshold-help">数値は「判定しきい値の倍率」です。<strong>1.0 = 標準</strong>。検出・救済系は基本的に0側ほど通りやすく、2側ほど通りにくくなります。Open/ClosedやRide/Openのような音色分類は、各項目の説明どおりに結果が寄ります。タイミング窓やBPM推定値は変更しません。</p>
       <div class="threshold-group"><strong>キック / スネア / タム</strong><div class="threshold-grid">
-        <label>バスドラム <input id="thresholdKick" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>スネア <input id="thresholdSnare" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>弱スネア救済 <input id="thresholdSnareRescue" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>E-GMDスネア救済 <input id="thresholdEgmdSnare" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>タム <input id="thresholdTom" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">バスドラム検出<small>0 ← 出やすい / 出にくい → 2</small></span><input id="thresholdKick" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">スネア検出<small>0 ← 出やすい / 出にくい → 2</small></span><input id="thresholdSnare" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">弱スネア救済<small>0 ← 救済しやすい / 救済しにくい → 2</small></span><input id="thresholdSnareRescue" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">E-GMDスネア救済<small>0 ← 救済しやすい / 救済しにくい → 2</small></span><input id="thresholdEgmdSnare" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">タム検出<small>0 ← 出やすい / 出にくい → 2</small></span><input id="thresholdTom" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
       </div></div>
       <div class="threshold-group"><strong>ハイハット / シンバル</strong><div class="threshold-grid">
-        <label>HH打点 <input id="thresholdHat" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>HH衝突抑制 <input id="thresholdHatCollision" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>HH高域再判定 <input id="thresholdHatFilter" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>Open HH <input id="thresholdOpenHat" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>Ride→Open HH（音色＋文脈） <input id="thresholdRideOpen" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>重なりOpen HH救済 <input id="thresholdOpenHatOverlay" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>シンバル打点 <input id="thresholdCymbal" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
-        <label>Crash後段ゲート <input id="thresholdCymbalGate" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">ハイハット打点検出<small>0 ← 出やすい / 出にくい → 2</small></span><input id="thresholdHat" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">ハイハット誤検出抑制<small>0 ← 弱く抑制 / 強く抑制 → 2</small></span><input id="thresholdHatCollision" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">ハイハット最終フィルタ<small>0 ← 残しやすい / 落としやすい → 2</small></span><input id="thresholdHatFilter" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">Open / Closed HH判定<small>0 ← Openになりやすい / Closedになりやすい → 2</small></span><input id="thresholdOpenHat" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label class="threshold-emphasis"><span class="threshold-name">RideをOpen HHへ変換<small>0 ← Openへ変換しやすい / Rideを残しやすい → 2</small></span><input id="thresholdRideOpen" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">重なったOpen HHの救済<small>0 ← 救済しやすい / 救済しにくい → 2</small></span><input id="thresholdOpenHatOverlay" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">シンバル打点検出<small>0 ← 出やすい / 出にくい → 2</small></span><input id="thresholdCymbal" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
+        <label><span class="threshold-name">Crash最終ゲート<small>0 ← 通しやすい / 厳しくする → 2（対応モード時）</small></span><input id="thresholdCymbalGate" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
       </div></div>
       <div class="threshold-actions"><button type="button" id="thresholdReset">すべて 1.0 に戻す</button></div>
     </details>
@@ -55,5 +55,5 @@
   <footer><span>DRUMSCRIBE / PROTOTYPE</span><a href="https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe">ソースと検証履歴 ↗</a></footer>
 </main>
 <script src="vendor/ort/ort.wasm.min.js?v=1.30.0"></script>
-<script type="module" src="app.js?v=20260924-threshold-range-v3"></script>
+<script type="module" src="app.js?v=20260924-threshold-copy-v4"></script>
 </body></html>
