@@ -1367,3 +1367,13 @@ production既定を `ride-open-decay-rescue` に更新。
 - On note 42 or 44, all already-started/scheduled-prior open-hat voices are choked at that exact scheduled hit time with a 12 ms anti-click linear fade and source stop at 14 ms.
 - Future open-hat voices are not accidentally killed.
 - Both index.html and feedback.html use cache buster `app.js?v=20260924-hihat-choke-v1`.
+
+## 2026-09-24 — tom pitch subdivision v69
+
+- Former export collapsed every accepted tom to GM45.
+- Current runtime imports `tom-pitch.js` and assigns accepted toms to **41 / 45 / 47 / 50** using song-relative resonant-frequency clustering. Tom onset count/timing is not modified by this stage.
+- `app.js` loads samples 41/45/47/50, so differentiated tom notes are audible in preview.
+- Fresh-browser five-song validation run **35909848191**: tom group TP 70 / Pred 85 / Ref 92. Among the 70 time-matched tom hits, exact tom-note accuracy is **33/70 = 47.14%**, versus **20/70 = 28.57%** for the old all-45 baseline.
+- Isolated pitch-only run **35910569809** over 92 reference tom onset windows: current song-relative clustering **56.52%**, asset peak **47.83%**, asset profile **48.91%**, asset hybrid **45.65%**, LOO real-profile research candidate **53.26%**.
+- Current weak point: reference note **47** recall is low (22.22% in the isolated test). In 3-cluster mode the current mapping is 41/45/50, so 47 cannot be emitted. Next experiment should improve 45/47/50 mapping without changing tom onset detection.
+- Details: `experiments/TOM_PITCH_V69.md`; machine-readable summary: `experiments/results-tom-pitch-v69-summary.json`.
