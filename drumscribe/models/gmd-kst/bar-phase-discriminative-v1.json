@@ -1,0 +1,119 @@
+{
+  "counts": {
+    "test_performances": 87,
+    "train_bars": 16524,
+    "train_dev_performances": 83,
+    "train_fit_performances": 352,
+    "validation_performances": 61
+  },
+  "intercept": -0.2847606199218269,
+  "internal_train_holdout": {
+    "bernoulli_presence": {
+      "bar_accuracy": 0.5841712617580279,
+      "bars": 3083,
+      "performance_accuracy": 0.6024096385542169,
+      "performances": 83
+    },
+    "logistic_rotation": {
+      "bar_accuracy": 0.619850794680506,
+      "bars": 3083,
+      "performance_accuracy": 0.6626506024096386,
+      "performances": 83
+    },
+    "phase_log_probability": {
+      "bar_accuracy": 0.5874148556600713,
+      "bars": 3083,
+      "performance_accuracy": 0.6265060240963856,
+      "performances": 83
+    }
+  },
+  "official_heldout": {
+    "test": {
+      "bar_accuracy": 0.6283973758200563,
+      "bars": 2134,
+      "performance_accuracy": 0.7586206896551724,
+      "performances": 87
+    },
+    "validation": {
+      "bar_accuracy": 0.5764235764235764,
+      "bars": 2002,
+      "performance_accuracy": 0.5409836065573771,
+      "performances": 61
+    }
+  },
+  "recommended_min_margin": 1.0031394321035099,
+  "scope": {
+    "candidate_search": "bar-phase hypotheses; model only ranks phase and never creates/moves notes",
+    "feature": "binary K/S/T occupancy on 16th-note positions",
+    "groups": [
+      "kick",
+      "snare",
+      "tom"
+    ],
+    "meter": "4/4",
+    "slots_per_bar": 16
+  },
+  "selected_hypothesis": "logistic_rotation",
+  "source": {
+    "archive": "groove-v1.0.0-midionly.zip",
+    "dataset": "Google Magenta Groove MIDI Dataset",
+    "dataset_version": "1.0.0",
+    "license": "CC BY 4.0",
+    "official_validation_test_usage": "report-only",
+    "selection_split": "deterministic internal 20% of train",
+    "sha256": "651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e",
+    "training_split": "train",
+    "url": "https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip"
+  },
+  "version": "gmd-kst-bar-phase-discriminative-v1",
+  "weights": [
+    0.7928004051467631,
+    -0.7379091762527609,
+    -0.7889007670611611,
+    0.6436880307536904,
+    -0.13992044977988746,
+    -0.05671785915445229,
+    0.3800420150270482,
+    0.09848900212048035,
+    -0.1831220711038753,
+    0.6019327690727961,
+    0.10009228330996439,
+    -0.5596260261063952,
+    -0.5094268956286676,
+    -0.09480976966827002,
+    0.06807226391329316,
+    -0.42673666015140976,
+    -1.075898240299357,
+    -0.5400389175800128,
+    -0.4776937467713571,
+    -0.13820984603963293,
+    0.6457278578678157,
+    -0.2423122442424416,
+    -0.1582106233093819,
+    0.07485369610836282,
+    -0.2511499509254169,
+    0.6581675574872846,
+    0.36213728784637855,
+    0.02150878200549017,
+    0.5327139245420096,
+    0.07234372455383044,
+    0.5438236295004087,
+    0.1332940088893013,
+    0.0073143741383919075,
+    -0.9298050127666858,
+    -0.39620410074007667,
+    -0.47720357151407655,
+    -0.4078138546919956,
+    -0.31983563859746716,
+    -0.5059397959914862,
+    0.1868079585290088,
+    0.19295570010116295,
+    0.796539996193793,
+    -0.1696055102962325,
+    -0.09994861587376587,
+    0.4995927072164703,
+    0.427527297850153,
+    0.9483641103058749,
+    0.37431341783621636
+  ]
+}
