@@ -64,9 +64,9 @@ function features(samples,t,nextT,w){
   }else out.push(1.5,0,0,0,0);
   return out;
 }
-function probability(x){
-  let z=INTERCEPT;
-  for(let i=0;i<COEF.length;i++)z+=COEF[i]*(x[i]-MEAN[i])/(SCALE[i]||1);
+function probability(x,model){
+  let z=Number(model.intercept)||0;
+  for(let i=0;i<model.coef.length;i++)z+=(Number(model.coef[i])||0)*(x[i]-(Number(model.mean[i])||0))/(Number(model.scale[i])||1);
   return 1/(1+Math.exp(-Math.max(-30,Math.min(30,z))));
 }
 export async function scoreHatContextV55(decoded,events,modelKey){
