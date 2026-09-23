@@ -1,0 +1,56 @@
+name: DrumScribe BeatThis benchmark v17
+
+on:
+  push:
+    branches: [drumscribe-v2-eval]
+    paths:
+      - ".github/workflows/drumscribe-beatthis-v17.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Beat This
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install beat-this==1.1.0
+          beat_this --help | head -120
+      - name: Convert benchmark audio
+        run: |
+          mkdir -p drumscribe/experiments/beatthis-v17
+          ffmpeg -y -v error -i DruMaster/songs/arcaround/offvocal.mp3 -ar 44100 -ac 2 drumscribe/experiments/beatthis-v17/arcaround-offvocal.wav
+          ffmpeg -y -v error -i DruMaster/songs/arcaround/fullmix.mp3 -ar 44100 -ac 2 drumscribe/experiments/beatthis-v17/arcaround-fullmix.wav
+      - name: Analyze offvocal
+        run: beat_this drumscribe/experiments/beatthis-v17/arcaround-offvocal.wav -o drumscribe/experiments/beatthis-v17/arcaround-offvocal.beats --gpu=-1
+      - name: Analyze fullmix
+        run: beat_this drumscribe/experiments/beatthis-v17/arcaround-fullmix.wav -o drumscribe/experiments/beatthis-v17/arcaround-fullmix.beats --gpu=-1
+      - name: Remove temporary wavs
+        run: rm drumscribe/experiments/beatthis-v17/*.wav
+      - name: Show outputs
+        run: |
+          echo OFFVOCAL
+          cat drumscribe/experiments/beatthis-v17/arcaround-offvocal.beats
+          echo FULLMIX
+          cat drumscribe/experiments/beatthis-v17/arcaround-fullmix.beats
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/beatthis-v17
+          git diff --cached --quiet && exit 0
+          git commit -m "Record BeatThis arcaround benchmark v17 [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval
