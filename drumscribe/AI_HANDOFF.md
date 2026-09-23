@@ -1,6 +1,16 @@
 # DrumScribe AI Handoff
 
-## 2026-09-23 Open Hat / Ride strict check v46 — all-Ride→Open案は不採用
+## CURRENT AUTHORITATIVE STATUS — Open/Closed Hi-Hat v47
+
+- production既定: `ride-open-decay-rescue`
+- 音響減衰 + open-run救済 + Ride→Open HH丸めを採用
+- 5曲fresh Chromium: HH macro F1 **0.719507 → 0.745832**、Open F1 **0.595722 → 0.647770**
+- K/S/T非退行
+- A/A'による42/46再判定は悪化したため不採用
+- strict Ride精度は意図的に優先しない。下記v46節は、Ride保持を優先した場合の過去評価であり、現行方針を上書きしない
+- Diamond Virgin完全同期対照の識別情報・検証結果: `experiments/reference-sync/README.md`
+
+## 2026-09-23 Open Hat / Ride strict check v46 — historical strict-Ride evaluation
 
 Open F1が大きく伸びた `ride-open-decay-rescue` を、Closed/OpenだけでなくRideも含めfresh browser再評価。
 
@@ -21,11 +31,11 @@ Default `decay-rescue`:
 - collapsed onset F1 0.817466 (+0.005385)
 - K/S/T delta 0 / 0 / 0
 
-結論:
+当時のstrict-Ride評価:
 - Open改善のかなりの部分は既存RideをOpenへ丸めたことによる。
-- strict metal精度を悪化させるため**production不採用**。
-- defaultは引き続き `decay-rescue`。
-- 次実験v47ではRideのopen-hat acoustic probabilityが高い場合だけOpenへ変更し、その他はRideのまま保持するselective閾値 .70/.80/.90 を比較する。
+- Rideを独立クラスとして守る評価軸ではmetal macroが低下した。
+- その後、ユーザー要件としてRide識別を優先せずOpen/Closed HHへ丸めてよいことが明示されたため、この不採用判断はv47で上書きされた。
+- 現行productionは `ride-open-decay-rescue`。
 
 詳細:
 - `experiments/OPENHAT_DEFAULT_VS_COMBINED_V46.md`
