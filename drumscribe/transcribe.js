@@ -641,7 +641,12 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const wrapBar=t=>{let x=(t-phase)%bar;if(x<0)x+=bar;return x;};
     const slot16=t=>Math.round(wrapBar(t)/(beat/4))%16;
     const barIndex=t=>Math.floor((t-phase)/bar);
-    const lowSnare=adtofSnareRescue.filter(e=>!nearEvent(snareEvents,e.time,.035)&&nearEvent(kickEvents,e.time,.035));
+    const rescueDensity=adtofSnareRescue.length/Math.max(1,snareEvents.length);
+    const snareKickDensity=snareEvents.length/Math.max(1,kickEvents.length);
+    const adaptiveSnareRescue=rescueDensity>=1.40&&snareKickDensity<=.30;
+    const lowSnare=adaptiveSnareRescue
+      ? adtofSnareRescue.filter(e=>!nearEvent(snareEvents,e.time,.035)&&nearEvent(kickEvents,e.time,.040))
+      : [];
     const patternTimes=adtofSnareRescue.map(e=>e.time);
     const repeatedAtSlot=t=>{
       const s=slot16(t),b=barIndex(t);let n=0;
@@ -657,7 +662,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       const k=nearEvent(kickEvents,e.time,.035);
       if(!k)continue;
       const repeat=repeatedAtSlot(e.time);
-      if(e.score<.22||e.score<.55*(k.score||0)||repeat<3)continue;
+      if(e.score<.12||e.score<.25*(k.score||0)||repeat<3)continue;
       rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat});
     }
     if(rescued.length)structural.push(...rescued);
@@ -678,10 +683,13 @@ export async function transcribe(decoded,report=()=>{},options={}){
     adtofInfo.structuralPriority={
       mode:'layered-snare-rescue+kick-tom-veto-v1',
       snareRescueCandidates:adtofSnareRescue.length,
+      rescueDensity,
+      snareKickDensity,
+      adaptiveSnareRescue,
       snareLayeredCandidates:lowSnare.length,
       snareRescued:rescued.length,
-      snareMinActivation:.22,
-      snareKickRatio:.55,
+      snareMinActivation:.12,
+      snareKickRatio:.25,
       snareRepeatBars:3,
       tomKickRemoved,
       tomStrongKeep:1.45,
