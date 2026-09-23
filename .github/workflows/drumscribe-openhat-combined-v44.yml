@@ -1,0 +1,53 @@
+name: DrumScribe open-hat combined v44
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/open-hat.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/experiments/browser_openhat_combined_v44.mjs"
+      - "drumscribe/experiments/evaluate_openhat_combined_v44.py"
+      - ".github/workflows/drumscribe-openhat-combined-v44.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install dependencies
+        run: |
+          pip install mido
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Fresh-generate combined variant
+        run: node drumscribe/experiments/browser_openhat_combined_v44.mjs
+      - name: Score combined variant
+        run: python drumscribe/experiments/evaluate_openhat_combined_v44.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-openhat-combined-v44.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "drumscribe: record combined open-hat v44 result"
+            git pull --rebase origin main
+            git push
+          fi
