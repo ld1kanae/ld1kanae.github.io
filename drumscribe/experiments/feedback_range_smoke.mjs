@@ -18,7 +18,7 @@ await page.waitForFunction(()=>!document.querySelector('#result')?.hidden,{},{ti
 await page.waitForFunction(()=>window.DrumScribeTimeline?.getDuration?.()>0,{},{timeout:30000});
 console.log('RESULT',await page.locator('#resultSummary').textContent());
 
-const canvas=page.locator('#timeline');
+const canvas=page.locator('#rangeSurface');
 await canvas.scrollIntoViewIfNeeded();
 const box=await canvas.boundingBox();
 if(!box) throw new Error('timeline has no bounding box');
