@@ -1,0 +1,23 @@
+name: DrumScribe current runtime bundle temp v61
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/drumscribe-current-runtime-bundle-temp-v61.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-current-runtime-v61
+          path: drumscribe
+          retention-days: 1
