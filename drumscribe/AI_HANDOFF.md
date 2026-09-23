@@ -81,6 +81,7 @@ index.html
 - `adtof.js` -> `models/adtof-model.json`
 - `adtof.js` -> `models/adtof-filterbank.f32`
 - `adtof.js` -> `models/adtof-frame-rnn.onnx`
+- `adtof.js` -> `models/egmd-kst-reclassifier-v3.json`（snare低信頼candidateの第二判定）
 - `hat-forest.js` -> `models/hat-extra-trees-v11.json`
 - `app.js` -> 検証example用 `experiments/beatthis-v17|v18/*.beats`
 - `app.js` -> `../DruMaster/assets/drums/*.wav`
@@ -134,6 +135,7 @@ index.html
               -> adtof-worker.js
               -> models/adtof-filterbank.f32
               -> models/adtof-frame-rnn.onnx
+              -> models/egmd-kst-reclassifier-v3.json
               -> ONNX Runtime Web/WASM
           -> kick/snare/tom priority post-processing
           -> hat / pedal-hat / crash / ride post-processing
@@ -183,6 +185,7 @@ index.html
 - backend: ONNX Runtime Web / WASM
 - 長音源は 3000 core frames + 200 overlap frames で分割
 - snareだけ通常出力とは別に scale 0.50 の低閾値streamも返す。これは直接出力しない。
+- さらにE-GMD v3再分類器用に scale 0.20 のsnare candidateを作り、曲内95 percentile正規化したADTOF activation/residual/local context/class-ratioから確率を返す。これも直接出力しない。
 
 ### B. kick / snare / tom優先補正
 
@@ -190,11 +193,19 @@ index.html
 
 **snare rescue**
 - song-level gateが成立した曲だけ
-- 既存snareから35 ms以内を除外
-- kickから40 ms以内
-- low activation >= 0.12
-- low snare activation >= 0.25 × kick activation
-- 同じ16分slotの反復支持 >= 2
+- 既存の手書き低閾値経路:
+  - 既存snareから35 ms以内を除外
+  - kickから40 ms以内
+  - low activation >= 0.12
+  - low snare activation >= 0.25 × kick activation
+  - 同じ16分slotの反復支持 >= 2
+- E-GMD v3第二判定経路:
+  - E-GMD snare probability >= 0.60
+  - 既存snareから35 ms以内を除外
+  - kickから35 ms以内
+  - 同じ16分slotで反復支持 >= 1
+  - E-GMD側では旧absolute activation floorを重ねない（v3モデル入力に正規化activation/residual/class-ratioを含む）
+- E-GMD modelからkick/tomは追加しない
 - 現5曲では主に arcaround の欠落snare救済として選定
 
 **tom bleed veto**
@@ -265,14 +276,14 @@ v26では diamondvirgin / nanairo / ray だけで再検証し、GMDは「beat 1 
 | Part | TP / Pred / Ref | Precision | Recall | F1 |
 |---|---:|---:|---:|---:|
 | kick | 2636 / 2765 / 2712 | 0.9533 | 0.9720 | 0.9626 |
-| snare | 1273 / 1389 / 1470 | 0.9165 | 0.8660 | 0.8905 |
+| snare | 1276 / 1394 / 1470 | 0.9154 | 0.8680 | 0.8911 |
 | tom | 69 / 84 / 92 | 0.8214 | 0.7500 | 0.7841 |
 
 all classes:
-- TP 7461 / Pred 8192 / Ref 10086
-- Precision 0.9108
-- Recall 0.7397
-- F1 0.8164
+- TP 7464 / Pred 8197 / Ref 10086
+- Precision 0.9106
+- Recall 0.7400
+- F1 0.8165
 
 注意:
 - 同じ5曲を見ながら改善してきたので未知曲保証ではない。
@@ -315,6 +326,7 @@ song.json.playback.stemOffsetSec + midiOffsetSec (存在時)
 - `models/adtof-model.json`
 - `models/adtof-filterbank.f32`
 - `models/adtof-frame-rnn.onnx`
+- `models/egmd-kst-reclassifier-v3.json`
 - `models/hat-extra-trees-v11.json`
 - `models/gmd-metal-prior.json`
 
@@ -346,10 +358,15 @@ song.json.playback.stemOffsetSec + midiOffsetSec (存在時)
 `2026-09-23: GMD / E-GMD を kick・snare・tom 改善へ試験利用`
 
 結論:
-- GMD/E-GMDはsnare第二判定には有望
-- productionへ常時追加するほどの改善ではなかった
+- GMD symbolic priorを現行低閾値snare rescueへ直結するruntime変更は効果0で撤回済み
+- その後E-GMD audio+MIDIで低信頼K/S/T候補再分類器をv1→v3まで実装
+- v1は負例不足でtomが暴発し不採用
+- v2はhard negativeで安全化したがproduction追加0
+- v3はclip normalization + sequence/kit-held-out外部校正
+- **v3 snare第二判定だけproduction採用**
+- 実browser: snare F1 0.890521 → **0.891061**、kick/tom不変
+- E-GMDからkick/tomを追加する処理は不採用
 - tomについては「kick+tomを一般論として抑制しすぎない」ことが重要
-- GMD priorを現行低閾値snare rescueへ直結するruntime変更は撤回済み
 
 ### meter / GMD bar prior
 
@@ -447,7 +464,7 @@ exportだけ `barPhaseSec` に基づきmusical gridへずらす。
 - 基本対象はドラム単独音源。楽曲全体からのstem separationはWeb本体に未搭載。
 - 現スコアは5曲へ反復最適化しており未知曲保証ではない。
 - tom母数が小さい。
-- snare rescueは未知曲generalization未確認。
+- E-GMD classifier自体はsequence/kit-held-outで校正したが、最終song-level snare rescue policyは5曲で採否確認しており、未知曲post-selection validationは必要。
 - crash / ride / pedal-hatはK/S/Tより弱い。
 - 任意uploadの可変拍子推定は限定的。
 - example曲で使うBeatThis labelsはfullmix由来で、一般uploadには存在しない。
