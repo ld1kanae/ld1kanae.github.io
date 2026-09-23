@@ -181,7 +181,7 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
   // Keep a lower-threshold snare stream for conservative post-processing.
   // It is never emitted directly; transcribe.js may rescue only candidates
   // that are independently supported by a simultaneous kick and repetition.
-  const snareRescueScale=Number.isFinite(options.snareRescueScale)?options.snareRescueScale:.86;
+  const snareRescueScale=Number.isFinite(options.snareRescueScale)?options.snareRescueScale:.50;
   const snareRescueThreshold=BASE_THRESHOLDS[1]*snareRescueScale;
   const snareRescue=pickClass(acts,1,snareRescueThreshold).map(p=>({
     time:p.time,
