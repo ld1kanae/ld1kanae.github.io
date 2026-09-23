@@ -39,16 +39,22 @@ for(const song of songs){
       decode('/DruMaster/songs/'+song+'/drums.mp3'),
       decode('/DruMaster/songs/'+song+'/offvocal.mp3')
     ]);
-    const result={};
+    const result={},cache=new Map();
     for(const cfg of configs){
-      const tr=await transcribe(drums,()=>{},{openHatVariant:cfg.openHatVariant});
-      const numerator=Number(tr.numerator)||4,denominator=Number(tr.denominator)||4;
-      const arrangement=analyzeSections(offvocal,{
+      let cached=cache.get(cfg.openHatVariant);
+      if(!cached){
+        const tr=await transcribe(drums,()=>{},{openHatVariant:cfg.openHatVariant});
+        const numerator=Number(tr.numerator)||4,denominator=Number(tr.denominator)||4;
+        const arrangement=analyzeSections(offvocal,{
         analysisSampleRate:8000,bpm:tr.bpm,barPhaseSec:tr.barPhaseSec,
         numerator,denominator,frameSec:.75,hopSec:.375,contextSec:3,minSectionSec:6,
-        noveltyStd:.55,maxSections:28
-      });
-      let events=tr.events,arrInfo={enabled:false};
+          noveltyStd:.55,maxSections:28
+        });
+        cached={tr,numerator,denominator,arrangement};
+        cache.set(cfg.openHatVariant,cached);
+      }
+      const {tr,numerator,denominator,arrangement}=cached;
+      let events=tr.events.map(e=>({...e})),arrInfo={enabled:false};
       if(cfg.arrangement){
         const rr=rescoreHatArticulationByArrangement(events,arrangement,{
           bpm:tr.bpm,numerator,denominator,policy:arrangementHatPolicyV1
