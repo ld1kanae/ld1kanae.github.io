@@ -1381,3 +1381,48 @@ production既定を `ride-open-decay-rescue` に更新。
 - Isolated pitch-only run **35910569809** over 92 reference tom onset windows: current song-relative clustering **56.52%**, asset peak **47.83%**, asset profile **48.91%**, asset hybrid **45.65%**, LOO real-profile research candidate **53.26%**.
 - Current weak point: reference note **47** recall is low (22.22% in the isolated test). In 3-cluster mode the current mapping is 41/45/50, so 47 cannot be emitted. Next experiment should improve 45/47/50 mapping without changing tom onset detection.
 - Details: `experiments/TOM_PITCH_V69.md`; machine-readable summary: `experiments/results-tom-pitch-v69-summary.json`.
+
+## 2026-09-24 — tom pitch subdivision v71
+
+> This section supersedes the **production-state** wording in v69 above. The v69 section remains as historical validation context. `TOM_PITCH_V70.md` is a separate E-GMD research experiment and did not change production.
+
+Current production:
+- `drumscribe/tom-pitch.js` method: **`resonance-absolute-threshold-v3`**
+- Pitch boundaries: **<110 → 41 / <145 → 45 / <210 → 47 / otherwise 50**
+- Production commit: **f2efa583073de1044d7bb0b1355ee5d1bfa9dfc7**
+- `transcribe.js` / `app.js` cache keys are `tom-pitch-v3`.
+- This stage still only changes pitch labels of already accepted tom hits; it does **not** create/remove/re-time tom onsets.
+
+Why clustering was retired:
+- old k3 map 41/45/50 could not emit 47;
+- kaiju's k4 cluster centers were all low (75.37/86.13/107.67/129.20 Hz), but cluster rank forced them across four GM tiers;
+- fresh actual-event comparison showed direct resonance thresholds were much better.
+
+Validation trajectory:
+- old fixed45: **20/70 = 28.57%**
+- song-relative cluster v1, run **35909848191**: **33/70 = 47.14%**
+- absolute 110/145/190, run **35916142085**: **50/70 = 71.43%**
+- final absolute 110/145/210, run **35916925487**: **54/70 = 77.14%**
+
+Final fresh run **35916925487**:
+- tom onset: **TP70 / Pred85 / Ref92** — unchanged;
+- pitch confusion: 41→41 31, 41→45 7, 45→41 5, 45→45 15, 47→45 2, 47→47 6, 50→41 2, 50→50 2.
+
+Boundary sweep run **35916487786** on 69 diagnostic matched decisions:
+- 190 Hz **49/69 = 71.01%**
+- 200 Hz **49/69 = 71.01%**
+- 210 Hz **53/69 = 76.81%** ← selected
+- 220 Hz **52/69 = 75.36%**
+
+Independent 92-reference-onset pitch-only reanalysis:
+- prior cluster **52/92 = 56.52%**
+- absolute190 **58/92 = 63.04%**
+- absolute210 **60/92 = 65.22%**
+
+Next:
+1. Keep onset detector and v3 thresholds fixed as baseline.
+2. Investigate 41↔45 and 50→41 errors with a secondary acoustic descriptor rather than global clustering.
+3. Verify the post-`transcribe()` arrangement-rescore edge: tomPitch diagnostics cover 84 accepted toms while exported five-song total is 85, so one app-side rescued tom may bypass pitch assignment. Confirm the exact event first.
+
+Detailed history: `experiments/TOM_PITCH_V71.md`  
+Machine-readable summary: `experiments/results-tom-pitch-v71-summary.json`
