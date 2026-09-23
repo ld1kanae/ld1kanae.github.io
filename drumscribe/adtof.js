@@ -9,7 +9,7 @@ let assetsPromise=null;
 const wait=()=>new Promise(resolve=>setTimeout(resolve,0));
 function thresholdMul(multipliers,key){
   const v=Number(multipliers?.[key]);
-  return Number.isFinite(v)&&v>0?v:1;
+  return Number.isFinite(v)&&v>=0&&v<=2?v:1;
 }
 
 async function mono44100(decoded){
@@ -258,12 +258,13 @@ function toEvents(acts,scale=PRECISION_SCALE,thresholdMultipliers={}){
   const out=[];
   for(let c=0;c<GROUPS.length;c++){
     const threshold=BASE_THRESHOLDS[c]*scale*thresholdMul(thresholdMultipliers,GROUPS[c]);
+    const confidenceThreshold=threshold>0?threshold:BASE_THRESHOLDS[c]*scale;
     for(const p of pickClass(acts,c,threshold)){
       out.push({
         time:p.time,
         group:GROUPS[c],
         score:p.activation,
-        confidence:p.activation/threshold,
+        confidence:p.activation/Math.max(confidenceThreshold,1e-6),
         adtof:true
       });
     }
@@ -292,7 +293,7 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     group:'snare',
     score:p.activation,
     confidence:p.activation/(BASE_THRESHOLDS[1]*scale),
-    rescueConfidence:p.activation/snareRescueThreshold,
+    rescueConfidence:p.activation/Math.max(snareRescueThreshold>0?snareRescueThreshold:BASE_THRESHOLDS[1]*snareRescueScale,1e-6),
     adtof:true,
     rescue:true
   }));
