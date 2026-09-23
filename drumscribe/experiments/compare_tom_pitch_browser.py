@@ -100,7 +100,7 @@ def metrics(pairs):
             "confusion":{f"{a}->{b}":v for (a,b),v in sorted(conf.items())}}
 
 def main():
-    out={"schema":2,"toleranceSec":TOL,"songs":{},"decisionCandidates":{}}
+    out={"schema":3,"toleranceSec":TOL,"songs":{},"decisionCandidates":{},"arrangementRescuedTomPitch":[]}
     allpairs=[]
     candidate_names=["absolute_peak_v1","absolute_peak_200_v2","absolute_peak_210_v2","absolute_peak_220_v2","hybrid_k3_absolute_v1","k3_41_45_47","k3_41_45_50","k3_41_47_50","k3_45_47_50","k3_absolute_anchor_v1"]
     candidate_all={name:[] for name in candidate_names}
@@ -114,6 +114,25 @@ def main():
         pred=[(t-export,g,n) for t,g,n in pred0]
         ref=ev.midi_events(folder/"chart.mid")
         pp,rr,pairs=match(pred,ref,shift);allpairs.extend(pairs)
+
+        # Arrangement rescoring runs after transcribe(), so historically rescued
+        # toms defaulted to GM45. Diagnostic candidates now carry an audio-only
+        # tom pitch proposal; score it here without changing exported MIDI.
+        rr_tom=[(t+shift,int(note)) for t,g,note in ref if g=="tom"]
+        additions=(((side.get("arrangementInfo") or {}).get("rescore") or {}).get("additions") or [])
+        for a in additions:
+            if a.get("group")!="tom":continue
+            at=float(a.get("time") or 0)
+            choices=[(abs(rt-at),rt,rn) for rt,rn in rr_tom if abs(rt-at)<=TOL]
+            if not choices:continue
+            _,rt,rn=min(choices)
+            dn=a.get("diagnosticTomNote")
+            out["arrangementRescuedTomPitch"].append({
+                "song":song,"time":at,"referenceTime":rt,"referenceNote":rn,
+                "currentNote":45,
+                "diagnosticNote":int(dn) if dn is not None else None,
+                "diagnosticHz":a.get("diagnosticTomPitchHz")
+            })
         m=metrics(pairs);m.update({"predictedTom":len(pp),"referenceTom":len(rr)})
         info=((side.get("adtofInfo") or {}).get("tomPitch") or {})
         m["tomPitchInfo"]={k:info.get(k) for k in ("method","tomCount","clusters","silhouette","centersHz","clusterNoteByRank")}
@@ -132,8 +151,18 @@ def main():
     )
     out["decisionCandidates"]={name:metrics(pairs) for name,pairs in candidate_all.items()}
     (EXP/"results-tom-pitch-browser.json").write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
+    resc=out["arrangementRescuedTomPitch"]
+    out["arrangementRescuedTomSummary"]={
+        "matched":len(resc),
+        "current45Correct":sum(int(r["referenceNote"])==45 for r in resc),
+        "diagnosticCorrect":sum(r["diagnosticNote"] is not None and int(r["diagnosticNote"])==int(r["referenceNote"]) for r in resc)
+    }
     print("CURRENT_MIDI",json.dumps(out["summary"],ensure_ascii=False))
     print("DECISION_CANDIDATES",json.dumps(out["decisionCandidates"],ensure_ascii=False))
+    print("ARRANGEMENT_RESCUED_TOM",json.dumps({
+        "summary":out["arrangementRescuedTomSummary"],
+        "rows":resc
+    },ensure_ascii=False))
     for song,row in out["songs"].items():
         print("TOM_MAP",song,json.dumps({
             "info":row["tomPitchInfo"],
