@@ -14,8 +14,10 @@ Hi-hat label mapping for GMD:
 - Pedal hi-hat (44) is evaluated as Closed, following the GMD paper mapping.
 - Ride/crash are not required to remain distinct for the Open/Closed HH task.
 
-Generated assets:
+Generated / retained assets:
 - `hihat-style-patterns-v1.json`: primary-genre symbolic Open/Closed pattern statistics derived directly from GMD MIDI.
-- `LICENSE-GMD-CC-BY-4.0.txt`: attribution/license note.
+- `kst-prior-v1.json`: legacy kick/snare/tom symbolic prior, moved here from the old models root without changing its data.
+- `kst-prior-v1-LICENSE.txt`: attribution note for the legacy KST prior.
+- `LICENSE-GMD-CC-BY-4.0.txt`: attribution/license note for this directory.
 
 The generator is `drumscribe/experiments/build_gmd_hihat_style_patterns.py`.
