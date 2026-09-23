@@ -31,8 +31,8 @@ def export_tree(est):
       "left":tr.children_left.astype(int).tolist(),
       "right":tr.children_right.astype(int).tolist(),
       "feature":tr.feature.astype(int).tolist(),
-      "threshold":[round(float(x),8) for x in tr.threshold],
-      "prob1":[round(float(x),8) for x in p1],
+      "threshold":[float(x) for x in tr.threshold],
+      "prob1":[float(x) for x in p1],
     }
 
 def predict_tree(tree,x):
@@ -73,8 +73,8 @@ def main():
       "featureSet":"per-song robust-normalized timbre/decay features",
       "featureCount":int(clf.n_features_in_),
       "assetTemplates":{
-        "closed42":[round(float(x),8) for x in oh.ASSET42],
-        "open46":[round(float(x),8) for x in oh.ASSET46]
+        "closed42":[float(x) for x in oh.ASSET42],
+        "open46":[float(x) for x in oh.ASSET46]
       },
       "heldOutEstimate":{"open":t55["open"],"closed":t55["closed"],"macroF1":t55["macroF1"]},
       "serializationCheck":{"rows":int(len(X)),"positiveRows":int(y.sum()),"maxAbsError":maxerr,"meanAbsError":meanerr},
