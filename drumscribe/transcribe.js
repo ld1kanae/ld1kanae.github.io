@@ -1,7 +1,7 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
-import {rescueRideOpenV57,rescoreHatArticulationFusionV61,rescoreHatSyncCandidateV66} from './hat-context-v57.js?v=20260924-sync-candidate-v66';
+import {rescueRideOpenV57,rescoreHatArticulationFusionV61,rescoreHatSyncCandidateV66,rescoreHatMp3DomainV68} from './hat-context-v57.js?v=20260924-mp3-domain-v68';
 import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
@@ -1116,6 +1116,19 @@ export async function transcribe(decoded,report=()=>{},options={}){
     adtofInfo.hatContextV57=hatContext.info;
   }else{
     adtofInfo.hatContextV57={enabled:false,variant:hatContextVariant};
+  }
+
+  // v68 MP3-domain articulation model. The acoustic feature family comes
+  // from synchronized tail/choke studies; fitting uses actual repository MP3
+  // DrumScribe candidates with song-held-out validation. Default remains OFF
+  // until the fresh-browser production replay passes.
+  const hatMp3DomainVariant=options.hatMp3DomainVariant??'off';
+  if(hatMp3DomainVariant==='mp3-domain-rf-v68'){
+    const hatMp3Domain=await rescoreHatMp3DomainV68(decoded,pruned,{enabled:true});
+    pruned=hatMp3Domain.events;
+    adtofInfo.hatMp3DomainV68=hatMp3Domain.info;
+  }else{
+    adtofInfo.hatMp3DomainV68={enabled:false,variant:hatMp3DomainVariant};
   }
 
   // v66 research candidate: learned on five synchronized WAV/MIDI pairs,
