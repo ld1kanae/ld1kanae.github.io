@@ -1,0 +1,54 @@
+name: DrumScribe Proof v34 GMD bar phase train
+
+on:
+  push:
+    branches:
+      - drumscribe-proof-v34
+    paths:
+      - "drumscribe/experiments/gmd-kst/train_bar_phase_model.py"
+      - ".github/workflows/drumscribe-proof-v34-gmd-bar-phase.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-proof-v34
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install numpy mido scikit-learn
+      - name: Train three hypotheses and evaluate held-out
+        run: python drumscribe/experiments/gmd-kst/train_bar_phase_model.py
+      - name: Verify outputs
+        run: |
+          test -s drumscribe/models/gmd-kst/bar-phase-discriminative-v1.json
+          test -s drumscribe/experiments/gmd-kst/results-gmd-bar-phase-heldout-v1.json
+          python -m json.tool drumscribe/models/gmd-kst/bar-phase-discriminative-v1.json >/dev/null
+      - name: Commit derived model
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/models/gmd-kst/bar-phase-discriminative-v1.json                   drumscribe/experiments/gmd-kst/results-gmd-bar-phase-heldout-v1.json
+          if git diff --cached --quiet; then
+            echo "Model unchanged."
+          else
+            git commit -m "drumscribe: train GMD KST bar-phase model v1"
+            git pull --rebase origin drumscribe-proof-v34
+            git push origin HEAD:drumscribe-proof-v34
+          fi
+      - name: Upload model results
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-v34-gmd-bar-phase
+          path: |
+            drumscribe/models/gmd-kst/bar-phase-discriminative-v1.json
+            drumscribe/experiments/gmd-kst/results-gmd-bar-phase-heldout-v1.json
+          retention-days: 14
