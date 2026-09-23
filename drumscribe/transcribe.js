@@ -602,6 +602,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   const cym=base.filter(e=>e.group==='cymbal_raw');
   let structural=base.filter(e=>e.group!=='cymbal_raw');
   let adtofCymbal=[];
+  let adtofSnareRescue=[];
   let adtofInfo={enabled:false,fallback:true};
   try{
     const ad=await transcribeAdtof(decoded,(message,p)=>{
@@ -610,11 +611,14 @@ export async function transcribe(decoded,report=()=>{},options={}){
     },{thresholdScale:1.15});
     const replacement=ad.events.filter(e=>e.group!=='cymbal');
     adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
+    adtofSnareRescue=ad.snareRescue||[];
     if(replacement.length){
       structural=replacement;
       adtofInfo={
         enabled:true,fallback:false,
         thresholdScale:ad.thresholdScale,
+        snareRescueScale:ad.snareRescueScale,
+        snareRescueCandidates:adtofSnareRescue.length,
         backend:ad.backend,
         frames:ad.frames,
         coreFrames:ad.coreFrames,
@@ -626,6 +630,73 @@ export async function transcribe(decoded,report=()=>{},options={}){
     console.warn('ADTOF fallback',err);
     adtofInfo={enabled:false,fallback:true,error:String(err?.message||err)};
   }
+  // Structural-priority post-processing. Kick/snare/tom matter more than
+  // metal classes, so only use narrowly targeted corrections that preserve
+  // the high-precision ADTOF baseline.
+  if(adtofInfo.enabled){
+    const nearEvent=(events,t,w)=>events.find(e=>Math.abs(e.time-t)<=w);
+    const kickEvents=structural.filter(e=>e.group==='kick');
+    const snareEvents=structural.filter(e=>e.group==='snare');
+    const beat=60/bpm,bar=4*beat,phase=barInfo.phaseSec;
+    const wrapBar=t=>{let x=(t-phase)%bar;if(x<0)x+=bar;return x;};
+    const slot16=t=>Math.round(wrapBar(t)/(beat/4))%16;
+    const barIndex=t=>Math.floor((t-phase)/bar);
+    const rescueDensity=adtofSnareRescue.length/Math.max(1,snareEvents.length);
+    const snareKickDensity=snareEvents.length/Math.max(1,kickEvents.length);
+    const adaptiveSnareRescue=rescueDensity>=1.24&&snareKickDensity<=.30;
+    const lowSnare=adaptiveSnareRescue
+      ? adtofSnareRescue.filter(e=>!nearEvent(snareEvents,e.time,.035)&&nearEvent(kickEvents,e.time,.040))
+      : [];
+    const patternTimes=adtofSnareRescue.map(e=>e.time);
+    const repeatedAtSlot=t=>{
+      const s=slot16(t),b=barIndex(t);let n=0;
+      for(const x of patternTimes){
+        if(Math.abs(x-t)<=.035)continue;
+        if(Math.abs(barIndex(x)-b)>8)continue;
+        if(slot16(x)===s)n++;
+      }
+      return n;
+    };
+    const rescued=[];
+    for(const e of lowSnare){
+      const k=nearEvent(kickEvents,e.time,.035);
+      if(!k)continue;
+      const repeat=repeatedAtSlot(e.time);
+      if(e.score<.12||e.score<.25*(k.score||0)||repeat<2)continue;
+      rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat});
+    }
+    if(rescued.length)structural.push(...rescued);
+
+    // Kick/tom simultaneity is rare in the reference corpus, while a large
+    // share of current tom false positives are kick bleed. Suppress only weak,
+    // isolated toms that collide with a kick; keep strong toms and tom runs.
+    const toms=structural.filter(e=>e.group==='tom');
+    let tomKickRemoved=0;
+    structural=structural.filter(e=>{
+      if(e.group!=='tom')return true;
+      const k=nearEvent(kickEvents,e.time,.030);
+      if(!k)return true;
+      const inRun=toms.some(x=>x!==e&&Math.abs(x.time-e.time)>=.045&&Math.abs(x.time-e.time)<=.24);
+      if(inRun||(e.confidence||0)>=1.45)return true;
+      tomKickRemoved++;return false;
+    });
+    adtofInfo.structuralPriority={
+      mode:'layered-snare-rescue+kick-tom-veto-v1',
+      snareRescueCandidates:adtofSnareRescue.length,
+      rescueDensity,
+      snareKickDensity,
+      adaptiveSnareRescue,
+      snareLayeredCandidates:lowSnare.length,
+      snareRescued:rescued.length,
+      snareMinActivation:.12,
+      snareKickRatio:.25,
+      snareRepeatBars:2,
+      tomKickRemoved,
+      tomStrongKeep:1.45,
+      tomRunWindowSec:.24
+    };
+  }
+
   // Fixed hi-hat overtrigger suppressor selected by the current
   // audio-only browser search. It only removes weak hats colliding with
   // kick/snare unless a strong repeating hat pattern supports the event.
