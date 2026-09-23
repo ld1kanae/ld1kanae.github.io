@@ -464,7 +464,7 @@ function repeatSupport(times,probs,bpm,policy){
 
 export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
-  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','arrangement','arrangement-decay'].includes(context?.variant)?context.variant:'base';
+  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','arrangement','arrangement-decay'].includes(context?.variant)?context.variant:'base';
   const baseInfo={mode:'open-hat-extra-trees-v2-gmd128+overlay-v1',variant:requestedVariant,candidates:hats.length,promoted:0,rescued:0,enabled:false};
   if(!hats.length)return {events,info:{...baseInfo,skipReason:'no-hat'}};
   try{
@@ -500,7 +500,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
         sequenceInfo.gmd={enabled:false,error:String(gmdErr?.message||gmdErr)};
       }
     }
-    if(requestedVariant==='gmd-rescue'||requestedVariant==='decay-rescue'){
+    if(requestedVariant==='gmd-rescue'||requestedVariant==='decay-rescue'||requestedVariant==='ride-open-decay-rescue'){
       try{
         const prior=await loadGmdHatPrior();
         const seq=gmdOpenRunRescue(prior,hats,events,probabilities,bpm,threshold);
@@ -524,9 +524,9 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     }]));
 
     const rideMap=new Map(),rideProbability=new Map();
-    if(['ride-open','ride-acoustic','ride-decay'].includes(requestedVariant)){
+    if(['ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue'].includes(requestedVariant)){
       const rides=events.filter(e=>e.group==='ride').slice().sort((a,b)=>a.time-b.time);
-      if(requestedVariant==='ride-open'){
+      if(requestedVariant==='ride-open'||requestedVariant==='ride-open-decay-rescue'){
         for(const e of rides)rideMap.set(e,'open_hat');
         sequenceInfo.ride={enabled:true,mode:'all-to-open',candidates:rides.length,open:rides.length,closed:0};
       }else{
