@@ -1,0 +1,69 @@
+name: DrumScribe tempo bar v35 validation
+
+on:
+  push:
+    branches:
+      - drumscribe-tempo-bar-v35
+    paths:
+      - "drumscribe/rhythm-grid.js"
+      - ".github/workflows/drumscribe-tempo-bar-v35-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-tempo-bar-v35
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Syntax check
+        run: node --check drumscribe/rhythm-grid.js
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate five fresh MIDI files
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Validate grid and tempo map
+        run: python drumscribe/experiments/validate_grid_browser.py
+      - name: Score against chart MIDI
+        run: python drumscribe/experiments/compare_browser.py
+      - name: Summarize bar tempo density
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for p in sorted(Path("drumscribe/experiments/generated-v2-browser").glob("*.json")):
+              d=json.loads(p.read_text())
+              g=d.get("rhythmGridInfo") or {}
+              print(p.stem, json.dumps({
+                  "tempoEvents":g.get("tempoEvents"),
+                  "tempoResolution":g.get("tempoResolution"),
+                  "tempoBeatsPerMeasure":g.get("tempoBeatsPerMeasure"),
+                  "tempoMin":g.get("tempoMin"),
+                  "tempoMax":g.get("tempoMax"),
+                  "previewMedianDifferenceMs":g.get("previewMedianDifferenceMs"),
+                  "previewP95DifferenceMs":g.get("previewP95DifferenceMs"),
+              },ensure_ascii=False))
+          PY
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: tempo-bar-v35-five-song
+          path: |
+            drumscribe/experiments/generated-v2-browser/
+            drumscribe/experiments/results-v2-browser.json
+            drumscribe/experiments/results-grid-browser-ci.json
+          retention-days: 14
