@@ -7,6 +7,10 @@ on:
     paths:
       - "drumscribe/adtof.js"
       - "drumscribe/transcribe.js"
+      - "drumscribe/experiments/compare_open_hat_browser.py"
+      - "drumscribe/models/open-hat-extra-trees-v2.json"
+      - "drumscribe/open-hat.js"
+      - "drumscribe/hat-forest.js"
       - "drumscribe/app.js"
       - "drumscribe/index.html"
       - "drumscribe/models/egmd-kst-reclassifier-v4.json"
@@ -43,3 +47,5 @@ jobs:
         run: node drumscribe/experiments/browser_validate.mjs
       - name: Score current main MIDI
         run: python drumscribe/experiments/compare_browser.py
+      - name: Score open/closed hi-hat articulation
+        run: python drumscribe/experiments/compare_open_hat_browser.py
