@@ -90,9 +90,11 @@ console.log(result.sections.map(s => ({
 
 ## Runtime status
 
-As of 2026-09-23 this module is **available as shared infrastructure but is not part of the production transcription path**. The Proof validation used the same algorithm diagnostically to test whether instrumental structure supported one bar-phase candidate over another.
+As of 2026-09-23 this module is **part of the production transcription path when an offvocal / accompaniment source is supplied**. The normal drum-only path remains unchanged when no arrangement source is provided.
 
-Do not describe DrumScribe as currently detecting Aメロ/Bメロ/サビ from off-vocal until a semantic classifier has been separately implemented and validated.
+Production uses the structural-family output only as supporting evidence for low-threshold K/S/T acoustic candidates. It still does not assign semantic labels such as Aメロ/Bメロ/サビ.
+
+Do not describe DrumScribe as detecting Aメロ/Bメロ/サビ from off-vocal unless a separate semantic classifier is later implemented and validated.
 
 
 ## Arrangement-aware K/S/T rescoring
@@ -116,4 +118,4 @@ Guardrails:
 The compact GMD prior used by the v39D research candidate is:
 `../models/gmd-kst/slot-prior-v1.json`.
 
-As of this documentation update, the rescoring API exists as shared infrastructure. Runtime adoption still depends on fresh-browser non-regression validation.
+Fresh Chromium v40 non-regression validation passed, and the v39D-style rescoring is now integrated into the production app when an arrangement source is present. Validation details are in `../experiments/ARRANGEMENT_KST_V40.md`.
