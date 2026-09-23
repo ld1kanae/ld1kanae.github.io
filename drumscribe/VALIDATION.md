@@ -2331,3 +2331,33 @@ production:
 - shared arrangement moduleの出力仕様として採用。
 - production transcriptionへのnote追加/削除にはまだ接続しない。
 - 次段は同一familyの反復patternとsection boundary周辺のdrum evidenceを、候補rescoring用priorとして評価する。
+
+
+---
+
+## 2026-09-23: Arrangement prior v37 — offvocal family repetition
+
+Prediction-stage input:
+- offvocal audio
+- acoustic BPM/bar information
+- arrangement structural analyzer
+
+Reference `chart.mid` is opened only after structural inference for scoring.
+
+Three hypotheses:
+1. structural-boundary cymbal prior
+2. same-family A/A' drum repetition prior
+3. GMD generic bar-head / repetition prior
+
+Results:
+- conservative same-family vs cross-family K/S/T F1: 0.6733 vs 0.4160, margin +0.2573
+- sensitive: 0.6781 vs 0.3898, margin +0.2883
+- balanced: 0.3932 vs 0.4894, margin -0.0961
+- GMD train 230 files / 13,573 bars: adjacent-bar pattern F1 0.6664 vs same-style cross-file 0.3713, margin +0.2951
+- GMD crash beat-1 lift: 3.1407x
+- project structural-boundary crash lift: conservative 0.5499 / balanced 0.8791 / sensitive 0.7551
+
+Decision:
+- retain A/A' family repetition as a candidate-rescoring hypothesis.
+- reject direct structural-boundary => crash insertion.
+- next experiment v38 must use real low-threshold K/S/T acoustic candidates; no copying notes across sections.
