@@ -40,7 +40,7 @@ SR=44100
 THRESHOLD=.55
 MAX_EXT_PER_CLASS=700
 MAX_CLIP_SEC=35.0
-TARGET_GMD_SEQS=10
+TARGET_GMD_SEQS=24
 TARGET_EGMD_SEQS=5
 TARGET_EGMD_KITS=6
 RNG=random.Random(56046)
@@ -197,15 +197,15 @@ def select_gmd():
         info_name=min([n for n in names if n.endswith("info.csv")],key=len)
         rows=read_csv_bytes(z.read(info_name))
         candidates=[r for r in rows if suitable(r) and (r.get("beat_type") or "")=="beat"]
-        # deterministic style diversity
-        candidates.sort(key=lambda r:((r.get("style") or ""),float(r.get("duration") or 0),r.get("id") or ""))
-        chosen=[];seen_styles=set()
+        # Deterministic shuffle avoids selecting only the alphabetically earliest
+        # genres while still making the exact external subset reproducible.
+        random.Random(117).shuffle(candidates)
+        chosen=[]
         for r in candidates:
-            style=(r.get("style") or "").split("/")[0]
             midi_name=resolve_name(name_set,r["midi_filename"])
             notes=midi_notes_bytes(z.read(midi_name));c=counts(notes)
-            if c["open"]>=6 and c["closed"]>=8 and (style not in seen_styles or len(chosen)>=6):
-                chosen.append((r,notes,midi_name));seen_styles.add(style)
+            if c["open"]>=6 and c["closed"]>=8:
+                chosen.append((r,notes,midi_name))
             if len(chosen)>=TARGET_GMD_SEQS:break
         Xs=[];ys=[];manifest=[]
         for idx,(r,notes,midi_name) in enumerate(chosen):
@@ -347,12 +347,21 @@ def main():
     # Keep combined external source from swamping DruMaster.
     bothX,bothY=balanced_cap(bothX,bothY,limit=MAX_EXT_PER_CLASS,seed=303)
     variants={}
-    for name,extra in [
+    # Dose-response sweep: the first canonical run already showed that a tiny
+    # balanced GMD augmentation can help. Test whether more diverse GMD clips
+    # improve further or start to cause domain-shift regressions.
+    gmd_doses=[]
+    for n in (32,64,128,MAX_EXT_PER_CLASS):
+        Xn,yn=balanced_cap(gX,gY,limit=n,seed=400+n)
+        label="full" if n==MAX_EXT_PER_CLASS else str(n)
+        gmd_doses.append((f"songs_plus_gmd_{label}",(Xn,yn)))
+    candidates=[
       ("songs_only",None),
-      ("songs_plus_gmd",(gX,gY)),
+      *gmd_doses,
       ("songs_plus_egmd",(eX,eY)),
       ("songs_plus_both",(bothX,bothY)),
-    ]:
+    ]
+    for name,extra in candidates:
         q=evaluate(data,name,extra);variants[name]=q
         print("RESULT",name,json.dumps(q["summary"],ensure_ascii=False),flush=True)
     base=variants["songs_only"]["summary"]
@@ -364,7 +373,7 @@ def main():
                 s["closed"]["f1"]>=base["closed"]["f1"]-.01 and
                 s["macroF1"]>base["macroF1"])
     winners=[v for k,v in variants.items() if k!="songs_only" and eligible(v)]
-    best=max(winners,key=lambda v:v["summary"]["macroF1"]) if winners else variants["songs_only"]
+    best=max(winners,key=lambda v:(v["summary"]["macroF1"],v["summary"]["open"]["f1"])) if winners else variants["songs_only"]
     result={
       "schema":1,
       "threshold":THRESHOLD,
