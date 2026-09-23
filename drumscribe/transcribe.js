@@ -967,7 +967,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // Open/closed articulation is a post-classifier only: keep all current hat
   // onset times/counts, and promote high-confidence acoustic matches to GM 46.
   // Ambiguous events remain closed GM 42.
-  const openHat=await promoteOpenHats(decoded,pruned,(message,p)=>report(message,p));
+  const openHat=await promoteOpenHats(decoded,pruned,bpm,(message,p)=>report(message,p));
   pruned=openHat.events;
   adtofInfo.openHat=openHat.info;
 
