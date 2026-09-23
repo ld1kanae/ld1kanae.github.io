@@ -604,6 +604,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   let structural=base.filter(e=>e.group!=='cymbal_raw');
   let adtofCymbal=[];
   let adtofSnareRescue=[];
+  let egmdSnareSupport=[];
   let adtofInfo={enabled:false,fallback:true};
   try{
     const ad=await transcribeAdtof(decoded,(message,p)=>{
@@ -613,6 +614,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const replacement=ad.events.filter(e=>e.group!=='cymbal');
     adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
     adtofSnareRescue=ad.snareRescue||[];
+    egmdSnareSupport=ad.egmdSnareSupport||[];
     if(replacement.length){
       structural=replacement;
       adtofInfo={
@@ -620,6 +622,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
         thresholdScale:ad.thresholdScale,
         snareRescueScale:ad.snareRescueScale,
         snareRescueCandidates:adtofSnareRescue.length,
+        egmdSnareCandidates:egmdSnareSupport.length,
+        egmdKstModel:ad.egmdKstModel||null,
         backend:ad.backend,
         frames:ad.frames,
         coreFrames:ad.coreFrames,
@@ -668,6 +672,42 @@ export async function transcribe(decoded,report=()=>{},options={}){
     }
     if(rescued.length)structural.push(...rescued);
 
+    // E-GMD v3 support is externally calibrated on sequence- and kit-held-out
+    // data. It may only expand the existing adaptive snare rescue by one
+    // repetition step; all current kick/snare/tom decisions otherwise remain.
+    const egmdTimes=egmdSnareSupport.map(e=>e.time);
+    const repeatedEgmdAtSlot=t=>{
+      const s=slot16(t),b=barIndex(t);let n=0;
+      for(const x of egmdTimes){
+        if(Math.abs(x-t)<=.035)continue;
+        if(Math.abs(barIndex(x)-b)>8)continue;
+        if(slot16(x)===s)n++;
+      }
+      return n;
+    };
+    const snareAfterBase=[...snareEvents,...rescued];
+    const egmdRescued=[];
+    if(adaptiveSnareRescue){
+      for(const e of egmdSnareSupport){
+        if((e.probability||0)<(e.modelThreshold||1))continue;
+        if(nearEvent(snareAfterBase,e.time,.035))continue;
+        if(!nearEvent(kickEvents,e.time,.035))continue;
+        if((e.score||0)<.12||(e.score||0)<.25*Math.max(e.kickActivation||0,1e-6))continue;
+        const repeat=repeatedEgmdAtSlot(e.time);
+        if(repeat<1)continue;
+        egmdRescued.push({
+          ...e,
+          group:'snare',
+          confidence:e.probability,
+          rescuedSnare:true,
+          egmdRescued:true,
+          repeatSupport:repeat
+        });
+        snareAfterBase.push(e);
+      }
+    }
+    if(egmdRescued.length)structural.push(...egmdRescued);
+
     // The current five-song set contains kick/tom bleed false positives.
     // GMD shows kick+tom is not globally rare, so keep this veto deliberately
     // narrow: only weak, isolated toms colliding with a kick are suppressed.
@@ -682,13 +722,16 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+kick-tom-veto-v1',
+      mode:'layered-snare-rescue+egmd-v3-support+kick-tom-veto-v2',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
       adaptiveSnareRescue,
       snareLayeredCandidates:lowSnare.length,
       snareRescued:rescued.length,
+      egmdSnareCandidates:egmdSnareSupport.length,
+      egmdSnareRescued:egmdRescued.length,
+      egmdModel:adtofInfo.egmdKstModel||null,
       snareMinActivation:.12,
       snareKickRatio:.25,
       snareRepeatBars:2,
