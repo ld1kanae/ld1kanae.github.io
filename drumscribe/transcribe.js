@@ -951,6 +951,16 @@ export async function transcribe(decoded,report=()=>{},options={}){
       const crashSupport=rawCrashEvidence.some(t=>Math.abs(t-e.time)<=.07);
       const rideSupport=rawRideEvidence.some(t=>Math.abs(t-e.time)<=.07);
       const hatSupport=structuralHatTimes.some(t=>Math.abs(t-e.time)<=.060);
+      const hatStepSupport=(step)=>{
+        let n=0;
+        for(const k of [-2,-1,1,2]){
+          const target=e.time+k*step;
+          if(structuralHatTimes.some(t=>Math.abs(t-target)<=.060))n++;
+        }
+        return n/4;
+      };
+      const hatGrid16=hatStepSupport(15/bpm);
+      const hatGrid8=hatStepSupport(30/bpm);
       const hatAccent=localHatAccent(e.time,e.frame);
       let group=null;
       // Winner of the corrected audio-time search:
@@ -965,6 +975,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
         confidence:e.confidence*(1+(group==='crash'?.35:.25)*Math.max(per,headDistance<=.30?1:0)),
         cymbalEvidence:{
           headDistance,periodicSupport:per,crashSupport,rideSupport,hatSupport,
+          hatGrid16,hatGrid8,
           baseConfidence:Number(e.confidence)||0,
           crashSimilarity:Number(sim[TEMPLATE_INDEX.crash]?.[e.frame])||0,
           hatSimilarity:Number(sim[TEMPLATE_INDEX.hat]?.[e.frame])||0,
@@ -1118,21 +1129,24 @@ export async function transcribe(decoded,report=()=>{},options={}){
     };
     pruned=pruned.filter(e=>{
       if(e.group!=='crash'||!e.cymbalEvidence)return true;
+      const ev=e.cymbalEvidence;
       const hit=nearestHat(e.time);
-      if(!hit)return true;
+      const virtualHat=!hit&&ev.hatSupport&&Number(ev.hatGrid16)>=.75;
+      if(!hit&&!virtualHat)return true;
       crashCompetition.collisions++;
-      const ev=e.cymbalEvidence,h=hit.hat;
-      const openProbRaw=Number(h.openHatProbability);
-      const alternatingProb=Number(h.alternatingHatProbability);
+      const h=hit?.hat||null;
+      const openProbRaw=Number(h?.openHatProbability);
+      const alternatingProb=Number(h?.alternatingHatProbability);
       const openProb=Number.isFinite(openProbRaw)?openProbRaw:
-        (Number.isFinite(alternatingProb)?alternatingProb:(h.group==='open_hat'?.60:.20));
+        (Number.isFinite(alternatingProb)?alternatingProb:(h?.group==='open_hat'?.60:(virtualHat?.35:.20)));
       const crashSim=Number(ev.crashSimilarity)||0;
       const hatSim=Number(ev.hatSimilarity)||0;
       const margin=crashSim-hatSim;
       const conf=Number(ev.baseConfidence)||0;
       const raw=Boolean(ev.crashSupport);
       if(raw)crashCompetition.rawSupported++;
-      const strongOpen=h.group==='open_hat'||openProb>=.58;
+      const strongOpen=h?.group==='open_hat'||openProb>=.58;
+      const regularHatRun=Boolean(ev.hatSupport)&&Math.max(Number(ev.hatGrid16)||0,Number(ev.hatGrid8)||0)>=.75;
       let keep=true,reason='keep';
       if(cymbalVariant==='competition-open-state'){
         // Open state is allowed to win only when the crash lacks independent
@@ -1145,19 +1159,22 @@ export async function transcribe(decoded,report=()=>{},options={}){
         keep=raw||margin>=.015||(conf>=1.70&&margin>=-.020);
         if(!keep){reason='hat-template';crashCompetition.templateWins++;}
       }else if(cymbalVariant==='competition-hybrid'){
-        // Conservative union: strong open state raises the evidence required
-        // for Crash, while a closed hat still competes by timbre.
-        const requiredMargin=strongOpen?.045:.005;
-        const requiredConfidence=strongOpen?1.45:1.25;
+        // Conservative union: strong Open-HH state OR a regular 8th/16th
+        // hat run raises the evidence required for a simultaneous Crash.
+        // This targets bar-head promotions inside continuing hat figures.
+        const strongHatContext=strongOpen||regularHatRun;
+        const requiredMargin=strongOpen?.045:(regularHatRun?.030:.005);
+        const requiredConfidence=strongOpen?1.45:(regularHatRun?1.40:1.25);
         keep=raw||(conf>=requiredConfidence&&margin>=requiredMargin)||(conf>=1.85&&margin>=-.015);
-        if(!keep){reason=strongOpen?'hybrid-open':'hybrid-template';crashCompetition.hybridWins++;}
+        if(!keep){reason=strongOpen?'hybrid-open':(regularHatRun?'hybrid-run':'hybrid-template');crashCompetition.hybridWins++;}
       }
       if(keep)crashCompetition.kept++;else crashCompetition.removed++;
       crashCompetition.decisions.push({
-        time:e.time,hatTime:h.time,hatDistanceSec:hit.dist,hatGroup:h.group,
+        time:e.time,hatTime:h?.time??e.time,hatDistanceSec:hit?.dist??0,hatGroup:h?.group||'virtual-hat',
         openProbability:openProb,crashSimilarity:crashSim,hatSimilarity:hatSim,
         templateMargin:margin,baseConfidence:conf,rawCrashSupport:raw,
-        keep,reason
+        hatGrid16:Number(ev.hatGrid16)||0,hatGrid8:Number(ev.hatGrid8)||0,
+        regularHatRun,keep,reason
       });
       return keep;
     });
