@@ -1,0 +1,49 @@
+name: DrumScribe All-In-One benchmark v15
+
+on:
+  push:
+    branches: [drumscribe-v2-eval]
+    paths:
+      - ".github/workflows/drumscribe-allin1-v15.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install All-In-One
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install all-in-one-infer==3.1.0
+          all-in-one-infer --help | head -120
+      - name: Analyze arcaround offvocal
+        run: |
+          mkdir -p drumscribe/experiments/allin1-v15/offvocal
+          all-in-one-infer DruMaster/songs/arcaround/offvocal.mp3 -o drumscribe/experiments/allin1-v15/offvocal
+      - name: Analyze arcaround fullmix
+        run: |
+          mkdir -p drumscribe/experiments/allin1-v15/fullmix
+          all-in-one-infer DruMaster/songs/arcaround/fullmix.mp3 -o drumscribe/experiments/allin1-v15/fullmix
+      - name: List outputs
+        run: find drumscribe/experiments/allin1-v15 -maxdepth 3 -type f -print
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/allin1-v15
+          git diff --cached --quiet && exit 0
+          git commit -m "Record All-In-One arcaround benchmark v15 [skip ci]"
+          git pull --rebase origin drumscribe-v2-eval
+          git push origin HEAD:drumscribe-v2-eval
