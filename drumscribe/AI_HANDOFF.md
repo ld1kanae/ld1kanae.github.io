@@ -793,3 +793,17 @@ DrumSep contextual + rhythmic-grid residual:
 
 次チャットはまずrun `35836222414` を確認し、0.472192を超えない限り旧bestを維持する。
 採用時はstrict LOOだけでなく grouped hat / K/S/T non-regression / real Chromiumを必ず確認する。
+
+
+---
+
+## 2026-09-23 Preview hi-hat choke v36
+
+- 対象: `drumscribe/app.js` のMIDIプレビュー再生のみ。採譜・MIDI書き出しロジックは変更していない。
+- GM46 (Open Hi-Hat) の再生中に GM42 (Closed Hi-Hat) または GM44 (Pedal Hi-Hat) が来た場合、先行するOpen HHをchokeする。
+- choke量は `DruMaster/js/hihat-choke.js` に合わせ、choke時刻から **65 msで指数減衰し、80 msでsource停止**。
+- DrumScribeのlook-ahead schedulerでも実イベント時刻にchokeが掛かるよう、現在時刻ではなく各MIDI eventのscheduled `when` にgain rampを予約する。
+- pause / seek / stop時にはOpen HH voice参照もクリアする。
+- `index.html` のapp cache-busterを `20260923-hihat-choke-v36` に更新。
+- app commit: `cee4817ca3cbd2ead9847a08e648fa676ef42b4c`
+- cache-buster commit: `8e4570c708166009bd10d380753cc0419bed3570`
