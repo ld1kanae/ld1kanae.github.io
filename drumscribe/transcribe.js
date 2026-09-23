@@ -4,7 +4,7 @@ import {promoteOpenHats} from './open-hat.js?v=20260924-threshold-controls-v1';
 import {rescueRideOpenV57,rescoreHatArticulationFusionV61,rescoreHatSyncCandidateV66,rescoreHatMp3DomainV68} from './hat-context-v57.js?v=20260924-mp3-domain-v68';
 import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
-import {assignTomPitches} from './tom-pitch.js?v=20260924-tom-pitch-v1';
+import {assignTomPitches} from './tom-pitch.js?v=20260924-tom-pitch-v2';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;

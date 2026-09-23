@@ -118,38 +118,29 @@ function mappedNotes(k){
 }
 export function assignTomPitches(samples,events){
   const toms=events.filter(e=>e.group==='tom');
-  const info={enabled:true,method:'song-relative-resonance-cluster-v1',tomCount:toms.length,clusters:0,silhouette:0,counts:{41:0,45:0,47:0,50:0},decisions:[]};
+  const info={
+    enabled:true,
+    method:'resonance-absolute-threshold-v2',
+    tomCount:toms.length,
+    clusters:0,
+    silhouette:0,
+    thresholdsHz:[110,145,190],
+    counts:{41:0,45:0,47:0,50:0},
+    decisions:[]
+  };
   if(!toms.length)return {events,info};
   const hz=toms.map(e=>resonantPeak(samples,e.time));
-  const logHz=hz.map(v=>Math.log(Math.max(40,v)));
-  let chosen=null;
-  if(toms.length>=4){
-    const distinct=new Set(hz.map(v=>v.toFixed(5))).size;
-    for(let k=2;k<=Math.min(4,distinct,toms.length-1);k++){
-      const c=optimal1d(logHz,k),s=silhouette(logHz,c.labels,k);
-      if(!chosen||s>chosen.silhouette)chosen={...c,k,silhouette:s};
-    }
-  }
-  let notes,decisionClusters=new Array(toms.length).fill(null),clusterNoteByRank=null;
-  if(!chosen||chosen.silhouette<.35){
-    notes=hz.map(absoluteFallback);
-    info.method='resonance-absolute-fallback-v1';
-  }else{
-    const order=chosen.centers.map((v,i)=>({v,i})).sort((a,b)=>a.v-b.v);
-    const targets=mappedNotes(chosen.k),clusterNote={};
-    order.forEach((q,rank)=>{clusterNote[q.i]=targets[rank];});
-    notes=Array.from(chosen.labels,l=>clusterNote[l]);
-    decisionClusters=Array.from(chosen.labels,l=>order.findIndex(q=>q.i===l));
-    clusterNoteByRank=targets.slice();
-    info.clusters=chosen.k;info.silhouette=chosen.silhouette;
-    info.centersHz=order.map(q=>Math.exp(q.v));
-    info.clusterNoteByRank=clusterNoteByRank;
-  }
+  const notes=hz.map(absoluteFallback);
   for(let i=0;i<toms.length;i++){
     toms[i].tomNote=notes[i];
     toms[i].tomPitchHz=hz[i];
     info.counts[notes[i]]=(info.counts[notes[i]]||0)+1;
-    info.decisions.push({time:Number(toms[i].time)||0,hz:Number(hz[i])||0,clusterRank:decisionClusters[i],note:notes[i]});
+    info.decisions.push({
+      time:Number(toms[i].time)||0,
+      hz:Number(hz[i])||0,
+      clusterRank:null,
+      note:notes[i]
+    });
   }
   return {events,info};
 }
