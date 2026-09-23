@@ -1,6 +1,6 @@
 """Fast contextual selector over the audio-only 5–18 kHz independent HH stream.
 
-No DrumSep at inference or training. Uses binary-search rhythmic neighborhoods from context_rank. Candidate generation is deterministic from
+No DrumSep at inference or training. Uses binary-search rhythmic neighborhoods and 8th/16th/32nd grid residuals from context_rank. Candidate generation is deterministic from
 held-out drums.mp3, then chart labels are used only to train selectors on the
 other songs and to score the held-out song.
 
