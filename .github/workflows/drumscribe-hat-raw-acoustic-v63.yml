@@ -1,0 +1,65 @@
+name: DrumScribe raw acoustic hat LOOCV v63
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/hat-context-v57.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/experiments/browser_hat_raw_acoustic_v63.mjs"
+      - "drumscribe/experiments/evaluate_hat_raw_acoustic_loocv_v63.py"
+      - ".github/workflows/drumscribe-hat-raw-acoustic-v63.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          pip install mido numpy scikit-learn
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Collect fresh raw per-hit features
+        run: node drumscribe/experiments/browser_hat_raw_acoustic_v63.mjs
+      - name: Run five-song held-out acoustic comparison
+        run: python drumscribe/experiments/evaluate_hat_raw_acoustic_loocv_v63.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-hat-raw-acoustic-candidates-v63.json
+          git add drumscribe/experiments/results-hat-raw-acoustic-loocv-v63.json
+          git add drumscribe/experiments/HAT_RAW_ACOUSTIC_LOOCV_V63.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record raw acoustic hi-hat v63 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-hat-raw-acoustic-v63
+          path: |
+            drumscribe/experiments/results-hat-raw-acoustic-candidates-v63.json
+            drumscribe/experiments/results-hat-raw-acoustic-loocv-v63.json
+            drumscribe/experiments/HAT_RAW_ACOUSTIC_LOOCV_V63.md
+          retention-days: 14
