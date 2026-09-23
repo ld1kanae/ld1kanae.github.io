@@ -6,6 +6,32 @@
 >
 > 詳細な試行錯誤は `VALIDATION.md` にあるが、最初から全文を読まないこと。必要な節だけ参照する。
 
+## 2026-09-23 Tempo map v35 — 1小節単位
+
+ユーザー要望によりBPM変化だけを変更。内部beat-level tempo推定は残し、preview/exportに使うtempo mapを**小節単位のduration-equivalent BPM**へ集約。
+
+- note ticks変更なし
+- quantize family/subdivision変更なし
+- BPM基準推定変更なし
+- bar/downbeat判定変更なし
+- 楽器分類変更なし
+
+Proof v34 tempo-only比較:
+- tempo events 426 -> 110
+- note time差 median .054 ms / p95 .521 ms / max 1.166 ms
+- bar boundary差 max .010 ms
+
+5曲fresh Chromium run `35849376347`:
+- tempo events 127–153
+- 全曲min tempo gap 1920 ticks = 4/4 1小節
+- violations 0
+- Precision .911 / Recall .743 / F1 .818
+- grid residual 0
+
+CIでbar-tempo間隔を直接検査。
+
+詳細: `AI_HANDOFF_GRID_V35.md`, `experiments/TEMPO_BAR_V35.md`, `experiments/results-tempo-bar-v35.json`
+
 ## 2026-09-23 Proof v34 — tempo octave / GMD bar phase
 
 Proof WAVで現行mainの198.164 BPM倍取りを再現。内部event-familyは99.125 BPMを最上位にしていたため、**高信頼な2x tempo octave errorだけを補正するgate**を追加。
