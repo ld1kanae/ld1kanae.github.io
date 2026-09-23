@@ -1,4 +1,4 @@
-import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v3';
+import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v4';
 import {filterHighResHats} from './hat-forest.js';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
@@ -672,7 +672,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     }
     if(rescued.length)structural.push(...rescued);
 
-    // E-GMD v3 is trained on independent train/validation sequences and
+    // E-GMD v4 is trained on a larger independent train/validation corpus and
     // disjoint drum kits. It is used only as a second opinion on low-threshold
     // snare candidates. Existing kick/tom decisions are left untouched.
     const egmdTimes=egmdSnareSupport.map(e=>e.time);
@@ -731,7 +731,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v3-modelgate+kick-tom-veto-v3',
+      mode:'layered-snare-rescue+egmd-v4-modelgate+kick-tom-veto-v3',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
