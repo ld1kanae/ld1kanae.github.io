@@ -1,4 +1,4 @@
-import {transcribeAdtof} from './adtof.js';
+import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v3';
 import {filterHighResHats} from './hat-forest.js';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
