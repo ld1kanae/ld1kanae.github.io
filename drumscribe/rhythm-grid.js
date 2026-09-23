@@ -113,10 +113,9 @@ function chooseGrid(events,maxQ){
     };
   }
 
-  // 16ths cover the great majority of the reference charts. Only use 32nds
-  // when the 16th phase is genuinely diffuse and the 32nd grid explains it
-  // materially better. 8ths are a subset of the 16th grid, so exporting them
-  // on a 16th-capable score grid is harmless.
+  // 16ths cover the great majority of the reference charts. Only make 32nds
+  // the global base grid when the 16th phase is genuinely diffuse. Isolated
+  // 32nd fills are handled per note later.
   const use32=fit16<.78&&fit32>fit16+.10;
   return {
     family:'straight',
@@ -196,7 +195,17 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   };
 
   const correctedQ=raw=>raw-delta(raw);
-  const snapQ=raw=>Math.round(correctedQ(raw)/grid.step)*grid.step;
+  const snapQ=raw=>{
+    const q=correctedQ(raw);
+    if(grid.family==='triplet'||grid.step===.125)return Math.round(q/grid.step)*grid.step;
+    const q16=Math.round(q/.25)*.25;
+    const d16=Math.abs(q-q16);
+    const q32=Math.round(q/.125)*.125;
+    const d32=Math.abs(q-q32);
+    // A true 32nd midpoint is .125 beat away from a 16th. Require the event
+    // to be clearly outside ordinary timing jitter before retaining it as 32nd.
+    return d16>.10&&d32<=.035?q32:q16;
+  };
 
   // Convert the phase-drift derivative into quarter-note BPM values. q is a
   // denominator-beat coordinate, while MIDI set_tempo always describes a
@@ -231,12 +240,13 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   };
 
   const eventTicks=Array(events?.length||0).fill(0);
-  let straight16Count=0;
+  let straight16Count=0,straight32OnlyCount=0;
   for(const e of usable){
     const scoreQ=snapQ(e.q);
     const tick=Math.max(0,Math.round(scoreQ*ppq*4/denominator));
     eventTicks[e.index]=tick;
     if(tick%(ppq/4)===0)straight16Count++;
+    else if(tick%(ppq/8)===0)straight32OnlyCount++;
   }
 
   const tempoMap=[];
@@ -255,13 +265,14 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   if(!tempoMap.length)tempoMap.push({tick:0,bpm,us:Math.round(60000000/bpm)});
 
   const meanConcentration=mean(curve.map(x=>x.concentration));
+  const subdivision=grid.family==='straight'&&grid.step===.25&&straight32OnlyCount>0?'1/16+1/32':grid.label;
   return {
     ppq,bpm,numerator,denominator,beatSec,barSec,phase,barPad,exportOffsetSec,
     eventTicks,tempoMap,timeForScore,
     info:{
       enabled:true,
       family:grid.family,
-      subdivision:grid.label,
+      subdivision,
       stepBeats:grid.step,
       fit:grid.fit,
       phaseConcentration:meanConcentration,
@@ -269,7 +280,8 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
       tempoMin:Math.min(...localBpms),
       tempoMax:Math.max(...localBpms),
       tempoMean:mean(localBpms),
-      straight16Share:straight16Count/Math.max(1,usable.length)
+      straight16Share:straight16Count/Math.max(1,usable.length),
+      straight32OnlyShare:straight32OnlyCount/Math.max(1,usable.length)
     }
   };
 }
