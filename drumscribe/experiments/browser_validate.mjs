@@ -3,13 +3,15 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const songs=['arcaround','diamondvirgin','kaiju','nanairo','ray'];
-const outDir='drumscribe/experiments/generated-v2-browser';
+const policy=process.env.KST_POLICY||'baseline';
+const outDir=process.env.OUT_DIR||`drumscribe/experiments/gmd-kst/browser-${policy}`;
 await fs.mkdir(outDir,{recursive:true});
 
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({acceptDownloads:true});
 page.setDefaultTimeout(20*60*1000);
-await page.goto('http://127.0.0.1:8000/drumscribe/',{waitUntil:'domcontentloaded'});
+await page.goto(`http://127.0.0.1:8000/drumscribe/?kstPolicy=${encodeURIComponent(policy)}`,{waitUntil:'domcontentloaded'});
+console.log('KST_POLICY',policy);
 
 for(const song of songs){
   console.log('START',song);
