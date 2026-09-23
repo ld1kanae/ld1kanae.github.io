@@ -1,0 +1,80 @@
+name: DrumScribe production arrangement app v48
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/app.js"
+      - "drumscribe/index.html"
+      - "drumscribe/arrangement/kst-rescore.js"
+      - "drumscribe/arrangement/index.js"
+      - "drumscribe/experiments/browser_validate_arrangement_app_v48.mjs"
+      - "drumscribe/experiments/evaluate_arrangement_app_v48.py"
+      - ".github/workflows/drumscribe-arrangement-app-v48.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install numpy scipy mido
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Unit-test arrangement modules
+        run: |
+          node drumscribe/arrangement/test.mjs
+          node drumscribe/arrangement/test-kst-rescore.mjs
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Exercise actual production UI path
+        run: node drumscribe/experiments/browser_validate_arrangement_app_v48.mjs
+      - name: Verify exported MIDI matches validated v47 runtime
+        run: python drumscribe/experiments/evaluate_arrangement_app_v48.py
+      - name: Commit reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-arrangement-app-v48.json
+          git add drumscribe/experiments/ARRANGEMENT_APP_V48.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record production arrangement app v48"
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin main
+              if git push; then
+                break
+              fi
+              if [ "$attempt" = "4" ]; then
+                exit 1
+              fi
+              sleep 2
+            done
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-arrangement-app-v48
+          path: |
+            drumscribe/experiments/generated-arrangement-app-v48/*.json
+            drumscribe/experiments/generated-arrangement-app-v48/*.mid
+            drumscribe/experiments/results-arrangement-app-v48.json
+            drumscribe/experiments/ARRANGEMENT_APP_V48.md
+          retention-days: 14
