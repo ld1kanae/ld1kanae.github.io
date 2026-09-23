@@ -1,5 +1,36 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: GMD一般リズム学習を単純3曲で限定検証（v26）
+
+対象を **diamondvirgin / nanairo / ray** の3曲に限定し、arcaround / kaiju は複雑系として除外した。kick/snareイベントそのものは変更せず、小節頭4候補の評価だけを検証した。
+
+Google/Magenta Groove MIDI Dataset の4/4 beatデータを利用。最初に第三者のGMDテキスト変換を試したが、変換元/復元コードで6列の楽器順が一致しないこと、およびraw MIDIのkickがテキスト上の別列へ現れる実例を確認したため、**派生テキストによる結果は無効として破棄**。以後はGMD raw MIDIだけを使用した。
+
+コネクタ制約のため全splitを読み切る代わりに、公式 `info.csv` のsplitを保持し、train 18曲（17 primary stylesをほぼ1曲ずつ、計2,562小節）、validation 12曲、test 12曲をジャンル分散サンプルした。raw MIDI mappingは kick=36、snare=37/38/40。
+
+試した方式:
+1. 固定backbeat則。
+2. GMD raw全小節の平均テンプレート。
+3. GMD raw 12クラスタ。
+4. GMD raw 4小節の直接識別線形モデル。
+5. **各演奏を1票にした file-balanced GMD平均テンプレート**。
+
+file-balancedモデルの四分位置出現率は、kick=[0.756, 0.461, 0.695, 0.439]、snare=[0.281, 0.527, 0.345, 0.558]。一般的な「beat 1/3のkick、beat 2/4のsnare」を反映しつつ、beat 1とbeat 3を同一視しない分布になった。
+
+4候補をGMDだけで決定する精度は十分高くない。file-balanced版の8小節窓は validation 60.6%、test 61.4%。したがってGMD単独置換は不採用。
+
+一方、現行のsnare-backbeat判定で4候補を同じparityの2候補へ絞った後の **「1拍目 vs 3拍目」2択**では、GMD test精度は1小節69.2%、4小節76.7%、8小節78.2%、16小節81.3%（validation 16小節72.3%）。長い区間ほど補助証拠として有効。
+
+3曲の曲全体では、現行selectorもfile-balanced GMDも全て正解:
+- diamondvirgin: current=1, GMD=1。16小節票 8/9。
+- nanairo: current=0, GMD=0。現行候補差は0.00471と僅差だが、GMDも同側。16小節票 7/8。
+- ray: current=0, GMD=0。現行候補差0.00627、GMDも同側。16小節票 9/9。
+
+よって **現行selectorは変更しない**。GMDは「4択を置換するモデル」ではなく、現行backbeat判定で候補を2択まで絞った後、16小節以上の長期統計で1拍目/3拍目を確認する補助証拠として残す。現時点では disagreement 時の自動overrideは実装しない。将来、現行selectorが外れる実曲を集め、そのケースでoverrideが改善することを確認してから導入する。
+
+生データ: [results-gmd-simple3-v26.json](experiments/results-gmd-simple3-v26.json)  
+学習モデル: [gmd-raw-bar-model-v26.json](experiments/gmd-raw-bar-model-v26.json)
+
 ## 2026-09-23: 小節区切りをゼロから再検証（fresh v25）
 
 直前に追加した一般リズム prior のランタイム変更は撤回した状態から再検証した。ユーザーの意図どおり、kick/snare は**小節頭・拍子推定の証拠**としてのみ扱い、採譜済みノートの楽器種別や時刻を拍位置へ強制修正しない。
