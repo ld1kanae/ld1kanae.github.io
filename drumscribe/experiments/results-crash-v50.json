@@ -1,0 +1,1133 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "crash confidence sweep v50",
+  "referencePolicy": "chart.mid used only after fresh Chromium prediction.",
+  "baselineLegacy": {
+    "crash": {
+      "tp": 127,
+      "predicted": 167,
+      "reference": 390,
+      "precision": 0.7604790419161677,
+      "recall": 0.32564102564102565,
+      "f1": 0.45601436265709155,
+      "falsePositive": 40
+    },
+    "ride": {
+      "tp": 0,
+      "predicted": 0,
+      "reference": 644,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "falsePositive": 0
+    },
+    "hatFamily": {
+      "tp": 3244,
+      "predicted": 3636,
+      "reference": 4102,
+      "precision": 0.8921892189218922,
+      "recall": 0.7908337396392003,
+      "f1": 0.838459550271388,
+      "falsePositive": 392
+    },
+    "kick": {
+      "tp": 2639,
+      "predicted": 2768,
+      "reference": 2712,
+      "precision": 0.9533959537572254,
+      "recall": 0.9730825958702065,
+      "f1": 0.9631386861313869,
+      "falsePositive": 129
+    },
+    "snare": {
+      "tp": 1309,
+      "predicted": 1429,
+      "reference": 1470,
+      "precision": 0.9160251924422673,
+      "recall": 0.8904761904761904,
+      "f1": 0.9030700241462574,
+      "falsePositive": 120
+    },
+    "tom": {
+      "tp": 70,
+      "predicted": 85,
+      "reference": 92,
+      "precision": 0.8235294117647058,
+      "recall": 0.7608695652173914,
+      "f1": 0.7909604519774012,
+      "falsePositive": 15
+    },
+    "kst": {
+      "tp": 4018,
+      "predicted": 4282,
+      "reference": 4274,
+      "precision": 0.9383465670247548,
+      "recall": 0.9401029480580253,
+      "f1": 0.9392239364188874
+    }
+  },
+  "variants": {
+    "confidence-115": {
+      "summary": {
+        "crash": {
+          "tp": 127,
+          "predicted": 167,
+          "reference": 390,
+          "precision": 0.7604790419161677,
+          "recall": 0.32564102564102565,
+          "f1": 0.45601436265709155,
+          "falsePositive": 40
+        },
+        "hatFamily": {
+          "tp": 3125,
+          "predicted": 3410,
+          "reference": 4102,
+          "precision": 0.9164222873900293,
+          "recall": 0.7618235007313505,
+          "f1": 0.8320021299254526,
+          "falsePositive": 285
+        },
+        "kick": {
+          "tp": 2639,
+          "predicted": 2768,
+          "reference": 2712,
+          "precision": 0.9533959537572254,
+          "recall": 0.9730825958702065,
+          "f1": 0.9631386861313869,
+          "falsePositive": 129
+        },
+        "snare": {
+          "tp": 1309,
+          "predicted": 1429,
+          "reference": 1470,
+          "precision": 0.9160251924422673,
+          "recall": 0.8904761904761904,
+          "f1": 0.9030700241462574,
+          "falsePositive": 120
+        },
+        "tom": {
+          "tp": 70,
+          "predicted": 85,
+          "reference": 92,
+          "precision": 0.8235294117647058,
+          "recall": 0.7608695652173914,
+          "f1": 0.7909604519774012,
+          "falsePositive": 15
+        },
+        "kst": {
+          "tp": 4018,
+          "predicted": 4282,
+          "reference": 4274,
+          "precision": 0.9383465670247548,
+          "recall": 0.9401029480580253,
+          "f1": 0.9392239364188874
+        }
+      },
+      "songs": [
+        {
+          "song": "arcaround",
+          "crash": {
+            "tp": 2,
+            "predicted": 4,
+            "reference": 78,
+            "precision": 0.5,
+            "recall": 0.02564102564102564,
+            "f1": 0.04878048780487805,
+            "falsePositive": 2
+          },
+          "hatFamily": {
+            "tp": 146,
+            "predicted": 272,
+            "reference": 293,
+            "precision": 0.5367647058823529,
+            "recall": 0.49829351535836175,
+            "f1": 0.5168141592920354,
+            "falsePositive": 126
+          },
+          "kick": {
+            "tp": 558,
+            "predicted": 590,
+            "reference": 576,
+            "precision": 0.9457627118644067,
+            "recall": 0.96875,
+            "f1": 0.9571183533447685,
+            "falsePositive": 32
+          },
+          "snare": {
+            "tp": 172,
+            "predicted": 192,
+            "reference": 292,
+            "precision": 0.8958333333333334,
+            "recall": 0.589041095890411,
+            "f1": 0.7107438016528925,
+            "falsePositive": 20
+          },
+          "tom": {
+            "tp": 8,
+            "predicted": 18,
+            "reference": 12,
+            "precision": 0.4444444444444444,
+            "recall": 0.6666666666666666,
+            "f1": 0.5333333333333333,
+            "falsePositive": 10
+          },
+          "policy": {
+            "variant": "confidence-115",
+            "evaluated": 4,
+            "removed": 0,
+            "rawSupported": 0,
+            "confidenceSupported": 4,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.15
+          }
+        },
+        {
+          "song": "diamondvirgin",
+          "crash": {
+            "tp": 34,
+            "predicted": 68,
+            "reference": 70,
+            "precision": 0.5,
+            "recall": 0.4857142857142857,
+            "f1": 0.4927536231884058,
+            "falsePositive": 34
+          },
+          "hatFamily": {
+            "tp": 251,
+            "predicted": 260,
+            "reference": 755,
+            "precision": 0.9653846153846154,
+            "recall": 0.33245033112582784,
+            "f1": 0.4945812807881773,
+            "falsePositive": 9
+          },
+          "kick": {
+            "tp": 688,
+            "predicted": 715,
+            "reference": 740,
+            "precision": 0.9622377622377623,
+            "recall": 0.9297297297297298,
+            "f1": 0.9457044673539519,
+            "falsePositive": 27
+          },
+          "snare": {
+            "tp": 588,
+            "predicted": 610,
+            "reference": 608,
+            "precision": 0.9639344262295082,
+            "recall": 0.9671052631578947,
+            "f1": 0.9655172413793104,
+            "falsePositive": 22
+          },
+          "tom": {
+            "tp": 40,
+            "predicted": 45,
+            "reference": 57,
+            "precision": 0.8888888888888888,
+            "recall": 0.7017543859649122,
+            "f1": 0.7843137254901961,
+            "falsePositive": 5
+          },
+          "policy": {
+            "variant": "confidence-115",
+            "evaluated": 68,
+            "removed": 0,
+            "rawSupported": 1,
+            "confidenceSupported": 68,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.15
+          }
+        },
+        {
+          "song": "kaiju",
+          "crash": {
+            "tp": 30,
+            "predicted": 30,
+            "reference": 145,
+            "precision": 1.0,
+            "recall": 0.20689655172413793,
+            "f1": 0.34285714285714286,
+            "falsePositive": 0
+          },
+          "hatFamily": {
+            "tp": 537,
+            "predicted": 585,
+            "reference": 594,
+            "precision": 0.9179487179487179,
+            "recall": 0.9040404040404041,
+            "f1": 0.910941475826972,
+            "falsePositive": 48
+          },
+          "kick": {
+            "tp": 387,
+            "predicted": 390,
+            "reference": 390,
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1": 0.9923076923076923,
+            "falsePositive": 3
+          },
+          "snare": {
+            "tp": 200,
+            "predicted": 205,
+            "reference": 205,
+            "precision": 0.975609756097561,
+            "recall": 0.975609756097561,
+            "f1": 0.975609756097561,
+            "falsePositive": 5
+          },
+          "tom": {
+            "tp": 22,
+            "predicted": 22,
+            "reference": 23,
+            "precision": 1.0,
+            "recall": 0.9565217391304348,
+            "f1": 0.9777777777777777,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-115",
+            "evaluated": 30,
+            "removed": 0,
+            "rawSupported": 2,
+            "confidenceSupported": 30,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.15
+          }
+        },
+        {
+          "song": "nanairo",
+          "crash": {
+            "tp": 18,
+            "predicted": 22,
+            "reference": 45,
+            "precision": 0.8181818181818182,
+            "recall": 0.4,
+            "f1": 0.5373134328358209,
+            "falsePositive": 4
+          },
+          "hatFamily": {
+            "tp": 945,
+            "predicted": 1007,
+            "reference": 1063,
+            "precision": 0.9384309831181727,
+            "recall": 0.8889934148635936,
+            "f1": 0.9130434782608695,
+            "falsePositive": 62
+          },
+          "kick": {
+            "tp": 486,
+            "predicted": 486,
+            "reference": 486,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "falsePositive": 0
+          },
+          "snare": {
+            "tp": 144,
+            "predicted": 217,
+            "reference": 155,
+            "precision": 0.663594470046083,
+            "recall": 0.9290322580645162,
+            "f1": 0.7741935483870968,
+            "falsePositive": 73
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-115",
+            "evaluated": 22,
+            "removed": 0,
+            "rawSupported": 2,
+            "confidenceSupported": 22,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.15
+          }
+        },
+        {
+          "song": "ray",
+          "crash": {
+            "tp": 43,
+            "predicted": 43,
+            "reference": 52,
+            "precision": 1.0,
+            "recall": 0.8269230769230769,
+            "f1": 0.9052631578947369,
+            "falsePositive": 0
+          },
+          "hatFamily": {
+            "tp": 1246,
+            "predicted": 1286,
+            "reference": 1397,
+            "precision": 0.968895800933126,
+            "recall": 0.8919112383679313,
+            "f1": 0.9288110324263884,
+            "falsePositive": 40
+          },
+          "kick": {
+            "tp": 520,
+            "predicted": 587,
+            "reference": 520,
+            "precision": 0.8858603066439523,
+            "recall": 1.0,
+            "f1": 0.9394760614272809,
+            "falsePositive": 67
+          },
+          "snare": {
+            "tp": 205,
+            "predicted": 205,
+            "reference": 210,
+            "precision": 1.0,
+            "recall": 0.9761904761904762,
+            "f1": 0.9879518072289156,
+            "falsePositive": 0
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-115",
+            "evaluated": 43,
+            "removed": 0,
+            "rawSupported": 5,
+            "confidenceSupported": 43,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.15
+          }
+        }
+      ],
+      "deltaVsLegacy": {
+        "crashF1": 0.0,
+        "crashPrecision": 0.0,
+        "crashRecall": 0.0,
+        "crashFalsePositive": 0,
+        "kstF1": 0.0,
+        "hatFamilyF1": -0.006457420345935327
+      }
+    },
+    "confidence-125": {
+      "summary": {
+        "crash": {
+          "tp": 126,
+          "predicted": 165,
+          "reference": 390,
+          "precision": 0.7636363636363637,
+          "recall": 0.3230769230769231,
+          "f1": 0.4540540540540541,
+          "falsePositive": 39
+        },
+        "hatFamily": {
+          "tp": 3125,
+          "predicted": 3410,
+          "reference": 4102,
+          "precision": 0.9164222873900293,
+          "recall": 0.7618235007313505,
+          "f1": 0.8320021299254526,
+          "falsePositive": 285
+        },
+        "kick": {
+          "tp": 2639,
+          "predicted": 2768,
+          "reference": 2712,
+          "precision": 0.9533959537572254,
+          "recall": 0.9730825958702065,
+          "f1": 0.9631386861313869,
+          "falsePositive": 129
+        },
+        "snare": {
+          "tp": 1309,
+          "predicted": 1429,
+          "reference": 1470,
+          "precision": 0.9160251924422673,
+          "recall": 0.8904761904761904,
+          "f1": 0.9030700241462574,
+          "falsePositive": 120
+        },
+        "tom": {
+          "tp": 70,
+          "predicted": 85,
+          "reference": 92,
+          "precision": 0.8235294117647058,
+          "recall": 0.7608695652173914,
+          "f1": 0.7909604519774012,
+          "falsePositive": 15
+        },
+        "kst": {
+          "tp": 4018,
+          "predicted": 4282,
+          "reference": 4274,
+          "precision": 0.9383465670247548,
+          "recall": 0.9401029480580253,
+          "f1": 0.9392239364188874
+        }
+      },
+      "songs": [
+        {
+          "song": "arcaround",
+          "crash": {
+            "tp": 2,
+            "predicted": 4,
+            "reference": 78,
+            "precision": 0.5,
+            "recall": 0.02564102564102564,
+            "f1": 0.04878048780487805,
+            "falsePositive": 2
+          },
+          "hatFamily": {
+            "tp": 146,
+            "predicted": 272,
+            "reference": 293,
+            "precision": 0.5367647058823529,
+            "recall": 0.49829351535836175,
+            "f1": 0.5168141592920354,
+            "falsePositive": 126
+          },
+          "kick": {
+            "tp": 558,
+            "predicted": 590,
+            "reference": 576,
+            "precision": 0.9457627118644067,
+            "recall": 0.96875,
+            "f1": 0.9571183533447685,
+            "falsePositive": 32
+          },
+          "snare": {
+            "tp": 172,
+            "predicted": 192,
+            "reference": 292,
+            "precision": 0.8958333333333334,
+            "recall": 0.589041095890411,
+            "f1": 0.7107438016528925,
+            "falsePositive": 20
+          },
+          "tom": {
+            "tp": 8,
+            "predicted": 18,
+            "reference": 12,
+            "precision": 0.4444444444444444,
+            "recall": 0.6666666666666666,
+            "f1": 0.5333333333333333,
+            "falsePositive": 10
+          },
+          "policy": {
+            "variant": "confidence-125",
+            "evaluated": 4,
+            "removed": 0,
+            "rawSupported": 0,
+            "confidenceSupported": 4,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.25
+          }
+        },
+        {
+          "song": "diamondvirgin",
+          "crash": {
+            "tp": 34,
+            "predicted": 67,
+            "reference": 70,
+            "precision": 0.5074626865671642,
+            "recall": 0.4857142857142857,
+            "f1": 0.49635036496350365,
+            "falsePositive": 33
+          },
+          "hatFamily": {
+            "tp": 251,
+            "predicted": 260,
+            "reference": 755,
+            "precision": 0.9653846153846154,
+            "recall": 0.33245033112582784,
+            "f1": 0.4945812807881773,
+            "falsePositive": 9
+          },
+          "kick": {
+            "tp": 688,
+            "predicted": 715,
+            "reference": 740,
+            "precision": 0.9622377622377623,
+            "recall": 0.9297297297297298,
+            "f1": 0.9457044673539519,
+            "falsePositive": 27
+          },
+          "snare": {
+            "tp": 588,
+            "predicted": 610,
+            "reference": 608,
+            "precision": 0.9639344262295082,
+            "recall": 0.9671052631578947,
+            "f1": 0.9655172413793104,
+            "falsePositive": 22
+          },
+          "tom": {
+            "tp": 40,
+            "predicted": 45,
+            "reference": 57,
+            "precision": 0.8888888888888888,
+            "recall": 0.7017543859649122,
+            "f1": 0.7843137254901961,
+            "falsePositive": 5
+          },
+          "policy": {
+            "variant": "confidence-125",
+            "evaluated": 68,
+            "removed": 1,
+            "rawSupported": 1,
+            "confidenceSupported": 67,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.25
+          }
+        },
+        {
+          "song": "kaiju",
+          "crash": {
+            "tp": 29,
+            "predicted": 29,
+            "reference": 145,
+            "precision": 1.0,
+            "recall": 0.2,
+            "f1": 0.3333333333333333,
+            "falsePositive": 0
+          },
+          "hatFamily": {
+            "tp": 537,
+            "predicted": 585,
+            "reference": 594,
+            "precision": 0.9179487179487179,
+            "recall": 0.9040404040404041,
+            "f1": 0.910941475826972,
+            "falsePositive": 48
+          },
+          "kick": {
+            "tp": 387,
+            "predicted": 390,
+            "reference": 390,
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1": 0.9923076923076923,
+            "falsePositive": 3
+          },
+          "snare": {
+            "tp": 200,
+            "predicted": 205,
+            "reference": 205,
+            "precision": 0.975609756097561,
+            "recall": 0.975609756097561,
+            "f1": 0.975609756097561,
+            "falsePositive": 5
+          },
+          "tom": {
+            "tp": 22,
+            "predicted": 22,
+            "reference": 23,
+            "precision": 1.0,
+            "recall": 0.9565217391304348,
+            "f1": 0.9777777777777777,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-125",
+            "evaluated": 30,
+            "removed": 1,
+            "rawSupported": 2,
+            "confidenceSupported": 29,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.25
+          }
+        },
+        {
+          "song": "nanairo",
+          "crash": {
+            "tp": 18,
+            "predicted": 22,
+            "reference": 45,
+            "precision": 0.8181818181818182,
+            "recall": 0.4,
+            "f1": 0.5373134328358209,
+            "falsePositive": 4
+          },
+          "hatFamily": {
+            "tp": 945,
+            "predicted": 1007,
+            "reference": 1063,
+            "precision": 0.9384309831181727,
+            "recall": 0.8889934148635936,
+            "f1": 0.9130434782608695,
+            "falsePositive": 62
+          },
+          "kick": {
+            "tp": 486,
+            "predicted": 486,
+            "reference": 486,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "falsePositive": 0
+          },
+          "snare": {
+            "tp": 144,
+            "predicted": 217,
+            "reference": 155,
+            "precision": 0.663594470046083,
+            "recall": 0.9290322580645162,
+            "f1": 0.7741935483870968,
+            "falsePositive": 73
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-125",
+            "evaluated": 22,
+            "removed": 0,
+            "rawSupported": 2,
+            "confidenceSupported": 22,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.25
+          }
+        },
+        {
+          "song": "ray",
+          "crash": {
+            "tp": 43,
+            "predicted": 43,
+            "reference": 52,
+            "precision": 1.0,
+            "recall": 0.8269230769230769,
+            "f1": 0.9052631578947369,
+            "falsePositive": 0
+          },
+          "hatFamily": {
+            "tp": 1246,
+            "predicted": 1286,
+            "reference": 1397,
+            "precision": 0.968895800933126,
+            "recall": 0.8919112383679313,
+            "f1": 0.9288110324263884,
+            "falsePositive": 40
+          },
+          "kick": {
+            "tp": 520,
+            "predicted": 587,
+            "reference": 520,
+            "precision": 0.8858603066439523,
+            "recall": 1.0,
+            "f1": 0.9394760614272809,
+            "falsePositive": 67
+          },
+          "snare": {
+            "tp": 205,
+            "predicted": 205,
+            "reference": 210,
+            "precision": 1.0,
+            "recall": 0.9761904761904762,
+            "f1": 0.9879518072289156,
+            "falsePositive": 0
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-125",
+            "evaluated": 43,
+            "removed": 0,
+            "rawSupported": 5,
+            "confidenceSupported": 43,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.25
+          }
+        }
+      ],
+      "deltaVsLegacy": {
+        "crashF1": -0.001960308603037475,
+        "crashPrecision": 0.0031573217201960047,
+        "crashRecall": -0.002564102564102555,
+        "crashFalsePositive": -1,
+        "kstF1": 0.0,
+        "hatFamilyF1": -0.006457420345935327
+      }
+    },
+    "confidence-135": {
+      "summary": {
+        "crash": {
+          "tp": 123,
+          "predicted": 160,
+          "reference": 390,
+          "precision": 0.76875,
+          "recall": 0.3153846153846154,
+          "f1": 0.44727272727272727,
+          "falsePositive": 37
+        },
+        "hatFamily": {
+          "tp": 3125,
+          "predicted": 3410,
+          "reference": 4102,
+          "precision": 0.9164222873900293,
+          "recall": 0.7618235007313505,
+          "f1": 0.8320021299254526,
+          "falsePositive": 285
+        },
+        "kick": {
+          "tp": 2639,
+          "predicted": 2768,
+          "reference": 2712,
+          "precision": 0.9533959537572254,
+          "recall": 0.9730825958702065,
+          "f1": 0.9631386861313869,
+          "falsePositive": 129
+        },
+        "snare": {
+          "tp": 1309,
+          "predicted": 1429,
+          "reference": 1470,
+          "precision": 0.9160251924422673,
+          "recall": 0.8904761904761904,
+          "f1": 0.9030700241462574,
+          "falsePositive": 120
+        },
+        "tom": {
+          "tp": 70,
+          "predicted": 85,
+          "reference": 92,
+          "precision": 0.8235294117647058,
+          "recall": 0.7608695652173914,
+          "f1": 0.7909604519774012,
+          "falsePositive": 15
+        },
+        "kst": {
+          "tp": 4018,
+          "predicted": 4282,
+          "reference": 4274,
+          "precision": 0.9383465670247548,
+          "recall": 0.9401029480580253,
+          "f1": 0.9392239364188874
+        }
+      },
+      "songs": [
+        {
+          "song": "arcaround",
+          "crash": {
+            "tp": 2,
+            "predicted": 4,
+            "reference": 78,
+            "precision": 0.5,
+            "recall": 0.02564102564102564,
+            "f1": 0.04878048780487805,
+            "falsePositive": 2
+          },
+          "hatFamily": {
+            "tp": 146,
+            "predicted": 272,
+            "reference": 293,
+            "precision": 0.5367647058823529,
+            "recall": 0.49829351535836175,
+            "f1": 0.5168141592920354,
+            "falsePositive": 126
+          },
+          "kick": {
+            "tp": 558,
+            "predicted": 590,
+            "reference": 576,
+            "precision": 0.9457627118644067,
+            "recall": 0.96875,
+            "f1": 0.9571183533447685,
+            "falsePositive": 32
+          },
+          "snare": {
+            "tp": 172,
+            "predicted": 192,
+            "reference": 292,
+            "precision": 0.8958333333333334,
+            "recall": 0.589041095890411,
+            "f1": 0.7107438016528925,
+            "falsePositive": 20
+          },
+          "tom": {
+            "tp": 8,
+            "predicted": 18,
+            "reference": 12,
+            "precision": 0.4444444444444444,
+            "recall": 0.6666666666666666,
+            "f1": 0.5333333333333333,
+            "falsePositive": 10
+          },
+          "policy": {
+            "variant": "confidence-135",
+            "evaluated": 4,
+            "removed": 0,
+            "rawSupported": 0,
+            "confidenceSupported": 4,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.35
+          }
+        },
+        {
+          "song": "diamondvirgin",
+          "crash": {
+            "tp": 32,
+            "predicted": 63,
+            "reference": 70,
+            "precision": 0.5079365079365079,
+            "recall": 0.45714285714285713,
+            "f1": 0.48120300751879697,
+            "falsePositive": 31
+          },
+          "hatFamily": {
+            "tp": 251,
+            "predicted": 260,
+            "reference": 755,
+            "precision": 0.9653846153846154,
+            "recall": 0.33245033112582784,
+            "f1": 0.4945812807881773,
+            "falsePositive": 9
+          },
+          "kick": {
+            "tp": 688,
+            "predicted": 715,
+            "reference": 740,
+            "precision": 0.9622377622377623,
+            "recall": 0.9297297297297298,
+            "f1": 0.9457044673539519,
+            "falsePositive": 27
+          },
+          "snare": {
+            "tp": 588,
+            "predicted": 610,
+            "reference": 608,
+            "precision": 0.9639344262295082,
+            "recall": 0.9671052631578947,
+            "f1": 0.9655172413793104,
+            "falsePositive": 22
+          },
+          "tom": {
+            "tp": 40,
+            "predicted": 45,
+            "reference": 57,
+            "precision": 0.8888888888888888,
+            "recall": 0.7017543859649122,
+            "f1": 0.7843137254901961,
+            "falsePositive": 5
+          },
+          "policy": {
+            "variant": "confidence-135",
+            "evaluated": 68,
+            "removed": 5,
+            "rawSupported": 1,
+            "confidenceSupported": 63,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.35
+          }
+        },
+        {
+          "song": "kaiju",
+          "crash": {
+            "tp": 29,
+            "predicted": 29,
+            "reference": 145,
+            "precision": 1.0,
+            "recall": 0.2,
+            "f1": 0.3333333333333333,
+            "falsePositive": 0
+          },
+          "hatFamily": {
+            "tp": 537,
+            "predicted": 585,
+            "reference": 594,
+            "precision": 0.9179487179487179,
+            "recall": 0.9040404040404041,
+            "f1": 0.910941475826972,
+            "falsePositive": 48
+          },
+          "kick": {
+            "tp": 387,
+            "predicted": 390,
+            "reference": 390,
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1": 0.9923076923076923,
+            "falsePositive": 3
+          },
+          "snare": {
+            "tp": 200,
+            "predicted": 205,
+            "reference": 205,
+            "precision": 0.975609756097561,
+            "recall": 0.975609756097561,
+            "f1": 0.975609756097561,
+            "falsePositive": 5
+          },
+          "tom": {
+            "tp": 22,
+            "predicted": 22,
+            "reference": 23,
+            "precision": 1.0,
+            "recall": 0.9565217391304348,
+            "f1": 0.9777777777777777,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-135",
+            "evaluated": 30,
+            "removed": 1,
+            "rawSupported": 2,
+            "confidenceSupported": 29,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.35
+          }
+        },
+        {
+          "song": "nanairo",
+          "crash": {
+            "tp": 17,
+            "predicted": 21,
+            "reference": 45,
+            "precision": 0.8095238095238095,
+            "recall": 0.37777777777777777,
+            "f1": 0.5151515151515151,
+            "falsePositive": 4
+          },
+          "hatFamily": {
+            "tp": 945,
+            "predicted": 1007,
+            "reference": 1063,
+            "precision": 0.9384309831181727,
+            "recall": 0.8889934148635936,
+            "f1": 0.9130434782608695,
+            "falsePositive": 62
+          },
+          "kick": {
+            "tp": 486,
+            "predicted": 486,
+            "reference": 486,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "falsePositive": 0
+          },
+          "snare": {
+            "tp": 144,
+            "predicted": 217,
+            "reference": 155,
+            "precision": 0.663594470046083,
+            "recall": 0.9290322580645162,
+            "f1": 0.7741935483870968,
+            "falsePositive": 73
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-135",
+            "evaluated": 22,
+            "removed": 1,
+            "rawSupported": 2,
+            "confidenceSupported": 21,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.35
+          }
+        },
+        {
+          "song": "ray",
+          "crash": {
+            "tp": 43,
+            "predicted": 43,
+            "reference": 52,
+            "precision": 1.0,
+            "recall": 0.8269230769230769,
+            "f1": 0.9052631578947369,
+            "falsePositive": 0
+          },
+          "hatFamily": {
+            "tp": 1246,
+            "predicted": 1286,
+            "reference": 1397,
+            "precision": 0.968895800933126,
+            "recall": 0.8919112383679313,
+            "f1": 0.9288110324263884,
+            "falsePositive": 40
+          },
+          "kick": {
+            "tp": 520,
+            "predicted": 587,
+            "reference": 520,
+            "precision": 0.8858603066439523,
+            "recall": 1.0,
+            "f1": 0.9394760614272809,
+            "falsePositive": 67
+          },
+          "snare": {
+            "tp": 205,
+            "predicted": 205,
+            "reference": 210,
+            "precision": 1.0,
+            "recall": 0.9761904761904762,
+            "f1": 0.9879518072289156,
+            "falsePositive": 0
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "falsePositive": 0
+          },
+          "policy": {
+            "variant": "confidence-135",
+            "evaluated": 43,
+            "removed": 0,
+            "rawSupported": 5,
+            "confidenceSupported": 43,
+            "hatVetoed": 0,
+            "confidenceThreshold": 1.35
+          }
+        }
+      ],
+      "deltaVsLegacy": {
+        "crashF1": -0.008741635384364288,
+        "crashPrecision": 0.00827095808383238,
+        "crashRecall": -0.010256410256410275,
+        "crashFalsePositive": -3,
+        "kstF1": 0.0,
+        "hatFamilyF1": -0.006457420345935327
+      }
+    }
+  },
+  "ranking": [
+    "confidence-115",
+    "confidence-125",
+    "confidence-135"
+  ]
+}
