@@ -174,7 +174,12 @@ def train_base(d,songs,hatX,hatY):
 
 def probs(model,X):
     if not len(X):return np.zeros(0)
-    return model.predict_proba(X)[:,list(model.classes_).index(1)]
+    classes=list(model.classes_)
+    if 1 not in classes:
+        return np.zeros(len(X),dtype=float)
+    if 0 not in classes:
+        return np.ones(len(X),dtype=float)
+    return model.predict_proba(X)[:,classes.index(1)]
 
 def score(d,s,base_model,overlay_model,fam,th):
     hp=probs(base_model,d[s]["X"]["timbre_norm"])
