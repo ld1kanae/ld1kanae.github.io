@@ -4,13 +4,13 @@ No alternating-grid parity or review-specific label/range is used. Features are 
 
 | variant | Closed F1 | Open F1 | HH macro | delta | guard |
 |---|---:|---:|---:|---:|---|
-| baseline | 0.843895 | 0.628817 | 0.736356 | +0.000000 | False |
-| H1_raw | 0.836627 | 0.616521 | 0.726574 | -0.009782 | False |
-| H2_raw_base | 0.843895 | 0.628817 | 0.736356 | +0.000000 | False |
-| H3_raw_localnorm | 0.844047 | 0.629471 | 0.736759 | +0.000402 | True |
+| baseline | 0.817175 | 0.628817 | 0.722996 | +0.000000 | False |
+| H1_raw | 0.809816 | 0.616521 | 0.713168 | -0.009827 | False |
+| H2_raw_base | 0.817175 | 0.628817 | 0.722996 | +0.000000 | False |
+| H3_raw_localnorm | 0.817316 | 0.629471 | 0.723393 | +0.000398 | True |
 
 Per-song HH macro:
-- baseline: arcaround=0.448007, diamondvirgin=0.597619, kaiju=0.787958, nanairo=0.914205, ray=0.791025
-- H1_raw: arcaround=0.414598, diamondvirgin=0.587545, kaiju=0.769705, nanairo=0.913542, ray=0.776103
-- H2_raw_base: arcaround=0.448007, diamondvirgin=0.597619, kaiju=0.787958, nanairo=0.914205, ray=0.791025
-- H3_raw_localnorm: arcaround=0.448007, diamondvirgin=0.597619, kaiju=0.807963, nanairo=0.914205, ray=0.791025
+- baseline: arcaround=0.440195, diamondvirgin=0.599122, kaiju=0.787166, nanairo=0.894759, ray=0.771133
+- H1_raw: arcaround=0.407129, diamondvirgin=0.589103, kaiju=0.768910, nanairo=0.894072, ray=0.756115
+- H2_raw_base: arcaround=0.440195, diamondvirgin=0.599122, kaiju=0.787166, nanairo=0.894759, ray=0.771133
+- H3_raw_localnorm: arcaround=0.440195, diamondvirgin=0.599122, kaiju=0.807170, nanairo=0.894759, ray=0.771133
