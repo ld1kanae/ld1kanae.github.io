@@ -1122,10 +1122,11 @@ export async function transcribe(decoded,report=()=>{},options={}){
     adtofInfo.hatContextV57={enabled:false,variant:hatContextVariant};
   }
 
-  // v61 production candidate: per-hit acoustic Open/Closed fusion.
+  // v61 research candidate: per-hit acoustic Open/Closed fusion. Production
+  // default remains OFF until a five-song per-song non-regression guard passes.
   // No review-song rule, alternating parity or filename is used. This stage
   // relabels only existing GM42/46 candidates and leaves K/S/T untouched.
-  const hatFusionVariant=options.hatFusionVariant??'acoustic-fusion-v61';
+  const hatFusionVariant=options.hatFusionVariant??'off';
   if(hatFusionVariant==='acoustic-fusion-v61'){
     const hatFusion=await rescoreHatArticulationFusionV61(decoded,pruned,{enabled:true});
     pruned=hatFusion.events;
