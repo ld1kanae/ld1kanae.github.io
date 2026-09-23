@@ -20,7 +20,7 @@ def loadmod(name,path):
     m=importlib.util.module_from_spec(sp);sp.loader.exec_module(m);return m
 oh=loadmod("drumsep_fast_oh",EXP/"open_hat_loo.py")
 
-def near(xs,t,w=.080):return any(abs(x-u)<=w for u in xs)
+def near(xs,t,w=.080):return any(abs(float(t)-float(u))<=w for u in xs)
 
 def choose_window(song):
     ro=sorted(t for t,g,p in oh.truth(song) if p==46)
