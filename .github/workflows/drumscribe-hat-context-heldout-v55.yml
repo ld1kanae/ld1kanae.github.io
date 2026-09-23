@@ -1,0 +1,64 @@
+name: DrumScribe hat context heldout v55
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/hat-context-v55.js"
+      - "drumscribe/experiments/browser_hat_context_heldout_v55.mjs"
+      - "drumscribe/experiments/evaluate_hat_context_heldout_v55.py"
+      - ".github/workflows/drumscribe-hat-context-heldout-v55.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install mido
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate held-out probabilities
+        run: node drumscribe/experiments/browser_hat_context_heldout_v55.mjs
+      - name: Sweep additive rescue thresholds
+        run: python drumscribe/experiments/evaluate_hat_context_heldout_v55.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-hat-context-heldout-predictions-v55.json
+          git add drumscribe/experiments/results-hat-context-heldout-v55.json
+          git add drumscribe/experiments/HAT_CONTEXT_HELDOUT_V55.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record held-out hat context v55 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-hat-context-heldout-v55
+          path: |
+            drumscribe/experiments/results-hat-context-heldout-predictions-v55.json
+            drumscribe/experiments/results-hat-context-heldout-v55.json
+            drumscribe/experiments/HAT_CONTEXT_HELDOUT_V55.md
+          retention-days: 14
