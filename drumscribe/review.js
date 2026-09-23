@@ -26,8 +26,8 @@ async function loadManifest(){
 async function metricsFor(c){
   if(metricCache.has(c.id))return metricCache.get(c.id);
   const data=await fetch(c.metricsFile).then(r=>r.json());
-  const cycle=data.cycles.find(x=>x.cycle===c.cycle);
-  const result=cycle?.candidates?.[c.key];
+  const cycle=data.cycles?.find(x=>x.cycle===c.cycle);
+  const result=cycle?.candidates?.[c.key]||(c.metricsFormat==='songs-summary'?data:null);
   if(!result)throw Error('評価結果を読めません: '+c.label);
   metricCache.set(c.id,result);
   return result;
@@ -238,6 +238,12 @@ async function midiEvents(candidate=currentCandidate,song=currentSong){
   const url=midiUrl(candidate,song);
   if(midiCache.has(url))return midiCache.get(url);
   const events=parseMidi(await fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('MIDI取得失敗');return r.arrayBuffer()}));
+  if(candidate.timingBase){
+    const timing=await fetch(`${candidate.timingBase}/${song}.json`).then(r=>{if(!r.ok)throw Error('同期データ取得失敗');return r.json()});
+    const offset=Number(timing.exportOffsetSec);
+    if(!Number.isFinite(offset))throw Error('MIDI同期オフセットが不正です');
+    for(const e of events)e.time-=offset;
+  }
   midiCache.set(url,events);return events;
 }
 async function audioContext(){
