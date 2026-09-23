@@ -1,16 +1,16 @@
 import {transcribe} from './transcribe.js?v=20260923-egmd-kst-v4';
 import {midiFile} from './midi.js?v=20260923-grid-v28';
-import {buildRhythmGrid} from './rhythm-grid.js?v=20260923-grid-v28';
+import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-grid-v28';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
-let file=null,decoded=null,events=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
+let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
 let exampleId='';
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,44,45,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
-function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 const drop=$('drop');
 for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
@@ -60,6 +60,16 @@ $('analyze').addEventListener('click',async()=>{
     }
     const rhythmGrid=buildRhythmGrid(events,detectedBpm,{barPhaseSec,numerator,denominator,bars:meter.bars});
     const exportOffsetSec=rhythmGrid.exportOffsetSec,exportBarPad=rhythmGrid.barPad;
+    const ticksPerBeat=GRID_PPQ*4/denominator;
+    midiEvents=events.map((e,i)=>{
+      const tick=Number(rhythmGrid.eventTicks?.[i])||0;
+      const scoreBeat=tick/ticksPerBeat;
+      const exportTime=typeof rhythmGrid.timeForScore==='function'?rhythmGrid.timeForScore(scoreBeat):e.time+exportOffsetSec;
+      return {...e,time:exportTime-exportOffsetSec};
+    });
+    const timingDiffMs=midiEvents.map((e,i)=>Math.abs(e.time-events[i].time)*1000).sort((a,b)=>a-b);
+    const timingMedianMs=timingDiffMs[Math.floor(timingDiffMs.length*.5)]||0;
+    const timingP95Ms=timingDiffMs[Math.floor(Math.max(0,timingDiffMs.length-1)*.95)]||0;
     downloadUrl=URL.createObjectURL(new Blob([midiFile(events,detectedBpm,{
       barPhaseSec,
       numerator,
@@ -75,10 +85,10 @@ $('analyze').addEventListener('click',async()=>{
     globalThis.__drumscribeResult={
       ...transcription,events:undefined,
       barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec,
-      rhythmGridInfo:gridInfo,
+      rhythmGridInfo:{...gridInfo,previewMedianDifferenceMs:timingMedianMs,previewP95DifferenceMs:timingP95Ms},
       meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
     };
-    tell(`${events.length} ノートを推定しました。基準BPM ${detectedBpm.toFixed(3)}。${gridInfo.subdivision||'格子未判定'}へ量子化し、${gridInfo.tempoEvents||1}個のテンポ点で音源の揺れを保持しました。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}プレビューで確認し、MIDIを書き出せます。`);
+    tell(`${events.length} ノートを推定しました。基準BPM ${detectedBpm.toFixed(3)}。${gridInfo.subdivision||'格子未判定'}へ量子化し、${gridInfo.tempoEvents||1}個のテンポ点で音源の揺れを保持しました。プレビューも書き出しMIDIと同じ時刻です。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
   finally{$('analyze').disabled=false;$('progress').hidden=true;}
@@ -104,12 +114,12 @@ async function play(){
   gainUpdate();startAt=ac.currentTime+.07;playing=true;
   source=ac.createBufferSource();source.buffer=decoded;source.connect(tracks.audio.gain);source.start(startAt,position);
   const offset=Number($('offset').value||0)/1000;
-  next=events.findIndex(e=>e.time+offset>=position-.03);if(next<0)next=events.length;
+  next=midiEvents.findIndex(e=>e.time+offset>=position-.03);if(next<0)next=midiEvents.length;
   timer=setInterval(()=>{
     if(!playing)return;
     const end=now()+.15;
-    while(next<events.length&&events[next].time+offset<=end){
-      const e=events[next++],buffer=samples.get(e.note);if(!buffer||e.time+offset<now()-.04)continue;
+    while(next<midiEvents.length&&midiEvents[next].time+offset<=end){
+      const e=midiEvents[next++],buffer=samples.get(e.note);if(!buffer||e.time+offset<now()-.04)continue;
       const node=ac.createBufferSource(),velocity=ac.createGain();node.buffer=buffer;
       velocity.gain.value=Math.min(1.3,(e.velocity||90)/100);node.connect(velocity).connect(tracks.midi.gain);
       node.start(Math.max(ac.currentTime, startAt+e.time+offset-position));active.push(node);
@@ -143,6 +153,6 @@ function draw(){
   }c.stroke();c.globalAlpha=1;
   c.fillStyle='#203144';c.fillRect(0,h*.64,w,h*.36);
   const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',tom:'#e8ca83',crash:'#8dd3a0',ride:'#78b7a1'},offset=Number($('offset').value||0)/1000;
-  for(const e of events){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,tom:3,crash:4,ride:4}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.058),Math.max(1.5*dpr,w/1500),4*dpr);}
+  for(const e of midiEvents){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,tom:3,crash:4,ride:4}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.058),Math.max(1.5*dpr,w/1500),4*dpr);}
   const cursor=now()/decoded.duration*w;c.fillStyle='#eaf7fc';c.fillRect(cursor,0,2*dpr,h);
 }
