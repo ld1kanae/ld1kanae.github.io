@@ -3,8 +3,77 @@
 const GROUP={36:'kick',38:'snare',42:'hat',44:'pedal_hat',45:'tom',49:'crash',51:'ride'};
 const CFG={penalty3:.46,switch:.62,head:1,pattern:.55,runBonus:.16};
 
-export function inferBars(events,bpm,phase,duration,downbeats=[]){
+function fourFourLabelSequenceSupport(beats,startTime,beat,bars=2){
+  if(!beats.length)return null;
+  let score=0,count=0,k=0;
+  for(let q=0;q<4*bars;q++){
+    const target=startTime+q*beat,expected=q%4+1,window=.28*beat;
+    while(k+1<beats.length&&beats[k+1].time<target-window)k++;
+    let best=null,bestDist=window;
+    for(let j=Math.max(0,k-1);j<beats.length&&beats[j].time<=target+window;j++){
+      const d=Math.abs(beats[j].time-target);
+      if(d<bestDist){bestDist=d;best=beats[j];}
+    }
+    if(best){
+      score+=best.label===expected?1:(best.label===1?-.7:-.25);
+    }else{
+      score-=.35;
+    }
+    count++;
+  }
+  return count?score/count:null;
+}
+
+function stabilizeMeterReturns(path,labeledBeats,phase,beat,duration,threshold=.65){
+  if(!labeledBeats.length||path.length<2)return path;
+  const segments=[];
+  for(const bar of path){
+    if(!segments.length||segments[segments.length-1].numerator!==bar.numerator){
+      segments.push({beatIndex:bar.beatIndex,numerator:bar.numerator,denominator:bar.denominator||4});
+    }
+  }
+  const target=Math.max(0,Math.floor((duration-phase)/beat));
+  for(let s=0;s+1<segments.length;s++){
+    if(segments[s].numerator!==3||segments[s+1].numerator!==4)continue;
+    const original=segments[s+1].beatIndex;
+    const support=fourFourLabelSequenceSupport(labeledBeats,phase+original*beat,beat,2);
+    if(support==null||support>=threshold)continue;
+    const nextChange=s+2<segments.length?segments[s+2].beatIndex:null;
+    const limit=nextChange??target;
+    let replacement=null;
+    for(let cand=original+3;cand<limit;cand+=3){
+      if(nextChange!=null&&(nextChange-cand)%4!==0)continue;
+      const score=fourFourLabelSequenceSupport(labeledBeats,phase+cand*beat,beat,2);
+      if(score!=null&&score>=threshold){replacement=cand;break;}
+    }
+    if(replacement!=null){
+      segments[s+1].beatIndex=replacement;
+    }else if(nextChange==null){
+      // No credible return to 4/4 before the end: keep the current 3/4 state.
+      segments.splice(s+1,1);
+      s--;
+    }
+  }
+  const rebuilt=[];
+  for(let s=0;s<segments.length;s++){
+    const seg=segments[s],end=s+1<segments.length?segments[s+1].beatIndex:target+4;
+    for(let i=seg.beatIndex;i<end;i+=seg.numerator){
+      const time=phase+i*beat;
+      if(time<0||time>duration)continue;
+      rebuilt.push({time,beatIndex:i,numerator:seg.numerator,denominator:seg.denominator});
+    }
+  }
+  return rebuilt;
+}
+
+export function inferBars(events,bpm,phase,duration,beatData=[]){
   const beat=60/bpm;
+  const downbeats=Array.isArray(beatData)
+    ? beatData.filter(Number.isFinite)
+    : (beatData?.downbeats||[]).filter(Number.isFinite);
+  const labeledBeats=Array.isArray(beatData?.beats)
+    ? beatData.beats.filter(x=>Number.isFinite(x?.time)&&Number.isFinite(x?.label)).sort((a,b)=>a.time-b.time)
+    : [];
   const n=Math.max(8,Math.ceil((duration-phase)/beat)+4);
   const f=Array.from({length:n},()=>({kick:0,snare:0,hat:0,pedal_hat:0,tom:0,crash:0,ride:0,head:0}));
   for(const e of events){
@@ -54,9 +123,23 @@ export function inferBars(events,bpm,phase,duration,downbeats=[]){
     cur={...dp[index].get(last),last};
   }
   path.reverse();
-  return {bars:path.filter(b=>b.time>=0&&b.time<=duration),variableMeterEnabled:variable,externalDownbeats:downs.length};
+  const stable=variable?stabilizeMeterReturns(path,labeledBeats,phase,beat,duration,.65):path;
+  return {
+    bars:stable.filter(b=>b.time>=0&&b.time<=duration),
+    variableMeterEnabled:variable,
+    externalDownbeats:downs.length,
+    labeledExternalBeats:labeledBeats.length
+  };
 }
 
 export function parseBeatThis(text){
-  return text.split(/\r?\n/).map(line=>line.trim().split(/\s+/)).filter(parts=>parts.length>=2&&Number(parts[1])===1).map(parts=>Number(parts[0])).filter(Number.isFinite);
+  const beats=text.split(/\r?\n/)
+    .map(line=>line.trim().split(/\s+/))
+    .filter(parts=>parts.length>=2)
+    .map(parts=>({time:Number(parts[0]),label:Number(parts[1])}))
+    .filter(x=>Number.isFinite(x.time)&&Number.isFinite(x.label));
+  return {
+    beats,
+    downbeats:beats.filter(x=>x.label===1).map(x=>x.time)
+  };
 }
