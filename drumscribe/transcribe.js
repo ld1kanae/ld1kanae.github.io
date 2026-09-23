@@ -961,7 +961,10 @@ export async function transcribe(decoded,report=()=>{},options={}){
       };
       const hatGrid16=hatStepSupport(15/bpm);
       const hatGrid8=hatStepSupport(30/bpm);
-      const hatAccent=localHatAccent(e.time,e.frame);
+      // ADTOF events expose time, not the 11.025 kHz spectral-frame index.
+      // Map time explicitly before reading the browser spectral/template arrays.
+      const spectralFrame=Math.max(0,Math.min(frames-1,Math.round(e.time*RATE/HOP)));
+      const hatAccent=localHatAccent(e.time,spectralFrame);
       let group=null;
       // Winner of the corrected audio-time search:
       // head <= .30 beat => crash; otherwise require complete periodic
@@ -977,13 +980,16 @@ export async function transcribe(decoded,report=()=>{},options={}){
           headDistance,periodicSupport:per,crashSupport,rideSupport,hatSupport,
           hatGrid16,hatGrid8,
           baseConfidence:Number(e.confidence)||0,
-          crashSimilarity:Number(sim[TEMPLATE_INDEX.crash]?.[e.frame])||0,
-          hatSimilarity:Number(sim[TEMPLATE_INDEX.hat]?.[e.frame])||0,
-          rideSimilarity:Number(sim[TEMPLATE_INDEX.ride]?.[e.frame])||0,
-          bandLow:Number(band[0]?.[e.frame])||0,
-          bandMid:Number(band[1]?.[e.frame])||0,
-          bandBody:Number(band[2]?.[e.frame])||0,
-          bandHigh:Number(band[3]?.[e.frame])||0,
+          spectralFrame,
+          crashSimilarity:Number(sim[TEMPLATE_INDEX.crash]?.[spectralFrame])||0,
+          hatSimilarity:Number(sim[TEMPLATE_INDEX.hat]?.[spectralFrame])||0,
+          // The low-rate template bank has one cymbal class, not a separate
+          // ride template; keep this field explicit rather than indexing past it.
+          rideSimilarity:0,
+          bandLow:Number(band[0]?.[spectralFrame])||0,
+          bandMid:Number(band[1]?.[spectralFrame])||0,
+          bandBody:Number(band[2]?.[spectralFrame])||0,
+          bandHigh:Number(band[3]?.[spectralFrame])||0,
           localHatAccent:hatAccent
         }
       });
