@@ -90,8 +90,10 @@ $('analyze').addEventListener('click',async()=>{
     const rawBpm=$('bpm').value.trim();
     const bpm=rawBpm?Number(rawBpm):null;
     if(rawBpm&&(!Number.isFinite(bpm)||bpm<30||bpm>300))throw Error('基準BPMは30〜300で入力してください。');
-    const openHatVariant=new URLSearchParams(location.search).get('openHatVariant')||undefined;
-    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm,diagnosticKst:Boolean(arrangementAudio),openHatVariant});
+    const params=new URLSearchParams(location.search);
+    const openHatVariant=params.get('openHatVariant')||undefined;
+    const cymbalVariant=params.get('cymbalVariant')||undefined;
+    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm,diagnosticKst:Boolean(arrangementAudio),openHatVariant,cymbalVariant});
     const detectedBpm=transcription.bpm;
     const numerator=Number(transcription.numerator)||4,denominator=Number(transcription.denominator)||4;
     const beatSec=60/detectedBpm*4/denominator,barSec=beatSec*numerator;
