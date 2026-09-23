@@ -983,9 +983,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
           spectralFrame,
           crashSimilarity:Number(sim[TEMPLATE_INDEX.crash]?.[spectralFrame])||0,
           hatSimilarity:Number(sim[TEMPLATE_INDEX.hat]?.[spectralFrame])||0,
-          // The low-rate template bank has one cymbal class, not a separate
-          // ride template; keep this field explicit rather than indexing past it.
-          rideSimilarity:0,
+          rideSimilarity:Number(sim[TEMPLATE_INDEX.ride]?.[spectralFrame])||0,
           bandLow:Number(band[0]?.[spectralFrame])||0,
           bandMid:Number(band[1]?.[spectralFrame])||0,
           bandBody:Number(band[2]?.[spectralFrame])||0,
