@@ -1086,6 +1086,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     barPhaseSec:barInfo.phaseSec,
     barPhaseInfo:barInfo,
     adtofInfo,
+    hatSequenceDebug:options.diagnosticHatSequence===true?{events:pruned,broadMetal:adtofBroadMetal}:undefined,
     diagnostics:options.diagnosticKst===true?{
       kstCandidates:diagnosticKstCandidates,
       finalKst:pruned.filter(e=>e.group==='kick'||e.group==='snare'||e.group==='tom').map(e=>({
