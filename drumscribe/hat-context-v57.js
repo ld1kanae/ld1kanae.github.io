@@ -297,3 +297,88 @@ export async function extractHatAcousticFeaturesV63(decoded,events){
     vector:features(samples,e.time,nextMap.get(e),w)
   }));
 }
+
+
+let rawAcousticModelPromiseV64=null;
+async function loadHatRawAcousticModelV64(){
+  if(!rawAcousticModelPromiseV64){
+    rawAcousticModelPromiseV64=fetch(new URL('./models/hat-raw-acoustic-v64.json',import.meta.url))
+      .then(r=>{if(!r.ok)throw Error('ハイハット生音響モデルを読み込めません');return r.json();});
+  }
+  return rawAcousticModelPromiseV64;
+}
+function rankColumnsV64(matrix){
+  if(!matrix.length)return [];
+  const n=matrix.length,d=matrix[0].length,out=Array.from({length:n},()=>new Float64Array(d));
+  for(let j=0;j<d;j++){
+    const order=matrix.map((row,i)=>({v:Number(row[j])||0,i})).sort((a,b)=>a.v-b.v||a.i-b.i);
+    if(n===1){out[order[0].i][j]=0;continue;}
+    for(let r=0;r<n;r++)out[order[r].i][j]=r/(n-1);
+  }
+  return out;
+}
+function robustZColumnsV64(matrix){
+  if(!matrix.length)return [];
+  const n=matrix.length,d=matrix[0].length,out=Array.from({length:n},()=>new Float64Array(d));
+  for(let j=0;j<d;j++){
+    const vals=matrix.map(r=>Number(r[j])||0).sort((a,b)=>a-b);
+    const med=vals.length&1?vals[vals.length>>1]:(vals[(vals.length>>1)-1]+vals[vals.length>>1])/2;
+    const dev=vals.map(v=>Math.abs(v-med)).sort((a,b)=>a-b);
+    const mad=dev.length&1?dev[dev.length>>1]:(dev[(dev.length>>1)-1]+dev[dev.length>>1])/2;
+    const scale=Math.max(1e-6,1.4826*mad);
+    for(let i=0;i<n;i++)out[i][j]=Math.max(-8,Math.min(8,((Number(matrix[i][j])||0)-med)/scale));
+  }
+  return out;
+}
+
+// v64: raw per-hit acoustic Open/Closed classifier.
+// Uses only attack/decay/tail/choke acoustics, within-song normalization,
+// existing single-hit acoustic probability and detector confidence.
+// No alternating parity, review interval, song filename or section label.
+export async function rescoreHatRawAcousticV64(decoded,events,options={}){
+  if(options.enabled===false)return {events,info:{enabled:false,variant:'off'}};
+  const candidates=events.filter(e=>
+    (e.group==='hat'||e.group==='open_hat')&&Number.isFinite(Number(e.openHatProbability))
+  );
+  if(candidates.length<2)return {events,info:{enabled:false,reason:'insufficient-hat-candidates',candidates:candidates.length}};
+  const [model,samples]=await Promise.all([loadHatRawAcousticModelV64(),monoAt44100(decoded)]);
+  const w=workspace();
+  const art=events.filter(e=>['hat','open_hat','pedal_hat','ride'].includes(e.group))
+    .slice().sort((a,b)=>a.time-b.time);
+  const nextMap=new Map();
+  for(let i=0;i<art.length;i++)nextMap.set(art[i],art[i+1]?.time);
+  const raw=candidates.map(e=>features(samples,e.time,nextMap.get(e),w));
+  const rawRank=rankColumnsV64(raw),rawZ=robustZColumnsV64(raw);
+  const base=candidates.map(e=>Number(e.openHatProbability));
+  const baseRank=rank01(base),baseZ=robustZ01(base);
+  const idx=new Map(candidates.map((e,i)=>[e,i]));
+  const openThreshold=Number(model.confidenceThreshold)||.55;
+  const closedThreshold=Number(model.closedThreshold)||.45;
+  let scored=0,changed=0,promoted=0,demoted=0;
+  const out=events.map(e=>{
+    const i=idx.get(e);if(i==null)return e;
+    const row={};
+    for(let j=0;j<raw[i].length;j++){
+      row['raw'+j]=raw[i][j];
+      row['rank'+j]=rawRank[i][j];
+      row['z'+j]=rawZ[i][j];
+    }
+    row.base_p=base[i];row.base_rank=baseRank[i];row.base_z=baseZ[i];
+    row.score=Number(e.score)||0;row.confidence=Number(e.confidence)||0;
+    row.current_open=e.group==='open_hat'?1:0;
+    const p=fusionForestProbability(model,row);scored++;
+    const meta={hatRawAcousticProbability:p,hatRawAcousticV64:true};
+    if(p>=openThreshold&&e.group!=='open_hat'){
+      changed++;promoted++;return {...e,...meta,group:'open_hat',note:46};
+    }
+    if(p<=closedThreshold&&e.group==='open_hat'){
+      changed++;demoted++;return {...e,...meta,group:'hat',note:42};
+    }
+    return {...e,...meta};
+  });
+  return {events:out,info:{
+    enabled:true,variant:'raw-acoustic-v64',candidates:candidates.length,scored,changed,promoted,demoted,
+    openThreshold,closedThreshold,modelTrees:Number(model.treeCount)||model.trees.length,
+    reviewSpecificInputsUsed:false,patternParityUsed:false
+  }};
+}
