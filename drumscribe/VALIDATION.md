@@ -2715,3 +2715,111 @@ fresh browserでdefault `decay-rescue` と `ride-open-decay-rescue` をRide込�
 | combined | 0.843895 | **0.647770** | **0.000000** | 0.745832 | 0.497222 | 0.817466 |
 
 combinedはOpenだけなら大幅改善だがRideを消すため不採用。今後はRide preservationを必須guardrailにする。
+
+
+---
+
+## 2026-09-24: Hi-Hat synchronized-context v53-v58
+
+Purpose:
+- Use the fully synchronized WAV/MIDI corpus to improve Open/Closed HH generalization without reading reference MIDI at runtime.
+- Arcaround Ride reference notes are treated as arrangement-only for the current HH objective and are excluded from HH scoring within ±80 ms.
+
+### v53 synchronized corpus
+
+Added paired-song coverage for Open->Open persistence, Open->Closed/Pedal choke, Closed-heavy material, and Ride-heavy material.
+
+Key observation:
+- decay / next-hit choke features strongly separate Open from Closed on synchronized reference hit times.
+- full replacement with a shared fixed threshold is unsafe because recording/domain calibration shifts by song.
+
+### v54 full runtime replacement — rejected
+
+Applying the synchronized-corpus classifier as a broad replacement over actual browser candidates degraded HH macro from about 0.723 to about 0.580.
+
+Conclusion:
+- do not replace the existing 42/46 classifier wholesale.
+- use synchronized-context evidence only as high-confidence additive rescue.
+
+### v55 song-held-out additive rescue
+
+Each held song used a model trained on the other four synchronized pairs.
+
+Best conservative family:
+- only generated Ride candidates are eligible
+- high Open probability required
+- existing Hat/Open decisions are otherwise preserved
+
+Best held-out result before Ride-count gating:
+- HH macro about 0.72309 -> **0.74031**
+- K/S/T unchanged
+
+### v56 portable Ride-count domain gate
+
+Reference-free runtime gate:
+- if generated Ride count < 24: exact no-op
+- if >= 24: consider only Ride candidates with held-out Open probability >= 0.99
+
+With Arcaround arrangement Ride masked:
+- baseline HH macro **0.725598**
+- minRide24/p>=.99 HH macro **0.743121**
+- delta **+0.017523**
+- only diamondvirgin changed
+- Arcaround / Kaiju / Nanairo / Ray unchanged
+
+Result:
+- experiments/results-hat-context-portable-gate-v56.json
+- experiments/HAT_CONTEXT_PORTABLE_GATE_V56.md
+
+### portable global model replay
+
+A global synchronized-corpus model was applied to the already-generated fresh browser candidates with the same minRide24/p>=.99 gate.
+
+Five-song aggregate:
+- Closed F1 **0.848910 -> 0.848910**
+- Open F1 **0.602285 -> 0.628817**
+- HH macro **0.725598 -> 0.738864**
+- delta HH macro **+0.013266**
+- collapsed Hat/Ride onset F1 **0.813038 -> 0.813038**
+- Kick/Snare/Tom exact non-regression
+
+Per-song HH macro:
+- Arcaround: unchanged **0.468501**
+- diamondvirgin: **0.505017 -> 0.597619**
+- Kaiju: unchanged **0.787958**
+- Nanairo: unchanged **0.914205**
+- Ray: unchanged **0.791025**
+
+For the 170 diamondvirgin Ride candidates moved by the global model, reference matches within ±80 ms were:
+- Open 79
+- Ride 87
+- Closed 2
+- Crash 1
+- unmatched 1
+
+Because the project explicitly permits Ride to be rounded into Open/Closed HH, Ride matches are not considered harmful for the main HH objective.
+
+### v58 production wiring
+
+transcribe.js now runs the global gated rescue after the existing Open-Hat classifier and sequence stage.
+
+Default:
+- hatContextVariant = global-ride-rescue-v57
+- threshold = 0.99
+- min Ride candidates = 24
+
+No runtime reference access is introduced.
+
+Direct fresh production-vs-off validation assets:
+- experiments/browser_hat_context_production_v58.mjs
+- experiments/evaluate_hat_context_production_v58.py
+- .github/workflows/drumscribe-hat-context-production-v58.yml
+
+At the time this section was written, the fresh workflow run 35879732718 had not yet completed because GitHub Actions concurrency was saturated. The replay numbers above are completed and exact for the stored fresh candidates, but **must not be mislabeled as the final fresh v58 browser PASS** until the direct workflow completes.
+
+Wiring/debug note:
+- browser failures encountered during v57/v58 setup were syntax/wiring errors, not score regressions:
+  - malformed ternaries in concurrently edited Crash logic were repaired
+  - one literal backslash-n between imports was replaced with an actual newline
+- current transcribe.js import block is syntactically normalized.
+
