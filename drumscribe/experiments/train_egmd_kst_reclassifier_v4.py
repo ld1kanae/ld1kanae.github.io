@@ -232,7 +232,7 @@ def choose_threshold(rows,pr,g):
     best=None
     for thr in np.arange(.30,.991,.01):
         s=threshold_score(rows,pr,float(thr))
-        eligible=s["precision"]>=floor and s["predicted"]>=8
+        eligible=bool(s["precision"]>=floor and s["predicted"]>=8)
         key=(eligible,s["f1"],s["recall"],s["precision"])
         if best is None or key>best[0]:best=(key,float(thr),s,eligible)
     return best[1],best[2],best[3],floor
