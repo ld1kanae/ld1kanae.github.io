@@ -1,0 +1,43 @@
+name: DrumScribe alternating hi-hat v52 adoption
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/drumscribe-hat-sequence-v52-adopt.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  adopt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - name: Adopt inversion-gated guarded rescue
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          def replace(path,old,new):
+              p=Path(path);s=p.read_text()
+              if old not in s: raise SystemExit(f'missing replacement in {path}: {old}')
+              p.write_text(s.replace(old,new,1))
+          replace('drumscribe/transcribe.js',"options.hatSequenceVariant||'off'","options.hatSequenceVariant||'inversion-guarded-rescue'")
+          replace('drumscribe/app.js',"./transcribe.js?v=20260923-openhat-v47","./transcribe.js?v=20260923-hat-sequence-v52")
+          replace('drumscribe/index.html','app.js?v=20260923-timeline-v7-openhat-v47-arrangement-kst-v47','app.js?v=20260923-timeline-v7-hat-sequence-v52-arrangement-kst-v47')
+          replace('drumscribe/feedback.html','app.js?v=20260923-timeline-v8-openhat-v47','app.js?v=20260923-timeline-v8-hat-sequence-v52')
+          Path('.github/workflows/drumscribe-hat-sequence-v52-adopt.yml').unlink()
+          PY
+      - name: Static checks
+        run: |
+          node --check drumscribe/transcribe.js
+          node --check drumscribe/app.js
+          grep -q "hatSequenceVariant||'inversion-guarded-rescue'" drumscribe/transcribe.js
+      - name: Commit adoption
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "drumscribe: adopt inversion-gated alternating hi-hat repair"
+          git pull --rebase origin main
+          git push origin HEAD:main
