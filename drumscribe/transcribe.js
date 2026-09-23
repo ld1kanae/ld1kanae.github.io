@@ -2,7 +2,7 @@ import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
 import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';
-import {rescueRideOpenV57} from './hat-context-v57.js?v=20260924-production-v58';
+import {rescueRideOpenV57,rescoreHatArticulationFusionV61} from './hat-context-v57.js?v=20260924-acoustic-fusion-v61';
 import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
@@ -1120,6 +1120,18 @@ export async function transcribe(decoded,report=()=>{},options={}){
     adtofInfo.hatContextV57=hatContext.info;
   }else{
     adtofInfo.hatContextV57={enabled:false,variant:hatContextVariant};
+  }
+
+  // v61 production candidate: per-hit acoustic Open/Closed fusion.
+  // No review-song rule, alternating parity or filename is used. This stage
+  // relabels only existing GM42/46 candidates and leaves K/S/T untouched.
+  const hatFusionVariant=options.hatFusionVariant??'acoustic-fusion-v61';
+  if(hatFusionVariant==='acoustic-fusion-v61'){
+    const hatFusion=await rescoreHatArticulationFusionV61(decoded,pruned,{enabled:true});
+    pruned=hatFusion.events;
+    adtofInfo.hatFusionV61=hatFusion.info;
+  }else{
+    adtofInfo.hatFusionV61={enabled:false,variant:hatFusionVariant};
   }
 
   // v55: explicit Crash-vs-Hat-family competition.
