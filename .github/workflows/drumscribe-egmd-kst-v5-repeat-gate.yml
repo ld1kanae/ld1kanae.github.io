@@ -1,0 +1,111 @@
+name: DrumScribe E-GMD v5 supplement repeat gate
+
+on:
+  push:
+    branches:
+      - drumscribe-egmd-kst-v5-current-eval-20260923
+    paths:
+      - ".github/workflows/drumscribe-egmd-kst-v5-repeat-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    strategy:
+      fail-fast: false
+      matrix:
+        repeat: [4, 6, 8]
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Freeze p97.5 threshold and set v5-only repeat gate
+        env:
+          REPEAT: ${{ matrix.repeat }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, re
+          cal=json.load(open("drumscribe/experiments/results-egmd-kst-v5-snare-calibration.json"))
+          thr=float(cal["precisionTiers"]["0.975"]["threshold"])
+          assert cal["druMasterUsedForSelection"] is False
+          repeat=int(os.environ["REPEAT"])
+          p=pathlib.Path("drumscribe/transcribe.js")
+          s=p.read_text()
+          s,n=re.subn(r"const EGMD_EVAL_POLICY='[^']+';","const EGMD_EVAL_POLICY='v4-v5-high-supplement';",s,count=1)
+          if n!=1: raise SystemExit("policy marker not found")
+          s,n=re.subn(r"const v5High=\(e\.probabilityV5\|\|0\)>=\.90;",
+                      f"const v5High=(e.probabilityV5||0)>={thr:.6f};",s,count=1)
+          if n!=1: raise SystemExit("v5High marker not found")
+          s,n=re.subn(r"minRepeat=v4Pass\?1:2;",f"minRepeat=v4Pass?1:{repeat};",s,count=1)
+          if n!=1: raise SystemExit("repeat marker not found")
+          p.write_text(s)
+          print("threshold",thr,"v5-only repeat",repeat)
+          PY
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate MIDI in real Chromium
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Score generated MIDI
+        run: python drumscribe/experiments/compare_browser.py
+      - name: Stage artifact
+        env:
+          REPEAT: ${{ matrix.repeat }}
+        run: |
+          mkdir -p artifact/sidecars
+          cp drumscribe/experiments/results-v2-browser.json artifact/result.json
+          cp drumscribe/experiments/generated-v2-browser/*.json artifact/sidecars/
+          printf '%s\n' "$REPEAT" > artifact/repeat.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: egmd-v5-repeat-${{ matrix.repeat }}
+          path: artifact
+          retention-days: 7
+
+  record:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: egmd-v5-repeat-*
+          path: downloaded
+      - name: Record repeat-gate results
+        run: |
+          rm -rf drumscribe/experiments/egmd-kst-v5-repeat-gate
+          mkdir -p drumscribe/experiments/egmd-kst-v5-repeat-gate
+          for d in downloaded/egmd-v5-repeat-*; do
+            repeat=$(cat "$d/repeat.txt")
+            mkdir -p "drumscribe/experiments/egmd-kst-v5-repeat-gate/repeat-$repeat"
+            cp "$d/result.json" "drumscribe/experiments/egmd-kst-v5-repeat-gate/repeat-$repeat/result.json"
+            cp -r "$d/sidecars" "drumscribe/experiments/egmd-kst-v5-repeat-gate/repeat-$repeat/"
+          done
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-egmd-kst-v5-current-eval-20260923
+          git add drumscribe/experiments/egmd-kst-v5-repeat-gate
+          git diff --cached --quiet && exit 0
+          git commit -m "Record E-GMD v5 supplement repeat-gate benchmark [skip ci]"
+          git push origin HEAD:drumscribe-egmd-kst-v5-current-eval-20260923
