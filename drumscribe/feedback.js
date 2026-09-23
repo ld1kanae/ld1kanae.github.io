@@ -6,7 +6,7 @@ let api=null,selection=null,reviews=[],source={fileName:'',exampleId:'',duration
 const HISTORY_LIMIT=5;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const fmt=t=>{t=Math.max(0,Number(t)||0);const m=Math.floor(t/60),s=Math.floor(t%60),ms=Math.round((t-Math.floor(t))*1000);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(ms).padStart(3,'0')};
+const fmt=t=>{t=Math.max(0,Number(t)||0);const m=Math.floor(t/60),s=Math.floor(t%60),ms=Math.floor((t-Math.floor(t))*1000);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(ms).padStart(3,'0')};
 const key=()=>source.fileName?'drumscribe-review-v1:'+source.fileName+':'+Number(source.duration||0).toFixed(3):'';
 function setStatus(message,error=false){status.textContent=message;status.classList.toggle('error',error)}
 function persist(){const k=key();if(!k)return;try{localStorage.setItem(k,JSON.stringify({reviews}))}catch{}}
