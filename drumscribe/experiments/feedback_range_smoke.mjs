@@ -62,6 +62,20 @@ await page.waitForTimeout(100);
 const snappedTime=await page.evaluate(()=>window.DrumScribeTimeline.getCurrentTime());
 console.log('SEEK_SNAP',JSON.stringify({rawClickTime,expectedBeat,snappedTime}));
 if(Math.abs(snappedTime-expectedBeat)>.003) throw new Error('manual timeline seek did not snap to beat');
+
+await page.evaluate(({x1,x2,y})=>{
+  const canvas=document.querySelector('#timeline');
+  const mk=(x)=>new Touch({identifier:7,target:canvas,clientX:x,clientY:y,screenX:x,screenY:y,pageX:x,pageY:y,radiusX:1,radiusY:1,force:.5});
+  const a=mk(x1),b=mk(x2);
+  canvas.dispatchEvent(new TouchEvent('touchstart',{touches:[a],targetTouches:[a],changedTouches:[a],bubbles:true,cancelable:true}));
+  window.dispatchEvent(new TouchEvent('touchmove',{touches:[b],targetTouches:[b],changedTouches:[b],bubbles:true,cancelable:true}));
+  window.dispatchEvent(new TouchEvent('touchend',{touches:[],targetTouches:[],changedTouches:[b],bubbles:true,cancelable:true}));
+},{x1:box.x+box.width*.58,x2:box.x+box.width*.72,y});
+await page.waitForTimeout(100);
+const touchState=await page.evaluate(()=>({popoverHidden:document.querySelector('#reviewPopover')?.hidden,selection:window.DrumScribeTimeline?.getSelection?.()}));
+console.log('TOUCH_STATE',JSON.stringify(touchState));
+if(touchState.popoverHidden!==false||!touchState.selection||!(touchState.selection.end>touchState.selection.start)) throw new Error('touch range selection failed');
+
 if(errors.length) throw new Error(errors.join(' | '));
 
 await browser.close();
