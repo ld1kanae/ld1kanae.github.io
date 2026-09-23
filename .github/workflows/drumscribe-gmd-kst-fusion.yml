@@ -35,12 +35,12 @@ jobs:
           unzip -q /tmp/gmd/groove.zip -d /tmp/gmd/data
       - name: Build KST prior
         run: |
-          python drumscribe/experiments/build_gmd_kst_prior.py             --gmd-root /tmp/gmd/data             --output drumscribe/models/gmd-kst-prior.json
+          python drumscribe/experiments/build_gmd_kst_prior.py             --gmd-root /tmp/gmd/data             --output drumscribe/models/gmd-kst/kst-prior-v1.json
       - name: Benchmark three KST fusion hypotheses
         run: python drumscribe/experiments/browser_gmd_kst_fusion.py
       - name: Write attribution
         run: |
-          cat > drumscribe/models/gmd-kst-prior-LICENSE.txt <<'TXT'
+          cat > drumscribe/models/gmd-kst/kst-prior-v1-LICENSE.txt <<'TXT'
           This derived aggregate model uses the Groove MIDI Dataset v1.0.0
           by Google LLC, licensed under CC BY 4.0.
           Dataset: https://magenta.tensorflow.org/datasets/groove
@@ -54,7 +54,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin drumscribe-v2-eval
-          git add drumscribe/models/gmd-kst-prior.json drumscribe/models/gmd-kst-prior-LICENSE.txt             drumscribe/experiments/results-browser-gmd-kst-fusion.json
+          git add drumscribe/models/gmd-kst/kst-prior-v1.json drumscribe/models/gmd-kst/kst-prior-v1-LICENSE.txt             drumscribe/experiments/results-browser-gmd-kst-fusion.json
           git diff --cached --quiet && exit 0
           git commit -m "Record GMD kick snare tom fusion benchmark [skip ci]"
           git push origin HEAD:drumscribe-v2-eval

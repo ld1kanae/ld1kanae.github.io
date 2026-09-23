@@ -16,7 +16,7 @@ from pathlib import Path
 
 ROOT=Path("."); EXP=ROOT/"drumscribe/experiments"
 BASE=EXP/"generated-v2-browser"; EGMD=EXP/"generated-magenta-egmd"
-PRIOR_PATH=ROOT/"drumscribe/models/gmd-kst-prior.json"
+PRIOR_PATH=ROOT/"drumscribe/models/gmd-kst/kst-prior-v1.json"
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
 
 spec=importlib.util.spec_from_file_location("ev",EXP/"evaluate_v2.py")
