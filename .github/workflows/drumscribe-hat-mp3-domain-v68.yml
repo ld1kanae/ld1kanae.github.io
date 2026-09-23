@@ -1,0 +1,78 @@
+name: DrumScribe MP3-domain hi-hat v68
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/transcribe.js"
+      - "drumscribe/hat-context-v57.js"
+      - "drumscribe/experiments/browser_hat_mp3_domain_candidates_v68.mjs"
+      - "drumscribe/experiments/train_hat_mp3_domain_v68.py"
+      - "drumscribe/experiments/browser_hat_mp3_domain_production_v68.mjs"
+      - "drumscribe/experiments/evaluate_hat_mp3_domain_production_v68.py"
+      - ".github/workflows/drumscribe-hat-mp3-domain-v68.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install mido numpy scikit-learn
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate fresh MP3 candidate descriptors
+        run: node drumscribe/experiments/browser_hat_mp3_domain_candidates_v68.mjs
+      - name: Run song-held-out validation and train final model
+        run: python drumscribe/experiments/train_hat_mp3_domain_v68.py
+      - name: Run fresh transcribe OFF/ON replay
+        run: node drumscribe/experiments/browser_hat_mp3_domain_production_v68.mjs
+      - name: Score production guard
+        run: python drumscribe/experiments/evaluate_hat_mp3_domain_production_v68.py
+      - name: Commit model and reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/models/hat-mp3-domain-rf-v68.json
+          git add drumscribe/experiments/results-hat-raw-acoustic-candidates-v68.json
+          git add drumscribe/experiments/results-hat-mp3-domain-loocv-v68.json
+          git add drumscribe/experiments/HAT_MP3_DOMAIN_LOOCV_V68.md
+          git add drumscribe/experiments/results-hat-mp3-domain-production-predictions-v68.json
+          git add drumscribe/experiments/results-hat-mp3-domain-production-v68.json
+          git add drumscribe/experiments/HAT_MP3_DOMAIN_PRODUCTION_V68.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record MP3-domain hi-hat v68 model and validation"
+            git pull --rebase origin main
+            git push
+          fi
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-hat-mp3-domain-v68
+          path: |
+            drumscribe/models/hat-mp3-domain-rf-v68.json
+            drumscribe/experiments/results-hat-mp3-domain-loocv-v68.json
+            drumscribe/experiments/HAT_MP3_DOMAIN_LOOCV_V68.md
+            drumscribe/experiments/results-hat-mp3-domain-production-v68.json
+            drumscribe/experiments/HAT_MP3_DOMAIN_PRODUCTION_V68.md
+          retention-days: 14
