@@ -112,11 +112,14 @@ def midi_notes_bytes(data: bytes):
 
 
 def decode_wav(data: bytes):
-    rate,x=wavfile.read(io.BytesIO(data))
-    if x.ndim>1:x=x.astype(np.float64).mean(axis=1)
-    else:x=x.astype(np.float64)
-    if np.issubdtype(x.dtype,np.integer):
-        info=np.iinfo(x.dtype);scale=max(abs(info.min),abs(info.max));x=x/scale
+    rate,raw=wavfile.read(io.BytesIO(data))
+    was_integer=np.issubdtype(raw.dtype,np.integer)
+    if was_integer:
+        info=np.iinfo(raw.dtype);scale=max(abs(info.min),abs(info.max))
+    x=raw.astype(np.float64)
+    if x.ndim>1:x=x.mean(axis=1)
+    if was_integer:
+        x=x/scale
     else:
         peak=max(1.0,float(np.max(np.abs(x))) if len(x) else 1.0);x=x/peak
     if rate!=SR:
@@ -219,18 +222,21 @@ def egmd_metadata():
 
 def choose_egmd_sequence_rows(rows,z,name_set):
     candidates=[r for r in rows if suitable(r) and (r.get("beat_type") or "")=="beat"]
-    by_midi=defaultdict(list)
-    for r in candidates:by_midi[r.get("midi_filename","")].append(r)
-    keys=sorted(by_midi,key=lambda k:(by_midi[k][0].get("style",""),float(by_midi[k][0].get("duration") or 0),k))
+    by_id=defaultdict(list)
+    for r in candidates:by_id[r.get("id","")].append(r)
+    keys=sorted(by_id,key=lambda k:(by_id[k][0].get("style",""),float(by_id[k][0].get("duration") or 0),k))
     chosen=[]
     for key in keys:
-        group=by_midi[key]
-        try:midi_name=resolve_name(name_set,key);notes=midi_notes_bytes(z.read(midi_name))
+        group=by_id[key]
+        probe=sorted(group,key=lambda r:r.get("kit_name",""))[0]
+        try:
+            midi_name=resolve_name(name_set,probe["midi_filename"])
+            notes=midi_notes_bytes(z.read(midi_name))
         except Exception as e:
             print("EGMD MIDI SKIP",key,e,flush=True);continue
         c=counts(notes)
         if c["open"]>=4 and c["closed"]>=8:
-            chosen.append((group,notes,midi_name))
+            chosen.append(group)
         if len(chosen)>=TARGET_EGMD_SEQS:break
     return chosen
 
@@ -247,13 +253,15 @@ def select_egmd():
         names=z.namelist();name_set=set(names)
         seqs=choose_egmd_sequence_rows(rows,z,name_set)
         Xs=[];ys=[];manifest=[]
-        for si,(group,notes,midi_name) in enumerate(seqs):
+        for si,group in enumerate(seqs):
             bykit={r.get("kit_name"):r for r in group}
             kit_rows=[bykit[k] for k in chosen_kits if k in bykit]
             if len(kit_rows)<max(2,TARGET_EGMD_KITS//2):
                 # Fall back to deterministic available kits for this sequence.
                 kit_rows=sorted(group,key=lambda r:r.get("kit_name",""))[:TARGET_EGMD_KITS]
             for r in kit_rows:
+                midi_name=resolve_name(name_set,r["midi_filename"])
+                notes=midi_notes_bytes(z.read(midi_name))
                 audio_name=resolve_name(name_set,r["audio_filename"])
                 raw=z.read(audio_name);audio=decode_wav(raw)
                 X,y=acoustic_rows(audio,notes)
