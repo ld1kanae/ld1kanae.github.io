@@ -1,6 +1,6 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
-import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v47';
+import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
@@ -1042,7 +1042,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // times/counts are preserved; only high-confidence candidates become GM 46.
   // Ambiguous events remain closed GM 42.
   const openHat=await promoteOpenHats(decoded,pruned,bpm,(message,p)=>report(message,p),{
-    variant:options.openHatVariant||'ride-open-decay-rescue',
+    variant:options.openHatVariant||'ride-selective60-decay-rescue',
     barPhaseSec:barInfo.phaseSec
   });
   pruned=openHat.events;
