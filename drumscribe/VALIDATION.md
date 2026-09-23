@@ -1915,3 +1915,137 @@ kick/snare/tom等の既存結果を維持したままopen/closed情報だけ追�
 - real browser 46出力・sample preview・MIDI export確認済み
 
 次の優先作業は、diamondvirginのOpen候補消失経路を `chart.mid` で予測後に診断し、**classifierを緩めるのではなく前段candidate routingを改善**すること。
+
+## 2026-09-23: E-GMD低信頼K/S/T再分類器 — v1→v3、snare限定production採用
+
+GMD symbolic priorの次段として、Expanded Groove MIDI Dataset (E-GMD) のaudio+MIDI対応を使い、**ADTOFを置換せず、低信頼kick/snare/tom候補だけを再分類する軽量モデル**を実装した。
+
+予測生成時にDruMaster `chart.mid` は使用していない。E-GMDでモデル・閾値を固定した後、DruMaster 5曲は転移確認と最終回帰評価にのみ使用した。
+
+### 設計
+
+- base detector: frozen ADTOF
+- candidate: ADTOFの各class residual peakをproductionより低い閾値で取得
+- classifier: kick / snare / tom **独立二値ロジスティック回帰**
+  - 3択分類にはしない。kick+snare等の同時打ちを保持するため。
+- 特徴:
+  - ADTOF 5 class activation / residual
+  - ±2 frame local mean / max
+  - target前後activation
+  - target vs 他class比
+  - v3では曲内95 percentile正規化とactivation/residual percentile rankを追加
+- 学習/検証分離:
+  - E-GMD official train sequenceを学習
+  - official validation sequenceを外部評価
+  - さらにtrain kitとvalidation kitを完全分離
+- 90 GB全体はdownloadせず、RemoteZip HTTP range requestで必要な短いWAV/MIDIだけ取得。
+- 学習元ファイルはrepositoryへ再配布せず、派生モデルと評価結果のみ保存。
+
+### v1: 低閾値候補の負例不足
+
+最初のcandidate scale 0.50では、学習候補が正例に偏った。
+例: snareは **495候補中484正例**。
+
+DruMaster転移では:
+- baseline snare F1: **0.890521**
+- rescue snare F1: **0.888580**
+- baseline tom F1: **0.784091**
+- rescue tom F1: **0.424581**
+- arcaroundではtomを141件追加するなど過剰救済。
+
+原因は「低閾値candidate pool自体が綺麗すぎ、未知domainで拒否を学べていない」ことと判断。**v1不採用**。
+
+### v2: hard negative導入
+
+変更:
+- candidate scale **0.50 → 0.20**
+- 他K/S/T正解時刻でtarget class activationが出ている例を明示的なhard negativeとして学習
+- 外部validation precisionを重視した閾値選択
+
+candidate母数:
+- kick: train 347 / positive 211
+- snare: train 702 / positive 573
+- tom: train 762 / positive 237
+
+外部validationのsnare:
+- threshold **0.42**
+- TP 141 / Pred 148 / candidate-positive 184
+- Precision **0.952703**
+- Recall **0.766304**
+- F1 **0.849398**
+
+DruMasterへの保守的転移では既存song gate等を通る追加候補が0件で、5曲値はbaselineと同一。**安全だが効果0なのでruntime採用せず**。
+
+### v3: clip normalization + kit-held-out拡張
+
+音量・kit domain差を減らすため、特徴を曲内95 percentileで正規化し、activation/residualの曲内percentile rankも導入。train kit 6種、held-out kit 4種を使用。
+
+v3外部validation:
+- kick: threshold 0.72、Precision **0.972222**、Recall 0.208333
+- snare: threshold **0.60**、Precision **0.950450**、Recall **0.653251**
+- tom: threshold 0.96、Precision **0.952381**、Recall 0.163934
+
+kick/tomは高precisionだがrecallが低く、現productionの強い出力を置換・追加する用途には使わない。
+**snareだけを第二判定器として利用する**。
+
+### v3 production policy
+
+E-GMD modelは通常ADTOF出力を変更しない。次の場合だけsnareを追加候補にする。
+
+1. 現行song-level snare dropout gateが成立
+   - low-candidate/base-snare ratio >= 1.24
+   - base-snare/kick ratio <= 0.30
+2. E-GMD v3 snare probability >= **0.60**
+3. 既存snareから35 msより離れている
+4. 現行kickから35 ms以内
+5. 同一16分slotのE-GMD低閾値candidateに近傍±8小節で **1回以上**の反復支持
+
+v3 classifierはclip-normalized activation/residual/class-ratio自体を入力して外部校正しているため、旧手書きsnare rescueの絶対activation >= 0.12 / kick比 >= 0.25 はE-GMD側へ重ねて適用しない。旧救済経路には従来条件をそのまま残す。
+
+E-GMD classifierからの**kick追加・tom追加は行わない**。tomについてはv1でdomain transfer時の過剰追加を確認したため、現行tom detector/vetoを維持。
+
+### 実Chromium 5曲の最終結果
+
+変更前:
+- kick: 2636 / 2765 / 2712, F1 **0.962571**
+- snare: 1273 / 1389 / 1470, P 0.916487 / R 0.865986 / F1 **0.890521**
+- tom: 69 / 84 / 92, F1 **0.784091**
+- overall: 7461 / 8192 / 10086, F1 **0.816391**
+
+E-GMD v3 model-only gate:
+- kick: **変更なし**, F1 **0.962571**
+- snare: **1276 / 1394 / 1470**
+  - Precision **0.915352**
+  - Recall **0.868027**
+  - F1 **0.891061**
+- tom: **変更なし**, F1 **0.784091**
+- overall: **7464 / 8197 / 10086**
+  - Precision **0.910577**
+  - Recall **0.740036**
+  - F1 **0.816496**
+
+arcaroundだけでE-GMD追加が5件発火し、3 TP / 2 FPだった。
+arcaround snareは **143 / 159 / 292 → 146 / 164 / 292**。
+
+改善幅は小さいが、優先3classのうちkick/tomを一切悪化させずsnare F1が上昇したため、**snare限定E-GMD v3 supportをproduction採用**。
+
+### 実装資産
+
+production:
+- `models/egmd-kst-reclassifier-v3.json`
+- `models/egmd-kst-reclassifier-LICENSE.txt`
+- `adtof.js`: clip-normalized v3 feature計算と低閾値snare candidate probability
+- `transcribe.js`: 現行song-level gate内だけでE-GMD候補を限定救済
+
+experiments:
+- `train_egmd_kst_reclassifier.py` / v1
+- `train_egmd_kst_reclassifier_v2.py`
+- `train_egmd_kst_reclassifier_v3.py`
+- `benchmark_egmd_kst_transfer.py` / v1
+- `benchmark_egmd_kst_transfer_v2.py`
+- `benchmark_egmd_kst_transfer_v3.py`
+- `results-egmd-kst-reclassifier-v*.json`
+- `results-egmd-kst-transfer-v*.json`
+
+注意: classifierの外部校正はsequence/kit-held-outだが、最終production policyの採否はDruMaster 5曲でも確認している。未知曲でのpost-selection validationは引き続き必要。
+
