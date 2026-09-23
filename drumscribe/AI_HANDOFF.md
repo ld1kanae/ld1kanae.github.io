@@ -14,6 +14,13 @@ DrumScribe は、**ドラム単独音源**（WAV / MP3 等）をブラウザ内�
 
 予測時に `chart.mid` を読んではいけない。参照MIDIは**生成後の評価だけ**に使う。
 
+### GMD / E-GMD の実験利用方針
+
+このプロジェクトでは、**GMD / E-GMD 関連のMIDI・音声・学習済み補助モデル・そこから作った集計priorを、採譜精度改善の検証、学習、比較実験、ablation、候補生成に自由に用いてよい。**
+必要なら既存のGMD/E-GMD資産を組み合わせたり、新しい派生モデルを作って `experiments/` で比較してよい。
+
+ただし、外部データそのものをリポジトリへ再配布・複製する場合は元データ/モデルのライセンス条件を確認すること。**「検証に自由に使ってよい」というプロジェクト方針と、第三者データの再配布条件は別問題**として扱う。
+
 ---
 
 ## 1. 最初に「現行」を確定する手順
@@ -319,18 +326,57 @@ song.json.playback.stemOffsetSec + midiOffsetSec (存在時)
 
 ---
 
-## 8. 現行runtimeで使うmodel / 現在は使わないmodel
+## 8. GMD / E-GMDモデルと実験資産の場所
 
-### runtime参照あり
+GMD系は用途ごとに置き場所が分かれている。**「GMDモデルは全部 `models/`」ではない。**
 
+### 8-1. production runtimeが直接参照するGMD / E-GMD
+
+- `models/egmd-kst-reclassifier-v3.json`
+  - E-GMD audio+MIDIから学習した低信頼K/S/T再分類器。
+  - 現runtimeでは **snare第二判定だけproduction採用**。
+  - `adtof.js` が直接fetchする。
+  - license: `models/egmd-kst-reclassifier-LICENSE.txt`
+- `models/gmd-metal-prior.json`
+  - GMD train由来のsymbolic metal prior。
+  - 現runtimeでは hat -> pedal_hat 判定の補助に使用。
+  - `transcribe.js` が直接fetchする。
+  - license: `models/gmd-metal-prior-LICENSE.txt`
+
+ADTOF本体やhat filterもproduction modelだがGMD系ではない:
 - `models/adtof-model.json`
 - `models/adtof-filterbank.f32`
 - `models/adtof-frame-rnn.onnx`
-- `models/egmd-kst-reclassifier-v3.json`
 - `models/hat-extra-trees-v11.json`
-- `models/gmd-metal-prior.json`
 
-### 現時点でruntime参照を確認していない実験資産
+### 8-2. 小節頭 / 一般リズムGMD実験は `experiments/`
+
+- `experiments/gmd-raw-bar-model-v26.json`
+  - raw GMD MIDIから作ったbar/downbeat研究用モデル。
+  - 現runtimeのbar selectorは置換していない。
+- `experiments/results-gmd-simple3-v26.json`
+  - diamondvirgin / nanairo / ray の3曲限定GMD検証結果。
+- `experiments/gmd-pattern-bagging-v27/`
+  - GMD groove patternをgenre/pattern mixture・bagging方向で再検証する現在の研究資産。
+  - `batch1.json`, `batch2.json`, `batch3.json` 等。
+  - **research artifactであり、現時点ではproduction runtimeから参照されない。**
+
+### 8-3. E-GMD K/S/T学習・転移評価コードも `experiments/`
+
+- `experiments/train_egmd_kst_reclassifier.py`
+- `experiments/train_egmd_kst_reclassifier_v2.py`
+- `experiments/train_egmd_kst_reclassifier_v3.py`
+- `experiments/benchmark_egmd_kst_transfer.py`
+- `experiments/benchmark_egmd_kst_transfer_v2.py`
+- `experiments/benchmark_egmd_kst_transfer_v3.py`
+- `experiments/results-egmd-kst-reclassifier-v1.json`
+- `experiments/results-egmd-kst-reclassifier-v2.json`
+- `experiments/results-egmd-kst-reclassifier-v3.json`
+- `experiments/results-egmd-kst-transfer-v1.json`
+- `experiments/results-egmd-kst-transfer-v2.json`
+- `experiments/results-egmd-kst-transfer-v3.json`
+
+### 8-4. 旧GMD metal実験モデル（現runtime未参照）
 
 - `models/gmd-adtof-metal-logreg.json`
 - `models/gmd-metal-acoustic-logreg.json`
@@ -338,6 +384,19 @@ song.json.playback.stemOffsetSec + midiOffsetSec (存在時)
 - `models/gmd-metal-style-prior.json`
 
 これらは削除対象という意味ではない。**現行採用と断定しない**という意味。
+
+### 8-5. 古い履歴記述への注意
+
+`VALIDATION.md` の過去節には `drumscribe/models/gmd-kst-prior.json` へ集計priorを保存したという記述があるが、**現在の `main` treeではそのファイルは存在しない**。
+現在のGMD/E-GMD資産の場所を知りたい場合は、この節よりも必ず `main` treeとruntimeのfetch先を優先する。
+
+### 8-6. GMD / E-GMDは検証に自由に使ってよい
+
+このプロジェクトではGMD / E-GMD関連資産を、**新しい採譜アルゴリズムの仮説検証、学習、再分類器、prior、bar/downbeat推定、候補順位付け、ablation、held-out比較に自由に使用してよい**。
+既存のproductionモデルを壊さない限り、`experiments/` に新しい派生モデル・集計・結果を追加して比較してよい。
+
+ただし外部データの再配布・同梱は元ライセンス条件を確認すること。元MIDI/音声を保存せず、必要な集計値・学習済み軽量model・評価結果だけをrepoへ置く運用も可。
+
 
 ---
 
@@ -367,6 +426,17 @@ song.json.playback.stemOffsetSec + midiOffsetSec (存在時)
 - 実browser: snare F1 0.890521 → **0.891061**、kick/tom不変
 - E-GMDからkick/tomを追加する処理は不採用
 - tomについては「kick+tomを一般論として抑制しすぎない」ことが重要
+
+### GMD pattern bagging v27
+
+参照:
+- `experiments/gmd-pattern-bagging-v27/`
+
+位置づけ:
+- raw GMD groove patternをgenre/pattern mixture / bagging方向で増量検証している研究系列
+- batch JSONは `experiments/` 配下
+- **現時点ではruntime未採用**
+- runtimeへ入れる場合は必ず現行bar selectorとの非退行比較を先に行う
 
 ### meter / GMD bar prior
 
