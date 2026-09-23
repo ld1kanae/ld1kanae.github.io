@@ -126,6 +126,19 @@ Validation:
 - `experiments/results-proof-v34.json`
 - `VALIDATION.md`
 
+## Post-promotion triplet regression
+
+main head `9c363cd4d951f4ce79e344d555a91840dacaa4bb` でGMD held-out triplet workflow `35847387266` も再実行し成功。
+
+- auto: 14/24 = 58.33%
+- auto triplet recall: 2/12 = 16.67%
+- auto straight controls: 12/12 = 100%
+- oracle BPM: 14/24 = 58.33%
+- oracle triplet recall: 2/12 = 16.67%
+- oracle straight controls: 12/12 = 100%
+
+v32と同値。今回のtempo-octave / GMD bar-phase修正によるtriplet branchの回帰は確認されなかった。
+
 ## Caveat
 
 Repository-packaged runtimeの最終full-WAVローカルrerunは実行上限を超えたため完了扱いにしない。
