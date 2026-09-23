@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const songs=['arcaround','diamondvirgin','kaiju','nanairo','ray'];
-const variants=['base','decay','gmd','combined'];
+const variants=['base','decay','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay'];
 const root='drumscribe/experiments/generated-openhat-v40';
 await fs.mkdir(root,{recursive:true});
 
