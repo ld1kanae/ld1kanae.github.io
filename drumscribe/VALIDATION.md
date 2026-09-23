@@ -2155,3 +2155,226 @@ diamondvirgin の不足はpost-classificationより前段の問題。
 - experiments/results-open-hat-synthetic-overlay-loo.json
 - experiments/open_hat_overlay_rules_loo.py
 - experiments/results-open-hat-overlay-rules-loo.json
+
+## 2026-09-23: E-GMD K/S/T v4 — 学習量拡大 + hard-context 3仮説比較
+
+v3 production採用後、E-GMDの学習sequence / kitを増やし、特に **kickと重なるsnare** と **tom fill / class-confusion** を多く含む条件で再学習した。
+
+予測生成中にDruMaster `chart.mid` は使用していない。モデル形式・threshold・仮説選択はE-GMDのofficial validation sequence + trainと完全に別のheld-out kitだけで固定し、その後DruMaster 5曲へ転移して採点した。
+
+### v4データ設計
+
+v3:
+- train kit: 6
+- held-out kit: 4
+
+v4:
+- train kit: **8**
+- held-out kit: **5**
+- sequence selectionを4系統へ拡張:
+  1. generic beat
+  2. generic fill
+  3. kick+snare overlap
+  4. tom-heavy
+
+v4 train kit:
+- 60s Rock
+- Alternative (METAL)
+- Bigga Bop (Jazz)
+- ClassicMetal (80s-90s)
+- Custom3
+- Ele-Drum
+- Jazz
+- Live Rock
+
+held-out kit:
+- 808 Simple
+- Big Room (Layered)
+- Classic Rock
+- Compact Lite (w/ Tambourine HH)
+- Dry & Heavy (Folk Rock)
+
+特徴表現はv3互換:
+- ADTOF 5-class activation / residual
+- ±2 frame local context
+- 5-frame mean / max
+- 曲内95 percentile正規化
+- activation / residual percentile rank
+- target / other class比
+
+### 3仮説
+
+A. **scale**
+- E-GMD対象量だけを増やす
+- balanced logistic regression
+- hard contextの追加重みなし
+
+B. **targeted_oversample**
+- kick/snare overlap
+- tom fill
+- class-confusion negative
+を学習集合内で複製して強調
+
+C. **targeted_weighted**
+- データ複製はせず
+- 上記hard contextへsample weightを付与
+
+### E-GMD held-out結果
+
+#### Snare
+
+A scale が最良。
+
+- train candidate **6580**
+- train positive **4643**
+- held-out candidate **396**
+- held-out positive **333**
+- C **1.0**
+- threshold **0.67**
+- TP / Pred / Ref **286 / 301 / 333**
+- Precision **0.950166**
+- Recall **0.858859**
+- F1 **0.902208**
+- Average Precision **0.934569**
+- ROC AUC **0.842414**
+
+B targeted_oversample:
+- P **0.952381**
+- R **0.840841**
+- F1 **0.893142**
+
+C targeted_weighted:
+- P **0.952381**
+- R **0.840841**
+- F1 **0.893142**
+
+**snareではhard-context強調より、単純にdomain量を増やしたAが勝った。**
+
+#### Tom
+
+C targeted_weighted が最良。
+
+- train candidate **7934**
+- train positive **2973**
+- held-out candidate **684**
+- held-out positive **365**
+- C **0.03**
+- threshold **0.89**
+- TP / Pred / Ref **111 / 116 / 365**
+- Precision **0.956897**
+- Recall **0.304110**
+- F1 **0.461538**
+- Average Precision **0.860691**
+- ROC AUC **0.845708**
+
+A scale:
+- P **0.954545**
+- R **0.230137**
+- F1 **0.370861**
+
+B targeted_oversample:
+- P **0.954545**
+- R **0.230137**
+- F1 **0.370861**
+
+tomはhard-context weightingでrecallが上がった。ただし、productionでtomを新規追加するにはまだrecallが低く、過去v1のdomain-transfer暴発もあるため**tom追加には使わない**。
+
+#### Kick
+
+3方式とも設定したheld-out precision floor 0.97を満たせなかったためproduction候補外。
+現行kick F1 0.962571が既に高いため変更しない。
+
+### v4 frozen transfer: DruMaster 5曲
+
+E-GMDだけで固定したv4モデルをDruMasterへ移した。参照 `chart.mid` はscore時のみ使用。
+
+Python転移:
+- baseline snare: **1274 / 1390 / 1470**, F1 **0.890909**
+- v4 snare: **1307 / 1431 / 1470**
+  - P **0.913347**
+  - R **0.889116**
+  - F1 **0.901069**
+- kick F1 **0.962571** 不変
+- tom F1 **0.784091** 不変
+- overall F1 **0.816456 → 0.818231**
+
+v4 tom strong-reject vetoは5曲で削除0件。したがってproduction tomロジックは変更しない。
+
+### 実Chromium検証
+
+評価branchでは並行するopen-hat研究変更が存在したため、K/S/T採用後に **main専用の実Chromium validation workflow** も追加して現mainだけを再生成した。
+
+main実Chromium:
+- kick: **2636 / 2765 / 2712**
+  - P **0.953345**
+  - R **0.971976**
+  - F1 **0.962571**
+- snare: **1301 / 1421 / 1470**
+  - P **0.915552**
+  - R **0.885034**
+  - F1 **0.900035**
+- tom: **69 / 84 / 92**
+  - P **0.821429**
+  - R **0.750000**
+  - F1 **0.784091**
+
+v3 main snare:
+- 1276 / 1394 / 1470
+- F1 **0.891061**
+
+v4 main snare:
+- 1301 / 1421 / 1470
+- F1 **0.900035**
+
+差:
+- TP **+25**
+- Pred **+27**
+- snare F1 **+0.008973**
+- kick / tom 非退行
+
+main全class:
+- TP **7490**
+- Pred **8223**
+- Ref **10086**
+- Precision **0.910860**
+- Recall **0.742614**
+- F1 **0.818177**
+
+### 実験中に起きた実装上の問題
+
+v4 workflow初回は学習・特徴生成終了後、`numpy.bool_` をJSONへ出そうとして直列化エラーになった。モデル設計/精度の失敗ではなく型変換バグだったため `bool(...)` に修正し、同一条件で再実行して完走。
+
+またreal-browser workflowは、並行open-hat研究でworkflow YAMLにliteral `\\n` が混入して一時的に起動不能になった。YAMLだけ修正。評価branchのbrowser結果commitは並行workflowとのbinary MIDI rebase raceでpush失敗したが、生成・score工程自体は成功していた。
+
+main側では研究branchとの混在を避けるため:
+- `.github/workflows/drumscribe-main-kst-validation.yml`
+を追加。main checkoutから実Chromium生成・scoreを行い、最終的に成功した。
+
+### 採用判断
+
+**採用**
+- E-GMD v4 snare classifier
+- v4 snare threshold **0.67**
+- 現行song-level dropout gate + near-kick + slot repetition条件の中でのみ第二判定
+
+**維持**
+- kick: 現行ADTOF出力
+- tom: 現行ADTOF + weak isolated kick-bleed veto
+
+**不採用**
+- v4 kick reclassifierによるproduction変更
+- v4 tomの新規追加
+- v4 tom veto追加（5曲で変更0）
+
+production:
+- `models/egmd-kst-reclassifier-v4.json`
+- `adtof.js`
+- `transcribe.js`
+
+再現資産:
+- `experiments/train_egmd_kst_reclassifier_v4.py`
+- `experiments/benchmark_egmd_kst_transfer_v4.py`
+- `experiments/results-egmd-kst-reclassifier-v4.json`
+- `experiments/results-egmd-kst-transfer-v4.json`
+- `.github/workflows/drumscribe-main-kst-validation.yml`
+
