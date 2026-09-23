@@ -697,7 +697,9 @@ export async function transcribe(decoded,report=()=>{},options={}){
         egmdDiag.notExisting++;
         if(!nearEvent(kickEvents,e.time,.035))continue;
         egmdDiag.nearKick++;
-        if((e.score||0)<.12||(e.score||0)<.25*Math.max(e.kickActivation||0,1e-6))continue;
+        // E-GMD v3 is externally calibrated on clip-normalized ADTOF
+        // activation/residual/class-ratio features. Re-applying the old local
+        // activation floor here discards externally accepted low-level snares.
         egmdDiag.acoustic++;
         const repeat=repeatedEgmdAtSlot(e.time);
         if(repeat<1)continue;
@@ -729,7 +731,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v3-support+kick-tom-veto-v2',
+      mode:'layered-snare-rescue+egmd-v3-modelgate+kick-tom-veto-v3',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
