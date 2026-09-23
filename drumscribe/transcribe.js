@@ -1084,7 +1084,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
 
   // Review-trained alternating-eighth repair is experiment-gated. It may
   // alter metal articulation/onsets only; kick/snare/tom are never changed.
-  const hatSequence=await repairAlternatingHiHats(decoded,pruned,adtofBroadMetal,bpm,barInfo.phaseSec,options.hatSequenceVariant||'off');
+  const hatSequence=await repairAlternatingHiHats(decoded,pruned,adtofBroadMetal,bpm,barInfo.phaseSec,options.hatSequenceVariant||'inversion-guarded-rescue');
   pruned=hatSequence.events;
   adtofInfo.hatSequence=hatSequence.info;
 
