@@ -26,7 +26,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 
 async function loadModel(){
   if(!modelPromise){
-    modelPromise=fetch(new URL('./models/open-hat-extra-trees-v1.json',import.meta.url))
+    modelPromise=fetch(new URL('./models/open-hat-extra-trees-v2.json',import.meta.url))
       .then(r=>{if(!r.ok)throw Error('オープンハイハット分類モデルを読み込めません');return r.json();});
   }
   return modelPromise;
@@ -174,7 +174,7 @@ function predict(model,x){
 
 export async function promoteOpenHats(decoded,events,report=()=>{}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
-  const baseInfo={mode:'open-hat-extra-trees-v1',candidates:hats.length,promoted:0,enabled:false};
+  const baseInfo={mode:'open-hat-extra-trees-v2-gmd128',candidates:hats.length,promoted:0,enabled:false};
   if(!hats.length)return {events,info:{...baseInfo,skipReason:'no-hat'}};
   try{
     const model=await loadModel();
