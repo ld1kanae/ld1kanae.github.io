@@ -1,5 +1,39 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: tempo mapを1小節単位へ集約（v35）
+
+ユーザー要望により、BPM変化だけを変更。note tick / quantize grid / BPM基準推定 / 小節頭 / 楽器分類には触れず、tempo mapの出力密度を1拍単位から**最低1小節単位**へ変更した。
+
+方式:
+- 内部beat-level tempo推定は維持
+- 各小節についてbeat-level tempoが作る総時間を計算
+- 同じ小節総時間になるduration-equivalent BPMを1つ計算
+- MIDI tempo eventは小節頭だけに出力
+- previewの `timeForScore()` も同じbar-level tempoを使用
+
+Proof v34 MIDIのtempo metadataだけを同方式で変換:
+- tempo events 426 -> **110**
+- note ticks変更なし
+- note playback time差 median **0.054 ms** / p95 **0.521 ms** / max **1.166 ms**
+- 小節境界の累積時刻差 max **0.010 ms**
+- BPM range 98.735–100.369
+
+5曲fresh Chromium regression run `35849376347`:
+- arcaround 549 -> **139** tempo events
+- diamondvirgin 589 -> **149**
+- kaiju 594 -> **153**
+- nanairo 491 -> **127**
+- ray 557 -> **142**
+- 全曲 min tempo-event gap **1920 ticks** = PPQ480 4/4の1小節
+- violations **0**
+- Precision .911 / Recall .743 / F1 **.818**
+- grid failures 0 / max residual 0.0 beat
+
+CIにも「bar tempo modeではtempo event同士が1小節未満ならfailure」を追加。
+
+詳細: [TEMPO_BAR_V35.md](experiments/TEMPO_BAR_V35.md)  
+機械可読: [results-tempo-bar-v35.json](experiments/results-tempo-bar-v35.json)
+
 ## 2026-09-23: Proof v34 — 2x BPM誤推定と小節位相をGMDで限定補正
 
 ユーザー提供のProof音源で、現行mainが **198.164 BPM** を選ぶ一方、同じ採譜内のkick/snare event-family推定は **99.125 BPM** を最上位としていた問題を再現。
