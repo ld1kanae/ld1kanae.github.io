@@ -64,7 +64,7 @@ for(const song of songs){
       result[cfg.name]={
         bpm:tr.bpm,barPhaseSec:tr.barPhaseSec,numerator,denominator,
         openHatInfo:tr.adtofInfo?.openHat||null,arrangementHatInfo:arrInfo,
-        sections:arrangement.sections.map(s=>({startSec:s.startSec,endSec:s.endSec,group:s.group,label:s.label,occurrence:s.occurrence,repeatSimilarity:s.repeatSimilarity})),
+        sections:arrangement.sections.map(s=>({index:s.index,startSec:s.startSec,endSec:s.endSec,group:s.group,label:s.label,occurrence:s.occurrence,repeatSimilarity:s.repeatSimilarity})),
         events:events.map(e=>({time:e.time,note:e.note,group:e.group,
           openHatProbability:e.openHatProbability,openHatBaseProbability:e.openHatBaseProbability,
           rideRoundedToHat:Boolean(e.rideRoundedToHat),arrangementHatRescored:Boolean(e.arrangementHatRescored)}))
