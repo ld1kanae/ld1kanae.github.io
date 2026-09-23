@@ -165,7 +165,7 @@
     "snareRescueScale": 0.5,
     "snareRescueCandidates": 187,
     "egmdSnareCandidates": 286,
-    "egmdKstModel": "egmd-kst-candidate-logreg-clipnorm-hardneg",
+    "egmdKstModel": "egmd-kst-candidate-logreg-v4-targeted",
     "backend": "onnxruntime-web/wasm",
     "frames": 26337,
     "coreFrames": 3000,
@@ -178,7 +178,7 @@
       "cymbal": 13
     },
     "structuralPriority": {
-      "mode": "layered-snare-rescue+egmd-v3-modelgate+kick-tom-veto-v3",
+      "mode": "layered-snare-rescue+egmd-v4-modelgate+kick-tom-veto-v3",
       "snareRescueCandidates": 187,
       "rescueDensity": 1.272108843537415,
       "snareKickDensity": 0.2504258943781942,
@@ -186,47 +186,236 @@
       "snareLayeredCandidates": 25,
       "snareRescued": 12,
       "egmdSnareCandidates": 286,
-      "egmdSnareRescued": 5,
-      "egmdModel": "egmd-kst-candidate-logreg-clipnorm-hardneg",
+      "egmdSnareRescued": 32,
+      "egmdModel": "egmd-kst-candidate-logreg-v4-targeted",
       "egmdDiag": {
-        "aboveThreshold": 151,
-        "notExisting": 36,
-        "nearKick": 6,
-        "acoustic": 6,
-        "repeat": 5
+        "aboveThreshold": 223,
+        "notExisting": 66,
+        "nearKick": 33,
+        "acoustic": 33,
+        "repeat": 32
       },
       "egmdRescueDetails": [
         {
+          "time": 31.69,
+          "probability": 0.7729656951665654,
+          "score": 0.10974553227424622,
+          "kickActivation": 0.6684684753417969,
+          "repeatSupport": 3
+        },
+        {
+          "time": 32.61,
+          "probability": 0.7236620200688082,
+          "score": 0.11788198351860046,
+          "kickActivation": 0.7218703031539917,
+          "repeatSupport": 5
+        },
+        {
+          "time": 35.34,
+          "probability": 0.7385532009924121,
+          "score": 0.06543105840682983,
+          "kickActivation": 0.7558895945549011,
+          "repeatSupport": 5
+        },
+        {
+          "time": 38.98,
+          "probability": 0.8654961384401436,
+          "score": 0.1869901418685913,
+          "kickActivation": 0.8061649203300476,
+          "repeatSupport": 5
+        },
+        {
+          "time": 39.89,
+          "probability": 0.7802418408293154,
+          "score": 0.09105443954467773,
+          "kickActivation": 0.8454368114471436,
+          "repeatSupport": 6
+        },
+        {
+          "time": 88.97,
+          "probability": 0.8274659654808474,
+          "score": 0.1505984365940094,
+          "kickActivation": 0.5840874910354614,
+          "repeatSupport": 10
+        },
+        {
+          "time": 103.52,
+          "probability": 0.7080417959491307,
+          "score": 0.1081593930721283,
+          "kickActivation": 0.7490612268447876,
+          "repeatSupport": 9
+        },
+        {
+          "time": 105.33,
+          "probability": 0.7171078405319802,
+          "score": 0.1279447376728058,
+          "kickActivation": 0.7451698780059814,
+          "repeatSupport": 8
+        },
+        {
           "time": 105.56,
-          "probability": 0.7971971075652154,
+          "probability": 0.8631653585759167,
           "score": 0.11678889393806458,
           "kickActivation": 0.640076220035553,
           "repeatSupport": 1
         },
         {
+          "time": 106.24,
+          "probability": 0.7326049855606315,
+          "score": 0.11091232299804688,
+          "kickActivation": 0.8020825386047363,
+          "repeatSupport": 9
+        },
+        {
+          "time": 107.15,
+          "probability": 0.754468034718636,
+          "score": 0.12525522708892822,
+          "kickActivation": 0.6767063140869141,
+          "repeatSupport": 7
+        },
+        {
+          "time": 112.6,
+          "probability": 0.7175780869565938,
+          "score": 0.17083215713500977,
+          "kickActivation": 0.8562679886817932,
+          "repeatSupport": 6
+        },
+        {
+          "time": 114.88,
+          "probability": 0.7678193383422609,
+          "score": 0.18686610460281372,
+          "kickActivation": 0.8282417058944702,
+          "repeatSupport": 2
+        },
+        {
           "time": 125.34,
-          "probability": 0.677523157795181,
+          "probability": 0.9258390717083377,
           "score": 0.17217522859573364,
           "kickActivation": 0.6719219088554382,
           "repeatSupport": 2
         },
         {
+          "time": 182.61,
+          "probability": 0.787105837874765,
+          "score": 0.13154324889183044,
+          "kickActivation": 0.5186294913291931,
+          "repeatSupport": 1
+        },
+        {
+          "time": 183.97,
+          "probability": 0.7102542412016555,
+          "score": 0.16483262181282043,
+          "kickActivation": 0.6988953351974487,
+          "repeatSupport": 5
+        },
+        {
+          "time": 188.52,
+          "probability": 0.8418410105756835,
+          "score": 0.17113962769508362,
+          "kickActivation": 0.6958398222923279,
+          "repeatSupport": 7
+        },
+        {
+          "time": 193.05,
+          "probability": 0.9555541554002623,
+          "score": 0.13809585571289062,
+          "kickActivation": 0.6994537115097046,
+          "repeatSupport": 8
+        },
+        {
+          "time": 198.51,
+          "probability": 0.8738364476797793,
+          "score": 0.1812317669391632,
+          "kickActivation": 0.783973217010498,
+          "repeatSupport": 11
+        },
+        {
+          "time": 200.33,
+          "probability": 0.8459238274692314,
+          "score": 0.15663659572601318,
+          "kickActivation": 0.6165293455123901,
+          "repeatSupport": 9
+        },
+        {
           "time": 203.53,
-          "probability": 0.623926149968182,
+          "probability": 0.7797112136481547,
           "score": 0.08427521586418152,
           "kickActivation": 0.7315161228179932,
           "repeatSupport": 1
         },
         {
-          "time": 207.61,
-          "probability": 0.6405322828293689,
-          "score": 0.07275223731994629,
-          "kickActivation": 0.7276415824890137,
+          "time": 205.79,
+          "probability": 0.7392705930607227,
+          "score": 0.11123260855674744,
+          "kickActivation": 0.7276279926300049,
           "repeatSupport": 10
         },
         {
+          "time": 208.52,
+          "probability": 0.796117778484342,
+          "score": 0.12293598055839539,
+          "kickActivation": 0.789513111114502,
+          "repeatSupport": 7
+        },
+        {
+          "time": 209.42,
+          "probability": 0.755398158167688,
+          "score": 0.09433004260063171,
+          "kickActivation": 0.7415044903755188,
+          "repeatSupport": 8
+        },
+        {
+          "time": 213.06,
+          "probability": 0.7018595802286275,
+          "score": 0.12858915328979492,
+          "kickActivation": 0.5447207689285278,
+          "repeatSupport": 9
+        },
+        {
+          "time": 216.7,
+          "probability": 0.8081645390252346,
+          "score": 0.12450060248374939,
+          "kickActivation": 0.8011274337768555,
+          "repeatSupport": 7
+        },
+        {
+          "time": 217.61,
+          "probability": 0.8764441228758725,
+          "score": 0.16023647785186768,
+          "kickActivation": 0.7188605070114136,
+          "repeatSupport": 5
+        },
+        {
+          "time": 218.53,
+          "probability": 0.8443263456122987,
+          "score": 0.1725369393825531,
+          "kickActivation": 0.8768318891525269,
+          "repeatSupport": 8
+        },
+        {
+          "time": 240.34,
+          "probability": 0.7485312682899615,
+          "score": 0.16880574822425842,
+          "kickActivation": 0.7560535669326782,
+          "repeatSupport": 6
+        },
+        {
+          "time": 246.71,
+          "probability": 0.7270406577632319,
+          "score": 0.06292718648910522,
+          "kickActivation": 0.7379671335220337,
+          "repeatSupport": 2
+        },
+        {
+          "time": 247.61,
+          "probability": 0.9422308905324073,
+          "score": 0.14434292912483215,
+          "kickActivation": 0.6189244389533997,
+          "repeatSupport": 6
+        },
+        {
           "time": 254.89,
-          "probability": 0.6625014867402259,
+          "probability": 0.7085869079910474,
           "score": 0.09548157453536987,
           "kickActivation": 0.686453104019165,
           "repeatSupport": 5
@@ -250,7 +439,7 @@
     },
     "pedalPolicy": {
       "mode": "gmd-symbolic-decay-v1",
-      "converted": 11,
+      "converted": 14,
       "priorWeight": 1.5,
       "tail2Weight": 0.35,
       "tail3Weight": 0.35,
@@ -269,40 +458,40 @@
     "hatHighRes": {
       "mode": "extra-trees-v11",
       "sampleRate": 44100,
-      "candidates": 386,
+      "candidates": 383,
       "kicks": 587,
-      "hatKickRatio": 0.6575809199318569,
+      "hatKickRatio": 0.6524701873935264,
       "enabled": true,
-      "removed": 110,
-      "kept": 276,
-      "accepted": 276,
+      "removed": 111,
+      "kept": 272,
+      "accepted": 272,
       "probThreshold": 0.55,
       "repeatRescue": 1,
       "intersectionWindow": 0.06,
       "modelTrees": 160,
       "modelFeatures": 35,
-      "meanProbability": 0.35494758189766823
+      "meanProbability": 0.359959795966302
     },
     "openHat": {
       "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-      "candidates": 276,
+      "candidates": 272,
       "promoted": 22,
       "rescued": 0,
       "enabled": true,
       "threshold": 0.575,
-      "closed": 254,
+      "closed": 250,
       "modelTrees": 320,
       "modelFeatures": 26,
-      "meanProbability": 0.2618120747322766,
-      "maxProbability": 0.775887218055433,
+      "meanProbability": 0.26680141985809014,
+      "maxProbability": 0.7624211329389078,
       "overlay": {
         "enabled": true,
         "gate": false,
-        "candidates": 602,
+        "candidates": 607,
         "rescued": 0,
         "physicalSkipped": 0,
-        "maxProbability": 0.7217895730117397,
-        "maxRepeatScore": 0.6049727924499089,
+        "maxProbability": 0.7366163924060422,
+        "maxRepeatScore": 0.6128324810755131,
         "scoreThreshold": 0.68,
         "modelTrees": 280,
         "modelFeatures": 29,
