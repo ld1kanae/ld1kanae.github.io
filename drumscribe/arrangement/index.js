@@ -4,3 +4,8 @@ export {
   analyzeSections,
   extractSectionFeatures,
 } from './section-analysis.js';
+
+export {
+  rescoreKstByArrangement,
+  arrangementKstPolicyV39D,
+} from './kst-rescore.js';
