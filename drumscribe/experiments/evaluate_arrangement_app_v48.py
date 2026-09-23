@@ -69,7 +69,8 @@ def aggregate(scores,groups):
     return {"tp":tp,"pred":p,"ref":r,"precision":tp/p if p else 0,
             "recall":tp/r if r else 0,"f1":2*tp/(p+r) if p+r else 0,"by_group":by}
 
-expected=json.loads(EXPECTED.read_text())["variants"]["V46_R1_runtime"]
+expected_doc=json.loads(EXPECTED.read_text())
+expected=expected_doc["variants"]["V46_R1_runtime"]
 songs={};scores=[]
 for song in SONGS:
     folder=ROOT/"DruMaster"/"songs"/song
@@ -90,7 +91,7 @@ for song in SONGS:
     assert policy=="family-gmd-plus-egmd-residual-v46r1",(song,policy)
     assert max(residuals,default=0)==0,(song,"grid residual",max(residuals,default=0))
     assert hv==0,(song,"hand violations",hv)
-    expected_meter=json.loads((ROOT/"drumscribe/experiments/generated-arrangement-kst-v47/V46_R1_runtime"/f"{song}.json").read_text()).get("meterInfo")
+    expected_meter=expected_doc["songs"][song]["V46_R1_runtime"]["side"].get("meterInfo")
     assert side.get("meterInfo")==expected_meter,(song,"meter changed",side.get("meterInfo"),expected_meter)
 
     songs[song]={
