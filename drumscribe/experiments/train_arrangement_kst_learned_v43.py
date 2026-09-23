@@ -17,6 +17,7 @@ PRIOR=ROOT/"drumscribe/models/gmd-kst/slot-prior-v1.json"
 OUT=ROOT/"drumscribe/experiments/results-arrangement-kst-learned-v43.json"
 MD=ROOT/"drumscribe/experiments/ARRANGEMENT_KST_LEARNED_V43.md"
 MODEL_OUT=ROOT/"drumscribe/models/arrangement-kst/learned-rescore-v43.json"
+DATASET_OUT=ROOT/"drumscribe/models/arrangement-kst/training-candidates-v43.json"
 
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
 GROUPS=("kick","snare","tom")
@@ -306,6 +307,23 @@ def main():
         shift=float(meta["playback"]["stemOffsetSec"])+float(meta["playback"].get("midiOffsetSec",0))
         truth[song]=parse_midi(ROOT/"DruMaster"/"songs"/song/"chart.mid",shift)
     rows,baselines=build_rows(data,prior,truth)
+    DATASET_OUT.parent.mkdir(parents=True,exist_ok=True)
+    DATASET_OUT.write_text(json.dumps({
+        "schema":1,
+        "version":"arrangement-kst-training-candidates-v43",
+        "date":"2026-09-23",
+        "features":FEATURES,
+        "label_definition":"1 when the candidate matches a same-instrument reference event not already claimed by baseline within 80 ms; chart-derived training label only.",
+        "source_note":"Prediction-time features come from drums audio, A/A-prime structural-family analysis, and GMD slot prior. chart.mid contributes only the training label.",
+        "rows":[{
+            "song":r["song"],"group":r["group"],"time":r["time"],
+            "features":r["x"],"label":r["y"],
+            "family":r["family"],"section_label":r["label"],
+            "confidence":r["confidence"],"family_quality":r["family_quality"],
+            "support_rate":r["support_rate"],"support":r["support"],
+            "eligible":r["eligible"],"slot":r["slot"],"gmd_lift":r["gmd_lift"]
+        } for r in rows]
+    },ensure_ascii=False,indent=2)+"\n")
     baseline_scores={s:score(baselines[s],truth[s]) for s in SONGS}
     baseline=merge_scores(list(baseline_scores.values()))
 
@@ -363,6 +381,7 @@ def main():
     MODEL_OUT.parent.mkdir(parents=True,exist_ok=True)
     MODEL_OUT.write_text(json.dumps(export,ensure_ascii=False,indent=2)+"\n")
     result["full_data_logistic_export"]=str(MODEL_OUT)
+    result["training_corpus"]=str(DATASET_OUT)
 
     OUT.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
 
