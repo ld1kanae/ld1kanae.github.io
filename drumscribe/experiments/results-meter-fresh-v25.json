@@ -1,91 +1,126 @@
 {
   "schema": 1,
-  "experiment": "meter-fresh-v25",
   "date": "2026-09-23",
-  "scope": "bar/downbeat segmentation only; no kick/snare relabeling",
-  "reverted_prior_implementation": true,
-  "four_four_candidate_selection": {
-    "corpus_positional_likelihood": {
-      "correct": 4,
-      "total": 5
-    },
-    "groove_template_mixture": {
-      "correct": 4,
-      "total": 5
-    },
-    "kick_snare_role_features": {
-      "correct": 5,
-      "total": 5
-    },
-    "equal_weight_ensemble": {
-      "correct": 4,
-      "total": 5
+  "experiment": "fresh-current-meter-v25",
+  "purpose": "Zero-based revalidation of bar/downbeat and meter segmentation after reverting the unrequested rhythm-prior runtime change.",
+  "prediction_inputs": "Existing real-browser generated note events and their audio-derived BPM/bar phase; current meter.js; BeatThis fullmix beat labels only for arcaround/diamondvirgin/kaiju. chart.mid is used only after prediction for scoring.",
+  "external_research": {
+    "gmd": "Google Magenta Groove MIDI Dataset; 367 train / 46 dev / 37 test 4/4 beat clips were accessible through a public GMD-derived text representation, 5,780 training bars.",
+    "finding": "A GMD-learned global kick/snare 16th-grid template greatly outperformed a fixed backbeat heuristic on held-out GMD, but replacing the current project downbeat selector degraded the five project songs. Therefore it is not adopted as a runtime replacement.",
+    "heldout_one_bar_accuracy": {
+      "fixed_heuristic_test": 0.44905008635578586,
+      "gmd_global_test": 0.8048359240069085,
+      "gmd_cluster_test": 0.7547495682210709
     }
   },
-  "direct_midi_bar_recheck": {
+  "current_meter_results": {
     "arcaround": {
-      "mean_abs_error_beats": 0.06394019276297987,
-      "recall_025": 0.958041958041958
+      "mean_abs_error_beats": 0.022300556122572878,
+      "p95_abs_error_beats": 0.03612047112934045,
+      "max_abs_error_beats": 0.04255817112923769,
+      "bar_recall_025": 1,
+      "signature_accuracy_025": 1,
+      "ref_three_four": 20,
+      "matched_three_four": 20,
+      "pred_three_four": 20,
+      "false_three_four": 0,
+      "segments": [
+        {
+          "time": 0.3444099079241476,
+          "numerator": 4
+        },
+        {
+          "time": 116.70544284868454,
+          "numerator": 3
+        },
+        {
+          "time": 128.97789554165539,
+          "numerator": 4
+        },
+        {
+          "time": 248.97521076181454,
+          "numerator": 3
+        }
+      ]
     },
     "diamondvirgin": {
-      "mean_abs_error_beats": 0.014870409154991134,
-      "recall_025": 1
+      "mean_abs_error_beats": 0.009854192383696473,
+      "p95_abs_error_beats": 0.02352147581593133,
+      "max_abs_error_beats": 0.03753498718757542,
+      "bar_recall_025": 1,
+      "signature_accuracy_025": 1,
+      "ref_three_four": 0,
+      "matched_three_four": 0,
+      "pred_three_four": 0,
+      "false_three_four": 0
     },
     "kaiju": {
-      "mean_abs_error_beats": 0.013950262752241942,
-      "recall_025": 1
+      "mean_abs_error_beats": 0.009808838865707735,
+      "p95_abs_error_beats": 0.02692929650599187,
+      "max_abs_error_beats": 0.25118719391142397,
+      "bar_recall_025": 0.994535519125683,
+      "signature_accuracy_025": 0.994535519125683,
+      "ref_three_four": 0,
+      "matched_three_four": 0,
+      "pred_three_four": 0,
+      "false_three_four": 0
     },
     "nanairo": {
-      "mean_abs_error_beats": 0.05144415913155916,
-      "recall_025": 1
+      "mean_abs_error_beats": 0.061668734469821344,
+      "p95_abs_error_beats": 0.10586339704506018,
+      "max_abs_error_beats": 0.11101730311885859,
+      "bar_recall_025": 1,
+      "signature_accuracy_025": 1,
+      "ref_three_four": 0,
+      "matched_three_four": 0,
+      "pred_three_four": 0,
+      "false_three_four": 0
     },
     "ray": {
-      "mean_abs_error_beats": 0.021260179593504683,
-      "recall_025": 1
-    },
-    "mean_song_error_beats": 0.03309304067905536,
-    "mean_song_recall_025": 0.9916083916083916
-  },
-  "arcaround_transition_validation": {
-    "baseline_reconstructed": {
-      "mean_abs_error_beats": 0.10278916279019899,
-      "recall_025": 0.9659863945578231,
-      "signature_accuracy_025": 0.9523809523809523,
-      "three_four_hit": 11,
-      "three_four_ref": 18,
+      "mean_abs_error_beats": 0.0005764283388347515,
+      "p95_abs_error_beats": 0.0005461284546914667,
+      "max_abs_error_beats": 0.049406255531242796,
+      "bar_recall_025": 1,
+      "signature_accuracy_025": 1,
+      "ref_three_four": 0,
+      "matched_three_four": 0,
+      "pred_three_four": 0,
       "false_three_four": 0
-    },
-    "postvalidated_return": {
-      "mean_abs_error_beats": 0.03485963509697924,
-      "recall_025": 0.9931972789115646,
-      "signature_accuracy_025": 0.9931972789115646,
-      "three_four_hit": 17,
-      "three_four_ref": 18,
-      "false_three_four": 0
-    },
-    "rule": "Only after the existing DP chooses 3/4 -> 4/4, require two bars of labeled external beats to support 1-2-3-4 at score >= 0.65. Otherwise extend 3/4 in 3-beat steps until a supported, grid-compatible return or end.",
-    "entry_logic_unchanged": true
-  },
-  "variable_meter_gate_fresh": {
-    "arcaround": {
-      "median_residual_beats": 0.9766562828996519,
-      "enabled": true
-    },
-    "diamondvirgin": {
-      "median_residual_beats": 0.028145057898376864,
-      "enabled": false
-    },
-    "kaiju": {
-      "median_residual_beats": 0.030609979628431146,
-      "enabled": false
     }
   },
-  "external_sources": [
-    "Google Magenta Groove MIDI Dataset",
-    "Drum Groove Corpora / Lucerne Groove Research Library",
-    "Senn et al. 2023 Table 3",
-    "GrooveSteps CC0 drum patterns",
-    "Open Music Theory drumbeats",
-    "Krebs et al. rhythmic pattern/downbeat tracking"
-  ]
+  "summary": {
+    "mean_song_bar_error_beats": 0.02084175003612664,
+    "mean_song_bar_recall_025": 0.9989071038251366,
+    "mean_song_signature_accuracy_025": 0.9989071038251366,
+    "total_ref_three_four": 20,
+    "total_matched_three_four": 20,
+    "total_false_three_four": 0
+  },
+  "arcaround_ablation": {
+    "old_dp": {
+      "mean_abs_error_beats": 0.09454702789932731,
+      "bar_recall_025": 0.9530201342281879,
+      "signature_accuracy_025": 0.9328859060402684,
+      "matched_three_four": 10,
+      "pred_three_four": 10,
+      "false_three_four": 0
+    },
+    "labeled_beat_only": {
+      "mean_abs_error_beats": 0.1600177457201188,
+      "bar_recall_025": 0.8993288590604027,
+      "signature_accuracy_025": 0.8657718120805369,
+      "matched_three_four": 0,
+      "pred_three_four": 2,
+      "false_three_four": 2
+    },
+    "current_dp_plus_meter_return_stabilization": {
+      "mean_abs_error_beats": 0.022300556122572878,
+      "bar_recall_025": 1,
+      "signature_accuracy_025": 1,
+      "matched_three_four": 20,
+      "pred_three_four": 20,
+      "false_three_four": 0
+    }
+  },
+  "decision": "Keep the current bar/downbeat selector. Do not restore the reverted GMD/rhythm-prior runtime tie-breaker. Current meter-return stabilization is strongly supported on arcaround; remaining issue is one kaiju bar at 0.251 beat."
 }
