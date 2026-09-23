@@ -204,7 +204,7 @@ def select_gmd():
             style=(r.get("style") or "").split("/")[0]
             midi_name=resolve_name(name_set,r["midi_filename"])
             notes=midi_notes_bytes(z.read(midi_name));c=counts(notes)
-            if c["open"]>=4 and c["closed"]>=8 and (style not in seen_styles or len(chosen)>=6):
+            if c["open"]>=6 and c["closed"]>=8 and (style not in seen_styles or len(chosen)>=6):
                 chosen.append((r,notes,midi_name));seen_styles.add(style)
             if len(chosen)>=TARGET_GMD_SEQS:break
         Xs=[];ys=[];manifest=[]
@@ -226,25 +226,24 @@ def egmd_metadata():
     return read_csv_bytes(r.content)
 
 
-def choose_egmd_sequence_rows(rows,z,name_set):
-    candidates=[r for r in rows if suitable(r) and (r.get("beat_type") or "")=="beat"]
-    by_id=defaultdict(list)
-    for r in candidates:by_id[r.get("id","")].append(r)
-    keys=sorted(by_id,key=lambda k:(by_id[k][0].get("style",""),float(by_id[k][0].get("duration") or 0),k))
-    chosen=[]
-    for key in keys:
-        group=by_id[key]
-        probe=sorted(group,key=lambda r:r.get("kit_name",""))[0]
-        try:
-            midi_name=resolve_name(name_set,probe["midi_filename"])
-            notes=midi_notes_bytes(z.read(midi_name))
-        except Exception as e:
-            print("EGMD MIDI SKIP",key,e,flush=True);continue
-        c=counts(notes)
-        if c["open"]>=4 and c["closed"]>=8:
-            chosen.append(group)
-        if len(chosen)>=TARGET_EGMD_SEQS:break
-    return chosen
+def gmd_label_index():
+    """Open canonical GMD labels used to render the E-GMD performances."""
+    rz=RemoteZip(GMD_ZIP)
+    names=rz.namelist();name_set=set(names)
+    info_name=min([n for n in names if n.endswith("info.csv")],key=len)
+    rows=read_csv_bytes(rz.read(info_name))
+    meta={r.get("id"):r for r in rows}
+    return rz,name_set,meta,{}
+
+
+def canonical_notes_for_id(rz,name_set,meta,cache,seq_id):
+    if seq_id in cache:return cache[seq_id]
+    row=meta.get(seq_id)
+    if row is None:raise KeyError(f"GMD id missing: {seq_id}")
+    name=resolve_name(name_set,row["midi_filename"])
+    notes=midi_notes_bytes(rz.read(name))
+    cache[seq_id]=(notes,name)
+    return cache[seq_id]
 
 
 def select_egmd():
@@ -255,27 +254,45 @@ def select_egmd():
         ids=np.linspace(0,len(kits)-1,TARGET_EGMD_KITS).round().astype(int)
         chosen_kits=[kits[i] for i in ids]
     print("EGMD KITS",chosen_kits,flush=True)
-    with RemoteZip(EGMD_ZIP) as z:
-        names=z.namelist();name_set=set(names)
-        seqs=choose_egmd_sequence_rows(rows,z,name_set)
-        Xs=[];ys=[];manifest=[]
-        for si,group in enumerate(seqs):
-            bykit={r.get("kit_name"):r for r in group}
-            kit_rows=[bykit[k] for k in chosen_kits if k in bykit]
-            if len(kit_rows)<max(2,TARGET_EGMD_KITS//2):
-                # Fall back to deterministic available kits for this sequence.
-                kit_rows=sorted(group,key=lambda r:r.get("kit_name",""))[:TARGET_EGMD_KITS]
-            for r in kit_rows:
-                midi_name=resolve_name(name_set,r["midi_filename"])
-                notes=midi_notes_bytes(z.read(midi_name))
-                audio_name=resolve_name(name_set,r["audio_filename"])
-                raw=z.read(audio_name);audio=decode_wav(raw)
-                X,y=acoustic_rows(audio,notes)
-                Xs.append(X);ys.append(y)
-                item={"sequence":r.get("id"),"style":r.get("style"),"kit":r.get("kit_name"),
-                      "duration":r.get("duration"),"midi":midi_name,"audio":audio_name,
-                      "bytes":len(raw),"labels":dict(Counter(map(int,y)))}
-                manifest.append(item);print("EGMD",len(manifest),item,flush=True)
+
+    candidates=[r for r in rows if suitable(r) and (r.get("beat_type") or "")=="beat"]
+    by_id=defaultdict(list)
+    for r in candidates:by_id[r.get("id","")].append(r)
+
+    grz,g_names,g_meta,g_cache=gmd_label_index()
+    try:
+        keys=sorted(by_id,key=lambda k:(by_id[k][0].get("style",""),float(by_id[k][0].get("duration") or 0),k))
+        seqs=[]
+        for key in keys:
+            try:
+                notes,gmd_midi=canonical_notes_for_id(grz,g_names,g_meta,g_cache,key)
+            except Exception as e:
+                print("EGMD GMD-LABEL SKIP",key,e,flush=True);continue
+            c=counts(notes)
+            if c["open"]>=8 and c["closed"]>=8:
+                seqs.append((by_id[key],notes,gmd_midi))
+            if len(seqs)>=TARGET_EGMD_SEQS:break
+
+        with RemoteZip(EGMD_ZIP) as z:
+            names=z.namelist();name_set=set(names)
+            Xs=[];ys=[];manifest=[]
+            for si,(group,notes,gmd_midi) in enumerate(seqs):
+                bykit={r.get("kit_name"):r for r in group}
+                kit_rows=[bykit[k] for k in chosen_kits if k in bykit]
+                if len(kit_rows)<max(2,TARGET_EGMD_KITS//2):
+                    kit_rows=sorted(group,key=lambda r:r.get("kit_name",""))[:TARGET_EGMD_KITS]
+                for row in kit_rows:
+                    audio_name=resolve_name(name_set,row["audio_filename"])
+                    raw=z.read(audio_name);audio=decode_wav(raw)
+                    X,y=acoustic_rows(audio,notes)
+                    Xs.append(X);ys.append(y)
+                    item={"sequence":row.get("id"),"style":row.get("style"),"kit":row.get("kit_name"),
+                          "duration":row.get("duration"),"labelMidi":gmd_midi,"audio":audio_name,
+                          "bytes":len(raw),"labels":dict(Counter(map(int,y)))}
+                    manifest.append(item);print("EGMD",len(manifest),item,flush=True)
+    finally:
+        grz.close()
+
     if not Xs:raise RuntimeError("no usable E-GMD examples")
     X=np.concatenate(Xs);y=np.concatenate(ys)
     return (*balanced_cap(X,y,seed=202),manifest)
