@@ -1,9 +1,18 @@
 from __future__ import annotations
-import importlib.util,json
+import json
 from pathlib import Path
+import mido
 ROOT=Path('.');EXP=ROOT/'drumscribe/experiments';SONGS=['arcaround','diamondvirgin','kaiju','nanairo','ray']
 D=EXP/'generated-openhat-combined-v44'
-spec=importlib.util.spec_from_file_location('ev',EXP/'evaluate_v2.py');ev=importlib.util.module_from_spec(spec);spec.loader.exec_module(ev)
+def midi_events(path):
+    mid=mido.MidiFile(path);tempo=500000;sec=0.;out=[]
+    for msg in mido.merge_tracks(mid.tracks):
+        sec += msg.time*tempo/1e6/mid.ticks_per_beat
+        if msg.type=='set_tempo': tempo=msg.tempo
+        elif msg.type=='note_on' and msg.velocity>0:
+            group='other'
+            out.append((sec,group,msg.note))
+    return out
 def greedy(pred,ref,w=.080):
     used=set();tp=0
     for t in sorted(pred):
@@ -20,7 +29,7 @@ for song in SONGS:
     side=json.loads((D/f'{song}.json').read_text())
     meta=json.loads((ROOT/'DruMaster/songs'/song/'song.json').read_text())
     export=float(side.get('exportOffsetSec',0) or 0);shift=float(meta['playback']['stemOffsetSec'])+float(meta['playback'].get('midiOffsetSec',0))
-    pred=ev.midi_events(D/f'{song}.mid');truth=ev.midi_events(ROOT/'DruMaster/songs'/song/'chart.mid')
+    pred=midi_events(D/f'{song}.mid');truth=midi_events(ROOT/'DruMaster/songs'/song/'chart.mid')
     r={'song':song}
     for name,pnotes,rnotes in [('closed',{42},{42}),('open',{46},{46}),('kick',{36},{35,36}),('snare',{38},{37,38,39,40}),('tom',{45},{41,43,45,47,48,50})]:
         r[name]=metric(times(pred,pnotes,-export),times(truth,rnotes,shift))
