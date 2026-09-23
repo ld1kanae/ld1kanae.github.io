@@ -29,17 +29,18 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Wait for feedback page deployment
+      - name: Serve checked-out site
         run: |
-          for i in $(seq 1 120); do
-            if curl -fsSL "https://ld1kanae.github.io/drumscribe/feedback.html?ci=$GITHUB_SHA" | grep -q "feedback.js?v=20260923-timeline-v6"; then
+          python3 -m http.server 8000 > /tmp/drumscribe-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsSL "http://127.0.0.1:8000/drumscribe/feedback.html" | grep -q "feedback.js?v=20260923-timeline-v6"; then
               exit 0
             fi
-            sleep 2
+            sleep 1
           done
-          echo "feedback page was not deployed" >&2
+          cat /tmp/drumscribe-http.log >&2 || true
           exit 1
       - name: Verify waveform range selection
         env:
-          DRUMSCRIBE_FEEDBACK_URL: "https://ld1kanae.github.io/drumscribe/feedback.html?ci=${{ github.sha }}"
+          DRUMSCRIBE_FEEDBACK_URL: "http://127.0.0.1:8000/drumscribe/feedback.html?ci=\${{ github.sha }}"
         run: node drumscribe/experiments/feedback_range_smoke.mjs
