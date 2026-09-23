@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "gmd-simple3-v26",
+  "scope": [
+    "diamondvirgin",
+    "nanairo",
+    "ray"
+  ],
+  "excluded": [
+    "arcaround",
+    "kaiju"
+  ],
+  "runtime_changed": false,
+  "purpose": "Evaluate whether general kick/snare rhythmic patterns learned from GMD can help bar-head selection on the three simpler 4/4 project songs, without changing kick/snare transcription events.",
+  "data": {
+    "source": "Google Magenta Groove MIDI Dataset raw MIDI, accessed through a public mirror preserving original MIDI files and info.csv split metadata.",
+    "official_split_counts_4_4_beat": {
+      "train": 368,
+      "validation": 46,
+      "test": 77
+    },
+    "sampled_raw_midi": {
+      "train_files": 18,
+      "train_bars": 2562,
+      "validation_files": 12,
+      "test_files": 12
+    },
+    "note_mapping": {
+      "kick": [
+        36
+      ],
+      "snare": [
+        37,
+        38,
+        40
+      ]
+    },
+    "warning": "Earlier experiment using a third-party text conversion was discarded after an internal column-order inconsistency was found between midi_to_text.py/text_to_midi.py and raw MIDI examples."
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "name": "fixed_backbeat_heuristic",
+      "description": "Prefer typical kick beat 1/3 and snare beat 2/4 positions."
+    },
+    {
+      "id": "H2",
+      "name": "gmd_bar_weighted_global",
+      "description": "Bernoulli likelihood from raw GMD 16th-grid kick/snare occupancy; bars weighted equally."
+    },
+    {
+      "id": "H3",
+      "name": "gmd_12_cluster",
+      "description": "Nearest of 12 raw-GMD kick/snare groove templates."
+    },
+    {
+      "id": "H4",
+      "name": "gmd_discriminative_4bar",
+      "description": "Structured linear 4-way rotation classifier trained on raw GMD 4-bar windows."
+    },
+    {
+      "id": "H5",
+      "name": "gmd_file_balanced_global",
+      "description": "Global raw-GMD likelihood where each training performance contributes equal weight. Best auxiliary candidate."
+    }
+  ],
+  "learned_file_balanced_quarter_rates": {
+    "kick": [
+      0.7563423735124546,
+      0.46091698025613653,
+      0.6952946089391726,
+      0.4390635298336296
+    ],
+    "snare": [
+      0.280782082414659,
+      0.5273122594095954,
+      0.3454078072962748,
+      0.5578699070797638
+    ]
+  },
+  "heldout": {
+    "four_way_file_balanced": {
+      "validation": {
+        "bars1": 0.6113861386138614,
+        "bars2": 0.6188118811881188,
+        "bars4": 0.6169154228855721,
+        "bars8": 0.6060606060606061
+      },
+      "test": {
+        "bars1": 0.519277108433735,
+        "bars2": 0.5518072289156627,
+        "bars4": 0.587378640776699,
+        "bars8": 0.6138613861386139
+      }
+    },
+    "two_way_downbeat_vs_beat3_file_balanced": {
+      "validation": {
+        "bars1": 0.698019801980198,
+        "bars2": 0.7004950495049505,
+        "bars4": 0.7064676616915423,
+        "bars8": 0.6868686868686869,
+        "bars16": 0.723404255319149
+      },
+      "test": {
+        "bars1": 0.691566265060241,
+        "bars2": 0.7253012048192771,
+        "bars4": 0.7669902912621359,
+        "bars8": 0.7821782178217822,
+        "bars16": 0.8125
+      }
+    },
+    "discriminative4_4bar": {
+      "validation": 0.5472636815920398,
+      "test": 0.4854368932038835
+    }
+  },
+  "project": {
+    "diamondvirgin": {
+      "truth_candidate": 1,
+      "current_candidate": 1,
+      "current_correct": true,
+      "current_margin": 0.061125730706125786,
+      "gmd_file_balanced_whole_candidate": 1,
+      "gmd_correct": true,
+      "gmd_whole_margin": 0.33555847273501627,
+      "gmd_two_way_16bar": {
+        "correct_windows": 8,
+        "total_windows": 9,
+        "accuracy": 0.8888888888888888
+      }
+    },
+    "nanairo": {
+      "truth_candidate": 0,
+      "current_candidate": 0,
+      "current_correct": true,
+      "current_margin": 0.0047094888381981614,
+      "gmd_file_balanced_whole_candidate": 0,
+      "gmd_correct": true,
+      "gmd_whole_margin": 0.059936387351202214,
+      "gmd_two_way_16bar": {
+        "correct_windows": 7,
+        "total_windows": 8,
+        "accuracy": 0.875
+      }
+    },
+    "ray": {
+      "truth_candidate": 0,
+      "current_candidate": 0,
+      "current_correct": true,
+      "current_margin": 0.006273484857261147,
+      "gmd_file_balanced_whole_candidate": 0,
+      "gmd_correct": true,
+      "gmd_whole_margin": 0.06270332170015358,
+      "gmd_two_way_16bar": {
+        "correct_windows": 9,
+        "total_windows": 9,
+        "accuracy": 1
+      }
+    }
+  },
+  "conclusion": {
+    "current_selector": "3/3 correct",
+    "gmd_file_balanced_whole": "3/3 correct",
+    "decision": "Do not replace or override the current selector. Treat file-balanced GMD only as long-window auxiliary evidence after the existing snare-backbeat parity filter has reduced four candidates to the beat-1-vs-beat-3 pair.",
+    "proposed_future_gate": "Use >=16-bar evidence as a confidence/confirmation signal. If GMD disagrees with the acoustic selector, do not auto-override until failure cases demonstrate that such an override improves held-out project accuracy."
+  }
+}
