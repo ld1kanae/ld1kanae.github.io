@@ -118,10 +118,39 @@ function downloadJson(){
 }
 function installTimeline(){
   api=globalThis.DrumScribeTimeline;if(!api)return false;
-  canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!api.getDuration())return;e.preventDefault();playToken++;api.pause();drag={id:e.pointerId,x:e.clientX,start:api.clientXToTime(e.clientX),moved:false};canvas.setPointerCapture(e.pointerId)});
-  canvas.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;if(Math.abs(e.clientX-drag.x)>3)drag.moved=true;if(drag.moved)setSelection(drag.start,api.clientXToTime(e.clientX),false,{open:false,snap:true})});
-  const finish=e=>{if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;if(d.moved){editingId=null;text.value='';category.value='採譜ミス';save.textContent='保存';setSelection(d.start,api.clientXToTime(e.clientX),false,{open:true,snap:true});setStatus('1拍単位にスナップしました。レビューを書いて保存してください。')}else{closeEditor();api.seek(api.clientXToTime(e.clientX))}};
-  canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',()=>{drag=null});
+  const pointTime=e=>api.clientXToTime(e.clientX);
+  const move=e=>{
+    if(!drag||e.pointerId!==drag.id)return;
+    if(e.cancelable)e.preventDefault();
+    drag.lastX=e.clientX;
+    if(Math.abs(e.clientX-drag.x)>3)drag.moved=true;
+    if(drag.moved)setSelection(drag.start,pointTime(e),false,{open:false,snap:true});
+  };
+  const finish=e=>{
+    if(!drag||e.pointerId!==drag.id)return;
+    if(e.cancelable)e.preventDefault();
+    const d=drag;drag=null;
+    try{if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId)}catch{}
+    if(d.moved){
+      editingId=null;text.value='';category.value='採譜ミス';save.textContent='保存';
+      setSelection(d.start,pointTime(e),false,{open:true,snap:true});
+      setStatus('1拍単位にスナップしました。レビューを書いて保存してください。');
+    }else{
+      closeEditor();api.seek(pointTime(e));
+    }
+  };
+  const cancel=e=>{if(drag&&e.pointerId===drag.id){drag=null;api.clearSelection?.();}};
+  canvas.addEventListener('pointerdown',e=>{
+    if(!api.getDuration()||e.isPrimary===false)return;
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    if(e.cancelable)e.preventDefault();
+    playToken++;api.pause();closeEditor();
+    drag={id:e.pointerId,x:e.clientX,lastX:e.clientX,start:pointTime(e),moved:false};
+    try{canvas.setPointerCapture?.(e.pointerId)}catch{}
+  },{passive:false});
+  window.addEventListener('pointermove',move,{capture:true,passive:false});
+  window.addEventListener('pointerup',finish,{capture:true,passive:false});
+  window.addEventListener('pointercancel',cancel,{capture:true});
   return true;
 }
 $('playSelection').addEventListener('click',()=>playRange());
