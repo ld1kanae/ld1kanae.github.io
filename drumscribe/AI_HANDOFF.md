@@ -1,5 +1,39 @@
 # DrumScribe AI Handoff
 
+## CURRENT AUTHORITATIVE STATUS — Hi-Hat context production v58 (2026-09-24)
+
+- production `transcribe.js` now imports `hat-context-v57.js` and enables `global-ride-rescue-v57` by default after the existing open-hat + sequence stages.
+- portable gate: generated Ride candidates < 24 => exact no-op. Otherwise only global synchronized-corpus Open probability >= 0.99 is changed from Ride to Open HH.
+- runtime inputs are audio + generated candidates only. `chart.mid` is never read during prediction.
+- Arcaround reference Ride notes are arrangement-only for the current HH objective. Evaluation masks reference Ride zones (±80 ms) for Arcaround and does not use Arcaround Ride F1 for adoption.
+- v54 full replacement failed badly (HH macro about 0.723 -> 0.580); do not use full 42/46 replacement.
+- v55 song-held-out additive rescue succeeded. Best high-confidence Ride-only rescue improved HH macro from about 0.72309 to 0.74031.
+- v56 adds a reference-free Ride-count domain gate. With Arcaround Ride masking, held-out p>=.99 + min 24 Ride candidates changed only diamondvirgin and improved HH macro **0.725598 -> 0.743121 (+0.017523)**. Other four songs were unchanged.
+- portable global model replay on the same fresh browser candidates changed 170 diamondvirgin Ride candidates: reference matches within ±80 ms = 79 Open, 87 Ride, 2 Closed, 1 Crash, 1 unmatched. Under the project rule that Ride may be rounded to HH, this is acceptable.
+- exact five-song replay using the global model + min24/p>=.99 gate:
+  - Closed F1 **0.848910 -> 0.848910**
+  - Open F1 **0.602285 -> 0.628817**
+  - HH macro **0.725598 -> 0.738864 (+0.013266)**
+  - collapsed Hat/Ride onset F1 **0.813038 -> 0.813038**
+  - Kick/Snare/Tom: exact non-regression
+  - per-song HH macro: Arcaround/Kaiju/Nanairo/Ray unchanged; diamondvirgin **0.505017 -> 0.597619**
+- production integration commit: `86edf8fe336a18589e5d3c7a87636526a281757c`.
+- while wiring v58, malformed ternaries already present in concurrent Crash code and one literal `\\n` import separator caused browser syntax failures. They were repaired in commits `05cdd186...`, `9f741001...`, and `daadf426...`.
+- direct fresh Chromium production-vs-off validator:
+  - `experiments/browser_hat_context_production_v58.mjs`
+  - `experiments/evaluate_hat_context_production_v58.py`
+  - workflow `.github/workflows/drumscribe-hat-context-production-v58.yml`
+  - latest run at this handoff update: `35879732718`, queued because GitHub Actions concurrency was saturated. Do not claim fresh v58 PASS until that run (or a rerun at the same logic) completes successfully.
+- older “CURRENT AUTHORITATIVE STATUS — Open/Closed Hi-Hat v47” below is historical and is superseded by this section for current production state.
+
+Key result files:
+- `experiments/results-sync-hat-corpus-v53.json`
+- `experiments/results-hat-context-runtime-v54.json`
+- `experiments/results-hat-context-heldout-v55.json`
+- `experiments/results-hat-context-portable-gate-v56.json`
+- pending fresh production result: `experiments/results-hat-context-production-v58.json`
+
+
 ## 2026-09-23 E-GMD domain calibration v45 / Open-hat strict v46
 
 ### K/S/T domain calibration v45
