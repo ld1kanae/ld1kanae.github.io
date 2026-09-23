@@ -1,0 +1,50 @@
+name: DrumScribe crash-vs-hat competition v55
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/transcribe.js"
+      - "drumscribe/open-hat.js"
+      - "drumscribe/hat-sequence.js"
+      - "drumscribe/experiments/browser_validate_crash_competition_v55.mjs"
+      - "drumscribe/experiments/compare_crash_competition_v55.py"
+      - ".github/workflows/drumscribe-crash-competition-v55.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Fresh-generate competition variants
+        run: node drumscribe/experiments/browser_validate_crash_competition_v55.mjs
+      - name: Score crash and KST non-regression
+        run: python drumscribe/experiments/compare_crash_competition_v55.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-crash-competition-v55.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "drumscribe: record crash-hat competition v55"
+          git pull --rebase origin main
+          git push origin HEAD:main
