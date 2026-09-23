@@ -1,0 +1,52 @@
+name: DrumScribe E-GMD KST reclassifier v4
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/train_egmd_kst_reclassifier_v4.py"
+      - "drumscribe/experiments/benchmark_egmd_kst_transfer_v4.py"
+      - ".github/workflows/drumscribe-egmd-kst-reclassifier-v4.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CPU inference stack
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --no-deps "git+https://github.com/xavriley/ADTOF-pytorch.git"
+          pip install librosa pretty_midi numpy scipy scikit-learn mido remotezip requests
+      - name: Train three larger targeted E-GMD hypotheses
+        run: python drumscribe/experiments/train_egmd_kst_reclassifier_v4.py
+      - name: Transfer-test frozen v4 model
+        run: python drumscribe/experiments/benchmark_egmd_kst_transfer_v4.py
+      - name: Commit model and reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-v2-eval
+          git add drumscribe/models/egmd-kst-reclassifier-v4.json             drumscribe/experiments/results-egmd-kst-reclassifier-v4.json             drumscribe/experiments/results-egmd-kst-transfer-v4.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record E-GMD KST targeted v4 benchmark [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin drumscribe-v2-eval
+            if git push origin HEAD:drumscribe-v2-eval; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
