@@ -11,12 +11,12 @@ Reference chart.mid is scoring-only. Prediction uses drums.mp3 plus offvocal.mp3
 
 | variant | strict HH macro F1 | closed F1 | open F1 | collapsed hat/ride onset F1 | arrangement changes |
 |---|---:|---:|---:|---:|---:|
-| base | 0.734743 | 0.843292 | 0.626195 | 0.812081 | 0 |
-| decay | 0.735550 | 0.843593 | 0.627507 | 0.812081 | 0 |
-| arrangement | 0.733352 | 0.842482 | 0.624222 | 0.812081 | 5 |
-| decay-arrangement | 0.734161 | 0.842783 | 0.625538 | 0.812081 | 5 |
-| ride-acoustic-arrangement | 0.722844 | 0.817898 | 0.627789 | 0.817466 | 6 |
-| ride-decay-arrangement | 0.723681 | 0.818182 | 0.629179 | 0.817466 | 6 |
+| base | 0.721402 | 0.816609 | 0.626195 | 0.796110 | 0 |
+| decay | 0.722199 | 0.816892 | 0.627507 | 0.796110 | 0 |
+| arrangement | 0.720031 | 0.815840 | 0.624222 | 0.796110 | 5 |
+| decay-arrangement | 0.720830 | 0.816122 | 0.625538 | 0.796110 | 5 |
+| ride-acoustic-arrangement | 0.710302 | 0.792814 | 0.627789 | 0.801213 | 6 |
+| ride-decay-arrangement | 0.711130 | 0.793080 | 0.629179 | 0.801213 | 6 |
 
 ## Reference-only structural learning check
 
