@@ -464,7 +464,7 @@ function repeatSupport(times,probs,bpm,policy){
 
 export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
-  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','arrangement','arrangement-decay'].includes(context?.variant)?context.variant:'base';
+  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue','arrangement','arrangement-decay'].includes(context?.variant)?context.variant:'base';
   const baseInfo={mode:'open-hat-extra-trees-v2-gmd128+overlay-v1',variant:requestedVariant,candidates:hats.length,promoted:0,rescued:0,enabled:false};
   if(!hats.length)return {events,info:{...baseInfo,skipReason:'no-hat'}};
   try{
@@ -486,7 +486,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     let probabilities=features.map(x=>predict(model,x));
     const baseProbabilities=probabilities.slice();
     let sequenceInfo={variant:requestedVariant,decay:{enabled:false},gmd:{enabled:false},gmdRescue:{enabled:false},ride:{enabled:false}};
-    if(['decay','combined','decay-rescue','ride-decay','ride-open-decay-rescue','arrangement-decay'].includes(requestedVariant)){
+    if(['decay','combined','decay-rescue','ride-decay','ride-open-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue','arrangement-decay'].includes(requestedVariant)){
       const seq=acousticSequenceRescore(samples,hats,events,probabilities,threshold,w);
       probabilities=seq.probabilities;sequenceInfo.decay=seq.info;
     }
@@ -500,7 +500,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
         sequenceInfo.gmd={enabled:false,error:String(gmdErr?.message||gmdErr)};
       }
     }
-    if(requestedVariant==='gmd-rescue'||requestedVariant==='decay-rescue'||requestedVariant==='ride-open-decay-rescue'){
+    if(requestedVariant==='gmd-rescue'||requestedVariant==='decay-rescue'||requestedVariant==='ride-open-decay-rescue'||requestedVariant==='ride-selective70-decay-rescue'||requestedVariant==='ride-selective80-decay-rescue'||requestedVariant==='ride-selective90-decay-rescue'){
       try{
         const prior=await loadGmdHatPrior();
         const seq=gmdOpenRunRescue(prior,hats,events,probabilities,bpm,threshold);
@@ -524,22 +524,37 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     }]));
 
     const rideMap=new Map(),rideProbability=new Map();
-    if(['ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue'].includes(requestedVariant)){
+    const selectiveRideThreshold={
+      'ride-selective70-decay-rescue':.70,
+      'ride-selective80-decay-rescue':.80,
+      'ride-selective90-decay-rescue':.90
+    }[requestedVariant];
+    if(['ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue'].includes(requestedVariant)){
       const rides=events.filter(e=>e.group==='ride').slice().sort((a,b)=>a.time-b.time);
       if(requestedVariant==='ride-open'||requestedVariant==='ride-open-decay-rescue'){
         for(const e of rides)rideMap.set(e,'open_hat');
-        sequenceInfo.ride={enabled:true,mode:'all-to-open',candidates:rides.length,open:rides.length,closed:0};
+        sequenceInfo.ride={enabled:true,mode:'all-to-open',candidates:rides.length,open:rides.length,keptRide:0};
       }else{
         const rr=[];
         for(let i=0;i<rides.length;i++){rr.push(timbreFeature(samples,rides[i].time,w,closedTemplate,openTemplate));if(i%24===0)await tick();}
         const rf=normalizeWithStats(rr,stats),rp=rf.map(x=>predict(model,x));
-        let ro=0,rc=0;
+        let ro=0,rc=0,keptRide=0;
         for(let i=0;i<rides.length;i++){
-          const g=rp[i]>=threshold?'open_hat':'hat';rideMap.set(rides[i],g);
-          rideProbability.set(rides[i],{probability:rp[i],baseProbability:rp[i]});
-          if(g==='open_hat')ro++;else rc++;
+          if(Number.isFinite(selectiveRideThreshold)){
+            if(rp[i]>=selectiveRideThreshold){
+              rideMap.set(rides[i],'open_hat');ro++;
+              rideProbability.set(rides[i],{probability:rp[i],baseProbability:rp[i]});
+            }else keptRide++;
+          }else{
+            const g=rp[i]>=threshold?'open_hat':'hat';rideMap.set(rides[i],g);
+            rideProbability.set(rides[i],{probability:rp[i],baseProbability:rp[i]});
+            if(g==='open_hat')ro++;else rc++;
+          }
         }
-        sequenceInfo.ride={enabled:true,mode:'acoustic-42-46',candidates:rides.length,open:ro,closed:rc,
+        sequenceInfo.ride={enabled:true,
+          mode:Number.isFinite(selectiveRideThreshold)?'selective-ride-to-open':'acoustic-42-46',
+          threshold:Number.isFinite(selectiveRideThreshold)?selectiveRideThreshold:threshold,
+          candidates:rides.length,open:ro,closed:rc,keptRide,
           meanProbability:rp.length?rp.reduce((a,b)=>a+b,0)/rp.length:0};
       }
     }
