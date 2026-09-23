@@ -31,6 +31,7 @@ EXP = ROOT / "drumscribe/experiments"
 MODELS = ROOT / "drumscribe/models"
 SONGS = ["arcaround", "diamondvirgin", "kaiju", "nanairo", "ray"]
 THRESHOLDS = [.55, .62, .68, .74, .80, .86, .90, .93, .96, .98, .995, 1.01]
+BASE_SEED = 31000
 
 
 def loadmod(name, path):
@@ -430,7 +431,7 @@ def choose_threshold(d, items, outer, variant, hx, hy, gx, gy, seed):
             sm, st = fit_songs(items, tr, "Xchoke", seed + i)
             fm, ft = fit_fusion(items, tr, seed + 100 + i)
             train = {"songs": st, "fusion": ft}
-        bo, bc, bdiag = baseexp.baseline_for(d, val, tr, hx, hy, gx, gy, seed + 200 + i)
+        bo, bc, bdiag = baseexp.baseline_for(d, val, tr, hx, hy, gx, gy, 32000 + SONGS.index(val))
         prob = score_variant(items, val, variant, sm, fm)
         cache[val] = (bo, bc, bdiag, prob, train)
 
@@ -473,7 +474,7 @@ def evaluate(d, items, variant, hx, hy, gx, gy):
             fm, ft = fit_fusion(items, outer, 25000 + oi)
             train = {"songs": st, "fusion": ft}
 
-        bo, bc, bdiag = baseexp.baseline_for(d, held, outer, hx, hy, gx, gy, 22000 + oi)
+        bo, bc, bdiag = baseexp.baseline_for(d, held, outer, hx, hy, gx, gy, BASE_SEED + SONGS.index(held))
         prob = score_variant(items, held, variant, sm, fm)
         add = baseexp.select_add(d, held, items[held], prob, th, bo)
         met = ctx.articulation(sorted(bo + add), bc, d[held]["refs"])
@@ -520,7 +521,7 @@ def main():
     base_per = {}
     for i, held in enumerate(SONGS):
         tr = [s for s in SONGS if s != held]
-        bo, bc, _ = baseexp.baseline_for(d, held, tr, hx, hy, gx, gy, 21000 + i)
+        bo, bc, _ = baseexp.baseline_for(d, held, tr, hx, hy, gx, gy, BASE_SEED + SONGS.index(held))
         base_per[held] = ctx.articulation(bo, bc, d[held]["refs"])
     baseline = ctx.aggregate(base_per)
 
