@@ -41,6 +41,19 @@ export function midiFile(events,bpm=120,timing={}){
     {tick:0,order:0,data:[255,88,4,clamp(numerator,1,255),pow2Exp(denominator),24,8]},
   ];
 
+  // A signature event is required at every change, not merely at tick zero.
+  // beatIndex is measured from the first audio downbeat; exportOffsetSec puts
+  // that downbeat at a MIDI bar boundary, including a complete pickup bar.
+  let previous=numerator;
+  for(const bar of timing?.bars||[]){
+    if(!Number.isInteger(bar.beatIndex)||bar.beatIndex<0||!Number.isFinite(bar.numerator))continue;
+    const next=clamp(Math.round(bar.numerator),1,255);
+    if(next===previous)continue;
+    const tick=Math.max(0,Math.round((bar.beatIndex*60/bpm+barPad*barSec)*ticksPerSecond));
+    packets.push({tick,order:0,data:[255,88,4,next,pow2Exp(bar.denominator||4),24,8]});
+    previous=next;
+  }
+
   for(const e of events||[]){
     const musicalTime=Math.max(0,Number(e.time)+exportOffsetSec);
     const tick=Math.max(0,Math.round(musicalTime*ticksPerSecond));

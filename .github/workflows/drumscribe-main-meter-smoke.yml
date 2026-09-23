@@ -1,0 +1,32 @@
+name: DrumScribe main integration browser smoke
+
+on:
+  push:
+    branches: [main-meter-v23]
+    paths:
+      - 'drumscribe/**'
+      - '.github/workflows/drumscribe-main-meter-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python3 -m http.server 8000 >/tmp/drumscribe-meter-http.log 2>&1 &
+          sleep 2
+      - name: Transcribe and play in real Chromium
+        run: node drumscribe/experiments/meter_browser_smoke.mjs

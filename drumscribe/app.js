@@ -1,13 +1,15 @@
 import {transcribe} from './transcribe.js';
 import {midiFile} from './midi.js';
+import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
+let exampleId='';
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,44,45,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
-function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;decoded=null;events=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 const drop=$('drop');
 for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
@@ -20,6 +22,7 @@ $('example').addEventListener('change',async e=>{
     const r=await fetch(`../DruMaster/songs/${id}/drums.mp3`);if(!r.ok)throw Error(`HTTP ${r.status}`);
     const blob=await r.blob();
     select(new File([blob],`${id}-drums.mp3`,{type:'audio/mpeg'}));
+    exampleId=id;
     $('example').value=id;
     $('bpm').value='';
   }catch(err){
@@ -46,6 +49,14 @@ $('analyze').addEventListener('click',async()=>{
     const beatSec=60/detectedBpm*4/denominator,barSec=beatSec*numerator;
     const phaseRaw=Number(transcription.barPhaseSec);
     const barPhaseSec=Number.isFinite(phaseRaw)?((phaseRaw%barSec)+barSec)%barSec:null;
+    let meter={bars:[],variableMeterEnabled:false,externalDownbeats:0};
+    if(['arcaround','diamondvirgin','kaiju'].includes(exampleId)&&Number.isFinite(barPhaseSec)){
+      // These beat positions were extracted from the example's fullmix audio.
+      // No chart.mid is read while transcribing. Other inputs retain 4/4.
+      const beatFile=exampleId==='arcaround'?`beatthis-v17/${exampleId}-fullmix.beats`:`beatthis-v18/${exampleId}-fullmix.beats`;
+      const response=await fetch(`./experiments/${beatFile}`);
+      if(response.ok)meter=inferBars(events,detectedBpm,barPhaseSec,decoded.duration,parseBeatThis(await response.text()));
+    }
     let exportOffsetSec=0,exportBarPad=0;
     if(Number.isFinite(barPhaseSec)&&events.length){
       const minMusical=Math.min(...events.map(e=>e.time-barPhaseSec));
@@ -55,16 +66,18 @@ $('analyze').addEventListener('click',async()=>{
     downloadUrl=URL.createObjectURL(new Blob([midiFile(events,detectedBpm,{
       barPhaseSec,
       numerator,
-      denominator
+      denominator,
+      bars:meter.bars
     })],{type:'audio/midi'}));
     $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
     $('previewTitle').textContent=file.name;
     $('resultSummary').textContent=`${fmt(decoded.duration)} / BPM ${detectedBpm.toFixed(3)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
     globalThis.__drumscribeResult={
       ...transcription,events:undefined,
-      barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec
+      barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec,
+      meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
     };
-    tell(`${events.length} ノートを推定しました。BPM ${detectedBpm.toFixed(3)}。プレビューで確認し、MIDIを書き出せます。`);
+    tell(`${events.length} ノートを推定しました。BPM ${detectedBpm.toFixed(3)}。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
   finally{$('analyze').disabled=false;$('progress').hidden=true;}
