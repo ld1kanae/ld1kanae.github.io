@@ -951,7 +951,14 @@ export async function transcribe(decoded,report=()=>{},options={}){
         confidence:e.confidence*(1+(group==='crash'?.35:.25)*Math.max(per,headDistance<=.30?1:0)),
         cymbalEvidence:{
           headDistance,periodicSupport:per,crashSupport,rideSupport,hatSupport,
-          baseConfidence:Number(e.confidence)||0
+          baseConfidence:Number(e.confidence)||0,
+          crashSimilarity:Number(sim[TEMPLATE_INDEX.crash]?.[e.frame])||0,
+          hatSimilarity:Number(sim[TEMPLATE_INDEX.hat]?.[e.frame])||0,
+          rideSimilarity:Number(sim[TEMPLATE_INDEX.ride]?.[e.frame])||0,
+          bandLow:Number(band[0]?.[e.frame])||0,
+          bandMid:Number(band[1]?.[e.frame])||0,
+          bandBody:Number(band[2]?.[e.frame])||0,
+          bandHigh:Number(band[3]?.[e.frame])||0
         }
       });
     }
@@ -1007,6 +1014,9 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // K/S/T decisions remain identical to the legacy path. Only bar-head crashes
   // created by the ADTOF bar-head shortcut are eligible; raw-evidence rescues
   // outside the bar-head window are preserved.
+  const crashCandidates=pruned
+    .filter(e=>e.group==='crash'&&e.cymbalEvidence)
+    .map(e=>({time:e.time,frame:e.frame,...e.cymbalEvidence}));
   const crashPostGate={
     variant:cymbalVariant,evaluated:0,removed:0,rawSupported:0,
     confidenceSupported:0,hatVetoed:0,confidenceThreshold:crashConfidenceThreshold
@@ -1032,7 +1042,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       return keep;
     });
   }
-  adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashPostGate};
+  adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashPostGate,crashCandidates};
 
   // Cycles 225-227: fixed-threshold 44.1 kHz ExtraTrees suppressor.
   // Apply after cymbal/pedal classification and the initial two-hand pass,
