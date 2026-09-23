@@ -1,0 +1,53 @@
+name: DrumScribe learned arrangement KST v42
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/experiments/train_arrangement_kst_learned_v42.py"
+      - "drumscribe/experiments/results-arrangement-kst-candidates-v38.json"
+      - "drumscribe/models/gmd-kst/slot-prior-v1.json"
+      - ".github/workflows/drumscribe-arrangement-kst-learned-v42.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install mido numpy scikit-learn
+      - name: Train and evaluate three learned rescoring hypotheses
+        run: python drumscribe/experiments/train_arrangement_kst_learned_v42.py
+      - name: Commit reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-arrangement-kst-learned-v42.json
+          git add drumscribe/experiments/ARRANGEMENT_KST_LEARNED_V42.md
+          git add drumscribe/models/arrangement-kst/learned-rescore-v42.json
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record learned arrangement KST v42 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-arrangement-kst-learned-v42
+          path: |
+            drumscribe/experiments/results-arrangement-kst-learned-v42.json
+            drumscribe/experiments/ARRANGEMENT_KST_LEARNED_V42.md
+            drumscribe/models/arrangement-kst/learned-rescore-v42.json
+          retention-days: 14
