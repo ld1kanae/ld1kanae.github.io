@@ -1,5 +1,6 @@
 import {transcribeAdtof} from './adtof.js';
 import {filterHighResHats} from './hat-forest.js';
+import {promoteOpenHats} from './open-hat.js';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;
@@ -909,7 +910,14 @@ export async function transcribe(decoded,report=()=>{},options={}){
   pruned=highHat.events;
   adtofInfo.hatHighRes=highHat.info;
 
-  const noteOf={kick:36,snare:38,hat:42,pedal_hat:44,tom:45,crash:49,ride:51};
+  // Open/closed articulation is a post-classifier only: keep all current hat
+  // onset times/counts, and promote high-confidence acoustic matches to GM 46.
+  // Ambiguous events remain closed GM 42.
+  const openHat=await promoteOpenHats(decoded,pruned,(message,p)=>report(message,p));
+  pruned=openHat.events;
+  adtofInfo.openHat=openHat.info;
+
+  const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:44,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
     time:e.time,note:noteOf[e.group],group:e.group,
     velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score))))
