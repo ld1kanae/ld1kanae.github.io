@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "grid-tempo-five-song-v30",
+  "method": "Replay the existing real-browser generated-meter-v23 note events through the current rhythm-grid.js/midi.js export layer, then score against chart.mid. This isolates the new quantization/tempo-map layer; it is not a fresh acoustic transcription.",
+  "runtime": {
+    "straight_policy": "16th by default; preserve a 32nd only when d16 > 0.10 beat and d32 <= 0.035 beat",
+    "triplet_policy": "triplet grid only when triplet concentration is clearly stronger than straight concentration",
+    "tempo_policy": "local phase drift -> denominator-beat tempo map, smoothed radius 2 and clamped to ±3% of base BPM"
+  },
+  "songs": {
+    "arcaround": {
+      "base_f1": 0.6876276031033075,
+      "new_f1": 0.6876276031033075,
+      "delta": 0,
+      "straight16_share": 1,
+      "straight32_only_share": 0,
+      "part_f1": {
+        "kick": 0.9544282029234737,
+        "snare": 0.5968109339407744,
+        "tom": 0.4117647058823529,
+        "hat": 0.4375,
+        "cymbal": 0.028368794326241134
+      }
+    },
+    "diamondvirgin": {
+      "base_f1": 0.802526906878802,
+      "new_f1": 0.802526906878802,
+      "delta": 0,
+      "straight16_share": 0.9962864721485412,
+      "straight32_only_share": 0.003713527851458886,
+      "part_f1": {
+        "kick": 0.9457044673539519,
+        "snare": 0.9655172413793104,
+        "tom": 0.7843137254901961,
+        "hat": 0.48669950738916257,
+        "cymbal": 0.628099173553719
+      }
+    },
+    "kaiju": {
+      "base_f1": 0.7766413724843286,
+      "new_f1": 0.7766413724843286,
+      "delta": 0,
+      "straight16_share": 0.9991896272285251,
+      "straight32_only_share": 0.0008103727714748784,
+      "part_f1": {
+        "kick": 0.9923076923076923,
+        "snare": 0.975609756097561,
+        "tom": 0.9777777777777777,
+        "hat": 0.9042016806722689,
+        "cymbal": 0.09900990099009901
+      }
+    },
+    "nanairo": {
+      "base_f1": 0.8748360010495932,
+      "new_f1": 0.8748360010495932,
+      "delta": 0,
+      "straight16_share": 0.9988901220865705,
+      "straight32_only_share": 0.0011098779134295228,
+      "part_f1": {
+        "kick": 1,
+        "snare": 0.7574931880108992,
+        "tom": 0,
+        "hat": 0.8515592515592516,
+        "cymbal": 0.5373134328358209
+      }
+    },
+    "ray": {
+      "base_f1": 0.8922880815806246,
+      "new_f1": 0.8922880815806246,
+      "delta": 0,
+      "straight16_share": 0.9715703971119134,
+      "straight32_only_share": 0.028429602888086644,
+      "part_f1": {
+        "kick": 0.9394760614272809,
+        "snare": 0.9830508474576272,
+        "tom": 0,
+        "hat": 0.8631510837916532,
+        "cymbal": 0.8958333333333334
+      }
+    }
+  },
+  "aggregate": {
+    "regressions": 0,
+    "mean_f1_before": 0.8067839930193312,
+    "mean_f1_after": 0.8067839930193312,
+    "mean_straight16_share": 0.99318732371511
+  },
+  "note": "A looser 0.08-beat 16th/32nd split also showed no regressions and slightly improved arcaround snare F1, but the current stricter policy was retained because the existing runtime already passes all five songs and is more conservative about inventing 32nds."
+}
