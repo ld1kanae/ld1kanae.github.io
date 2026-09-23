@@ -1,5 +1,22 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-24: ユーザー調整用・判定閾値倍率 UI
+
+production UI に、既存のactivation / probability / score系閾値へ掛ける倍率を追加した。全項目デフォルト **1.0**、入力範囲 0.50–1.50、step 0.05。
+
+対象は kick / snare / snare rescue / E-GMD snare / tom / hat onset / hat collision suppressor / high-resolution hat / Open HH / Ride→Open HH / Ride-context→Open HH / overlap Open-HH rescue / pedal HH / cymbal onset / Crash post gate。
+
+設計上、倍率1.0では既存閾値の数値をそのまま使用する。BPM推定・beat/bar推定用のspectral detector閾値や時間窓は変更対象外とし、ユーザーの楽器採譜感度調整がBPM推定そのものを直接動かさないようにした。
+
+確認済み:
+- UI → app.js → transcribe.js → adtof/open-hat/hat-forest の受け渡しを確認
+- 変更JS 5ファイルの構文検査通過
+- E-GMD multiplierの初回配線位置ミスを検出し、production snare model gate側へ修正済み
+
+未確認:
+- デフォルト1.0での5曲fresh Chromium回帰
+- 0.50/1.50端点での各クラスの単調性・実用性
+
 ## 2026-09-23: tempo mapを1小節単位へ集約（v35）
 
 ユーザー要望により、BPM変化だけを変更。note tick / quantize grid / BPM基準推定 / 小節頭 / 楽器分類には触れず、tempo mapの出力密度を1拍単位から**最低1小節単位**へ変更した。
