@@ -1,0 +1,1708 @@
+{
+  "schema": 1,
+  "description": "Held-out open/closed hi-hat relabeling of current browser hat candidates. No onset times are added or removed.",
+  "referenceCounts": {
+    "arcaround": {
+      "candidateHats": 276,
+      "matched": 145,
+      "matchedClosed": 116,
+      "matchedOpen": 29,
+      "refClosed": 200,
+      "refOpen": 93
+    },
+    "diamondvirgin": {
+      "candidateHats": 253,
+      "matched": 244,
+      "matchedClosed": 203,
+      "matchedOpen": 41,
+      "refClosed": 253,
+      "refOpen": 502
+    },
+    "kaiju": {
+      "candidateHats": 585,
+      "matched": 537,
+      "matchedClosed": 521,
+      "matchedOpen": 16,
+      "refClosed": 572,
+      "refOpen": 22
+    },
+    "nanairo": {
+      "candidateHats": 1007,
+      "matched": 947,
+      "matchedClosed": 707,
+      "matchedOpen": 240,
+      "refClosed": 823,
+      "refOpen": 240
+    },
+    "ray": {
+      "candidateHats": 1286,
+      "matched": 1259,
+      "matchedClosed": 991,
+      "matchedOpen": 268,
+      "refClosed": 1075,
+      "refOpen": 322
+    }
+  },
+  "assets": {
+    "closed": "DruMaster/assets/drums/42.wav",
+    "open": "DruMaster/assets/drums/46.wav",
+    "use": "template-similarity features only"
+  },
+  "baselineAllClosed": {
+    "songs": {
+      "arcaround": {
+        "open": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 93,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "closed": {
+          "tp": 116,
+          "predicted": 276,
+          "reference": 200,
+          "precision": 0.42028985507246375,
+          "recall": 0.58,
+          "f1": 0.48739495798319327
+        },
+        "macroF1": 0.24369747899159663
+      },
+      "diamondvirgin": {
+        "open": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 502,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "closed": {
+          "tp": 203,
+          "predicted": 253,
+          "reference": 253,
+          "precision": 0.8023715415019763,
+          "recall": 0.8023715415019763,
+          "f1": 0.8023715415019763
+        },
+        "macroF1": 0.40118577075098816
+      },
+      "kaiju": {
+        "open": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 22,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "closed": {
+          "tp": 521,
+          "predicted": 585,
+          "reference": 572,
+          "precision": 0.8905982905982905,
+          "recall": 0.9108391608391608,
+          "f1": 0.9006050129645635
+        },
+        "macroF1": 0.45030250648228176
+      },
+      "nanairo": {
+        "open": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 240,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "closed": {
+          "tp": 707,
+          "predicted": 1007,
+          "reference": 823,
+          "precision": 0.702085402184707,
+          "recall": 0.8590522478736331,
+          "f1": 0.7726775956284153
+        },
+        "macroF1": 0.38633879781420766
+      },
+      "ray": {
+        "open": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 322,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "closed": {
+          "tp": 968,
+          "predicted": 1286,
+          "reference": 1075,
+          "precision": 0.7527216174183515,
+          "recall": 0.9004651162790698,
+          "f1": 0.81999152901313
+        },
+        "macroF1": 0.409995764506565
+      }
+    },
+    "open": {
+      "tp": 0,
+      "predicted": 0,
+      "reference": 1179,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "closed": {
+      "tp": 2515,
+      "predicted": 3407,
+      "reference": 2923,
+      "precision": 0.7381860874669798,
+      "recall": 0.8604173794047212,
+      "f1": 0.7946287519747235
+    },
+    "macroF1": 0.39731437598736175
+  },
+  "variants": {
+    "decay_logistic": {
+      "family": "decay_logistic",
+      "featureSet": "decay",
+      "folds": {
+        "arcaround": {
+          "threshold": 0.65,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.65,
+                "macroF1": 0.7402421935407477,
+                "closedF1": 0.8677296204805749,
+                "openF1": 0.6127547666009204,
+                "closedToOpen": 490,
+                "openToClosed": 99
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.734608002976223,
+                "closedF1": 0.8623728813559322,
+                "openF1": 0.6068431245965139,
+                "closedToOpen": 514,
+                "openToClosed": 95
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.728102411956523,
+                "closedF1": 0.8554491564067488,
+                "openF1": 0.6007556675062973,
+                "closedToOpen": 546,
+                "openToClosed": 88
+              },
+              {
+                "threshold": 0.35,
+                "macroF1": 0.7203060094078402,
+                "closedF1": 0.8477460901563938,
+                "openF1": 0.5928659286592866,
+                "closedToOpen": 579,
+                "openToClosed": 83
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.6980120099499577,
+                "closedF1": 0.8753427546931027,
+                "openF1": 0.5206812652068127,
+                "closedToOpen": 347,
+                "openToClosed": 244
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.2505192985846094,
+          "openPredictions": 163,
+          "closedPredictions": 113,
+          "midiNotes": 1055,
+          "metrics": {
+            "open": {
+              "tp": 28,
+              "predicted": 163,
+              "reference": 93,
+              "precision": 0.17177914110429449,
+              "recall": 0.3010752688172043,
+              "f1": 0.21875
+            },
+            "closed": {
+              "tp": 10,
+              "predicted": 113,
+              "reference": 200,
+              "precision": 0.08849557522123894,
+              "recall": 0.05,
+              "f1": 0.06389776357827476
+            },
+            "macroF1": 0.14132388178913738
+          }
+        },
+        "diamondvirgin": {
+          "threshold": 0.45,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.45,
+                "macroF1": 0.7232693952864842,
+                "closedF1": 0.8471657498206171,
+                "openF1": 0.5993730407523511,
+                "closedToOpen": 564,
+                "openToClosed": 75
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.719016233436239,
+                "closedF1": 0.852989449003517,
+                "openF1": 0.585043017868961,
+                "closedToOpen": 516,
+                "openToClosed": 111
+              },
+              {
+                "threshold": 0.35,
+                "macroF1": 0.7123959889054833,
+                "closedF1": 0.8372766779333656,
+                "openF1": 0.587515299877601,
+                "closedToOpen": 601,
+                "openToClosed": 73
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.5726489926408493,
+                "closedF1": 0.8721498371335505,
+                "openF1": 0.27314814814814814,
+                "closedToOpen": 193,
+                "openToClosed": 435
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.46762965452001076,
+                "closedF1": 0.8645110097202936,
+                "openF1": 0.0707482993197279,
+                "closedToOpen": 156,
+                "openToClosed": 527
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.4618913196894848,
+          "openPredictions": 11,
+          "closedPredictions": 242,
+          "midiNotes": 1885,
+          "metrics": {
+            "open": {
+              "tp": 1,
+              "predicted": 11,
+              "reference": 502,
+              "precision": 0.09090909090909091,
+              "recall": 0.00199203187250996,
+              "f1": 0.003898635477582846
+            },
+            "closed": {
+              "tp": 193,
+              "predicted": 242,
+              "reference": 253,
+              "precision": 0.7975206611570248,
+              "recall": 0.7628458498023716,
+              "f1": 0.7797979797979798
+            },
+            "macroF1": 0.39184830763778133
+          }
+        },
+        "kaiju": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.7285767515392041,
+                "closedF1": 0.8325438840902758,
+                "openF1": 0.6246096189881324,
+                "closedToOpen": 523,
+                "openToClosed": 78
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.661633870005963,
+                "closedF1": 0.8317948717948718,
+                "openF1": 0.49147286821705427,
+                "closedToOpen": 395,
+                "openToClosed": 261
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.6203678552924784,
+                "closedF1": 0.8253253253253253,
+                "openF1": 0.4154103852596315,
+                "closedToOpen": 368,
+                "openToClosed": 330
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.4618241556293798,
+                "closedF1": 0.8421765635583653,
+                "openF1": 0.08147174770039421,
+                "closedToOpen": 152,
+                "openToClosed": 547
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.46164833422667806,
+                "closedF1": 0.8454443194600675,
+                "openF1": 0.07785234899328859,
+                "closedToOpen": 138,
+                "openToClosed": 549
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.4766081871345029,
+          "openPredictions": 157,
+          "closedPredictions": 428,
+          "midiNotes": 1234,
+          "metrics": {
+            "open": {
+              "tp": 9,
+              "predicted": 157,
+              "reference": 22,
+              "precision": 0.05732484076433121,
+              "recall": 0.4090909090909091,
+              "f1": 0.1005586592178771
+            },
+            "closed": {
+              "tp": 384,
+              "predicted": 428,
+              "reference": 572,
+              "precision": 0.897196261682243,
+              "recall": 0.6713286713286714,
+              "f1": 0.768
+            },
+            "macroF1": 0.43427932960893856
+          }
+        },
+        "nanairo": {
+          "threshold": 0.45,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.45,
+                "macroF1": 0.6679395433932576,
+                "closedF1": 0.8345016763181957,
+                "openF1": 0.5013774104683195,
+                "closedToOpen": 462,
+                "openToClosed": 81
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.6590662352827371,
+                "closedF1": 0.8459946792787467,
+                "openF1": 0.47213779128672745,
+                "closedToOpen": 400,
+                "openToClosed": 121
+              },
+              {
+                "threshold": 0.35,
+                "macroF1": 0.6363116806419241,
+                "closedF1": 0.7887778136085134,
+                "openF1": 0.4838455476753349,
+                "closedToOpen": 608,
+                "openToClosed": 47
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.5237761250428935,
+                "closedF1": 0.874242024782494,
+                "openF1": 0.1733102253032929,
+                "closedToOpen": 173,
+                "openToClosed": 304
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.521788168658304,
+                "closedF1": 0.8623362737236033,
+                "openF1": 0.18124006359300476,
+                "closedToOpen": 218,
+                "openToClosed": 297
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.7557536927764279,
+          "openPredictions": 454,
+          "closedPredictions": 553,
+          "midiNotes": 1802,
+          "metrics": {
+            "open": {
+              "tp": 237,
+              "predicted": 454,
+              "reference": 240,
+              "precision": 0.5220264317180616,
+              "recall": 0.9875,
+              "f1": 0.6829971181556196
+            },
+            "closed": {
+              "tp": 497,
+              "predicted": 553,
+              "reference": 823,
+              "precision": 0.8987341772151899,
+              "recall": 0.6038882138517618,
+              "f1": 0.7223837209302325
+            },
+            "macroF1": 0.702690419542926
+          }
+        },
+        "ray": {
+          "threshold": 0.45,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.45,
+                "macroF1": 0.6474305536881169,
+                "closedF1": 0.8070562293274531,
+                "openF1": 0.4878048780487805,
+                "closedToOpen": 449,
+                "openToClosed": 76
+              },
+              {
+                "threshold": 0.35,
+                "macroF1": 0.6248342779280325,
+                "closedF1": 0.7730577879831612,
+                "openF1": 0.4766107678729038,
+                "closedToOpen": 537,
+                "openToClosed": 56
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.48317456146113924,
+                "closedF1": 0.864516129032258,
+                "openF1": 0.10183299389002037,
+                "closedToOpen": 140,
+                "openToClosed": 301
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.4830446032108865,
+                "closedF1": 0.8597899938233478,
+                "openF1": 0.1062992125984252,
+                "closedToOpen": 155,
+                "openToClosed": 299
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.4821102693137201,
+                "closedF1": 0.8520710059171598,
+                "openF1": 0.11214953271028037,
+                "closedToOpen": 179,
+                "openToClosed": 296
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.7832202604324234,
+          "openPredictions": 409,
+          "closedPredictions": 877,
+          "midiNotes": 2216,
+          "metrics": {
+            "open": {
+              "tp": 235,
+              "predicted": 409,
+              "reference": 322,
+              "precision": 0.5745721271393643,
+              "recall": 0.7298136645962733,
+              "f1": 0.6429548563611491
+            },
+            "closed": {
+              "tp": 802,
+              "predicted": 877,
+              "reference": 1075,
+              "precision": 0.9144811858608894,
+              "recall": 0.746046511627907,
+              "f1": 0.8217213114754098
+            },
+            "macroF1": 0.7323380839182795
+          }
+        }
+      },
+      "summary": {
+        "songs": {
+          "arcaround": {
+            "open": {
+              "tp": 28,
+              "predicted": 163,
+              "reference": 93,
+              "precision": 0.17177914110429449,
+              "recall": 0.3010752688172043,
+              "f1": 0.21875
+            },
+            "closed": {
+              "tp": 10,
+              "predicted": 113,
+              "reference": 200,
+              "precision": 0.08849557522123894,
+              "recall": 0.05,
+              "f1": 0.06389776357827476
+            },
+            "macroF1": 0.14132388178913738
+          },
+          "diamondvirgin": {
+            "open": {
+              "tp": 1,
+              "predicted": 11,
+              "reference": 502,
+              "precision": 0.09090909090909091,
+              "recall": 0.00199203187250996,
+              "f1": 0.003898635477582846
+            },
+            "closed": {
+              "tp": 193,
+              "predicted": 242,
+              "reference": 253,
+              "precision": 0.7975206611570248,
+              "recall": 0.7628458498023716,
+              "f1": 0.7797979797979798
+            },
+            "macroF1": 0.39184830763778133
+          },
+          "kaiju": {
+            "open": {
+              "tp": 9,
+              "predicted": 157,
+              "reference": 22,
+              "precision": 0.05732484076433121,
+              "recall": 0.4090909090909091,
+              "f1": 0.1005586592178771
+            },
+            "closed": {
+              "tp": 384,
+              "predicted": 428,
+              "reference": 572,
+              "precision": 0.897196261682243,
+              "recall": 0.6713286713286714,
+              "f1": 0.768
+            },
+            "macroF1": 0.43427932960893856
+          },
+          "nanairo": {
+            "open": {
+              "tp": 237,
+              "predicted": 454,
+              "reference": 240,
+              "precision": 0.5220264317180616,
+              "recall": 0.9875,
+              "f1": 0.6829971181556196
+            },
+            "closed": {
+              "tp": 497,
+              "predicted": 553,
+              "reference": 823,
+              "precision": 0.8987341772151899,
+              "recall": 0.6038882138517618,
+              "f1": 0.7223837209302325
+            },
+            "macroF1": 0.702690419542926
+          },
+          "ray": {
+            "open": {
+              "tp": 235,
+              "predicted": 409,
+              "reference": 322,
+              "precision": 0.5745721271393643,
+              "recall": 0.7298136645962733,
+              "f1": 0.6429548563611491
+            },
+            "closed": {
+              "tp": 802,
+              "predicted": 877,
+              "reference": 1075,
+              "precision": 0.9144811858608894,
+              "recall": 0.746046511627907,
+              "f1": 0.8217213114754098
+            },
+            "macroF1": 0.7323380839182795
+          }
+        },
+        "open": {
+          "tp": 510,
+          "predicted": 1194,
+          "reference": 1179,
+          "precision": 0.4271356783919598,
+          "recall": 0.43256997455470736,
+          "f1": 0.42983565107458915
+        },
+        "closed": {
+          "tp": 1886,
+          "predicted": 2213,
+          "reference": 2923,
+          "precision": 0.8522367826479892,
+          "recall": 0.6452275059869996,
+          "f1": 0.7344236760124611
+        },
+        "macroF1": 0.5821296635435251
+      }
+    },
+    "timbre_extra": {
+      "family": "timbre_extra",
+      "featureSet": "timbre",
+      "folds": {
+        "arcaround": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.6258480311938097,
+                "closedF1": 0.8421722528638099,
+                "openF1": 0.4095238095238095,
+                "closedToOpen": 437,
+                "openToClosed": 307
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.5488602253861485,
+                "closedF1": 0.8462469733656174,
+                "openF1": 0.25147347740667975,
+                "closedToOpen": 325,
+                "openToClosed": 437
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.48843235009229263,
+                "closedF1": 0.8583640955896639,
+                "openF1": 0.1185006045949214,
+                "closedToOpen": 213,
+                "openToClosed": 516
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.4700119661181425,
+                "closedF1": 0.8805885681946802,
+                "openF1": 0.05943536404160475,
+                "closedToOpen": 88,
+                "openToClosed": 545
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.46176521888570543,
+                "closedF1": 0.8958487768717569,
+                "openF1": 0.02768166089965398,
+                "closedToOpen": 5,
+                "openToClosed": 557
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.34470291613148757,
+          "openPredictions": 145,
+          "closedPredictions": 131,
+          "midiNotes": 1055,
+          "metrics": {
+            "open": {
+              "tp": 24,
+              "predicted": 145,
+              "reference": 93,
+              "precision": 0.16551724137931034,
+              "recall": 0.25806451612903225,
+              "f1": 0.20168067226890757
+            },
+            "closed": {
+              "tp": 26,
+              "predicted": 131,
+              "reference": 200,
+              "precision": 0.1984732824427481,
+              "recall": 0.13,
+              "f1": 0.15709969788519637
+            },
+            "macroF1": 0.17939018507705196
+          }
+        },
+        "diamondvirgin": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.7243420722403924,
+                "closedF1": 0.8615028901734104,
+                "openF1": 0.5871812543073742,
+                "closedToOpen": 472,
+                "openToClosed": 127
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.6926302806043787,
+                "closedF1": 0.8604703247480403,
+                "openF1": 0.524790236460717,
+                "closedToOpen": 414,
+                "openToClosed": 209
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.6600398477708487,
+                "closedF1": 0.8669823504089539,
+                "openF1": 0.45309734513274336,
+                "closedToOpen": 321,
+                "openToClosed": 297
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.5387575388148177,
+                "closedF1": 0.8762247550489902,
+                "openF1": 0.20129032258064516,
+                "closedToOpen": 144,
+                "openToClosed": 475
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.48713235294117646,
+                "closedF1": 0.8920278637770898,
+                "openF1": 0.08223684210526316,
+                "closedToOpen": 30,
+                "openToClosed": 528
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.4407102502017756,
+          "openPredictions": 35,
+          "closedPredictions": 218,
+          "midiNotes": 1885,
+          "metrics": {
+            "open": {
+              "tp": 2,
+              "predicted": 35,
+              "reference": 502,
+              "precision": 0.05714285714285714,
+              "recall": 0.00398406374501992,
+              "f1": 0.0074487895716946
+            },
+            "closed": {
+              "tp": 171,
+              "predicted": 218,
+              "reference": 253,
+              "precision": 0.7844036697247706,
+              "recall": 0.6758893280632411,
+              "f1": 0.7261146496815286
+            },
+            "macroF1": 0.3667817196266116
+          }
+        },
+        "kaiju": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.6893943275919578,
+                "closedF1": 0.8390117035110534,
+                "openF1": 0.5397769516728624,
+                "closedToOpen": 404,
+                "openToClosed": 215
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.636371389553117,
+                "closedF1": 0.8395550061804697,
+                "openF1": 0.4331877729257642,
+                "closedToOpen": 319,
+                "openToClosed": 330
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.505246582307084,
+                "closedF1": 0.8383233532934131,
+                "openF1": 0.1721698113207547,
+                "closedToOpen": 197,
+                "openToClosed": 505
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.47888470757182855,
+                "closedF1": 0.8618391825855175,
+                "openF1": 0.09593023255813954,
+                "closedToOpen": 77,
+                "openToClosed": 545
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.459413701768201,
+                "closedF1": 0.8729257641921397,
+                "openF1": 0.04590163934426229,
+                "closedToOpen": 18,
+                "openToClosed": 564
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.49431900195896483,
+          "openPredictions": 152,
+          "closedPredictions": 433,
+          "midiNotes": 1234,
+          "metrics": {
+            "open": {
+              "tp": 11,
+              "predicted": 152,
+              "reference": 22,
+              "precision": 0.07236842105263158,
+              "recall": 0.5,
+              "f1": 0.12643678160919541
+            },
+            "closed": {
+              "tp": 389,
+              "predicted": 433,
+              "reference": 572,
+              "precision": 0.8983833718244804,
+              "recall": 0.6800699300699301,
+              "f1": 0.7741293532338308
+            },
+            "macroF1": 0.45028306742151314
+          }
+        },
+        "nanairo": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.536696541838771,
+                "closedF1": 0.8581464469062415,
+                "openF1": 0.21524663677130046,
+                "closedToOpen": 243,
+                "openToClosed": 282
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.47490036281970033,
+                "closedF1": 0.8836850231600618,
+                "openF1": 0.06611570247933884,
+                "closedToOpen": 114,
+                "openToClosed": 338
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.4589788228880951,
+                "closedF1": 0.9026904702036711,
+                "openF1": 0.015267175572519083,
+                "closedToOpen": 36,
+                "openToClosed": 351
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.4559262948207171,
+                "closedF1": 0.9118525896414342,
+                "openF1": 0.0,
+                "closedToOpen": 0,
+                "openToClosed": 354
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.455655206776283,
+                "closedF1": 0.911310413552566,
+                "openF1": 0.0,
+                "closedToOpen": 2,
+                "openToClosed": 354
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.7474796512705475,
+          "openPredictions": 470,
+          "closedPredictions": 537,
+          "midiNotes": 1802,
+          "metrics": {
+            "open": {
+              "tp": 239,
+              "predicted": 470,
+              "reference": 240,
+              "precision": 0.5085106382978724,
+              "recall": 0.9958333333333333,
+              "f1": 0.6732394366197183
+            },
+            "closed": {
+              "tp": 486,
+              "predicted": 537,
+              "reference": 823,
+              "precision": 0.9050279329608939,
+              "recall": 0.5905224787363305,
+              "f1": 0.7147058823529412
+            },
+            "macroF1": 0.6939726594863298
+          }
+        },
+        "ray": {
+          "threshold": 0.45,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.45,
+                "macroF1": 0.6962228335956365,
+                "closedF1": 0.8955512572533849,
+                "openF1": 0.4968944099378882,
+                "closedToOpen": 158,
+                "openToClosed": 166
+              },
+              {
+                "threshold": 0.35,
+                "macroF1": 0.6777678833913987,
+                "closedF1": 0.8439591405424445,
+                "openF1": 0.5115766262403528,
+                "closedToOpen": 349,
+                "openToClosed": 94
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.6356976141078838,
+                "closedF1": 0.90625,
+                "openF1": 0.3651452282157676,
+                "closedToOpen": 68,
+                "openToClosed": 238
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.5395930538421424,
+                "closedF1": 0.90437890974084,
+                "openF1": 0.17480719794344474,
+                "closedToOpen": 29,
+                "openToClosed": 292
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.49024420642450356,
+                "closedF1": 0.9055604589585172,
+                "openF1": 0.07492795389048991,
+                "closedToOpen": 8,
+                "openToClosed": 313
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.6057305915481667,
+          "openPredictions": 108,
+          "closedPredictions": 1178,
+          "midiNotes": 2216,
+          "metrics": {
+            "open": {
+              "tp": 79,
+              "predicted": 108,
+              "reference": 322,
+              "precision": 0.7314814814814815,
+              "recall": 0.2453416149068323,
+              "f1": 0.3674418604651163
+            },
+            "closed": {
+              "tp": 931,
+              "predicted": 1178,
+              "reference": 1075,
+              "precision": 0.7903225806451613,
+              "recall": 0.866046511627907,
+              "f1": 0.8264536173990236
+            },
+            "macroF1": 0.5969477389320699
+          }
+        }
+      },
+      "summary": {
+        "songs": {
+          "arcaround": {
+            "open": {
+              "tp": 24,
+              "predicted": 145,
+              "reference": 93,
+              "precision": 0.16551724137931034,
+              "recall": 0.25806451612903225,
+              "f1": 0.20168067226890757
+            },
+            "closed": {
+              "tp": 26,
+              "predicted": 131,
+              "reference": 200,
+              "precision": 0.1984732824427481,
+              "recall": 0.13,
+              "f1": 0.15709969788519637
+            },
+            "macroF1": 0.17939018507705196
+          },
+          "diamondvirgin": {
+            "open": {
+              "tp": 2,
+              "predicted": 35,
+              "reference": 502,
+              "precision": 0.05714285714285714,
+              "recall": 0.00398406374501992,
+              "f1": 0.0074487895716946
+            },
+            "closed": {
+              "tp": 171,
+              "predicted": 218,
+              "reference": 253,
+              "precision": 0.7844036697247706,
+              "recall": 0.6758893280632411,
+              "f1": 0.7261146496815286
+            },
+            "macroF1": 0.3667817196266116
+          },
+          "kaiju": {
+            "open": {
+              "tp": 11,
+              "predicted": 152,
+              "reference": 22,
+              "precision": 0.07236842105263158,
+              "recall": 0.5,
+              "f1": 0.12643678160919541
+            },
+            "closed": {
+              "tp": 389,
+              "predicted": 433,
+              "reference": 572,
+              "precision": 0.8983833718244804,
+              "recall": 0.6800699300699301,
+              "f1": 0.7741293532338308
+            },
+            "macroF1": 0.45028306742151314
+          },
+          "nanairo": {
+            "open": {
+              "tp": 239,
+              "predicted": 470,
+              "reference": 240,
+              "precision": 0.5085106382978724,
+              "recall": 0.9958333333333333,
+              "f1": 0.6732394366197183
+            },
+            "closed": {
+              "tp": 486,
+              "predicted": 537,
+              "reference": 823,
+              "precision": 0.9050279329608939,
+              "recall": 0.5905224787363305,
+              "f1": 0.7147058823529412
+            },
+            "macroF1": 0.6939726594863298
+          },
+          "ray": {
+            "open": {
+              "tp": 79,
+              "predicted": 108,
+              "reference": 322,
+              "precision": 0.7314814814814815,
+              "recall": 0.2453416149068323,
+              "f1": 0.3674418604651163
+            },
+            "closed": {
+              "tp": 931,
+              "predicted": 1178,
+              "reference": 1075,
+              "precision": 0.7903225806451613,
+              "recall": 0.866046511627907,
+              "f1": 0.8264536173990236
+            },
+            "macroF1": 0.5969477389320699
+          }
+        },
+        "open": {
+          "tp": 355,
+          "predicted": 910,
+          "reference": 1179,
+          "precision": 0.3901098901098901,
+          "recall": 0.3011026293469042,
+          "f1": 0.3398755385351843
+        },
+        "closed": {
+          "tp": 2003,
+          "predicted": 2497,
+          "reference": 2923,
+          "precision": 0.802162595114137,
+          "recall": 0.6852548751282929,
+          "f1": 0.7391143911439114
+        },
+        "macroF1": 0.5394949648395478
+      }
+    },
+    "context_extra": {
+      "family": "context_extra",
+      "featureSet": "context",
+      "folds": {
+        "arcaround": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.6231780470888462,
+                "closedF1": 0.8573198430724758,
+                "openF1": 0.3890362511052166,
+                "closedToOpen": 346,
+                "openToClosed": 345
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.527045438996022,
+                "closedF1": 0.856071076011846,
+                "openF1": 0.19801980198019803,
+                "closedToOpen": 254,
+                "openToClosed": 475
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.47604184311466957,
+                "closedF1": 0.8658091764254175,
+                "openF1": 0.08627450980392157,
+                "closedToOpen": 167,
+                "openToClosed": 532
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.45261622963562986,
+                "closedF1": 0.8916960802526472,
+                "openF1": 0.01353637901861252,
+                "closedToOpen": 22,
+                "openToClosed": 561
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.4474657787643359,
+                "closedF1": 0.8949315575286718,
+                "openF1": 0.0,
+                "closedToOpen": 3,
+                "openToClosed": 565
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.3151567196221554,
+          "openPredictions": 158,
+          "closedPredictions": 118,
+          "midiNotes": 1055,
+          "metrics": {
+            "open": {
+              "tp": 27,
+              "predicted": 158,
+              "reference": 93,
+              "precision": 0.17088607594936708,
+              "recall": 0.2903225806451613,
+              "f1": 0.2151394422310757
+            },
+            "closed": {
+              "tp": 19,
+              "predicted": 118,
+              "reference": 200,
+              "precision": 0.16101694915254236,
+              "recall": 0.095,
+              "f1": 0.11949685534591195
+            },
+            "macroF1": 0.16731814878849383
+          }
+        },
+        "diamondvirgin": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.687114768809616,
+                "closedF1": 0.8528746038931643,
+                "openF1": 0.5213549337260678,
+                "closedToOpen": 451,
+                "openToClosed": 199
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.5760233133335122,
+                "closedF1": 0.8476150274377374,
+                "openF1": 0.3044315992292871,
+                "closedToOpen": 327,
+                "openToClosed": 395
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.535612937415594,
+                "closedF1": 0.8803656597774245,
+                "openF1": 0.19086021505376344,
+                "closedToOpen": 120,
+                "openToClosed": 482
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.49645361774344093,
+                "closedF1": 0.8924210118239969,
+                "openF1": 0.10048622366288493,
+                "closedToOpen": 33,
+                "openToClosed": 522
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.46832721467617705,
+                "closedF1": 0.8946963873943121,
+                "openF1": 0.04195804195804196,
+                "closedToOpen": 7,
+                "openToClosed": 541
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.45841493667580624,
+          "openPredictions": 36,
+          "closedPredictions": 217,
+          "midiNotes": 1885,
+          "metrics": {
+            "open": {
+              "tp": 3,
+              "predicted": 36,
+              "reference": 502,
+              "precision": 0.08333333333333333,
+              "recall": 0.00597609561752988,
+              "f1": 0.011152416356877323
+            },
+            "closed": {
+              "tp": 173,
+              "predicted": 217,
+              "reference": 253,
+              "precision": 0.7972350230414746,
+              "recall": 0.6837944664031621,
+              "f1": 0.7361702127659574
+            },
+            "macroF1": 0.3736613145614174
+          }
+        },
+        "kaiju": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.5988052141164699,
+                "closedF1": 0.8243709916132215,
+                "openF1": 0.3732394366197183,
+                "closedToOpen": 346,
+                "openToClosed": 366
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.5180144014144986,
+                "closedF1": 0.8404525513738167,
+                "openF1": 0.19557625145518046,
+                "closedToOpen": 197,
+                "openToClosed": 494
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.48865809697124246,
+                "closedF1": 0.859504132231405,
+                "openF1": 0.11781206171107994,
+                "closedToOpen": 93,
+                "openToClosed": 536
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.4576517321165639,
+                "closedF1": 0.86331569664903,
+                "openF1": 0.05198776758409786,
+                "closedToOpen": 59,
+                "openToClosed": 561
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.4566316142131393,
+                "closedF1": 0.8735281290885303,
+                "openF1": 0.039735099337748346,
+                "closedToOpen": 14,
+                "openToClosed": 566
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.542208564631245,
+          "openPredictions": 101,
+          "closedPredictions": 484,
+          "midiNotes": 1234,
+          "metrics": {
+            "open": {
+              "tp": 9,
+              "predicted": 101,
+              "reference": 22,
+              "precision": 0.0891089108910891,
+              "recall": 0.4090909090909091,
+              "f1": 0.14634146341463414
+            },
+            "closed": {
+              "tp": 442,
+              "predicted": 484,
+              "reference": 572,
+              "precision": 0.9132231404958677,
+              "recall": 0.7727272727272727,
+              "f1": 0.8371212121212122
+            },
+            "macroF1": 0.49173133776792316
+          }
+        },
+        "nanairo": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.5295322825109915,
+                "closedF1": 0.8798530954879329,
+                "openF1": 0.17921146953405018,
+                "closedToOpen": 154,
+                "openToClosed": 304
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.4920868605079131,
+                "closedF1": 0.902834008097166,
+                "openF1": 0.08133971291866028,
+                "closedToOpen": 47,
+                "openToClosed": 337
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.46765123070504794,
+                "closedF1": 0.9086357947434293,
+                "openF1": 0.02666666666666667,
+                "closedToOpen": 16,
+                "openToClosed": 349
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.45828289751928714,
+                "closedF1": 0.9109947643979057,
+                "openF1": 0.005571030640668524,
+                "closedToOpen": 4,
+                "openToClosed": 353
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.4559262948207171,
+                "closedF1": 0.9118525896414342,
+                "openF1": 0.0,
+                "closedToOpen": 0,
+                "openToClosed": 354
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.6556179606860713,
+          "openPredictions": 355,
+          "closedPredictions": 652,
+          "midiNotes": 1802,
+          "metrics": {
+            "open": {
+              "tp": 154,
+              "predicted": 355,
+              "reference": 240,
+              "precision": 0.43380281690140843,
+              "recall": 0.6416666666666667,
+              "f1": 0.5176470588235295
+            },
+            "closed": {
+              "tp": 515,
+              "predicted": 652,
+              "reference": 823,
+              "precision": 0.7898773006134969,
+              "recall": 0.6257594167679222,
+              "f1": 0.6983050847457627
+            },
+            "macroF1": 0.6079760717846461
+          }
+        },
+        "ray": {
+          "threshold": 0.35,
+          "inner": {
+            "ranking": [
+              {
+                "threshold": 0.35,
+                "macroF1": 0.5711523987761729,
+                "closedF1": 0.8761310452418096,
+                "openF1": 0.266173752310536,
+                "closedToOpen": 143,
+                "openToClosed": 254
+              },
+              {
+                "threshold": 0.45,
+                "macroF1": 0.5147988946199941,
+                "closedF1": 0.8956027520191445,
+                "openF1": 0.13399503722084366,
+                "closedToOpen": 50,
+                "openToClosed": 299
+              },
+              {
+                "threshold": 0.55,
+                "macroF1": 0.489324151352481,
+                "closedF1": 0.9013002364066194,
+                "openF1": 0.07734806629834254,
+                "closedToOpen": 22,
+                "openToClosed": 312
+              },
+              {
+                "threshold": 0.65,
+                "macroF1": 0.4690714742202156,
+                "closedF1": 0.9030552291421856,
+                "openF1": 0.03508771929824561,
+                "closedToOpen": 10,
+                "openToClosed": 320
+              },
+              {
+                "threshold": 0.75,
+                "macroF1": 0.45201872440023405,
+                "closedF1": 0.9040374488004681,
+                "openF1": 0.0,
+                "closedToOpen": 2,
+                "openToClosed": 326
+              }
+            ]
+          },
+          "candidateMatchedMacroF1": 0.6395564202789317,
+          "openPredictions": 140,
+          "closedPredictions": 1146,
+          "midiNotes": 2216,
+          "metrics": {
+            "open": {
+              "tp": 102,
+              "predicted": 140,
+              "reference": 322,
+              "precision": 0.7285714285714285,
+              "recall": 0.3167701863354037,
+              "f1": 0.44155844155844154
+            },
+            "closed": {
+              "tp": 920,
+              "predicted": 1146,
+              "reference": 1075,
+              "precision": 0.8027923211169284,
+              "recall": 0.8558139534883721,
+              "f1": 0.8284556506078343
+            },
+            "macroF1": 0.635007046083138
+          }
+        }
+      },
+      "summary": {
+        "songs": {
+          "arcaround": {
+            "open": {
+              "tp": 27,
+              "predicted": 158,
+              "reference": 93,
+              "precision": 0.17088607594936708,
+              "recall": 0.2903225806451613,
+              "f1": 0.2151394422310757
+            },
+            "closed": {
+              "tp": 19,
+              "predicted": 118,
+              "reference": 200,
+              "precision": 0.16101694915254236,
+              "recall": 0.095,
+              "f1": 0.11949685534591195
+            },
+            "macroF1": 0.16731814878849383
+          },
+          "diamondvirgin": {
+            "open": {
+              "tp": 3,
+              "predicted": 36,
+              "reference": 502,
+              "precision": 0.08333333333333333,
+              "recall": 0.00597609561752988,
+              "f1": 0.011152416356877323
+            },
+            "closed": {
+              "tp": 173,
+              "predicted": 217,
+              "reference": 253,
+              "precision": 0.7972350230414746,
+              "recall": 0.6837944664031621,
+              "f1": 0.7361702127659574
+            },
+            "macroF1": 0.3736613145614174
+          },
+          "kaiju": {
+            "open": {
+              "tp": 9,
+              "predicted": 101,
+              "reference": 22,
+              "precision": 0.0891089108910891,
+              "recall": 0.4090909090909091,
+              "f1": 0.14634146341463414
+            },
+            "closed": {
+              "tp": 442,
+              "predicted": 484,
+              "reference": 572,
+              "precision": 0.9132231404958677,
+              "recall": 0.7727272727272727,
+              "f1": 0.8371212121212122
+            },
+            "macroF1": 0.49173133776792316
+          },
+          "nanairo": {
+            "open": {
+              "tp": 154,
+              "predicted": 355,
+              "reference": 240,
+              "precision": 0.43380281690140843,
+              "recall": 0.6416666666666667,
+              "f1": 0.5176470588235295
+            },
+            "closed": {
+              "tp": 515,
+              "predicted": 652,
+              "reference": 823,
+              "precision": 0.7898773006134969,
+              "recall": 0.6257594167679222,
+              "f1": 0.6983050847457627
+            },
+            "macroF1": 0.6079760717846461
+          },
+          "ray": {
+            "open": {
+              "tp": 102,
+              "predicted": 140,
+              "reference": 322,
+              "precision": 0.7285714285714285,
+              "recall": 0.3167701863354037,
+              "f1": 0.44155844155844154
+            },
+            "closed": {
+              "tp": 920,
+              "predicted": 1146,
+              "reference": 1075,
+              "precision": 0.8027923211169284,
+              "recall": 0.8558139534883721,
+              "f1": 0.8284556506078343
+            },
+            "macroF1": 0.635007046083138
+          }
+        },
+        "open": {
+          "tp": 295,
+          "predicted": 790,
+          "reference": 1179,
+          "precision": 0.37341772151898733,
+          "recall": 0.2502120441051739,
+          "f1": 0.29964448958862366
+        },
+        "closed": {
+          "tp": 2069,
+          "predicted": 2617,
+          "reference": 2923,
+          "precision": 0.7905999235766145,
+          "recall": 0.7078344166951762,
+          "f1": 0.7469314079422382
+        },
+        "macroF1": 0.5232879487654309
+      }
+    }
+  },
+  "winner": "decay_logistic",
+  "final": {
+    "songs": {
+      "arcaround": {
+        "open": {
+          "tp": 28,
+          "predicted": 163,
+          "reference": 93,
+          "precision": 0.17177914110429449,
+          "recall": 0.3010752688172043,
+          "f1": 0.21875
+        },
+        "closed": {
+          "tp": 10,
+          "predicted": 113,
+          "reference": 200,
+          "precision": 0.08849557522123894,
+          "recall": 0.05,
+          "f1": 0.06389776357827476
+        },
+        "macroF1": 0.14132388178913738
+      },
+      "diamondvirgin": {
+        "open": {
+          "tp": 1,
+          "predicted": 11,
+          "reference": 502,
+          "precision": 0.09090909090909091,
+          "recall": 0.00199203187250996,
+          "f1": 0.003898635477582846
+        },
+        "closed": {
+          "tp": 193,
+          "predicted": 242,
+          "reference": 253,
+          "precision": 0.7975206611570248,
+          "recall": 0.7628458498023716,
+          "f1": 0.7797979797979798
+        },
+        "macroF1": 0.39184830763778133
+      },
+      "kaiju": {
+        "open": {
+          "tp": 9,
+          "predicted": 157,
+          "reference": 22,
+          "precision": 0.05732484076433121,
+          "recall": 0.4090909090909091,
+          "f1": 0.1005586592178771
+        },
+        "closed": {
+          "tp": 384,
+          "predicted": 428,
+          "reference": 572,
+          "precision": 0.897196261682243,
+          "recall": 0.6713286713286714,
+          "f1": 0.768
+        },
+        "macroF1": 0.43427932960893856
+      },
+      "nanairo": {
+        "open": {
+          "tp": 237,
+          "predicted": 454,
+          "reference": 240,
+          "precision": 0.5220264317180616,
+          "recall": 0.9875,
+          "f1": 0.6829971181556196
+        },
+        "closed": {
+          "tp": 497,
+          "predicted": 553,
+          "reference": 823,
+          "precision": 0.8987341772151899,
+          "recall": 0.6038882138517618,
+          "f1": 0.7223837209302325
+        },
+        "macroF1": 0.702690419542926
+      },
+      "ray": {
+        "open": {
+          "tp": 235,
+          "predicted": 409,
+          "reference": 322,
+          "precision": 0.5745721271393643,
+          "recall": 0.7298136645962733,
+          "f1": 0.6429548563611491
+        },
+        "closed": {
+          "tp": 802,
+          "predicted": 877,
+          "reference": 1075,
+          "precision": 0.9144811858608894,
+          "recall": 0.746046511627907,
+          "f1": 0.8217213114754098
+        },
+        "macroF1": 0.7323380839182795
+      }
+    },
+    "open": {
+      "tp": 510,
+      "predicted": 1194,
+      "reference": 1179,
+      "precision": 0.4271356783919598,
+      "recall": 0.43256997455470736,
+      "f1": 0.42983565107458915
+    },
+    "closed": {
+      "tp": 1886,
+      "predicted": 2213,
+      "reference": 2923,
+      "precision": 0.8522367826479892,
+      "recall": 0.6452275059869996,
+      "f1": 0.7344236760124611
+    },
+    "macroF1": 0.5821296635435251
+  },
+  "guard": {
+    "onsetTimesChanged": false,
+    "eventCountsChanged": false,
+    "otherDrumClassesChanged": false,
+    "note": "Only existing MIDI-42 hat events are relabeled to MIDI 46."
+  }
+}
