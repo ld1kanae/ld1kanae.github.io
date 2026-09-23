@@ -64,7 +64,7 @@ def rel_slot(t,s,bar_sec):
 def articulation_maps(truth,sections,bpm,num,den):
     beat=60/bpm*4/den;bar_sec=beat*num
     maps={}
-    for s in sections:
+    for si,s in enumerate(sections):
         d={}
         for t,n in truth:
             if n not in (42,46):continue
@@ -74,7 +74,7 @@ def articulation_maps(truth,sections,bpm,num,den):
                 v=1 if n==46 else 0
                 if k in d and d[k]!=v:d[k]=None
                 else:d[k]=v
-        maps[int(s['index'])]=d
+        maps[si]=d
     return maps
 
 def family_agreement(truth,sections,bpm,num,den):
@@ -82,7 +82,7 @@ def family_agreement(truth,sections,bpm,num,den):
     same=[];cross=[]
     for i,a in enumerate(sections):
         for b in sections[i+1:]:
-            ma,mb=maps.get(int(a['index']),{}),maps.get(int(b['index']),{})
+            ma,mb=maps.get(i,{}),maps.get(sections.index(b),{})
             common=set(ma)&set(mb)
             vals=[(ma[k],mb[k]) for k in common if ma[k] is not None and mb[k] is not None]
             if not vals:continue
