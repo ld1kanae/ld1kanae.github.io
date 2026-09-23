@@ -184,7 +184,7 @@ function predict(model,x){
   return sum/model.trees.length;
 }
 
-export async function filterHighResHats(decoded,events,bpm,barPhaseSec,report=()=>{}){
+export async function filterHighResHats(decoded,events,bpm,barPhaseSec,report=()=>{},options={}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
   const kicks=events.filter(e=>e.group==='kick');
   const ratio=hats.length/Math.max(1,kicks.length);
@@ -200,7 +200,8 @@ export async function filterHighResHats(decoded,events,bpm,barPhaseSec,report=()
     const model=await loadModel();
     if(Number(model.nFeatures)!==35)throw Error(`unexpected feature count ${model.nFeatures}`);
     const policy=model.policy||{};
-    const probThreshold=Number(policy.probThreshold??.55);
+    const thresholdMultiplier=Number.isFinite(Number(options.thresholdMultiplier))&&Number(options.thresholdMultiplier)>0?Number(options.thresholdMultiplier):1;
+    const probThreshold=Number(policy.probThreshold??.55)*thresholdMultiplier;
     const repeatRescue=Number(policy.repeatRescue??1);
     const intersectionWindow=Number(policy.intersectionWindowSec??.060);
     report('ハイハットを高域まで再確認中…',98.2);
@@ -220,7 +221,7 @@ export async function filterHighResHats(decoded,events,bpm,barPhaseSec,report=()
     const kept=filtered.filter(e=>e.group==='hat').length;
     return {events:filtered,info:{
       ...baseInfo,enabled:true,kept,removed:hats.length-kept,
-      accepted:accepted.length,probThreshold,repeatRescue,intersectionWindow,
+      accepted:accepted.length,probThreshold,thresholdMultiplier,repeatRescue,intersectionWindow,
       modelTrees:model.trees.length,modelFeatures:model.nFeatures,
       meanProbability:by.hat.length?probSum/by.hat.length:0
     }};
