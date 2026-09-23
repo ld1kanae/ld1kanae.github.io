@@ -4,7 +4,7 @@ This directory is the canonical shared location for **off-vocal / instrumental a
 
 ## What it currently does
 
-`analyzeSections()` detects large-scale structural boundaries from local timbre and energy changes, then groups sufficiently similar repeated sections as `A`, `B`, `C`, ...
+`analyzeSections()` detects large-scale structural boundaries from local timbre and energy changes, then groups sufficiently similar repeated sections into structural families `A`, `B`, `C`, ... . Repeated appearances keep the same family key and receive occurrence labels such as `A`, `A'`, `A''`.
 
 Current descriptors:
 - log RMS
@@ -24,7 +24,7 @@ It does **not** currently claim semantic Japanese song-form labels such as:
 - 間奏
 - Cメロ
 
-Structural group `A` is therefore **not automatically equal to Aメロ**. It only means “a section acoustically similar to the other sections assigned group A”.
+Structural family `A` is therefore **not automatically equal to Aメロ**. It only means “a section acoustically similar to the other sections assigned family A”. A later recurrence can be displayed as `A'`, but both `A` and `A'` retain `group: "A"` so downstream analysis knows they belong to the same family.
 
 Any future semantic classifier should consume this module's output rather than duplicate its feature extraction / boundary detection.
 
@@ -58,6 +58,8 @@ console.log(result.sections.map(s => ({
   start: s.startSec,
   end: s.endSec,
   group: s.group,
+  label: s.label,
+  occurrence: s.occurrence,
   repeatSimilarity: s.repeatSimilarity,
 })));
 ```
@@ -72,7 +74,9 @@ console.log(result.sections.map(s => ({
   - `startSec`
   - `endSec`
   - `duration`
-  - `group`
+  - `group` — stable structural family key, e.g. `A`
+  - `label` — occurrence label, e.g. `A`, `A'`, `A''`
+  - `occurrence` — 1-based occurrence count within the family
   - `repeatSimilarity`
   - internal feature `vector`
 - `novelty`
