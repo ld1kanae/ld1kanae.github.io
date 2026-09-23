@@ -688,11 +688,11 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const snareAfterBase=[...snareEvents,...rescued];
     const egmdRescued=[];
     const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
-    const egmdThreshold=egmdSnareSupport[0]?.modelThreshold||1;
+    const egmdThreshold=Math.max(egmdSnareSupport[0]?.modelThreshold||1,.50);
     egmdDiag.aboveThreshold=egmdSnareSupport.filter(e=>(e.probability||0)>=egmdThreshold).length;
     if(adaptiveSnareRescue){
       for(const e of egmdSnareSupport){
-        if((e.probability||0)<(e.modelThreshold||1))continue;
+        if((e.probability||0)<egmdThreshold)continue;
         if(nearEvent(snareAfterBase,e.time,.035))continue;
         egmdDiag.notExisting++;
         if(!nearEvent(kickEvents,e.time,.035))continue;
@@ -731,7 +731,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v5-modelgate+kick-tom-veto-v3',
+      mode:'layered-snare-rescue+egmd-v5-t050+kick-tom-veto-v3',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
