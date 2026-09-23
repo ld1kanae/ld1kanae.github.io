@@ -1,0 +1,45 @@
+name: DrumScribe review voice input
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/feedback.html"
+      - "drumscribe/feedback.js"
+      - "drumscribe/style.css"
+      - "drumscribe/experiments/feedback_voice_smoke.mjs"
+      - ".github/workflows/drumscribe-feedback-voice.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: drumscribe-feedback-voice
+  cancel-in-progress: true
+
+jobs:
+  voice-input:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve checked-out site
+        run: |
+          python3 -m http.server 8000 > /tmp/drumscribe-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsSL "http://127.0.0.1:8000/drumscribe/feedback.html" | grep -q "feedback.js?v=20260924-review-voice-v1"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/drumscribe-http.log >&2 || true
+          exit 1
+      - name: Verify review voice dictation
+        env:
+          DRUMSCRIBE_FEEDBACK_URL: "http://127.0.0.1:8000/drumscribe/feedback.html?ci=${{ github.sha }}"
+        run: node drumscribe/experiments/feedback_voice_smoke.mjs
