@@ -18,6 +18,7 @@ import importlib.util,json,math
 from collections import defaultdict
 from pathlib import Path
 import numpy as np
+from scipy.signal import sosfiltfilt
 from sklearn.ensemble import ExtraTreesClassifier
 
 ROOT=Path(".");EXP=ROOT/"drumscribe/experiments";MODELS=ROOT/"drumscribe/models"
@@ -121,24 +122,33 @@ def genre_transition_prior(gmd,weights):
     popen=o/(o+c) if o+c else .1
     return float(poo),float(1-poo),float(popen)
 
-def make_items(d,gmd_arr,gmd_seq,sos):
+def make_items(d,gmd_arr,gmd_seq,gmd_style,sos):
     items={}
     for s in SONGS:
         print("SECTRANS_PREP",s,flush=True)
         it=choke.prep_item(d,s,sos)
+        # Rebuild next-hit tail/choke features with pedal HH (44) included as a
+        # Closed/choke anchor. The older helper used only the hand-hat stream.
+        x=hf.decode(s,"drums.mp3");xhf=sosfiltfilt(sos,x).astype(np.float32)
+        anchors=sorted(list(d[s]["hats"])+pedal_pred(d,s))
+        dyn44=choke.next_hit_features(x,xhf,it["times"],anchors)
+        Xchoke44=np.concatenate([it["Xctx"],choke.robust(dyn44)],axis=1)
         arr=secv1.analyze_sections(s,d[s]["side"]);sections=arr.get("sections",[])
         sf,support,bpen,diag=secv1.section_features(d,s,it,sections,gmd_arr,gmd_seq)
         vf=section_vector_features(it["times"],sections)
-        gw=choke.genre_weights(gmd_seq,d[s]["hats"],d[s]["side"])
-        poo,poc,popen=genre_transition_prior(gmd_arr,gw)
+        # Genre weights and O->O/O->C priors come from the event-level GMD v1
+        # dataset (simultaneous notes collapsed, separate microtimed hits kept).
+        gw=choke.genre_weights(gmd_style,d[s]["hats"],d[s]["side"])
+        poo,poc,popen=genre_transition_prior(gmd_style,gw)
         prior=np.tile(np.asarray([poo,poc,popen],np.float32),(len(it["times"]),1))
-        X=np.concatenate([it["Xchoke"],sf,vf,prior],axis=1)
+        X=np.concatenate([Xchoke44,sf,vf,prior],axis=1)
         y3=one_to_one_subtype(it["times"],truth_hats(s))
         it.update({"Xtrans":X,"y3":y3,"familySupportRaw":support,"sections":sections,
           "transitionPrior":{"pOOgivenO":poo,"pOCgivenO":poc,"pOpen":popen},
           "arrangement":diag})
         it["info"]={**it["info"],"subtypeOC":int(np.sum(y3==1)),"subtypeOO":int(np.sum(y3==2)),
-          "sectionVectorFeatures":int(vf.shape[1]),"transitionPrior":it["transitionPrior"]}
+          "sectionVectorFeatures":int(vf.shape[1]),"transitionPrior":it["transitionPrior"],
+          "pedal44IncludedAsChokeAnchor":True}
         items[s]=it
         print("SECTRANS_COUNTS",s,json.dumps(it["info"],ensure_ascii=False),flush=True)
     return items
@@ -257,8 +267,9 @@ def main():
     hx,hy,gx,gy,manifest=ov.gmd_collect()
     ga=json.loads((MODELS/"gmd-kst/hihat-arrangement-patterns-v3.json").read_text())
     gs=json.loads((MODELS/"gmd-kst/hihat-sequence-patterns-v2.json").read_text())
+    gstyle=json.loads((MODELS/"gmd-kst/hihat-style-patterns-v1.json").read_text())
     from scipy.signal import butter
-    sos=butter(4,[5000,18000],btype="bandpass",fs=hf.SR,output="sos");items=make_items(d,ga,gs,sos)
+    sos=butter(4,[5000,18000],btype="bandpass",fs=hf.SR,output="sos");items=make_items(d,ga,gs,gstyle,sos)
     for s in SONGS:items[s]["sideBpm"]=float(d[s]["side"].get("bpm") or 120.)
 
     baseper={}
@@ -272,11 +283,11 @@ def main():
     oldPolicy={"open":old["open"],"closed":baseline["closed"],
       "macroF1":.5*(old["open"]["f1"]+baseline["closed"]["f1"])}
 
-    out={"schema":2,"description":"O->O / O->Closed transition-aware Open-HH rescue with Closed=42+44 policy scoring.",
+    out={"schema":2,"description":"O->O / O->Closed transition-aware Open-HH rescue with Closed=42+44 scoring, pedal-aware choke anchors, and event-level GMD transition priors.",
       "labelPolicy":{"open":[46],"closed":[42,44],"pedal44FoldedIntoClosed":True,
         "subtype1":"Open followed by Closed/Pedal/end","subtype2":"Open followed by Open"},
       "sourcePolicy":{"trainingRowsPooled":False,"songs":"other-song LOO only","offvocal":"prediction-side structural context",
-        "gmd":"fixed genre prior only","syncNanairo":"no rows pooled; physics/feature teacher only"},
+        "gmd":"fixed genre prior only; v1 event transitions + v3 bar/section proxy statistics","syncNanairo":"no rows pooled; physics/feature teacher only"},
       "baselinePolicy44":baseline,"previousNonGridHFBestPolicy44":oldPolicy,"variants":{}}
     for v in ("binary_section_vector","transition_multiclass","transition_family_consensus","transition_family_strict"):
         q=evaluate(d,items,v,hx,hy,gx,gy);ss=q["summary"]
