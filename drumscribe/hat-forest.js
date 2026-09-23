@@ -200,7 +200,7 @@ export async function filterHighResHats(decoded,events,bpm,barPhaseSec,report=()
     const model=await loadModel();
     if(Number(model.nFeatures)!==35)throw Error(`unexpected feature count ${model.nFeatures}`);
     const policy=model.policy||{};
-    const thresholdMultiplier=Number.isFinite(Number(options.thresholdMultiplier))&&Number(options.thresholdMultiplier)>0?Number(options.thresholdMultiplier):1;
+    const thresholdMultiplier=Number.isFinite(Number(options.thresholdMultiplier))&&Number(options.thresholdMultiplier)>=0&&Number(options.thresholdMultiplier)<=2?Number(options.thresholdMultiplier):1;
     const probThreshold=Number(policy.probThreshold??.55)*thresholdMultiplier;
     const repeatRescue=Number(policy.repeatRescue??1);
     const intersectionWindow=Number(policy.intersectionWindowSec??.060);
