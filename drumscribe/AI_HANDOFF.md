@@ -642,3 +642,75 @@ MIDI preview音源:
 - しかしinner validationが安全側threshold 1.01を選び、rescueは0。
 - つまり「Open HH候補が存在しない」問題はほぼ解けた一方、「未知曲でどのcandidateをOpenとして採用するか」が現在の主ボトルネック。
 - 次段はframe単発分類ではなく、bar/beat位置、反復周期、neighbor hat、同時kick/snare、DrumSep teacher confidence、offvocal cross-viewを利用したsequence/ranking型selectorが有力。
+
+
+---
+
+## 2026-09-23 Open HH contextual ranking — latest eval snapshot
+
+production mainは現行の `open-hat-extra-trees-v2.json` + `open-hat-overlay-extra-trees-v1.json` を維持。
+以下は `drumscribe-v2-eval` の研究結果で、**まだmain未統合**。
+
+### independent HF candidate coverage
+
+`experiments/results-open-hat-hf-coverage.json`
+
+- Ref Open: 1179
+- existing-hat matched: 612
+- independent-HF matched: 644
+- union matched: **1155**
+- union recall: **0.979644**
+- HF candidates: 8424
+
+diamondvirgin:
+- Ref Open 502
+- HF coverage 467
+- existing+HF union **493/502 = 0.9821**
+
+したがって現在の主ボトルネックはcandidate generationではなく、false HF transientを落とすselector/ranking。
+
+### contextual ranking
+
+DrumSep-distilled candidate:
+`experiments/results-open-hat-context-rank-loo.json`
+
+baselineProductionApprox Open:
+- 428 / 652 / 1179
+- P 0.656442 / R 0.363020 / F1 **0.467504**
+
+strict 3方式:
+- forest_context F1 0.464558
+- linear_context F1 0.435180
+- forest_repeat_rank F1 0.464558
+
+=> strict improvementなし、retainedStrict=`none`。
+
+Independent HF candidate:
+`experiments/results-open-hat-hf-context-rank-loo.json`
+
+baselineProductionApprox:
+- Open F1 **0.467504**
+- Closed F1 **0.808042**
+- macro F1 **0.637773**
+
+strict `forest_context`:
+- Open **433 / 655 / 1179**
+- P **0.661069**
+- R **0.367260**
+- F1 **0.472192**
+- Closed F1 **0.808042**
+- macro F1 **0.640117**
+
+=> baselineよりstrict LOOで小幅改善。retainedStrict=`forest_context`。
+現時点でmain未統合のOpen HH最新best研究候補。
+
+### snapshot時点で実行中
+
+1. HF contextual + rhythmic-grid residual
+   - run `35836237602`
+   - head `a45f3820f33872ab71fb36172877a5c0181e4c1b`
+2. DrumSep contextual + rhythmic-grid residual
+   - run `35836222414`
+
+次チャットはまずこの2 runを確認し、Open F1 **0.472192** を超えるかを見る。
+採用する場合はstrict LOOだけでなく、grouped hat / K/S/T non-regression / real Chromiumを必ず確認する。
