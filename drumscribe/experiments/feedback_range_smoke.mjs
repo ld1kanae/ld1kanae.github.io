@@ -18,7 +18,7 @@ await page.waitForFunction(()=>!document.querySelector('#result')?.hidden,{},{ti
 await page.waitForFunction(()=>window.DrumScribeTimeline?.getDuration?.()>0,{},{timeout:30000});
 console.log('RESULT',await page.locator('#resultSummary').textContent());
 
-const canvas=page.locator('#rangeSurface');
+const canvas=page.locator('#timeline');
 await canvas.scrollIntoViewIfNeeded();
 const box=await canvas.boundingBox();
 if(!box) throw new Error('timeline has no bounding box');
@@ -38,7 +38,8 @@ const state=await page.evaluate(()=>({
   hint:document.querySelector('#selectionHint')?.textContent,
   apiSelection:window.DrumScribeTimeline?.getSelection?.(),
   duration:window.DrumScribeTimeline?.getDuration?.(),
-  status:document.querySelector('#reviewStatus')?.textContent
+  status:document.querySelector('#reviewStatus')?.textContent,
+  beatTimes:window.DrumScribeTimeline?.getBeatTimes?.()||[]
 }));
 console.log('STATE',JSON.stringify(state));
 console.log('ERRORS',JSON.stringify(errors));
@@ -46,6 +47,7 @@ console.log('ERRORS',JSON.stringify(errors));
 if(state.popoverHidden!==false) throw new Error('review popover did not open');
 if(!state.apiSelection || !(state.apiSelection.end>state.apiSelection.start)) throw new Error('review selection was not created');
 if(!state.range || state.range.includes('未選択')) throw new Error('selection label was not updated');
+if(String(state.hint||'').includes('拍')) throw new Error('review range is still beat-snapped');
 if(errors.length) throw new Error(errors.join(' | '));
 
 await browser.close();
