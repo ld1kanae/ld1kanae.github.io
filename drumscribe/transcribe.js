@@ -919,7 +919,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
 
   // Crash experiments are deliberately post-gated after the existing two-hand
   // selection, so changing crash precision cannot change kick/snare/tom retention.
-  const cymbalVariant=['legacy','raw-gated','confidence-gated','hat-veto'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
+  const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
+  const crashConfidenceThreshold=({'confidence-115':1.15,'confidence-125':1.25,'confidence-135':1.35,'confidence-gated':1.45}[cymbalVariant]??1.45);
   const structuralHatTimes=structural
     .filter(e=>e.group==='hat'||e.group==='pedal_hat')
     .map(e=>e.time).sort((a,b)=>a-b);
@@ -1005,7 +1006,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // outside the bar-head window are preserved.
   const crashPostGate={
     variant:cymbalVariant,evaluated:0,removed:0,rawSupported:0,
-    confidenceSupported:0,hatVetoed:0,confidenceThreshold:1.45
+    confidenceSupported:0,hatVetoed:0,confidenceThreshold:crashConfidenceThreshold
   };
   if(cymbalVariant!=='legacy'){
     pruned=pruned.filter(e=>{
@@ -1014,14 +1015,14 @@ export async function transcribe(decoded,report=()=>{},options={}){
       if(ev.headDistance>.30)return true;
       crashPostGate.evaluated++;
       if(ev.crashSupport)crashPostGate.rawSupported++;
-      if(ev.baseConfidence>=1.45)crashPostGate.confidenceSupported++;
+      if(ev.baseConfidence>=crashConfidenceThreshold)crashPostGate.confidenceSupported++;
       let keep=true;
       if(cymbalVariant==='raw-gated'){
         keep=ev.crashSupport;
-      }else if(cymbalVariant==='confidence-gated'){
-        keep=ev.crashSupport||ev.baseConfidence>=1.45;
+      }else if(cymbalVariant==='confidence-gated'||cymbalVariant.startsWith('confidence-')){
+        keep=ev.crashSupport||ev.baseConfidence>=crashConfidenceThreshold;
       }else if(cymbalVariant==='hat-veto'){
-        keep=ev.crashSupport||(ev.baseConfidence>=1.45&&!ev.hatSupport);
+        keep=ev.crashSupport||(ev.baseConfidence>=crashConfidenceThreshold&&!ev.hatSupport);
         if(!keep&&ev.hatSupport)crashPostGate.hatVetoed++;
       }
       if(!keep)crashPostGate.removed++;
