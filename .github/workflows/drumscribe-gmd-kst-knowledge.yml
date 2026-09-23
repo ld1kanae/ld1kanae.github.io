@@ -6,9 +6,11 @@ on:
     branches:
       - drumscribe-gmd-kst-section-v1-20260923
     paths:
-      - "drumscribe/experiments/gmd-kst/**"
-      - "drumscribe/models/gmd-kst/**"
+      - "drumscribe/experiments/gmd-kst/build_gmd_kst_knowledge.py"
       - ".github/workflows/drumscribe-gmd-kst-knowledge.yml"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -16,6 +18,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -32,6 +36,19 @@ jobs:
           test -s drumscribe/models/gmd-kst/manifest-v1.json
           python -m json.tool drumscribe/models/gmd-kst/knowledge-v1.json >/dev/null
           python -m json.tool drumscribe/models/gmd-kst/heldout-manifest-v1.json >/dev/null
+      - name: Commit derived knowledge to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/models/gmd-kst/knowledge-v1.json \
+                  drumscribe/models/gmd-kst/heldout-manifest-v1.json \
+                  drumscribe/models/gmd-kst/manifest-v1.json
+          if git diff --cached --quiet; then
+            echo "Knowledge files unchanged."
+          else
+            git commit -m "drumscribe: build GMD KST knowledge v1"
+            git push
+          fi
       - name: Upload generated knowledge
         uses: actions/upload-artifact@v4
         with:
