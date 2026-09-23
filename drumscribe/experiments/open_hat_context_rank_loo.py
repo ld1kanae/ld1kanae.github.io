@@ -313,7 +313,7 @@ def evaluate_all(d,teacher,hx,hy,gx,gy,frame_cache):
     for oi,held in enumerate(SONGS):
         outer=[s for s in SONGS if s!=held]
         items,sinfo=build_outer_items(d,teacher,outer,[*outer,held],5000+oi,frame_cache)
-        bo,bc,bdiag=production_base(d,held,outer,hx,hy,gx,gy,8000+oi)
+        bo,bc,bdiag=production_base(d,held,outer,hx,hy,gx,gy,4000+oi)
         trained={}
         for vi,(variant,kind) in enumerate(specs):
             th,inner=inner_choose(d,items,outer,kind,hx,hy,gx,gy,variant,6000+oi*30+vi*7)
