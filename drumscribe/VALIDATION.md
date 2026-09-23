@@ -2657,3 +2657,32 @@ C2追加TP:
 - onsetは増減せず、既存hat/ride onsetのarticulationのみ変更。
 - 詳細: `experiments/results-openhat-combined-v44.json`, `experiments/OPENHAT_DEFAULT_VS_COMBINED_V46.md`
 - 完全同期対照データ概要: `experiments/reference-sync/README.md`
+
+
+---
+
+## 2026-09-23: Open Hat / Ride strict check v46
+
+目的:
+- Open F1が高かった `ride-open-decay-rescue` が、RideをOpenへ付け替えることで見かけ上改善していないか確認。
+- fresh Chromiumでdefault `decay-rescue` と同条件比較。chart.midは生成後採点のみ。
+
+| variant | Closed F1 | Open F1 | Ride F1 | Hat macro | metal macro (C/O/R) | collapsed onset F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| default | 0.843895 | 0.598647 | **0.246117** | 0.721271 | **0.562886** | 0.812081 |
+| all Ride -> Open | 0.843895 | **0.647770** | **0.000000** | **0.745832** | 0.497222 | **0.817466** |
+
+差:
+- Open +0.049123
+- Ride -0.246117
+- metal macro -0.065665
+- K/S/T 0 / 0 / 0
+
+判定:
+- Open改善はあるがRideを壊し、strict metal macroが大きく悪化するため不採用。
+- default `decay-rescue` を維持。
+- v47でhigh-confidence RideだけOpenへ移すselective 0.70 / 0.80 / 0.90を検証。
+
+詳細:
+- `experiments/OPENHAT_DEFAULT_VS_COMBINED_V46.md`
+- `experiments/results-openhat-default-vs-combined-v46.json`
