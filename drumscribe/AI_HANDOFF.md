@@ -88,7 +88,7 @@ index.html
 - `adtof.js` -> `models/adtof-model.json`
 - `adtof.js` -> `models/adtof-filterbank.f32`
 - `adtof.js` -> `models/adtof-frame-rnn.onnx`
-- `adtof.js` -> `models/egmd-kst-reclassifier-v3.json`（snare低信頼candidateの第二判定）
+- `adtof.js` -> `models/egmd-kst-reclassifier-v4.json`（snare低信頼candidateの第二判定）
 - `hat-forest.js` -> `models/hat-extra-trees-v11.json`
 - `app.js` -> 検証example用 `experiments/beatthis-v17|v18/*.beats`
 - `app.js` -> `../DruMaster/assets/drums/*.wav`
@@ -142,7 +142,7 @@ index.html
               -> adtof-worker.js
               -> models/adtof-filterbank.f32
               -> models/adtof-frame-rnn.onnx
-              -> models/egmd-kst-reclassifier-v3.json
+              -> models/egmd-kst-reclassifier-v4.json
               -> ONNX Runtime Web/WASM
           -> kick/snare/tom priority post-processing
           -> hat / pedal-hat / crash / ride post-processing
@@ -206,12 +206,12 @@ index.html
   - low activation >= 0.12
   - low snare activation >= 0.25 × kick activation
   - 同じ16分slotの反復支持 >= 2
-- E-GMD v3第二判定経路:
-  - E-GMD snare probability >= 0.60
+- E-GMD v4第二判定経路:
+  - E-GMD snare probability >= 0.67
   - 既存snareから35 ms以内を除外
   - kickから35 ms以内
   - 同じ16分slotで反復支持 >= 1
-  - E-GMD側では旧absolute activation floorを重ねない（v3モデル入力に正規化activation/residual/class-ratioを含む）
+  - E-GMD側では旧absolute activation floorを重ねない（v4モデル入力に正規化activation/residual/class-ratioを含む）
 - E-GMD modelからkick/tomは追加しない
 - 現5曲では主に arcaround の欠落snare救済として選定
 
@@ -283,14 +283,14 @@ v26では diamondvirgin / nanairo / ray だけで再検証し、GMDは「beat 1 
 | Part | TP / Pred / Ref | Precision | Recall | F1 |
 |---|---:|---:|---:|---:|
 | kick | 2636 / 2765 / 2712 | 0.9533 | 0.9720 | 0.9626 |
-| snare | 1276 / 1394 / 1470 | 0.9154 | 0.8680 | 0.8911 |
+| snare | 1301 / 1421 / 1470 | 0.9156 | 0.8850 | 0.9000 |
 | tom | 69 / 84 / 92 | 0.8214 | 0.7500 | 0.7841 |
 
 all classes:
-- TP 7464 / Pred 8197 / Ref 10086
-- Precision 0.9106
-- Recall 0.7400
-- F1 0.8165
+- TP 7490 / Pred 8223 / Ref 10086
+- Precision 0.9109
+- Recall 0.7426
+- F1 0.8182
 
 注意:
 - 同じ5曲を見ながら改善してきたので未知曲保証ではない。
@@ -332,7 +332,7 @@ GMD系は用途ごとに置き場所が分かれている。**「GMDモデルは
 
 ### 8-1. production runtimeが直接参照するGMD / E-GMD
 
-- `models/egmd-kst-reclassifier-v3.json`
+- `models/egmd-kst-reclassifier-v4.json`
   - E-GMD audio+MIDIから学習した低信頼K/S/T再分類器。
   - 現runtimeでは **snare第二判定だけproduction採用**。
   - `adtof.js` が直接fetchする。
@@ -366,15 +366,19 @@ ADTOF本体やhat filterもproduction modelだがGMD系ではない:
 - `experiments/train_egmd_kst_reclassifier.py`
 - `experiments/train_egmd_kst_reclassifier_v2.py`
 - `experiments/train_egmd_kst_reclassifier_v3.py`
+- `experiments/train_egmd_kst_reclassifier_v4.py`
 - `experiments/benchmark_egmd_kst_transfer.py`
 - `experiments/benchmark_egmd_kst_transfer_v2.py`
 - `experiments/benchmark_egmd_kst_transfer_v3.py`
+- `experiments/benchmark_egmd_kst_transfer_v4.py`
 - `experiments/results-egmd-kst-reclassifier-v1.json`
 - `experiments/results-egmd-kst-reclassifier-v2.json`
 - `experiments/results-egmd-kst-reclassifier-v3.json`
+- `experiments/results-egmd-kst-reclassifier-v4.json`
 - `experiments/results-egmd-kst-transfer-v1.json`
 - `experiments/results-egmd-kst-transfer-v2.json`
 - `experiments/results-egmd-kst-transfer-v3.json`
+- `experiments/results-egmd-kst-transfer-v4.json`
 
 ### 8-4. 旧GMD metal実験モデル（現runtime未参照）
 
@@ -418,12 +422,15 @@ ADTOF本体やhat filterもproduction modelだがGMD系ではない:
 
 結論:
 - GMD symbolic priorを現行低閾値snare rescueへ直結するruntime変更は効果0で撤回済み
-- その後E-GMD audio+MIDIで低信頼K/S/T候補再分類器をv1→v3まで実装
+- その後E-GMD audio+MIDIで低信頼K/S/T候補再分類器をv1→v4まで実装
 - v1は負例不足でtomが暴発し不採用
 - v2はhard negativeで安全化したがproduction追加0
-- v3はclip normalization + sequence/kit-held-out外部校正
-- **v3 snare第二判定だけproduction採用**
-- 実browser: snare F1 0.890521 → **0.891061**、kick/tom不変
+- v3はclip normalization + sequence/kit-held-out外部校正でsnare第二判定をproduction採用
+- v4は8 train kit / 5 held-out kitへ増量し、3学習仮説を比較
+- snareは意外にも targeted weighting ではなく **単純データ増量(scale)** がheld-out最良: P 0.950166 / R 0.858859 / F1 0.902208、threshold 0.67
+- tomは targeted weighted がheld-out最良: P 0.956897 / R 0.304110 / F1 0.461538。ただし5曲production vetoは変更0なのでruntime tomは現行維持
+- **v4 snare第二判定だけproduction採用**
+- main実Chromium: snare **1301 / 1421 / 1470**, F1 **0.900035**。kick F1 0.962571 / tom F1 0.784091 は不変
 - E-GMDからkick/tomを追加する処理は不採用
 - tomについては「kick+tomを一般論として抑制しすぎない」ことが重要
 
@@ -534,7 +541,7 @@ exportだけ `barPhaseSec` に基づきmusical gridへずらす。
 - 基本対象はドラム単独音源。楽曲全体からのstem separationはWeb本体に未搭載。
 - 現スコアは5曲へ反復最適化しており未知曲保証ではない。
 - tom母数が小さい。
-- E-GMD classifier自体はsequence/kit-held-outで校正したが、最終song-level snare rescue policyは5曲で採否確認しており、未知曲post-selection validationは必要。
+- E-GMD v4 classifier自体はsequence/kit-held-outで校正したが、最終song-level snare rescue policyは5曲で採否確認しており、未知曲post-selection validationは必要。
 - crash / ride / pedal-hatはK/S/Tより弱い。
 - 任意uploadの可変拍子推定は限定的。
 - example曲で使うBeatThis labelsはfullmix由来で、一般uploadには存在しない。
