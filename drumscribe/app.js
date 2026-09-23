@@ -1,4 +1,4 @@
-import {transcribe} from './transcribe.js?v=20260924-threshold-controls-v1';
+import {transcribe} from './transcribe.js?v=20260924-tom-pitch-v1';
 import {analyzeSections,rescoreKstByArrangement,arrangementKstPolicyCurrent} from './arrangement/index.js?v=20260923-arrangement-kst-v47';
 import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
@@ -12,7 +12,7 @@ let reviewSelection=null;
 let reviewBeatTimes=[];
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
-const groupNotes=[36,38,42,45,46,49,51];
+const groupNotes=[36,38,41,42,44,45,46,47,49,50,51];
 const thresholdControlIds={
   kick:'thresholdKick',snare:'thresholdSnare',snareRescue:'thresholdSnareRescue',egmdSnare:'thresholdEgmdSnare',tom:'thresholdTom',
   hat:'thresholdHat',hatCollision:'thresholdHatCollision',hatFilter:'thresholdHatFilter',openHat:'thresholdOpenHat',
