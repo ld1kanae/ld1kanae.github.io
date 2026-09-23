@@ -1,0 +1,65 @@
+name: DrumScribe hat context v54
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/hat-context-v54.js"
+      - "drumscribe/experiments/browser_hat_context_runtime_v54.mjs"
+      - "drumscribe/experiments/evaluate_hat_context_runtime_v54.py"
+      - ".github/workflows/drumscribe-hat-context-v54.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install mido
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate fresh five-song candidates
+        run: node drumscribe/experiments/browser_hat_context_runtime_v54.mjs
+      - name: Score against reference MIDI
+        run: python drumscribe/experiments/evaluate_hat_context_runtime_v54.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-hat-context-runtime-predictions-v54.json
+          git add drumscribe/experiments/results-hat-context-runtime-v54.json
+          git add drumscribe/experiments/HAT_CONTEXT_RUNTIME_V54.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record hat context runtime v54 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-hat-context-v54
+          path: |
+            drumscribe/experiments/results-hat-context-runtime-predictions-v54.json
+            drumscribe/experiments/results-hat-context-runtime-v54.json
+            drumscribe/experiments/HAT_CONTEXT_RUNTIME_V54.md
+          retention-days: 14
