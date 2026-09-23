@@ -41,9 +41,11 @@ async function loadAssets(){
     if(!ort)throw Error('ONNX Runtime Web が読み込まれていません');
     ort.env.wasm.numThreads=1;
     ort.env.wasm.wasmPaths=new URL('./vendor/ort/',import.meta.url).href;
-    const [meta,fbBuf]=await Promise.all([
+    const [meta,fbBuf,kstModel]=await Promise.all([
       fetch(new URL('./models/adtof-model.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('ADTOF metadataを読み込めません');return r.json();}),
       fetch(new URL('./models/adtof-filterbank.f32',import.meta.url)).then(r=>{if(!r.ok)throw Error('ADTOF filterbankを読み込めません');return r.arrayBuffer();}),
+      fetch(new URL('./models/egmd-kst-reclassifier-v3.json',import.meta.url))
+        .then(r=>r.ok?r.json():null).catch(()=>null),
     ]);
     const filterbank=new Float32Array(fbBuf);
     if(meta.nBins!==N_BINS||filterbank.length!==N_BINS*FFT_BINS)throw Error('ADTOF filterbankの形状が不正です');
@@ -51,7 +53,7 @@ async function loadAssets(){
       executionProviders:['wasm'],
       graphOptimizationLevel:'all'
     });
-    return {ort,meta,filterbank,session};
+    return {ort,meta,filterbank,session,kstModel};
   })();
   return assetsPromise;
 }
@@ -151,6 +153,93 @@ function pickClass(acts,classIndex,threshold){
   });
 }
 
+function percentileSorted(sorted,q){
+  if(!sorted.length)return 0;
+  const x=(sorted.length-1)*q,lo=Math.floor(x),hi=Math.ceil(x),f=x-lo;
+  return sorted[lo]*(1-f)+sorted[hi]*f;
+}
+
+function upperBound(sorted,v){
+  let lo=0,hi=sorted.length;
+  while(lo<hi){
+    const mid=(lo+hi)>>1;
+    if(sorted[mid]<=v)lo=mid+1;else hi=mid;
+  }
+  return lo;
+}
+
+function sigmoid(x){
+  if(x>=0)return 1/(1+Math.exp(-x));
+  const z=Math.exp(x);return z/(1+z);
+}
+
+function buildKstStats(acts){
+  const frames=Math.floor(acts.length/5);
+  const cols=Array.from({length:5},()=>new Float32Array(frames));
+  for(let i=0;i<frames;i++)for(let c=0;c<5;c++)cols[c][i]=acts[i*5+c];
+  const residuals=cols.map(x=>movingResidual(x,10,1));
+  const sortedActs=cols.map(x=>Array.from(x).sort((a,b)=>a-b));
+  const sortedResiduals=residuals.map(x=>Array.from(x).sort((a,b)=>a-b));
+  const aq=sortedActs.map(x=>Math.max(percentileSorted(x,.95),1e-4));
+  const rq=sortedResiduals.map(x=>Math.max(percentileSorted(x,.95),1e-5));
+  return {frames,cols,residuals,sortedActs,sortedResiduals,aq,rq};
+}
+
+function kstFeature(st,frame,target){
+  const lo=Math.max(0,frame-2),hi=Math.min(st.frames,frame+3);
+  const cur=new Array(5),res=new Array(5),mean=new Array(5).fill(0),mx=new Array(5).fill(-Infinity);
+  for(let c=0;c<5;c++){
+    cur[c]=st.cols[c][frame]/st.aq[c];
+    res[c]=st.residuals[c][frame]/st.rq[c];
+    for(let i=lo;i<hi;i++){
+      const z=st.cols[c][i]/st.aq[c];
+      mean[c]+=z; if(z>mx[c])mx[c]=z;
+    }
+    mean[c]/=Math.max(1,hi-lo);
+  }
+  const atn=d=>st.cols[target][Math.max(0,Math.min(st.frames-1,frame+d))]/st.aq[target];
+  let other=1e-5,rother=1e-5;
+  for(let c=0;c<5;c++)if(c!==target){other=Math.max(other,cur[c]);rother=Math.max(rother,res[c]);}
+  const rawAct=st.cols[target][frame],rawRes=st.residuals[target][frame];
+  return [
+    ...cur,...res,...mean,...mx,
+    atn(-2),atn(-1),atn(1),atn(2),
+    upperBound(st.sortedActs[target],rawAct)/Math.max(1,st.frames),
+    upperBound(st.sortedResiduals[target],rawRes)/Math.max(1,st.frames),
+    cur[target]/other,res[target]/rother
+  ];
+}
+
+function logisticPredict(model,x){
+  if(!model||!Array.isArray(model.coef)||model.coef.length!==x.length)return 0;
+  let z=Number(model.intercept)||0;
+  for(let i=0;i<x.length;i++){
+    const scale=Math.max(Number(model.scale?.[i])||0,1e-12);
+    z+=((x[i]-(Number(model.mean?.[i])||0))/scale)*(Number(model.coef[i])||0);
+  }
+  return sigmoid(z);
+}
+
+function egmdSnareCandidates(acts,kstModel){
+  const model=kstModel?.models?.snare;
+  if(!model)return [];
+  const st=buildKstStats(acts);
+  const lowScale=Number(kstModel.lowScale)||.2;
+  const threshold=BASE_THRESHOLDS[1]*lowScale;
+  return pickClass(acts,1,threshold).map(p=>({
+    time:p.time,
+    group:'snare',
+    score:p.activation,
+    residual:p.residual,
+    probability:logisticPredict(model,kstFeature(st,p.frame,1)),
+    modelThreshold:Number(model.threshold)||.6,
+    kickActivation:st.cols[0][p.frame],
+    snareActivation:st.cols[1][p.frame],
+    tomActivation:st.cols[2][p.frame],
+    egmdKst:true
+  }));
+}
+
 function toEvents(acts,scale=PRECISION_SCALE){
   const out=[];
   for(let c=0;c<GROUPS.length;c++){
@@ -192,15 +281,18 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     adtof:true,
     rescue:true
   }));
+  const egmdSnareSupport=egmdSnareCandidates(acts,assets.kstModel);
   return {
     events,
     snareRescue,
+    egmdSnareSupport,
     frames,
     thresholdScale:scale,
     snareRescueScale,
     backend:'onnxruntime-web/wasm',
     coreFrames:CORE_FRAMES,
     overlapFrames:OVERLAP_FRAMES,
-    modelSource:assets.meta.source
+    modelSource:assets.meta.source,
+    egmdKstModel:assets.kstModel?.kind||null
   };
 }
