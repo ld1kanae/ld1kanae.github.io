@@ -21,7 +21,7 @@ Proof v34 tempo-only比較:
 - note time差 median .054 ms / p95 .521 ms / max 1.166 ms
 - bar boundary差 max .010 ms
 
-5曲fresh Chromium run `35849376347`:
+5曲fresh Chromium run `35849808016`:
 - tempo events 127–153
 - 全曲min tempo gap 1920 ticks = 4/4 1小節
 - violations 0
