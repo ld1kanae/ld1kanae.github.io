@@ -71,6 +71,7 @@ function updateThresholdProfileStatus(profile=null,mode='idle'){
   }
 }
 function restoreThresholdProfile(f=file){
+  for(const id of Object.values(thresholdControlIds)){const el=$(id);if(el)el.value='1.0';}
   const key=thresholdProfileKey(f);
   if(!key){updateThresholdProfileStatus();return null;}
   const store=loadThresholdProfileStore(),profile=store[key]||null;
