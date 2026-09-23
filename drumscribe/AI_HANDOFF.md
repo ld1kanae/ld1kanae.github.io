@@ -1,5 +1,16 @@
 # DrumScribe AI Handoff
 
+## CURRENT AUTHORITATIVE STATUS — Pedal HH output collapse (2026-09-24)
+
+ユーザー要件: **Closed HH と Pedal HH は採譜出力上で区別しない。Pedal HH候補も Closed HH (GM42) として丸める。**
+
+実装方針:
+- 内部では pedal_hat をOpen-HH choke/contextや手足制約の補助情報として保持してよい。
+- 最終 `transcribe()` 出力では `pedal_hat -> group:'hat', note:42` に正規化する。
+- MIDIにGM44を出さない。
+- UIの「ペダルHH」閾値倍率は削除。ユーザーに独立クラスとして見せない。
+- 結果サマリーのClosed HH数には内部pedal_hat由来のGM42も含め、Pedal HH個別カウントは表示しない。
+
 ## CURRENT AUTHORITATIVE STATUS — User threshold multipliers (2026-09-24)
 
 ユーザー調整用の「採譜感度を調整」を production UI に追加。全項目のデフォルトは **1.0** で、1.0時は既存閾値を変更しない。
