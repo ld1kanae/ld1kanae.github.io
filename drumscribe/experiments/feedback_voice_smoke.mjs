@@ -26,9 +26,9 @@ await page.addInitScript(()=>{
 
 const url=process.env.DRUMSCRIBE_FEEDBACK_URL||'http://127.0.0.1:8000/drumscribe/feedback.html';
 await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-await page.waitForSelector('#reviewVoice');
+await page.waitForSelector('#reviewVoice',{state:'attached'});
 
-await page.evaluate(()=>{document.querySelector('#reviewPopover').hidden=false});
+await page.evaluate(()=>{document.querySelector('#result').hidden=false;document.querySelector('#reviewPopover').hidden=false});
 await page.fill('#reviewText','既存レビュー');
 const mic=page.locator('#reviewVoice');
 if(await mic.isDisabled())throw new Error('voice input button is disabled despite SpeechRecognition support');
