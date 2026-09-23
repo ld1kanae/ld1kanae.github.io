@@ -2049,3 +2049,109 @@ experiments:
 
 注意: classifierの外部校正はsequence/kit-held-outだが、最終production policyの採否はDruMaster 5曲でも確認している。未知曲でのpost-selection validationは引き続き必要。
 
+
+
+## 2026-09-23: Open HH missing-candidate rescue — 4系統を比較、すべて不採用
+
+現行のopen/closed articulationは、既にhatとして残った打点だけを42/46へ分類する。
+一方 diamondvirgin では参照Open 502発に対して現行hat候補が近傍に残るのは約41発のみで、openがsnare/kick/ride/crash等の別イベントと同時発音してhat候補を通らないケースが多い。
+
+診断上、diamondvirginの参照Open近傍には、現行browser eventとしておおよそ:
+- hat 41
+- ride 84
+- crash 14
+- snare 250
+- kick 158
+
+が存在する。よって単純な42/46 relabelだけでは上限が低い。
+
+### A. 既存open/closed分類器の再利用
+
+候補anchorを metal=ride/crash、metal+snare、metal+snare+kick の3系統でnested LOO比較した。
+結果: 全系統でrescue=0が選択され、不採用。
+既存分類器は「hat候補のopen/closed」を学習したモデルであり、snare/kick等に重なったopenの判別問題へそのまま転用できなかった。
+
+### B. GMD simultaneous-open overlay分類器
+
+非hat構造打点にopen HHが同時発音しているかを別タスクとして学習。GMD 13 clipsから overlay candidate 1407件、positive 115件を抽出。
+
+最初のrunではbase open F1が0.596と異常に高く、held-out漏洩を検出した。
+原因はbase model helperへのtraining-song listの渡し方を誤り、5曲全てで学習していたこと。該当runは無効として破棄。
+
+修正版baseline:
+- Open TP 397 / Pred 599 / Ref 1179
+- Precision 0.662771
+- Recall 0.336726
+- F1 0.446569
+- Closed F1 0.806491
+- Macro F1 0.626530
+
+修正版GMD overlay:
+- metal: baselineと同一、rescueなし
+- metal+snare: Open F1 0.446318、僅かに悪化
+- metal+snare+kick: Open F1 0.445067、悪化
+
+したがってGMD simultaneous-overlay modelは不採用。
+
+### C. in-domain synthetic overlay
+
+DruMasterのtraining-song実音の非open構造打点へ assets/drums/46.wav を重ね、open成分が加わるdeltaを学習する合成教師を作成。42.wav overlayもhard negativeとして使用。
+
+比較:
+1. decay_synth
+2. timbre_synth
+3. timbre_synth + GMD
+
+結果:
+- baseline Open F1 0.446569
+- decay_synth Open F1 0.435068 / P 0.614551
+- timbre_synth Open F1 0.446569（rescueなし）
+- timbre_synth_gmd Open F1 0.446569（rescueなし）
+
+decay_synth はnanairoでfalse rescueを47件出しprecisionを落とした。他2方式はnested guardが追加を拒否した。
+synthetic overlayも不採用。単一46.wavの加算は実際の同時発音時の演奏強度・ペダル開度・マイク/ルーム混入を十分再現できないと判断。
+
+### D. post-onset sustain rule
+
+学習器を使わず、重なり打点後のtailだけを見る amplitude tail / high-frequency persistence / combined の3方式も比較。
+production guardを通らなかった。
+例: amplitude tailは Open Pred 861まで増えた一方 TPは397のままで、Precision 0.461092 / Recall 0.336726 / F1 0.389216 へ悪化。
+
+### 現時点のretained open-hat構成
+
+変更なし:
+- existing hi-hat onset detector
+- existing 44.1kHz hat false-positive filter
+- models/open-hat-extra-trees-v2.json
+- GMD 128 open + 128 closed augmentation
+- open threshold 0.575
+- ambiguous = Closed 42
+- high-confidence only = Open 46
+
+held-out development estimate:
+- Open P 0.662771
+- R 0.336726
+- F1 0.446569
+- Closed F1 0.806491
+- Macro F1 0.626530
+
+### 次に進むべき方向
+
+diamondvirgin の不足はpost-classificationより前段の問題。
+次はK/S/Tを触らず、高域専用の独立onset stream / source-separation teacherでopen-HH候補を直接生成する方式を優先する。
+候補:
+1. ADTOF/現行spectral streamとは独立した5–18 kHz transient+sustain detector
+2. MDX/DrumSep等のoffline teacherからHH stem候補を作り、browser向け軽量studentへ蒸留
+3. GMD/E-GMDで多kit・多velocity・同時打ちを含むpolyphonic synthetic augmentationを作り、one-shot加算ではなく複数音源・gain/reverb/EQ変動を持たせる
+
+重要: kick/snare/tomをopen救出のために削除・置換しない。Open 46は独立追加候補としてのみ扱い、2-hand constraintと重複排除を別途設計する。
+
+生成物:
+- experiments/open_hat_rescue_loo.py
+- experiments/results-open-hat-rescue-loo.json
+- experiments/open_hat_overlay_gmd_loo.py
+- experiments/results-open-hat-overlay-gmd-loo.json
+- experiments/open_hat_synthetic_overlay_loo.py
+- experiments/results-open-hat-synthetic-overlay-loo.json
+- experiments/open_hat_overlay_rules_loo.py
+- experiments/results-open-hat-overlay-rules-loo.json
