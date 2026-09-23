@@ -1,0 +1,5458 @@
+{
+  "schema": 1,
+  "description": "DrumSep HH-onset teacher distilled to drums-only student; strict nested LOO.",
+  "teacher": {
+    "model": "drumsep-6stem",
+    "segmentSec": 18.0,
+    "fractions": [
+      0.28,
+      0.68
+    ],
+    "license": "teacher only; weights not redistributed",
+    "segments": {
+      "arcaround": [
+        {
+          "startSec": 64.74262,
+          "frames": 1094,
+          "positive": 736,
+          "teacherPeaks": 253
+        },
+        {
+          "startSec": 170.08921999999998,
+          "frames": 1081,
+          "positive": 695,
+          "teacherPeaks": 237
+        }
+      ],
+      "diamondvirgin": [
+        {
+          "startSec": 68.00479500000002,
+          "frames": 1100,
+          "positive": 896,
+          "teacherPeaks": 308
+        },
+        {
+          "startSec": 178.01164500000002,
+          "frames": 1119,
+          "positive": 607,
+          "teacherPeaks": 207
+        }
+      ],
+      "kaiju": [
+        {
+          "startSec": 61.78765176,
+          "frames": 1077,
+          "positive": 592,
+          "teacherPeaks": 203
+        },
+        {
+          "startSec": 162.91286856000002,
+          "frames": 1129,
+          "positive": 598,
+          "teacherPeaks": 204
+        }
+      ],
+      "nanairo": [
+        {
+          "startSec": 64.66217152,
+          "frames": 1016,
+          "positive": 598,
+          "teacherPeaks": 202
+        },
+        {
+          "startSec": 169.89384512,
+          "frames": 985,
+          "positive": 602,
+          "teacherPeaks": 204
+        }
+      ],
+      "ray": [
+        {
+          "startSec": 76.54788564,
+          "frames": 1067,
+          "positive": 440,
+          "teacherPeaks": 148
+        },
+        {
+          "startSec": 198.75915084000002,
+          "frames": 1056,
+          "positive": 509,
+          "teacherPeaks": 173
+        }
+      ]
+    }
+  },
+  "studentCandidateThreshold": 0.2,
+  "baseline": {
+    "open": {
+      "tp": 404,
+      "predicted": 608,
+      "reference": 1179,
+      "precision": 0.6644736842105263,
+      "recall": 0.3426632739609839,
+      "f1": 0.4521544487968663
+    },
+    "closed": {
+      "tp": 2311,
+      "predicted": 2797,
+      "reference": 2923,
+      "precision": 0.8262424025741866,
+      "recall": 0.7906260691070818,
+      "f1": 0.808041958041958
+    },
+    "macroF1": 0.6300982034194121
+  },
+  "variants": {
+    "acoustic_only": {
+      "variant": "acoustic_only",
+      "summary": {
+        "open": {
+          "tp": 405,
+          "predicted": 1085,
+          "reference": 1179,
+          "precision": 0.37327188940092165,
+          "recall": 0.3435114503816794,
+          "f1": 0.357773851590106
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2797,
+          "reference": 2923,
+          "precision": 0.8262424025741866,
+          "recall": 0.7906260691070818,
+          "f1": 0.808041958041958
+        },
+        "macroF1": 0.5829079048160319
+      },
+      "songs": {
+        "arcaround": {
+          "open": {
+            "tp": 5,
+            "predicted": 8,
+            "reference": 93,
+            "precision": 0.625,
+            "recall": 0.053763440860215055,
+            "f1": 0.09900990099009901
+          },
+          "closed": {
+            "tp": 116,
+            "predicted": 264,
+            "reference": 200,
+            "precision": 0.4393939393939394,
+            "recall": 0.58,
+            "f1": 0.5
+          },
+          "macroF1": 0.2995049504950495
+        },
+        "diamondvirgin": {
+          "open": {
+            "tp": 3,
+            "predicted": 3,
+            "reference": 502,
+            "precision": 1.0,
+            "recall": 0.00597609561752988,
+            "f1": 0.011881188118811881
+          },
+          "closed": {
+            "tp": 203,
+            "predicted": 252,
+            "reference": 253,
+            "precision": 0.8055555555555556,
+            "recall": 0.8023715415019763,
+            "f1": 0.803960396039604
+          },
+          "macroF1": 0.40792079207920795
+        },
+        "kaiju": {
+          "open": {
+            "tp": 1,
+            "predicted": 8,
+            "reference": 22,
+            "precision": 0.125,
+            "recall": 0.045454545454545456,
+            "f1": 0.06666666666666667
+          },
+          "closed": {
+            "tp": 518,
+            "predicted": 577,
+            "reference": 572,
+            "precision": 0.8977469670710572,
+            "recall": 0.9055944055944056,
+            "f1": 0.9016536118363795
+          },
+          "macroF1": 0.48416013925152307
+        },
+        "nanairo": {
+          "open": {
+            "tp": 229,
+            "predicted": 843,
+            "reference": 240,
+            "precision": 0.27164887307236063,
+            "recall": 0.9541666666666667,
+            "f1": 0.4228993536472761
+          },
+          "closed": {
+            "tp": 574,
+            "predicted": 641,
+            "reference": 823,
+            "precision": 0.8954758190327613,
+            "recall": 0.6974483596597812,
+            "f1": 0.7841530054644809
+          },
+          "macroF1": 0.6035261795558785
+        },
+        "ray": {
+          "open": {
+            "tp": 167,
+            "predicted": 223,
+            "reference": 322,
+            "precision": 0.7488789237668162,
+            "recall": 0.5186335403726708,
+            "f1": 0.6128440366972477
+          },
+          "closed": {
+            "tp": 900,
+            "predicted": 1063,
+            "reference": 1075,
+            "precision": 0.8466603951081844,
+            "recall": 0.8372093023255814,
+            "f1": 0.8419083255378859
+          },
+          "macroF1": 0.7273761811175667
+        }
+      },
+      "folds": {
+        "arcaround": {
+          "threshold": 0.74,
+          "metrics": {
+            "open": {
+              "tp": 5,
+              "predicted": 8,
+              "reference": 93,
+              "precision": 0.625,
+              "recall": 0.053763440860215055,
+              "f1": 0.09900990099009901
+            },
+            "closed": {
+              "tp": 116,
+              "predicted": 264,
+              "reference": 200,
+              "precision": 0.4393939393939394,
+              "recall": 0.58,
+              "f1": 0.5
+            },
+            "macroF1": 0.2995049504950495
+          },
+          "diag": {
+            "baseOpen": 8,
+            "studentCandidates": 2402,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 70,
+            "candidatePositiveRowsDiagnostic": 125,
+            "maxOpenProb": 0.6752496040101846
+          },
+          "studentTrain": {
+            "rows": 8549,
+            "positive": 4842,
+            "songs": [
+              "diamondvirgin",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5372,
+            "positive": 1527
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 384,
+                "predicted": 577,
+                "reference": 1086,
+                "precision": 0.6655112651646448,
+                "recall": 0.35359116022099446,
+                "f1": 0.46181599518941674
+              },
+              "closed": {
+                "tp": 2202,
+                "predicted": 2556,
+                "reference": 2723,
+                "precision": 0.8615023474178404,
+                "recall": 0.808666911494675,
+                "f1": 0.8342489107785566
+              },
+              "macroF1": 0.6480324529839867
+            },
+            "ranking": [
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.7036690497659247,
+                "summary": {
+                  "open": {
+                    "tp": 396,
+                    "predicted": 605,
+                    "reference": 1086,
+                    "precision": 0.6545454545454545,
+                    "recall": 0.36464088397790057,
+                    "f1": 0.4683619160260201
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6513054134022883
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.7031605902733394,
+                "summary": {
+                  "open": {
+                    "tp": 390,
+                    "predicted": 588,
+                    "reference": 1086,
+                    "precision": 0.6632653061224489,
+                    "recall": 0.35911602209944754,
+                    "f1": 0.4659498207885305
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6500993657835435
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.7017737622303659,
+                "summary": {
+                  "open": {
+                    "tp": 412,
+                    "predicted": 666,
+                    "reference": 1086,
+                    "precision": 0.6186186186186187,
+                    "recall": 0.37937384898710863,
+                    "f1": 0.4703196347031963
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6522842727408764
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6813710673802732,
+                "summary": {
+                  "open": {
+                    "tp": 433,
+                    "predicted": 851,
+                    "reference": 1086,
+                    "precision": 0.5088131609870741,
+                    "recall": 0.39871086556169427,
+                    "f1": 0.44708311822405783
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6406660145013072
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.6436273483970256,
+                "summary": {
+                  "open": {
+                    "tp": 490,
+                    "predicted": 1386,
+                    "reference": 1086,
+                    "precision": 0.35353535353535354,
+                    "recall": 0.45119705340699817,
+                    "f1": 0.3964401294498382
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6153445201141974
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.6039989382645221,
+                "summary": {
+                  "open": {
+                    "tp": 571,
+                    "predicted": 2328,
+                    "reference": 1086,
+                    "precision": 0.24527491408934707,
+                    "recall": 0.5257826887661142,
+                    "f1": 0.3345049794961921
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.5843769451373744
+                }
+              }
+            ]
+          }
+        },
+        "diamondvirgin": {
+          "threshold": 1.01,
+          "metrics": {
+            "open": {
+              "tp": 3,
+              "predicted": 3,
+              "reference": 502,
+              "precision": 1.0,
+              "recall": 0.00597609561752988,
+              "f1": 0.011881188118811881
+            },
+            "closed": {
+              "tp": 203,
+              "predicted": 252,
+              "reference": 253,
+              "precision": 0.8055555555555556,
+              "recall": 0.8023715415019763,
+              "f1": 0.803960396039604
+            },
+            "macroF1": 0.40792079207920795
+          },
+          "diag": {
+            "baseOpen": 3,
+            "studentCandidates": 3654,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 477,
+            "candidatePositiveRowsDiagnostic": 1262,
+            "maxOpenProb": 0.8540512877527311
+          },
+          "studentTrain": {
+            "rows": 8505,
+            "positive": 4770,
+            "songs": [
+              "arcaround",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 2544,
+            "positive": 389
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 377,
+                "predicted": 672,
+                "reference": 677,
+                "precision": 0.5610119047619048,
+                "recall": 0.5568685376661743,
+                "f1": 0.558932542624166
+              },
+              "closed": {
+                "tp": 2018,
+                "predicted": 2478,
+                "reference": 2670,
+                "precision": 0.814366424535916,
+                "recall": 0.7558052434456929,
+                "f1": 0.7839937839937839
+              },
+              "macroF1": 0.6714631633089749
+            },
+            "ranking": [
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.7160704157435213,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 673,
+                    "reference": 677,
+                    "precision": 0.5601783060921248,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.5585185185185185
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6712561512561512
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": false,
+                "utility": 0.7019086209772467,
+                "summary": {
+                  "open": {
+                    "tp": 379,
+                    "predicted": 734,
+                    "reference": 677,
+                    "precision": 0.5163487738419619,
+                    "recall": 0.5598227474150664,
+                    "f1": 0.5372076541459957
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6606007190698898
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": false,
+                "utility": 0.6835127491714319,
+                "summary": {
+                  "open": {
+                    "tp": 385,
+                    "predicted": 835,
+                    "reference": 677,
+                    "precision": 0.46107784431137727,
+                    "recall": 0.568685376661743,
+                    "f1": 0.5092592592592593
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6466265216265217
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.6691295229944831,
+                "summary": {
+                  "open": {
+                    "tp": 391,
+                    "predicted": 929,
+                    "reference": 677,
+                    "precision": 0.4208826695371367,
+                    "recall": 0.5775480059084195,
+                    "f1": 0.48692403486924035
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6354589094315122
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6542859883229385,
+                "summary": {
+                  "open": {
+                    "tp": 412,
+                    "predicted": 1097,
+                    "reference": 677,
+                    "precision": 0.37556973564266183,
+                    "recall": 0.6085672082717873,
+                    "f1": 0.4644870349492672
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6242404094715256
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.6368317454836692,
+                "summary": {
+                  "open": {
+                    "tp": 429,
+                    "predicted": 1289,
+                    "reference": 677,
+                    "precision": 0.33281613653995346,
+                    "recall": 0.6336779911373708,
+                    "f1": 0.43641912512716174
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6102064545604728
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.6087710116087314,
+                "summary": {
+                  "open": {
+                    "tp": 447,
+                    "predicted": 1619,
+                    "reference": 677,
+                    "precision": 0.27609635577516983,
+                    "recall": 0.6602658788774003,
+                    "f1": 0.3893728222996516
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.5866833031467178
+                }
+              }
+            ]
+          }
+        },
+        "kaiju": {
+          "threshold": 1.01,
+          "metrics": {
+            "open": {
+              "tp": 1,
+              "predicted": 8,
+              "reference": 22,
+              "precision": 0.125,
+              "recall": 0.045454545454545456,
+              "f1": 0.06666666666666667
+            },
+            "closed": {
+              "tp": 518,
+              "predicted": 577,
+              "reference": 572,
+              "precision": 0.8977469670710572,
+              "recall": 0.9055944055944056,
+              "f1": 0.9016536118363795
+            },
+            "macroF1": 0.48416013925152307
+          },
+          "diag": {
+            "baseOpen": 8,
+            "studentCandidates": 1454,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 12,
+            "candidatePositiveRowsDiagnostic": 21,
+            "maxOpenProb": 0.7254900953470161
+          },
+          "studentTrain": {
+            "rows": 8518,
+            "positive": 5083,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5819,
+            "positive": 1618
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 393,
+                "predicted": 613,
+                "reference": 1157,
+                "precision": 0.6411092985318108,
+                "recall": 0.33967156439066554,
+                "f1": 0.4440677966101695
+              },
+              "closed": {
+                "tp": 1782,
+                "predicted": 2207,
+                "reference": 2351,
+                "precision": 0.8074309016764839,
+                "recall": 0.7579753296469588,
+                "f1": 0.7819218955682317
+              },
+              "macroF1": 0.6129948460892005
+            },
+            "ranking": [
+              {
+                "threshold": 0.74,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.6629769168494273,
+                "summary": {
+                  "open": {
+                    "tp": 395,
+                    "predicted": 626,
+                    "reference": 1157,
+                    "precision": 0.6309904153354633,
+                    "recall": 0.341400172860847,
+                    "f1": 0.44307347167694894
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6124976836225903
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6489231833745273,
+                "summary": {
+                  "open": {
+                    "tp": 419,
+                    "predicted": 788,
+                    "reference": 1157,
+                    "precision": 0.5317258883248731,
+                    "recall": 0.3621434745030251,
+                    "f1": 0.4308483290488432
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6063851123085374
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.6184299277944019,
+                "summary": {
+                  "open": {
+                    "tp": 470,
+                    "predicted": 1230,
+                    "reference": 1157,
+                    "precision": 0.3821138211382114,
+                    "recall": 0.4062229904926534,
+                    "f1": 0.3937997486384583
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.587860822103345
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.5825277771811339,
+                "summary": {
+                  "open": {
+                    "tp": 589,
+                    "predicted": 2288,
+                    "reference": 1157,
+                    "precision": 0.25743006993006995,
+                    "recall": 0.5090751944684528,
+                    "f1": 0.341944847605225
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.5619333715867283
+                }
+              }
+            ]
+          }
+        },
+        "nanairo": {
+          "threshold": 0.45,
+          "metrics": {
+            "open": {
+              "tp": 229,
+              "predicted": 843,
+              "reference": 240,
+              "precision": 0.27164887307236063,
+              "recall": 0.9541666666666667,
+              "f1": 0.4228993536472761
+            },
+            "closed": {
+              "tp": 574,
+              "predicted": 641,
+              "reference": 823,
+              "precision": 0.8954758190327613,
+              "recall": 0.6974483596597812,
+              "f1": 0.7841530054644809
+            },
+            "macroF1": 0.6035261795558785
+          },
+          "diag": {
+            "baseOpen": 366,
+            "studentCandidates": 1279,
+            "rescued": 477,
+            "studentDistinctOpenCoverage": 49,
+            "candidatePositiveRowsDiagnostic": 56,
+            "maxOpenProb": 0.7054004753718536
+          },
+          "studentTrain": {
+            "rows": 8723,
+            "positive": 5073,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5849,
+            "positive": 1564
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 18,
+                "predicted": 117,
+                "reference": 939,
+                "precision": 0.15384615384615385,
+                "recall": 0.019169329073482427,
+                "f1": 0.03409090909090909
+              },
+              "closed": {
+                "tp": 1735,
+                "predicted": 2281,
+                "reference": 2100,
+                "precision": 0.7606313020604998,
+                "recall": 0.8261904761904761,
+                "f1": 0.792056608080347
+              },
+              "macroF1": 0.413073758585628
+            },
+            "ranking": [
+              {
+                "threshold": 0.45,
+                "eligible": true,
+                "utility": 0.49614379537681275,
+                "summary": {
+                  "open": {
+                    "tp": 277,
+                    "predicted": 2146,
+                    "reference": 939,
+                    "precision": 0.12907735321528424,
+                    "recall": 0.29499467518636846,
+                    "f1": 0.17957860615883306
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.48581760711959
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": true,
+                "utility": 0.4890497205411104,
+                "summary": {
+                  "open": {
+                    "tp": 144,
+                    "predicted": 867,
+                    "reference": 939,
+                    "precision": 0.16608996539792387,
+                    "recall": 0.15335463258785942,
+                    "f1": 0.15946843853820597
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4757625233092765
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": true,
+                "utility": 0.4738420549187248,
+                "summary": {
+                  "open": {
+                    "tp": 82,
+                    "predicted": 398,
+                    "reference": 939,
+                    "precision": 0.20603015075376885,
+                    "recall": 0.08732694355697551,
+                    "f1": 0.12266267763649963
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4573596428584233
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": true,
+                "utility": 0.46322107820969183,
+                "summary": {
+                  "open": {
+                    "tp": 55,
+                    "predicted": 222,
+                    "reference": 939,
+                    "precision": 0.24774774774774774,
+                    "recall": 0.058572949946751864,
+                    "f1": 0.09474590869939707
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.443401258389872
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.4475157133696539,
+                "summary": {
+                  "open": {
+                    "tp": 36,
+                    "predicted": 155,
+                    "reference": 939,
+                    "precision": 0.23225806451612904,
+                    "recall": 0.038338658146964855,
+                    "f1": 0.06581352833638025
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4289350682083636
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.43380161054587435,
+                "summary": {
+                  "open": {
+                    "tp": 24,
+                    "predicted": 126,
+                    "reference": 939,
+                    "precision": 0.19047619047619047,
+                    "recall": 0.025559105431309903,
+                    "f1": 0.04507042253521127
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.41856351530777913
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              }
+            ]
+          }
+        },
+        "ray": {
+          "threshold": 0.74,
+          "metrics": {
+            "open": {
+              "tp": 167,
+              "predicted": 223,
+              "reference": 322,
+              "precision": 0.7488789237668162,
+              "recall": 0.5186335403726708,
+              "f1": 0.6128440366972477
+            },
+            "closed": {
+              "tp": 900,
+              "predicted": 1063,
+              "reference": 1075,
+              "precision": 0.8466603951081844,
+              "recall": 0.8372093023255814,
+              "f1": 0.8419083255378859
+            },
+            "macroF1": 0.7273761811175667
+          },
+          "diag": {
+            "baseOpen": 223,
+            "studentCandidates": 1561,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 122,
+            "candidatePositiveRowsDiagnostic": 184,
+            "maxOpenProb": 0.6314800685243135
+          },
+          "studentTrain": {
+            "rows": 8601,
+            "positive": 5324,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "nanairo"
+            ]
+          },
+          "openTrain": {
+            "rows": 5153,
+            "positive": 1480
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 79,
+                "predicted": 138,
+                "reference": 857,
+                "precision": 0.572463768115942,
+                "recall": 0.09218203033838973,
+                "f1": 0.15879396984924624
+              },
+              "closed": {
+                "tp": 1508,
+                "predicted": 1981,
+                "reference": 1848,
+                "precision": 0.7612317011610298,
+                "recall": 0.816017316017316,
+                "f1": 0.787673021676678
+              },
+              "macroF1": 0.4732334957629621
+            },
+            "ranking": [
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.534673877730885,
+                "summary": {
+                  "open": {
+                    "tp": 99,
+                    "predicted": 176,
+                    "reference": 857,
+                    "precision": 0.5625,
+                    "recall": 0.11551925320886815,
+                    "f1": 0.19167473378509198
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.489673877730885
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.525849968665265,
+                "summary": {
+                  "open": {
+                    "tp": 87,
+                    "predicted": 152,
+                    "reference": 857,
+                    "precision": 0.5723684210526315,
+                    "recall": 0.10151691948658109,
+                    "f1": 0.17244796828543113
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4800604949810545
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": true,
+                "utility": 0.5202009614465272,
+                "summary": {
+                  "open": {
+                    "tp": 80,
+                    "predicted": 139,
+                    "reference": 857,
+                    "precision": 0.5755395683453237,
+                    "recall": 0.09334889148191365,
+                    "f1": 0.1606425702811245
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.47415779597890123
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.5350437400386382,
+                "summary": {
+                  "open": {
+                    "tp": 112,
+                    "predicted": 233,
+                    "reference": 857,
+                    "precision": 0.48068669527896996,
+                    "recall": 0.1306884480746791,
+                    "f1": 0.20550458715596331
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.49658880441632064
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.5346236828500008,
+                "summary": {
+                  "open": {
+                    "tp": 132,
+                    "predicted": 343,
+                    "reference": 857,
+                    "precision": 0.3848396501457726,
+                    "recall": 0.15402567094515754,
+                    "f1": 0.22
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.503836510838339
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.5245596890599956,
+                "summary": {
+                  "open": {
+                    "tp": 192,
+                    "predicted": 848,
+                    "reference": 857,
+                    "precision": 0.22641509433962265,
+                    "recall": 0.22403733955659277,
+                    "f1": 0.2252199413489736
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.5064464815128258
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.5080966792872627,
+                "summary": {
+                  "open": {
+                    "tp": 323,
+                    "predicted": 2281,
+                    "reference": 857,
+                    "precision": 0.14160455940377029,
+                    "recall": 0.37689614935822635,
+                    "f1": 0.2058636073932441
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.49676831453496106
+                }
+              }
+            ]
+          }
+        }
+      },
+      "passesGuard": false
+    },
+    "acoustic_student": {
+      "variant": "acoustic_student",
+      "summary": {
+        "open": {
+          "tp": 405,
+          "predicted": 776,
+          "reference": 1179,
+          "precision": 0.5219072164948454,
+          "recall": 0.3435114503816794,
+          "f1": 0.4143222506393862
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2797,
+          "reference": 2923,
+          "precision": 0.8262424025741866,
+          "recall": 0.7906260691070818,
+          "f1": 0.808041958041958
+        },
+        "macroF1": 0.6111821043406721
+      },
+      "songs": {
+        "arcaround": {
+          "open": {
+            "tp": 5,
+            "predicted": 8,
+            "reference": 93,
+            "precision": 0.625,
+            "recall": 0.053763440860215055,
+            "f1": 0.09900990099009901
+          },
+          "closed": {
+            "tp": 116,
+            "predicted": 264,
+            "reference": 200,
+            "precision": 0.4393939393939394,
+            "recall": 0.58,
+            "f1": 0.5
+          },
+          "macroF1": 0.2995049504950495
+        },
+        "diamondvirgin": {
+          "open": {
+            "tp": 3,
+            "predicted": 3,
+            "reference": 502,
+            "precision": 1.0,
+            "recall": 0.00597609561752988,
+            "f1": 0.011881188118811881
+          },
+          "closed": {
+            "tp": 203,
+            "predicted": 252,
+            "reference": 253,
+            "precision": 0.8055555555555556,
+            "recall": 0.8023715415019763,
+            "f1": 0.803960396039604
+          },
+          "macroF1": 0.40792079207920795
+        },
+        "kaiju": {
+          "open": {
+            "tp": 1,
+            "predicted": 8,
+            "reference": 22,
+            "precision": 0.125,
+            "recall": 0.045454545454545456,
+            "f1": 0.06666666666666667
+          },
+          "closed": {
+            "tp": 518,
+            "predicted": 577,
+            "reference": 572,
+            "precision": 0.8977469670710572,
+            "recall": 0.9055944055944056,
+            "f1": 0.9016536118363795
+          },
+          "macroF1": 0.48416013925152307
+        },
+        "nanairo": {
+          "open": {
+            "tp": 229,
+            "predicted": 534,
+            "reference": 240,
+            "precision": 0.4288389513108614,
+            "recall": 0.9541666666666667,
+            "f1": 0.5917312661498708
+          },
+          "closed": {
+            "tp": 574,
+            "predicted": 641,
+            "reference": 823,
+            "precision": 0.8954758190327613,
+            "recall": 0.6974483596597812,
+            "f1": 0.7841530054644809
+          },
+          "macroF1": 0.6879421358071758
+        },
+        "ray": {
+          "open": {
+            "tp": 167,
+            "predicted": 223,
+            "reference": 322,
+            "precision": 0.7488789237668162,
+            "recall": 0.5186335403726708,
+            "f1": 0.6128440366972477
+          },
+          "closed": {
+            "tp": 900,
+            "predicted": 1063,
+            "reference": 1075,
+            "precision": 0.8466603951081844,
+            "recall": 0.8372093023255814,
+            "f1": 0.8419083255378859
+          },
+          "macroF1": 0.7273761811175667
+        }
+      },
+      "folds": {
+        "arcaround": {
+          "threshold": 0.74,
+          "metrics": {
+            "open": {
+              "tp": 5,
+              "predicted": 8,
+              "reference": 93,
+              "precision": 0.625,
+              "recall": 0.053763440860215055,
+              "f1": 0.09900990099009901
+            },
+            "closed": {
+              "tp": 116,
+              "predicted": 264,
+              "reference": 200,
+              "precision": 0.4393939393939394,
+              "recall": 0.58,
+              "f1": 0.5
+            },
+            "macroF1": 0.2995049504950495
+          },
+          "diag": {
+            "baseOpen": 8,
+            "studentCandidates": 2402,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 70,
+            "candidatePositiveRowsDiagnostic": 125,
+            "maxOpenProb": 0.7270863775294005
+          },
+          "studentTrain": {
+            "rows": 8549,
+            "positive": 4842,
+            "songs": [
+              "diamondvirgin",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5372,
+            "positive": 1527
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 384,
+                "predicted": 577,
+                "reference": 1086,
+                "precision": 0.6655112651646448,
+                "recall": 0.35359116022099446,
+                "f1": 0.46181599518941674
+              },
+              "closed": {
+                "tp": 2202,
+                "predicted": 2556,
+                "reference": 2723,
+                "precision": 0.8615023474178404,
+                "recall": 0.808666911494675,
+                "f1": 0.8342489107785566
+              },
+              "macroF1": 0.6480324529839867
+            },
+            "ranking": [
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.7066914222411657,
+                "summary": {
+                  "open": {
+                    "tp": 403,
+                    "predicted": 614,
+                    "reference": 1086,
+                    "precision": 0.6563517915309446,
+                    "recall": 0.3710865561694291,
+                    "f1": 0.47411764705882353
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6541832789186901
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.7029314138060231,
+                "summary": {
+                  "open": {
+                    "tp": 390,
+                    "predicted": 589,
+                    "reference": 1086,
+                    "precision": 0.6621392190152802,
+                    "recall": 0.35911602209944754,
+                    "f1": 0.46567164179104475
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6499602762848007
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.7054346727406849,
+                "summary": {
+                  "open": {
+                    "tp": 424,
+                    "predicted": 688,
+                    "reference": 1086,
+                    "precision": 0.6162790697674418,
+                    "recall": 0.39042357274401474,
+                    "f1": 0.47801578354002255
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6561323471592896
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6927538385081287,
+                "summary": {
+                  "open": {
+                    "tp": 460,
+                    "predicted": 881,
+                    "reference": 1086,
+                    "precision": 0.5221339387060159,
+                    "recall": 0.42357274401473294,
+                    "f1": 0.4677173360447382
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6509831234116474
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.665350268125501,
+                "summary": {
+                  "open": {
+                    "tp": 515,
+                    "predicted": 1294,
+                    "reference": 1086,
+                    "precision": 0.3979907264296754,
+                    "recall": 0.47421731123388583,
+                    "f1": 0.4327731092436975
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.633511010011127
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.6259626861676102,
+                "summary": {
+                  "open": {
+                    "tp": 590,
+                    "predicted": 2083,
+                    "reference": 1086,
+                    "precision": 0.28324531925108015,
+                    "recall": 0.5432780847145487,
+                    "f1": 0.372357210476491
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6033030606275238
+                }
+              }
+            ]
+          }
+        },
+        "diamondvirgin": {
+          "threshold": 1.01,
+          "metrics": {
+            "open": {
+              "tp": 3,
+              "predicted": 3,
+              "reference": 502,
+              "precision": 1.0,
+              "recall": 0.00597609561752988,
+              "f1": 0.011881188118811881
+            },
+            "closed": {
+              "tp": 203,
+              "predicted": 252,
+              "reference": 253,
+              "precision": 0.8055555555555556,
+              "recall": 0.8023715415019763,
+              "f1": 0.803960396039604
+            },
+            "macroF1": 0.40792079207920795
+          },
+          "diag": {
+            "baseOpen": 3,
+            "studentCandidates": 3654,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 477,
+            "candidatePositiveRowsDiagnostic": 1262,
+            "maxOpenProb": 0.8386312909889766
+          },
+          "studentTrain": {
+            "rows": 8505,
+            "positive": 4770,
+            "songs": [
+              "arcaround",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 2544,
+            "positive": 389
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 377,
+                "predicted": 672,
+                "reference": 677,
+                "precision": 0.5610119047619048,
+                "recall": 0.5568685376661743,
+                "f1": 0.558932542624166
+              },
+              "closed": {
+                "tp": 2018,
+                "predicted": 2478,
+                "reference": 2670,
+                "precision": 0.814366424535916,
+                "recall": 0.7558052434456929,
+                "f1": 0.7839937839937839
+              },
+              "macroF1": 0.6714631633089749
+            },
+            "ranking": [
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": false,
+                "utility": 0.7121262071437063,
+                "summary": {
+                  "open": {
+                    "tp": 379,
+                    "predicted": 694,
+                    "reference": 677,
+                    "precision": 0.5461095100864554,
+                    "recall": 0.5598227474150664,
+                    "f1": 0.5528811086797958
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6684374463367899
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": false,
+                "utility": 0.6987738443276261,
+                "summary": {
+                  "open": {
+                    "tp": 385,
+                    "predicted": 767,
+                    "reference": 677,
+                    "precision": 0.5019556714471969,
+                    "recall": 0.568685376661743,
+                    "f1": 0.5332409972299169
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6586173906118504
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.6793994727173918,
+                "summary": {
+                  "open": {
+                    "tp": 392,
+                    "predicted": 880,
+                    "reference": 677,
+                    "precision": 0.44545454545454544,
+                    "recall": 0.5790251107828656,
+                    "f1": 0.5035324341682723
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6437631090810281
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6639835000174743,
+                "summary": {
+                  "open": {
+                    "tp": 412,
+                    "predicted": 1038,
+                    "reference": 677,
+                    "precision": 0.3969171483622351,
+                    "recall": 0.6085672082717873,
+                    "f1": 0.480466472303207
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6322301281484954
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.6387427671317586,
+                "summary": {
+                  "open": {
+                    "tp": 427,
+                    "predicted": 1266,
+                    "reference": 677,
+                    "precision": 0.3372827804107425,
+                    "recall": 0.6307237813884786,
+                    "f1": 0.4395265054040144
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6117601446988992
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.6083843199250747,
+                "summary": {
+                  "open": {
+                    "tp": 446,
+                    "predicted": 1618,
+                    "reference": 677,
+                    "precision": 0.27564894932014833,
+                    "recall": 0.6587887740029542,
+                    "f1": 0.38867102396514164
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.5863324039794628
+                }
+              }
+            ]
+          }
+        },
+        "kaiju": {
+          "threshold": 1.01,
+          "metrics": {
+            "open": {
+              "tp": 1,
+              "predicted": 8,
+              "reference": 22,
+              "precision": 0.125,
+              "recall": 0.045454545454545456,
+              "f1": 0.06666666666666667
+            },
+            "closed": {
+              "tp": 518,
+              "predicted": 577,
+              "reference": 572,
+              "precision": 0.8977469670710572,
+              "recall": 0.9055944055944056,
+              "f1": 0.9016536118363795
+            },
+            "macroF1": 0.48416013925152307
+          },
+          "diag": {
+            "baseOpen": 8,
+            "studentCandidates": 1454,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 12,
+            "candidatePositiveRowsDiagnostic": 21,
+            "maxOpenProb": 0.7871092844672212
+          },
+          "studentTrain": {
+            "rows": 8518,
+            "positive": 5083,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5819,
+            "positive": 1618
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 393,
+                "predicted": 613,
+                "reference": 1157,
+                "precision": 0.6411092985318108,
+                "recall": 0.33967156439066554,
+                "f1": 0.4440677966101695
+              },
+              "closed": {
+                "tp": 1782,
+                "predicted": 2207,
+                "reference": 2351,
+                "precision": 0.8074309016764839,
+                "recall": 0.7579753296469588,
+                "f1": 0.7819218955682317
+              },
+              "macroF1": 0.6129948460892005
+            },
+            "ranking": [
+              {
+                "threshold": 0.8,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": false,
+                "utility": 0.6640746857668526,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 614,
+                    "reference": 1157,
+                    "precision": 0.6400651465798045,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4438170525127047
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6128694740404682
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.6612713460369513,
+                "summary": {
+                  "open": {
+                    "tp": 394,
+                    "predicted": 631,
+                    "reference": 1157,
+                    "precision": 0.624405705229794,
+                    "recall": 0.34053586862575624,
+                    "f1": 0.4407158836689038
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6113188896185677
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6480707825210693,
+                "summary": {
+                  "open": {
+                    "tp": 412,
+                    "predicted": 767,
+                    "reference": 1157,
+                    "precision": 0.5371577574967406,
+                    "recall": 0.3560933448573898,
+                    "f1": 0.4282744282744283
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.60509816192133
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.6140540018443692,
+                "summary": {
+                  "open": {
+                    "tp": 459,
+                    "predicted": 1221,
+                    "reference": 1157,
+                    "precision": 0.3759213759213759,
+                    "recall": 0.39671564390665515,
+                    "f1": 0.3860386879730866
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.5839802917706591
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.5856262939196152,
+                "summary": {
+                  "open": {
+                    "tp": 569,
+                    "predicted": 2127,
+                    "reference": 1157,
+                    "precision": 0.26751292900799245,
+                    "recall": 0.49178910976663787,
+                    "f1": 0.34652862362971987
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.5642252595989757
+                }
+              }
+            ]
+          }
+        },
+        "nanairo": {
+          "threshold": 0.55,
+          "metrics": {
+            "open": {
+              "tp": 229,
+              "predicted": 534,
+              "reference": 240,
+              "precision": 0.4288389513108614,
+              "recall": 0.9541666666666667,
+              "f1": 0.5917312661498708
+            },
+            "closed": {
+              "tp": 574,
+              "predicted": 641,
+              "reference": 823,
+              "precision": 0.8954758190327613,
+              "recall": 0.6974483596597812,
+              "f1": 0.7841530054644809
+            },
+            "macroF1": 0.6879421358071758
+          },
+          "diag": {
+            "baseOpen": 366,
+            "studentCandidates": 1279,
+            "rescued": 168,
+            "studentDistinctOpenCoverage": 49,
+            "candidatePositiveRowsDiagnostic": 56,
+            "maxOpenProb": 0.7427195381689498
+          },
+          "studentTrain": {
+            "rows": 8723,
+            "positive": 5073,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5849,
+            "positive": 1564
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 18,
+                "predicted": 117,
+                "reference": 939,
+                "precision": 0.15384615384615385,
+                "recall": 0.019169329073482427,
+                "f1": 0.03409090909090909
+              },
+              "closed": {
+                "tp": 1735,
+                "predicted": 2281,
+                "reference": 2100,
+                "precision": 0.7606313020604998,
+                "recall": 0.8261904761904761,
+                "f1": 0.792056608080347
+              },
+              "macroF1": 0.413073758585628
+            },
+            "ranking": [
+              {
+                "threshold": 0.55,
+                "eligible": true,
+                "utility": 0.49347214461183314,
+                "summary": {
+                  "open": {
+                    "tp": 159,
+                    "predicted": 952,
+                    "reference": 939,
+                    "precision": 0.16701680672268907,
+                    "recall": 0.16932907348242812,
+                    "f1": 0.16816499206768906
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.480110800074018
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": true,
+                "utility": 0.47812738951313516,
+                "summary": {
+                  "open": {
+                    "tp": 87,
+                    "predicted": 403,
+                    "reference": 939,
+                    "precision": 0.21588089330024815,
+                    "recall": 0.0926517571884984,
+                    "f1": 0.12965722801788376
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4608569180491153
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": true,
+                "utility": 0.46809738130437273,
+                "summary": {
+                  "open": {
+                    "tp": 57,
+                    "predicted": 205,
+                    "reference": 939,
+                    "precision": 0.2780487804878049,
+                    "recall": 0.06070287539936102,
+                    "f1": 0.09965034965034965
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4458534788653483
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.4424728955931988,
+                "summary": {
+                  "open": {
+                    "tp": 31,
+                    "predicted": 140,
+                    "reference": 939,
+                    "precision": 0.22142857142857142,
+                    "recall": 0.03301384451544196,
+                    "f1": 0.057460611677479144
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.42475860987891306
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.43118968906203653,
+                "summary": {
+                  "open": {
+                    "tp": 22,
+                    "predicted": 122,
+                    "reference": 939,
+                    "precision": 0.18032786885245902,
+                    "recall": 0.023429179978700747,
+                    "f1": 0.04147031102733271
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4167634595538398
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.49457908437307807,
+                "summary": {
+                  "open": {
+                    "tp": 265,
+                    "predicted": 2063,
+                    "reference": 939,
+                    "precision": 0.12845370819195345,
+                    "recall": 0.2822151224707135,
+                    "f1": 0.1765489673550966
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4843027877177218
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              }
+            ]
+          }
+        },
+        "ray": {
+          "threshold": 0.74,
+          "metrics": {
+            "open": {
+              "tp": 167,
+              "predicted": 223,
+              "reference": 322,
+              "precision": 0.7488789237668162,
+              "recall": 0.5186335403726708,
+              "f1": 0.6128440366972477
+            },
+            "closed": {
+              "tp": 900,
+              "predicted": 1063,
+              "reference": 1075,
+              "precision": 0.8466603951081844,
+              "recall": 0.8372093023255814,
+              "f1": 0.8419083255378859
+            },
+            "macroF1": 0.7273761811175667
+          },
+          "diag": {
+            "baseOpen": 223,
+            "studentCandidates": 1561,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 122,
+            "candidatePositiveRowsDiagnostic": 184,
+            "maxOpenProb": 0.6761036296475799
+          },
+          "studentTrain": {
+            "rows": 8601,
+            "positive": 5324,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "nanairo"
+            ]
+          },
+          "openTrain": {
+            "rows": 5153,
+            "positive": 1480
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 79,
+                "predicted": 138,
+                "reference": 857,
+                "precision": 0.572463768115942,
+                "recall": 0.09218203033838973,
+                "f1": 0.15879396984924624
+              },
+              "closed": {
+                "tp": 1508,
+                "predicted": 1981,
+                "reference": 1848,
+                "precision": 0.7612317011610298,
+                "recall": 0.816017316017316,
+                "f1": 0.787673021676678
+              },
+              "macroF1": 0.4732334957629621
+            },
+            "ranking": [
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.5324891255356298,
+                "summary": {
+                  "open": {
+                    "tp": 96,
+                    "predicted": 170,
+                    "reference": 857,
+                    "precision": 0.5647058823529412,
+                    "recall": 0.11201866977829639,
+                    "f1": 0.186952288218111
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4873126549473945
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.522864704866533,
+                "summary": {
+                  "open": {
+                    "tp": 83,
+                    "predicted": 144,
+                    "reference": 857,
+                    "precision": 0.5763888888888888,
+                    "recall": 0.09684947491248541,
+                    "f1": 0.16583416583416583
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4767535937554219
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": true,
+                "utility": 0.5197915187191242,
+                "summary": {
+                  "open": {
+                    "tp": 80,
+                    "predicted": 140,
+                    "reference": 857,
+                    "precision": 0.5714285714285714,
+                    "recall": 0.09334889148191365,
+                    "f1": 0.160481444332999
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4740772330048385
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.5369859664247694,
+                "summary": {
+                  "open": {
+                    "tp": 111,
+                    "predicted": 221,
+                    "reference": 857,
+                    "precision": 0.502262443438914,
+                    "recall": 0.1295215869311552,
+                    "f1": 0.20593692022263452
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.49680497094965625
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.5354690133135958,
+                "summary": {
+                  "open": {
+                    "tp": 145,
+                    "predicted": 417,
+                    "reference": 857,
+                    "precision": 0.34772182254196643,
+                    "recall": 0.1691948658109685,
+                    "f1": 0.22762951334379905
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.5076512675102385
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.5245218002373883,
+                "summary": {
+                  "open": {
+                    "tp": 200,
+                    "predicted": 911,
+                    "reference": 857,
+                    "precision": 0.21953896816684962,
+                    "recall": 0.23337222870478413,
+                    "f1": 0.22624434389140272
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.5069586827840403
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.5124934022036376,
+                "summary": {
+                  "open": {
+                    "tp": 327,
+                    "predicted": 2205,
+                    "reference": 857,
+                    "precision": 0.14829931972789115,
+                    "recall": 0.38156359393232203,
+                    "f1": 0.21358589157413455
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.5006294566254063
+                }
+              }
+            ]
+          }
+        }
+      },
+      "passesGuard": false
+    },
+    "acoustic_student_gmd": {
+      "variant": "acoustic_student_gmd",
+      "summary": {
+        "open": {
+          "tp": 405,
+          "predicted": 1021,
+          "reference": 1179,
+          "precision": 0.3966699314397649,
+          "recall": 0.3435114503816794,
+          "f1": 0.36818181818181817
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2797,
+          "reference": 2923,
+          "precision": 0.8262424025741866,
+          "recall": 0.7906260691070818,
+          "f1": 0.808041958041958
+        },
+        "macroF1": 0.5881118881118881
+      },
+      "songs": {
+        "arcaround": {
+          "open": {
+            "tp": 5,
+            "predicted": 8,
+            "reference": 93,
+            "precision": 0.625,
+            "recall": 0.053763440860215055,
+            "f1": 0.09900990099009901
+          },
+          "closed": {
+            "tp": 116,
+            "predicted": 264,
+            "reference": 200,
+            "precision": 0.4393939393939394,
+            "recall": 0.58,
+            "f1": 0.5
+          },
+          "macroF1": 0.2995049504950495
+        },
+        "diamondvirgin": {
+          "open": {
+            "tp": 3,
+            "predicted": 3,
+            "reference": 502,
+            "precision": 1.0,
+            "recall": 0.00597609561752988,
+            "f1": 0.011881188118811881
+          },
+          "closed": {
+            "tp": 203,
+            "predicted": 252,
+            "reference": 253,
+            "precision": 0.8055555555555556,
+            "recall": 0.8023715415019763,
+            "f1": 0.803960396039604
+          },
+          "macroF1": 0.40792079207920795
+        },
+        "kaiju": {
+          "open": {
+            "tp": 1,
+            "predicted": 8,
+            "reference": 22,
+            "precision": 0.125,
+            "recall": 0.045454545454545456,
+            "f1": 0.06666666666666667
+          },
+          "closed": {
+            "tp": 518,
+            "predicted": 577,
+            "reference": 572,
+            "precision": 0.8977469670710572,
+            "recall": 0.9055944055944056,
+            "f1": 0.9016536118363795
+          },
+          "macroF1": 0.48416013925152307
+        },
+        "nanairo": {
+          "open": {
+            "tp": 229,
+            "predicted": 779,
+            "reference": 240,
+            "precision": 0.2939666238767651,
+            "recall": 0.9541666666666667,
+            "f1": 0.4494602551521099
+          },
+          "closed": {
+            "tp": 574,
+            "predicted": 641,
+            "reference": 823,
+            "precision": 0.8954758190327613,
+            "recall": 0.6974483596597812,
+            "f1": 0.7841530054644809
+          },
+          "macroF1": 0.6168066303082954
+        },
+        "ray": {
+          "open": {
+            "tp": 167,
+            "predicted": 223,
+            "reference": 322,
+            "precision": 0.7488789237668162,
+            "recall": 0.5186335403726708,
+            "f1": 0.6128440366972477
+          },
+          "closed": {
+            "tp": 900,
+            "predicted": 1063,
+            "reference": 1075,
+            "precision": 0.8466603951081844,
+            "recall": 0.8372093023255814,
+            "f1": 0.8419083255378859
+          },
+          "macroF1": 0.7273761811175667
+        }
+      },
+      "folds": {
+        "arcaround": {
+          "threshold": 0.74,
+          "metrics": {
+            "open": {
+              "tp": 5,
+              "predicted": 8,
+              "reference": 93,
+              "precision": 0.625,
+              "recall": 0.053763440860215055,
+              "f1": 0.09900990099009901
+            },
+            "closed": {
+              "tp": 116,
+              "predicted": 264,
+              "reference": 200,
+              "precision": 0.4393939393939394,
+              "recall": 0.58,
+              "f1": 0.5
+            },
+            "macroF1": 0.2995049504950495
+          },
+          "diag": {
+            "baseOpen": 8,
+            "studentCandidates": 2402,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 70,
+            "candidatePositiveRowsDiagnostic": 125,
+            "maxOpenProb": 0.7098455295278453
+          },
+          "studentTrain": {
+            "rows": 8549,
+            "positive": 4842,
+            "songs": [
+              "diamondvirgin",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5372,
+            "positive": 1527
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 384,
+                "predicted": 577,
+                "reference": 1086,
+                "precision": 0.6655112651646448,
+                "recall": 0.35359116022099446,
+                "f1": 0.46181599518941674
+              },
+              "closed": {
+                "tp": 2202,
+                "predicted": 2556,
+                "reference": 2723,
+                "precision": 0.8615023474178404,
+                "recall": 0.808666911494675,
+                "f1": 0.8342489107785566
+              },
+              "macroF1": 0.6480324529839867
+            },
+            "ranking": [
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.7068321869051334,
+                "summary": {
+                  "open": {
+                    "tp": 401,
+                    "predicted": 607,
+                    "reference": 1086,
+                    "precision": 0.6606260296540363,
+                    "recall": 0.3692449355432781,
+                    "f1": 0.4737152982870644
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6539821045328105
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.7028408435265037,
+                "summary": {
+                  "open": {
+                    "tp": 388,
+                    "predicted": 583,
+                    "reference": 1086,
+                    "precision": 0.6655231560891939,
+                    "recall": 0.3572744014732965,
+                    "f1": 0.46494907130017976
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6495989910393681
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.7064135100825033,
+                "summary": {
+                  "open": {
+                    "tp": 423,
+                    "predicted": 680,
+                    "reference": 1086,
+                    "precision": 0.6220588235294118,
+                    "recall": 0.38950276243093923,
+                    "f1": 0.47904869762174407
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6566488042001504
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.7012733541971583,
+                "summary": {
+                  "open": {
+                    "tp": 384,
+                    "predicted": 577,
+                    "reference": 1086,
+                    "precision": 0.6655112651646448,
+                    "recall": 0.35359116022099446,
+                    "f1": 0.46181599518941674
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6480324529839867
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6977952833115829,
+                "summary": {
+                  "open": {
+                    "tp": 467,
+                    "predicted": 876,
+                    "reference": 1086,
+                    "precision": 0.5331050228310502,
+                    "recall": 0.4300184162062615,
+                    "f1": 0.47604485219164117
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6551468814850989
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.666608678119827,
+                "summary": {
+                  "open": {
+                    "tp": 533,
+                    "predicted": 1358,
+                    "reference": 1086,
+                    "precision": 0.39248895434462444,
+                    "recall": 0.49079189686924496,
+                    "f1": 0.43617021276595747
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.6352095617722571
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.6193899360388622,
+                "summary": {
+                  "open": {
+                    "tp": 611,
+                    "predicted": 2291,
+                    "reference": 1086,
+                    "precision": 0.2666957660410301,
+                    "recall": 0.5626151012891344,
+                    "f1": 0.3618596387326029
+                  },
+                  "closed": {
+                    "tp": 2202,
+                    "predicted": 2556,
+                    "reference": 2723,
+                    "precision": 0.8615023474178404,
+                    "recall": 0.808666911494675,
+                    "f1": 0.8342489107785566
+                  },
+                  "macroF1": 0.5980542747555797
+                }
+              }
+            ]
+          }
+        },
+        "diamondvirgin": {
+          "threshold": 1.01,
+          "metrics": {
+            "open": {
+              "tp": 3,
+              "predicted": 3,
+              "reference": 502,
+              "precision": 1.0,
+              "recall": 0.00597609561752988,
+              "f1": 0.011881188118811881
+            },
+            "closed": {
+              "tp": 203,
+              "predicted": 252,
+              "reference": 253,
+              "precision": 0.8055555555555556,
+              "recall": 0.8023715415019763,
+              "f1": 0.803960396039604
+            },
+            "macroF1": 0.40792079207920795
+          },
+          "diag": {
+            "baseOpen": 3,
+            "studentCandidates": 3654,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 477,
+            "candidatePositiveRowsDiagnostic": 1262,
+            "maxOpenProb": 0.8240287511402403
+          },
+          "studentTrain": {
+            "rows": 8505,
+            "positive": 4770,
+            "songs": [
+              "arcaround",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 2544,
+            "positive": 389
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 377,
+                "predicted": 672,
+                "reference": 677,
+                "precision": 0.5610119047619048,
+                "recall": 0.5568685376661743,
+                "f1": 0.558932542624166
+              },
+              "closed": {
+                "tp": 2018,
+                "predicted": 2478,
+                "reference": 2670,
+                "precision": 0.814366424535916,
+                "recall": 0.7558052434456929,
+                "f1": 0.7839937839937839
+              },
+              "macroF1": 0.6714631633089749
+            },
+            "ranking": [
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.7163441156899273,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 672,
+                    "reference": 677,
+                    "precision": 0.5610119047619048,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.558932542624166
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6714631633089749
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": false,
+                "utility": 0.712824914334159,
+                "summary": {
+                  "open": {
+                    "tp": 377,
+                    "predicted": 685,
+                    "reference": 677,
+                    "precision": 0.5503649635036496,
+                    "recall": 0.5568685376661743,
+                    "f1": 0.55359765051395
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.668795717253867
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": false,
+                "utility": 0.701003109663719,
+                "summary": {
+                  "open": {
+                    "tp": 383,
+                    "predicted": 751,
+                    "reference": 677,
+                    "precision": 0.5099866844207723,
+                    "recall": 0.5657311669128509,
+                    "f1": 0.5364145658263305
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6602041749100572
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.6802435501167423,
+                "summary": {
+                  "open": {
+                    "tp": 389,
+                    "predicted": 865,
+                    "reference": 677,
+                    "precision": 0.44971098265895953,
+                    "recall": 0.5745937961595273,
+                    "f1": 0.5045395590142672
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6442666715040255
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6611435201932413,
+                "summary": {
+                  "open": {
+                    "tp": 410,
+                    "predicted": 1047,
+                    "reference": 677,
+                    "precision": 0.39159503342884433,
+                    "recall": 0.6056129985228951,
+                    "f1": 0.4756380510440835
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6298159175189337
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.6340987371967982,
+                "summary": {
+                  "open": {
+                    "tp": 429,
+                    "predicted": 1310,
+                    "reference": 677,
+                    "precision": 0.32748091603053436,
+                    "recall": 0.6336779911373708,
+                    "f1": 0.431806743834927
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.6079002639143555
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.5981870367300658,
+                "summary": {
+                  "open": {
+                    "tp": 457,
+                    "predicted": 1784,
+                    "reference": 677,
+                    "precision": 0.2561659192825112,
+                    "recall": 0.6750369276218612,
+                    "f1": 0.37139374238114586
+                  },
+                  "closed": {
+                    "tp": 2018,
+                    "predicted": 2478,
+                    "reference": 2670,
+                    "precision": 0.814366424535916,
+                    "recall": 0.7558052434456929,
+                    "f1": 0.7839937839937839
+                  },
+                  "macroF1": 0.5776937631874649
+                }
+              }
+            ]
+          }
+        },
+        "kaiju": {
+          "threshold": 1.01,
+          "metrics": {
+            "open": {
+              "tp": 1,
+              "predicted": 8,
+              "reference": 22,
+              "precision": 0.125,
+              "recall": 0.045454545454545456,
+              "f1": 0.06666666666666667
+            },
+            "closed": {
+              "tp": 518,
+              "predicted": 577,
+              "reference": 572,
+              "precision": 0.8977469670710572,
+              "recall": 0.9055944055944056,
+              "f1": 0.9016536118363795
+            },
+            "macroF1": 0.48416013925152307
+          },
+          "diag": {
+            "baseOpen": 8,
+            "studentCandidates": 1454,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 12,
+            "candidatePositiveRowsDiagnostic": 21,
+            "maxOpenProb": 0.7635107496154824
+          },
+          "studentTrain": {
+            "rows": 8518,
+            "positive": 5083,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "nanairo",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5819,
+            "positive": 1618
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 393,
+                "predicted": 613,
+                "reference": 1157,
+                "precision": 0.6411092985318108,
+                "recall": 0.33967156439066554,
+                "f1": 0.4440677966101695
+              },
+              "closed": {
+                "tp": 1782,
+                "predicted": 2207,
+                "reference": 2351,
+                "precision": 0.8074309016764839,
+                "recall": 0.7579753296469588,
+                "f1": 0.7819218955682317
+              },
+              "macroF1": 0.6129948460892005
+            },
+            "ranking": [
+              {
+                "threshold": 0.74,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.6642835899717454,
+                "summary": {
+                  "open": {
+                    "tp": 393,
+                    "predicted": 613,
+                    "reference": 1157,
+                    "precision": 0.6411092985318108,
+                    "recall": 0.33967156439066554,
+                    "f1": 0.4440677966101695
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6129948460892005
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": false,
+                "utility": 0.6624928355506703,
+                "summary": {
+                  "open": {
+                    "tp": 394,
+                    "predicted": 625,
+                    "reference": 1157,
+                    "precision": 0.6304,
+                    "recall": 0.34053586862575624,
+                    "f1": 0.44219977553310885
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6120608355506703
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.6501454923708745,
+                "summary": {
+                  "open": {
+                    "tp": 408,
+                    "predicted": 740,
+                    "reference": 1157,
+                    "precision": 0.5513513513513514,
+                    "recall": 0.3526361279170268,
+                    "f1": 0.430152872957301
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.6060373842627663
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.6139900298356049,
+                "summary": {
+                  "open": {
+                    "tp": 463,
+                    "predicted": 1240,
+                    "reference": 1157,
+                    "precision": 0.37338709677419357,
+                    "recall": 0.40017286084701814,
+                    "f1": 0.3863162286191072
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.5841190620936694
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.5895598074896081,
+                "summary": {
+                  "open": {
+                    "tp": 639,
+                    "predicted": 2440,
+                    "reference": 1157,
+                    "precision": 0.26188524590163936,
+                    "recall": 0.5522904062229905,
+                    "f1": 0.35529608006672225
+                  },
+                  "closed": {
+                    "tp": 1782,
+                    "predicted": 2207,
+                    "reference": 2351,
+                    "precision": 0.8074309016764839,
+                    "recall": 0.7579753296469588,
+                    "f1": 0.7819218955682317
+                  },
+                  "macroF1": 0.5686089878174769
+                }
+              }
+            ]
+          }
+        },
+        "nanairo": {
+          "threshold": 0.45,
+          "metrics": {
+            "open": {
+              "tp": 229,
+              "predicted": 779,
+              "reference": 240,
+              "precision": 0.2939666238767651,
+              "recall": 0.9541666666666667,
+              "f1": 0.4494602551521099
+            },
+            "closed": {
+              "tp": 574,
+              "predicted": 641,
+              "reference": 823,
+              "precision": 0.8954758190327613,
+              "recall": 0.6974483596597812,
+              "f1": 0.7841530054644809
+            },
+            "macroF1": 0.6168066303082954
+          },
+          "diag": {
+            "baseOpen": 366,
+            "studentCandidates": 1279,
+            "rescued": 413,
+            "studentDistinctOpenCoverage": 49,
+            "candidatePositiveRowsDiagnostic": 56,
+            "maxOpenProb": 0.7230235977536086
+          },
+          "studentTrain": {
+            "rows": 8723,
+            "positive": 5073,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "ray"
+            ]
+          },
+          "openTrain": {
+            "rows": 5849,
+            "positive": 1564
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 18,
+                "predicted": 117,
+                "reference": 939,
+                "precision": 0.15384615384615385,
+                "recall": 0.019169329073482427,
+                "f1": 0.03409090909090909
+              },
+              "closed": {
+                "tp": 1735,
+                "predicted": 2281,
+                "reference": 2100,
+                "precision": 0.7606313020604998,
+                "recall": 0.8261904761904761,
+                "f1": 0.792056608080347
+              },
+              "macroF1": 0.413073758585628
+            },
+            "ranking": [
+              {
+                "threshold": 0.45,
+                "eligible": true,
+                "utility": 0.5022058305740872,
+                "summary": {
+                  "open": {
+                    "tp": 307,
+                    "predicted": 2279,
+                    "reference": 939,
+                    "precision": 0.13470820535322509,
+                    "recall": 0.32694355697550587,
+                    "f1": 0.19080174021131138
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.49142917414582915
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": true,
+                "utility": 0.4954799742340457,
+                "summary": {
+                  "open": {
+                    "tp": 165,
+                    "predicted": 980,
+                    "reference": 939,
+                    "precision": 0.1683673469387755,
+                    "recall": 0.1757188498402556,
+                    "f1": 0.1719645648775404
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4820105864789437
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": true,
+                "utility": 0.48315861000095617,
+                "summary": {
+                  "open": {
+                    "tp": 89,
+                    "predicted": 371,
+                    "reference": 939,
+                    "precision": 0.2398921832884097,
+                    "recall": 0.09478168264110756,
+                    "f1": 0.13587786259541984
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4639672353378834
+                }
+              },
+              {
+                "threshold": 0.68,
+                "eligible": true,
+                "utility": 0.4654924493179314,
+                "summary": {
+                  "open": {
+                    "tp": 54,
+                    "predicted": 197,
+                    "reference": 939,
+                    "precision": 0.27411167512690354,
+                    "recall": 0.05750798722044728,
+                    "f1": 0.09507042253521127
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4435635153077791
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.4412747615913422,
+                "summary": {
+                  "open": {
+                    "tp": 30,
+                    "predicted": 138,
+                    "reference": 939,
+                    "precision": 0.21739130434782608,
+                    "recall": 0.03194888178913738,
+                    "f1": 0.055710306406685235
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.4238834572435161
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.42837727387385366,
+                "summary": {
+                  "open": {
+                    "tp": 20,
+                    "predicted": 119,
+                    "reference": 939,
+                    "precision": 0.16806722689075632,
+                    "recall": 0.021299254526091587,
+                    "f1": 0.03780718336483932
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.41493189572259315
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.4253814508933203,
+                "summary": {
+                  "open": {
+                    "tp": 18,
+                    "predicted": 117,
+                    "reference": 939,
+                    "precision": 0.15384615384615385,
+                    "recall": 0.019169329073482427,
+                    "f1": 0.03409090909090909
+                  },
+                  "closed": {
+                    "tp": 1735,
+                    "predicted": 2281,
+                    "reference": 2100,
+                    "precision": 0.7606313020604998,
+                    "recall": 0.8261904761904761,
+                    "f1": 0.792056608080347
+                  },
+                  "macroF1": 0.413073758585628
+                }
+              }
+            ]
+          }
+        },
+        "ray": {
+          "threshold": 0.68,
+          "metrics": {
+            "open": {
+              "tp": 167,
+              "predicted": 223,
+              "reference": 322,
+              "precision": 0.7488789237668162,
+              "recall": 0.5186335403726708,
+              "f1": 0.6128440366972477
+            },
+            "closed": {
+              "tp": 900,
+              "predicted": 1063,
+              "reference": 1075,
+              "precision": 0.8466603951081844,
+              "recall": 0.8372093023255814,
+              "f1": 0.8419083255378859
+            },
+            "macroF1": 0.7273761811175667
+          },
+          "diag": {
+            "baseOpen": 223,
+            "studentCandidates": 1561,
+            "rescued": 0,
+            "studentDistinctOpenCoverage": 122,
+            "candidatePositiveRowsDiagnostic": 184,
+            "maxOpenProb": 0.65645742287547
+          },
+          "studentTrain": {
+            "rows": 8601,
+            "positive": 5324,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "nanairo"
+            ]
+          },
+          "openTrain": {
+            "rows": 5153,
+            "positive": 1480
+          },
+          "inner": {
+            "base": {
+              "open": {
+                "tp": 79,
+                "predicted": 138,
+                "reference": 857,
+                "precision": 0.572463768115942,
+                "recall": 0.09218203033838973,
+                "f1": 0.15879396984924624
+              },
+              "closed": {
+                "tp": 1508,
+                "predicted": 1981,
+                "reference": 1848,
+                "precision": 0.7612317011610298,
+                "recall": 0.816017316017316,
+                "f1": 0.787673021676678
+              },
+              "macroF1": 0.4732334957629621
+            },
+            "ranking": [
+              {
+                "threshold": 0.68,
+                "eligible": true,
+                "utility": 0.5404822460555028,
+                "summary": {
+                  "open": {
+                    "tp": 108,
+                    "predicted": 196,
+                    "reference": 857,
+                    "precision": 0.5510204081632653,
+                    "recall": 0.12602100350058343,
+                    "f1": 0.20512820512820512
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.49640061340244157
+                }
+              },
+              {
+                "threshold": 0.74,
+                "eligible": true,
+                "utility": 0.5258353971116576,
+                "summary": {
+                  "open": {
+                    "tp": 88,
+                    "predicted": 156,
+                    "reference": 857,
+                    "precision": 0.5641025641025641,
+                    "recall": 0.10268378063010501,
+                    "f1": 0.17374136229022705
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4807071919834525
+                }
+              },
+              {
+                "threshold": 0.8,
+                "eligible": true,
+                "utility": 0.5197915187191242,
+                "summary": {
+                  "open": {
+                    "tp": 80,
+                    "predicted": 140,
+                    "reference": 857,
+                    "precision": 0.5714285714285714,
+                    "recall": 0.09334889148191365,
+                    "f1": 0.160481444332999
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4740772330048385
+                }
+              },
+              {
+                "threshold": 0.62,
+                "eligible": false,
+                "utility": 0.5330176522775449,
+                "summary": {
+                  "open": {
+                    "tp": 132,
+                    "predicted": 352,
+                    "reference": 857,
+                    "precision": 0.375,
+                    "recall": 0.15402567094515754,
+                    "f1": 0.21836228287841192
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.5030176522775449
+                }
+              },
+              {
+                "threshold": 0.55,
+                "eligible": false,
+                "utility": 0.5230503152083614,
+                "summary": {
+                  "open": {
+                    "tp": 198,
+                    "predicted": 913,
+                    "reference": 857,
+                    "precision": 0.21686746987951808,
+                    "recall": 0.2310385064177363,
+                    "f1": 0.22372881355932203
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.505700917618
+                }
+              },
+              {
+                "threshold": 0.86,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.91,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.95,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.98,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 1.01,
+                "eligible": false,
+                "utility": 0.5190305972122374,
+                "summary": {
+                  "open": {
+                    "tp": 79,
+                    "predicted": 138,
+                    "reference": 857,
+                    "precision": 0.572463768115942,
+                    "recall": 0.09218203033838973,
+                    "f1": 0.15879396984924624
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.4732334957629621
+                }
+              },
+              {
+                "threshold": 0.45,
+                "eligible": false,
+                "utility": 0.5134120782954291,
+                "summary": {
+                  "open": {
+                    "tp": 355,
+                    "predicted": 2433,
+                    "reference": 857,
+                    "precision": 0.14591039868475134,
+                    "recall": 0.41423570595099185,
+                    "f1": 0.21580547112462006
+                  },
+                  "closed": {
+                    "tp": 1508,
+                    "predicted": 1981,
+                    "reference": 1848,
+                    "precision": 0.7612317011610298,
+                    "recall": 0.816017316017316,
+                    "f1": 0.787673021676678
+                  },
+                  "macroF1": 0.501739246400649
+                }
+              }
+            ]
+          }
+        }
+      },
+      "passesGuard": false
+    }
+  },
+  "retained": "none",
+  "retainedSummary": {
+    "open": {
+      "tp": 404,
+      "predicted": 608,
+      "reference": 1179,
+      "precision": 0.6644736842105263,
+      "recall": 0.3426632739609839,
+      "f1": 0.4521544487968663
+    },
+    "closed": {
+      "tp": 2311,
+      "predicted": 2797,
+      "reference": 2923,
+      "precision": 0.8262424025741866,
+      "recall": 0.7906260691070818,
+      "f1": 0.808041958041958
+    },
+    "macroF1": 0.6300982034194121
+  }
+}
