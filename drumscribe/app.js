@@ -32,7 +32,7 @@ async function loadArrangementSlotPrior(){
 }
 function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;reviewBeatTimes=[];setArrangementFile(null);if($('arrangementFile'))$('arrangementFile').value='';$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();tell(`${f.name} を選択しました。`);dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name}}));}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
-$('arrangementFile').addEventListener('change',e=>{
+$('arrangementFile')?.addEventListener('change',e=>{
   setArrangementFile(e.target.files[0]||null);
   if(file)tell(arrangementFile?`${arrangementFile.name} を構造解析補助に使用します。`:`${file.name} をドラム音源のみで採譜します。`);
 });
@@ -230,7 +230,20 @@ function chokeOpenHat(when){
   }
 }
 function pause(){if(playing)position=now();playing=false;clearInterval(timer);timer=0;stopNodes();$('play').textContent='▶ 再生';draw();updateClock();}
-function seek(time){const resume=playing;pause();position=Math.max(0,Math.min(decoded?.duration||0,time));if(resume)void play();else{draw();updateClock();}}
+function nearestBeatTime(time){
+  const d=decoded?.duration||0,t=Math.max(0,Math.min(d,Number(time)||0)),beats=reviewBeatTimes;
+  if(beats.length<1)return t;
+  let lo=0,hi=beats.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(beats[mid]<t)lo=mid+1;else hi=mid;}
+  if(lo<=0)return beats[0];
+  if(lo>=beats.length)return beats[beats.length-1];
+  return Math.abs(beats[lo]-t)<Math.abs(beats[lo-1]-t)?beats[lo]:beats[lo-1];
+}
+function seek(time,{snap=false}={}){
+  const resume=playing;pause();
+  position=snap?nearestBeatTime(time):Math.max(0,Math.min(decoded?.duration||0,Number(time)||0));
+  if(resume)void play();else{draw();updateClock();}
+}
 async function play(){
   if(!decoded)return;if(playing){pause();return;}
   const ac=await audioContext();if(position>=decoded.duration-.03)position=0;
@@ -258,7 +271,7 @@ async function play(){
 function tick(){if(!playing)return;timelineView.ensureVisible(now());updateClock();draw();requestAnimationFrame(tick);}
 function updateClock(){if(!decoded)return;const n=now();$('clock').textContent=`${fmt(n)} / ${fmt(decoded.duration)}`;$('seek').value=Math.round(n/decoded.duration*1000);}
 $('play').addEventListener('click',()=>void play());$('stop').addEventListener('click',()=>{pause();position=0;draw();updateClock();});
-$('seek').addEventListener('input',e=>seek(Number(e.target.value)/1000*(decoded?.duration||0)));
+$('seek').addEventListener('input',e=>seek(Number(e.target.value)/1000*(decoded?.duration||0),{snap:true}));
 $('offset').addEventListener('change',()=>{if(playing){const t=now();pause();position=t;void play();}draw();});
 for(const el of document.querySelectorAll('.track')){
   const t=tracks[el.dataset.track],slider=el.querySelector('.volume');
@@ -280,7 +293,7 @@ const timelineView=createTimelineViewport({
 canvas.addEventListener('click',e=>{
   if(!decoded||document.body.dataset.reviewMode==='1')return;
   const r=canvas.getBoundingClientRect();
-  seek(timelineView.xToTime(e.clientX-r.left));
+  seek(timelineView.xToTime(e.clientX-r.left),{snap:!e.altKey});
 });
 new ResizeObserver(()=>{timelineView.clamp();draw()}).observe(canvas);
 
@@ -310,6 +323,14 @@ function draw(){
       c.fillText(label,x+4,13);
     }
   }
+  if(reviewBeatTimes.length){
+    c.strokeStyle='rgba(101,215,227,.24)';c.lineWidth=1;
+    for(const t of reviewBeatTimes){
+      if(t<metrics.start-.001)continue;if(t>viewEnd+.001)break;
+      const x=Math.round(timelineView.timeToX(t))+.5;
+      c.beginPath();c.moveTo(x,0);c.lineTo(x,ch);c.stroke();
+    }
+  }
   const data=decoded.getChannelData(0),sr=decoded.sampleRate,pps=Math.max(.01,metrics.pxPerSec),samplesPerPixel=Math.max(1,Math.floor(sr/pps));
   c.strokeStyle='#58cfdb';c.globalAlpha=.88;c.beginPath();
   for(let x=0;x<cw;x++){
@@ -319,12 +340,23 @@ function draw(){
     c.moveTo(x,ch*.32-peak*ch*.27);c.lineTo(x,ch*.32+peak*ch*.27);
   }
   c.stroke();c.globalAlpha=1;
-  c.fillStyle='#203144';c.fillRect(0,ch*.64,cw,ch*.36);
-  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',open_hat:'#d5baff',pedal_hat:'#a98be2',tom:'#e8ca83',crash:'#8dd3a0',ride:'#78b7a1'},offset=Number($('offset').value||0)/1000;
+  const laneTop=ch*.60,laneH=(ch-laneTop)/4,laneNames=['CYMBAL','HI-HAT / RIDE','SNARE / TOM','KICK'];
+  c.font='9px ui-monospace,SFMono-Regular,Consolas,monospace';
+  for(let lane=0;lane<4;lane++){
+    c.fillStyle=lane%2?'rgba(25,43,59,.72)':'rgba(31,49,68,.72)';
+    c.fillRect(0,laneTop+lane*laneH,cw,laneH);
+    c.strokeStyle='rgba(109,137,157,.24)';c.lineWidth=1;
+    c.beginPath();c.moveTo(0,Math.round(laneTop+lane*laneH)+.5);c.lineTo(cw,Math.round(laneTop+lane*laneH)+.5);c.stroke();
+    c.fillStyle='rgba(174,198,214,.58)';c.fillText(laneNames[lane],6,laneTop+lane*laneH+10);
+  }
+  const colors={kick:'#aeb9c7',snare:'#ff3d73',tom:'#d76bff',hat:'#52dfcf',open_hat:'#52dfcf',pedal_hat:'#52dfcf',crash:'#ffd45a',ride:'#63d66f'},
+        lanes={crash:0,hat:1,open_hat:1,pedal_hat:1,ride:1,snare:2,tom:2,kick:3},
+        offset=Number($('offset').value||0)/1000;
   for(const e of midiEvents){
     const time=e.time+offset;if(time<metrics.start-.02||time>viewEnd+.02)continue;
-    const x=timelineView.timeToX(time),lane={kick:0,snare:1,hat:2,open_hat:2,pedal_hat:2,tom:3,crash:4,ride:4}[e.group];
-    c.fillStyle=colors[e.group]||'#b7c8d7';c.fillRect(x,ch*(.655+lane*.058),Math.max(2,metrics.pxPerSec*.01),4);
+    const lane=lanes[e.group];if(!Number.isFinite(lane))continue;
+    const x=timelineView.timeToX(time),barW=Math.max(3,Math.min(10,metrics.pxPerSec*.014)),barH=Math.max(5,laneH*.56),y=laneTop+lane*laneH+(laneH-barH)/2;
+    c.fillStyle=colors[e.group]||'#a7b0bc';c.fillRect(x-barW/2,y,barW,barH);
   }
   if(reviewSelection){
     const a=timelineView.timeToX(reviewSelection.start),b=timelineView.timeToX(reviewSelection.end),left=Math.max(0,Math.min(a,b)),right=Math.min(cw,Math.max(a,b));
@@ -334,6 +366,8 @@ function draw(){
 }
 globalThis.DrumScribeTimeline={
   seek,
+  seekSnapped:(time,{bypass=false}={})=>seek(time,{snap:!bypass}),
+  snapTimeToBeat:nearestBeatTime,
   play:()=>play(),
   pause,
   stop:()=>{pause();position=0;draw();updateClock();},
