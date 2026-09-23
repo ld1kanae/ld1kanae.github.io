@@ -2361,3 +2361,44 @@ Decision:
 - retain A/A' family repetition as a candidate-rescoring hypothesis.
 - reject direct structural-boundary => crash insertion.
 - next experiment v38 must use real low-threshold K/S/T acoustic candidates; no copying notes across sections.
+
+
+---
+
+## 2026-09-23: Arrangement K/S/T runtime v40 — production採用
+
+A/A' structural-family supportを低閾値K/S/T acoustic candidateのrescoringに使用するv39D系を、fresh Chromiumで通常のrhythm-grid / MIDI exporterまで通して再検証した。
+
+原則:
+- chart.midはbrowser prediction stageで読まない。生成後のPython scoringのみ。
+- A/A'はsemantic verse/chorusではなく構造family。
+- 別sectionのnoteをcopyしない。対象時刻に実音響candidateがある場合のみrescoring。
+- Snare/Tomはproduction閾値以上なのに後段vetoで落ちたcandidateをarrangementだけで復活させない。
+- 二手制約を維持。
+
+5曲aggregate:
+
+| 指標 | baseline | V39_D runtime | delta |
+|---|---:|---:|---:|
+| K/S/T F1 | 0.937734 | **0.938852** | **+0.001118** |
+| Kick F1 | 0.962571 | **0.963139** | **+0.000568** |
+| Snare F1 | 0.900035 | **0.901934** | **+0.001899** |
+| Tom F1 | 0.784091 | **0.790960** | **+0.006870** |
+| All-class F1 | 0.818306 | **0.818886** | **+0.000581** |
+
+Guardrail:
+- rescued notes: 9
+- max grid residual ticks: 0
+- hand-grid violation delta: 0
+- meter changed songs: none
+
+採用:
+- `arrangement/rescoreKstByArrangement()`
+- `models/gmd-kst/slot-prior-v1.json`
+- `app.js` で任意のoffvocal/伴奏入力がある場合のみ有効
+- 検証用5曲では `offvocal.mp3` を自動読込
+- offvocal未指定時は従来baselineを維持
+
+詳細:
+- `experiments/ARRANGEMENT_KST_V40.md`
+- `experiments/results-arrangement-kst-runtime-v40.json`
