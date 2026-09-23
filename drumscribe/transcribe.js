@@ -1262,6 +1262,19 @@ export async function transcribe(decoded,report=()=>{},options={}){
   pruned=tomPitchResult.events;
   adtofInfo.tomPitch=tomPitchResult.info;
 
+  // Diagnostic arrangement candidates are scored from the same audio-only
+  // resonance classifier so a later arrangement rescue can be evaluated
+  // without defaulting its pitch evidence to GM45. This does not emit them.
+  if(Array.isArray(diagnosticKstCandidates?.tom)&&diagnosticKstCandidates.tom.length){
+    const diagnosticTomPitch=assignTomPitches(samples,diagnosticKstCandidates.tom);
+    diagnosticKstCandidates={...diagnosticKstCandidates,tom:diagnosticTomPitch.events};
+    adtofInfo.tomPitchDiagnosticCandidates={
+      method:diagnosticTomPitch.info.method,
+      count:diagnosticTomPitch.events.length,
+      thresholdsHz:diagnosticTomPitch.info.thresholdsHz||null
+    };
+  }
+
   // Pedal hi-hat may remain as an internal articulation/context cue, but the
   // user-facing transcription intentionally collapses it to Closed HH (GM42).
   const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:42,tom:45,crash:49,ride:51};
