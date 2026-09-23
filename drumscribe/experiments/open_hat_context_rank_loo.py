@@ -68,9 +68,18 @@ def one_to_one_labels(times,refs,w=.080):
             used.add(best[1]);y[best[1]]=1
     return y
 
-def nearest(xs,t,default=9.):
-    if not xs:return default
-    a=np.asarray(xs,float);return float(np.min(np.abs(a-float(t))))
+def nearest_sorted(a,t,default=9.):
+    if len(a)==0:return default
+    i=int(np.searchsorted(a,float(t)))
+    best=default
+    if i<len(a):best=min(best,abs(float(a[i])-float(t)))
+    if i>0:best=min(best,abs(float(a[i-1])-float(t)))
+    return float(best)
+
+def range_slice(a,center,w=.065):
+    lo=int(np.searchsorted(a,center-w,"left"))
+    hi=int(np.searchsorted(a,center+w,"right"))
+    return lo,hi
 
 def repeat_features(times,prob,bpm):
     n=len(times);out=np.zeros((n,5),np.float32)
@@ -82,7 +91,11 @@ def repeat_features(times,prob,bpm):
         for mult in (.5,1.,1.5,2.,4.):
             off=mult*beat
             for sign in (-1,1):
-                ids=np.flatnonzero(np.abs(a-(t+sign*off))<=.065)
+                lo,hi=range_slice(a,t+sign*off,.065)
+                if hi<=lo:continue
+                # The target offsets are >=0.5 beat, so i itself is normally
+                # outside this slice; exclude defensively if needed.
+                ids=np.arange(lo,hi)
                 ids=ids[ids!=i]
                 if len(ids):
                     counts+=1;vals.append(float(np.max(p[ids])))
@@ -101,7 +114,7 @@ def group_times(rows):
     by={g:[] for g in ("kick","snare","hat","tom","crash","ride","pedal_hat")}
     for t,g,p in rows:
         if g in by:by[g].append(float(t))
-    return by
+    return {g:np.asarray(sorted(v),float) for g,v in by.items()}
 
 
 def build_candidates_fast(d,s,student,frameX):
@@ -140,12 +153,12 @@ def context_features(d,s,c):
         barpos=((t-phase)%bar)/beat # 0..4 beats
         prev=t-times[i-1] if i else 9.
         nxt=times[i+1]-t if i+1<len(times) else 9.
-        dens25=float(np.sum(np.abs(times-t)<=.25)-1)
-        dens50=float(np.sum(np.abs(times-t)<=.50)-1)
-        dists=[min(nearest(by[g],t),.30)/.30 for g in ("kick","snare","hat","tom","crash","ride","pedal_hat")]
+        lo25,hi25=range_slice(times,t,.25);dens25=float(max(0,hi25-lo25-1))
+        lo50,hi50=range_slice(times,t,.50);dens50=float(max(0,hi50-lo50-1))
+        dists=[min(nearest_sorted(by[g],t),.30)/.30 for g in ("kick","snare","hat","tom","crash","ride","pedal_hat")]
         flags=[]
         for g in ("kick","snare","hat","crash","ride"):
-            z=nearest(by[g],t)
+            z=nearest_sorted(by[g],t)
             flags.extend([1. if z<=.035 else 0.,1. if z<=.070 else 0.])
         rows.append([
           np.sin(2*np.pi*barpos),np.cos(2*np.pi*barpos),
