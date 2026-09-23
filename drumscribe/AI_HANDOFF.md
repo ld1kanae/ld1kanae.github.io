@@ -1,5 +1,26 @@
 # DrumScribe AI Handoff
 
+## CURRENT AUTHORITATIVE STATUS — User threshold multipliers (2026-09-24)
+
+ユーザー調整用の「採譜感度を調整」を production UI に追加。全項目のデフォルトは **1.0** で、1.0時は既存閾値を変更しない。
+
+UI範囲は 0.50–1.50 / step 0.05。原則として倍率を上げるほど判定を厳しくし、下げるほど拾いやすくする。BPM推定のための旧spectral detectorやtiming windowは変更しない。
+
+現行キー:
+- K/S/T: `kick`, `snare`, `snareRescue`, `egmdSnare`, `tom`
+- metal: `hat`, `hatCollision`, `hatFilter`, `openHat`, `rideOpen`, `rideContextOpen`, `openHatOverlay`, `pedalHat`, `cymbal`, `cymbalGate`
+
+主な適用先:
+- `adtof.js`: kick/snare/tom/hat/cymbal activation threshold、低閾値snare rescue、E-GMD snare model gate
+- `transcribe.js`: snare rescue floor、hat collision suppressor、pedal-hat score gate、Crash post gate、各hat分類器への倍率受け渡し
+- `hat-forest.js`: high-resolution hat probability threshold
+- `open-hat.js`: Closed/Open probability threshold、Ride→Open threshold、overlay rescue probability/score gates
+- `hat-context-v57.js` 呼び出し: production Ride-context→Open threshold 0.99 に倍率を適用
+
+実装上、UI値は `app.js` で `thresholdMultipliers` として `transcribe()` に渡す。解析結果の `globalThis.__drumscribeResult.thresholdMultipliers` にも保存する。
+
+静的構文検査は app/adtof/transcribe/hat-forest/open-hat の全変更ファイルで通過。現時点では倍率1.0のfresh 5曲browser回帰はまだ実施していないため、精度非退行の最終確認は別途必要。
+
 ## CURRENT AUTHORITATIVE STATUS — Hi-Hat context production v58 (2026-09-24)
 
 - production `transcribe.js` now imports `hat-context-v57.js` and enables `global-ride-rescue-v57` by default after the existing open-hat + sequence stages.
