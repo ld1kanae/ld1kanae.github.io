@@ -21,7 +21,7 @@ for(let length=2;length<=NFFT;length*=2){
   }
   TWIDDLES.push([length,cos,sin]);
 }
-let modelPromise=null;
+let modelPromise=null,overlayModelPromise=null;
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 
 async function loadModel(){
@@ -30,6 +30,13 @@ async function loadModel(){
       .then(r=>{if(!r.ok)throw Error('オープンハイハット分類モデルを読み込めません');return r.json();});
   }
   return modelPromise;
+}
+async function loadOverlayModel(){
+  if(!overlayModelPromise){
+    overlayModelPromise=fetch(new URL('./models/open-hat-overlay-extra-trees-v1.json',import.meta.url))
+      .then(r=>{if(!r.ok)throw Error('重なりオープンハイハット分類モデルを読み込めません');return r.json();});
+  }
+  return overlayModelPromise;
 }
 
 function workspace(){
@@ -146,19 +153,26 @@ function quantile(values,q){
   const p=(a.length-1)*q,lo=Math.floor(p),hi=Math.ceil(p),f=p-lo;
   return a[lo]*(1-f)+a[hi]*f;
 }
-function robustNormalize(rows){
-  if(!rows.length)return [];
+function robustStats(rows){
+  if(!rows.length)return {med:new Float64Array(0),scale:new Float64Array(0)};
   const d=rows[0].length,med=new Float64Array(d),scale=new Float64Array(d);
   for(let j=0;j<d;j++){
     const col=rows.map(r=>r[j]);
     med[j]=quantile(col,.5);
     scale[j]=Math.max(quantile(col,.75)-quantile(col,.25),1e-3);
   }
+  return {med,scale};
+}
+function normalizeWithStats(rows,stats){
+  if(!rows.length)return [];
   return rows.map(row=>{
-    const z=new Float32Array(d);
-    for(let j=0;j<d;j++)z[j]=Math.fround(Math.max(-8,Math.min(8,(row[j]-med[j])/scale[j])));
+    const z=new Float32Array(row.length);
+    for(let j=0;j<row.length;j++)z[j]=Math.fround(Math.max(-8,Math.min(8,(row[j]-stats.med[j])/stats.scale[j])));
     return z;
   });
+}
+function robustNormalize(rows){
+  return normalizeWithStats(rows,robustStats(rows));
 }
 function predict(model,x){
   let sum=0;
@@ -171,10 +185,74 @@ function predict(model,x){
   }
   return sum/model.trees.length;
 }
+function nearTime(times,t,w){
+  for(const u of times)if(Math.abs(u-t)<=w)return true;
+  return false;
+}
+function structuralAnchors(events,hats){
+  const items=[];
+  for(const e of events){
+    let kind=null;
+    if(e.group==='ride'||e.group==='crash')kind='metal';
+    else if(e.group==='snare')kind='snare';
+    else if(e.group==='kick')kind='kick';
+    if(kind)items.push({time:e.time,kind,event:e});
+  }
+  items.sort((a,b)=>a.time-b.time);
+  const hatTimes=hats.map(e=>e.time),out=[];
+  for(let i=0;i<items.length;){
+    const t0=items[i].time,cluster=[];let j=i;
+    while(j<items.length&&items[j].time-t0<=.035)cluster.push(items[j++]);
+    const metal=cluster.filter(x=>x.kind==='metal');
+    const snare=cluster.filter(x=>x.kind==='snare');
+    const kick=cluster.filter(x=>x.kind==='kick');
+    const priority=(metal[0]||snare[0]||kick[0]);
+    const t=priority.time;
+    if(!nearTime(hatTimes,t,.060)){
+      let score=0,confidence=0;
+      for(const x of cluster){
+        score=Math.max(score,Number(x.event.score)||0);
+        confidence=Math.max(confidence,Number(x.event.confidence)||0);
+      }
+      out.push({time:t,metal:metal.length?1:0,snare:snare.length?1:0,kick:kick.length?1:0,
+        frame:priority.event.frame,score,confidence});
+    }
+    i=j;
+  }
+  return out;
+}
+function lowerBound(a,x){
+  let lo=0,hi=a.length;
+  while(lo<hi){const m=(lo+hi)>>1;if(a[m]<x)lo=m+1;else hi=m;}
+  return lo;
+}
+function maxNear(times,probs,target,tol){
+  let i=lowerBound(times,target-tol),best=0;
+  while(i<times.length&&times[i]<=target+tol){best=Math.max(best,probs[i]);i++;}
+  return best;
+}
+function repeatSupport(times,probs,bpm,policy){
+  const beat=60/Math.max(Number(bpm)||0,1e-6),out=new Float64Array(times.length);
+  const offsets=policy.neighborBeatOffsets||[.5,1,1.5,2,4],tol=Number(policy.neighborToleranceSec)||.065;
+  for(let i=0;i<times.length;i++){
+    const vals=[];
+    for(const mul of offsets){
+      const off=mul*beat;
+      for(const sign of [-1,1]){
+        const v=maxNear(times,probs,times[i]+sign*off,tol);
+        if(v>0)vals.push(v);
+      }
+    }
+    vals.sort((a,b)=>b-a);
+    const n=Math.min(4,vals.length);
+    if(n){let sum=0;for(let j=0;j<n;j++)sum+=vals[j];out[i]=sum/n;}
+  }
+  return out;
+}
 
-export async function promoteOpenHats(decoded,events,report=()=>{}){
+export async function promoteOpenHats(decoded,events,bpm,report=()=>{}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
-  const baseInfo={mode:'open-hat-extra-trees-v2-gmd128',candidates:hats.length,promoted:0,enabled:false};
+  const baseInfo={mode:'open-hat-extra-trees-v2-gmd128+overlay-v1',candidates:hats.length,promoted:0,rescued:0,enabled:false};
   if(!hats.length)return {events,info:{...baseInfo,skipReason:'no-hat'}};
   try{
     const model=await loadModel();
@@ -187,22 +265,73 @@ export async function promoteOpenHats(decoded,events,report=()=>{}){
     for(let i=0;i<hats.length;i++){
       raw.push(timbreFeature(samples,hats[i].time,w,closedTemplate,openTemplate));
       if(i%24===0){
-        report('オープンハイハットの音色を判定中…',99.05+.45*i/Math.max(1,hats.length));
+        report('オープンハイハットの音色を判定中…',99.05+.30*i/Math.max(1,hats.length));
         await tick();
       }
     }
-    const features=robustNormalize(raw),openSet=new Set();
+    const stats=robustStats(raw),features=normalizeWithStats(raw,stats),openSet=new Set();
     let probSum=0,maxProbability=0;
     for(let i=0;i<hats.length;i++){
       const p=predict(model,features[i]);probSum+=p;maxProbability=Math.max(maxProbability,p);
       if(p>=threshold)openSet.add(hats[i]);
       if(i%48===0)await tick();
     }
-    const promoted=events.map(e=>openSet.has(e)?{...e,group:'open_hat'}:e);
+
+    let rescued=[],overlayInfo={enabled:false,rescued:0};
+    try{
+      const overlay=await loadOverlayModel();
+      if(Number(overlay.featureCount)!==29)throw Error(`unexpected overlay feature count ${overlay.featureCount}`);
+      const policy=overlay.policy||{},anchors=structuralAnchors(events,hats);
+      report('重なりオープンハイハットを確認中…',99.40);
+      const overlayRaw=[];
+      for(let i=0;i<anchors.length;i++){
+        overlayRaw.push(timbreFeature(samples,anchors[i].time,w,closedTemplate,openTemplate));
+        if(i%24===0){
+          report('重なりオープンハイハットを確認中…',99.40+.35*i/Math.max(1,anchors.length));
+          await tick();
+        }
+      }
+      const acoustic=normalizeWithStats(overlayRaw,stats),X=[];
+      for(let i=0;i<anchors.length;i++){
+        const x=new Float32Array(29);x.set(acoustic[i],0);
+        x[26]=anchors[i].metal;x[27]=anchors[i].snare;x[28]=anchors[i].kick;X.push(x);
+      }
+      const probs=X.map(x=>predict(overlay,x)),times=anchors.map(a=>a.time);
+      const rep=repeatSupport(times,probs,bpm,policy);
+      const pw=Number(policy.scoreProbabilityWeight??.72),rw=Number(policy.scoreRepeatWeight??.28);
+      const scores=probs.map((p,i)=>pw*p+rw*rep[i]);
+      const maxProb=probs.length?Math.max(...probs):0,maxScore=scores.length?Math.max(...scores):0;
+      const gate=maxProb>=Number(policy.gateMaxProbability??.78)&&maxScore>=Number(policy.gateMaxRepeatScore??.72);
+      const scoreThreshold=Math.max(Number(policy.minimumScore??.68),scores.length?quantile(scores,Number(policy.scoreQuantile??.96)):99);
+      const openTimes=hats.filter(h=>openSet.has(h)).map(h=>h.time);
+      let physicalSkipped=0;
+      if(gate){
+        for(let i=0;i<anchors.length;i++){
+          if(scores[i]<scoreThreshold||probs[i]<Number(policy.minimumProbability??.58)||rep[i]<Number(policy.minimumRepeatSupport??.35))continue;
+          const a=anchors[i];
+          if(nearTime(openTimes,a.time,Number(policy.existingHatExclusionSec??.060)))continue;
+          let hands=0;
+          for(const e of events){
+            if(!['snare','tom','hat','crash','ride'].includes(e.group))continue;
+            if(Math.abs(e.time-a.time)<=Number(policy.handClusterSec??.035))hands++;
+          }
+          if(hands>=2){physicalSkipped++;continue;}
+          rescued.push({time:a.time,frame:a.frame,group:'open_hat',score:Math.max(.2,a.score),confidence:Math.max(.5,a.confidence),overlayRescue:true});
+        }
+      }
+      overlayInfo={enabled:true,gate,candidates:anchors.length,rescued:rescued.length,physicalSkipped,
+        maxProbability:maxProb,maxRepeatScore:maxScore,scoreThreshold,
+        modelTrees:overlay.trees.length,modelFeatures:overlay.featureCount,policy:policy.name||'repeat_gate_2hands'};
+    }catch(overlayErr){
+      console.warn('open-hat overlay fallback',overlayErr);
+      overlayInfo={enabled:false,rescued:0,error:String(overlayErr?.message||overlayErr)};
+    }
+
+    const promoted=events.map(e=>openSet.has(e)?{...e,group:'open_hat'}:e).concat(rescued);
     return {events:promoted,info:{
-      ...baseInfo,enabled:true,promoted:openSet.size,threshold,
+      ...baseInfo,enabled:true,promoted:openSet.size,rescued:rescued.length,threshold,
       closed:hats.length-openSet.size,modelTrees:model.trees.length,modelFeatures:model.featureCount,
-      meanProbability:hats.length?probSum/hats.length:0,maxProbability
+      meanProbability:hats.length?probSum/hats.length:0,maxProbability,overlay:overlayInfo
     }};
   }catch(err){
     console.warn('open-hat classifier fallback',err);
