@@ -38,7 +38,7 @@ v35では、内部のbeat-level tempo推定は維持しつつ、MIDI/previewで�
 
 ## 5曲 fresh Chromium regression
 
-run: `35849376347` success
+run: `35849808016` success
 
 tempo events:
 - arcaround 549 -> **139**
