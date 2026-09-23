@@ -19,6 +19,10 @@ const DEFAULT_POLICY={
   handWindowSec:.035,
   rejectPostfilteredHandCandidate:true,
   enforceTwoHands:true,
+  enableEgmdResidualSnare:false,
+  residualSnareMinProbability:.93,
+  residualSnareMinConfidence:.55,
+  residualSnareMinGmdLift:1.65,
 };
 
 const NOTE_OF={kick:36,snare:38,tom:45};
@@ -159,7 +163,56 @@ export function rescoreKstByArrangement(baselineEvents,diagnostics,arrangement,o
     }
   }
 
-  const deduped=dedupeAdditions(proposed,policy.dedupeToleranceSec);
+  const residualProposed=[];
+  if(policy.enableEgmdResidualSnare){
+    const rows=Array.isArray(candidates.snare)?candidates.snare:[];
+    for(const candidate of rows){
+      const time=Number(candidate.time);
+      if(!Number.isFinite(time))continue;
+      if(nearGroup(baselineKst,time,'snare',policy.candidateToleranceSec))continue;
+
+      const confidence=Number(candidate.confidence)||0;
+      if(confidence<policy.residualSnareMinConfidence)continue;
+      // Preserve the v39 downstream-veto guard: this residual rescue is only
+      // for genuinely sub-threshold acoustic candidates.
+      if(policy.rejectPostfilteredHandCandidate&&confidence>=1)continue;
+
+      const egmdProbability=Number(candidate.egmdProbability);
+      if(!Number.isFinite(egmdProbability)||egmdProbability<policy.residualSnareMinProbability)continue;
+
+      const section=sectionForTime(sections,time);
+      if(!section)continue;
+      const {barIndex,slot}=slotInfo(time,section,barSec);
+      const lifts=slotPrior?.lift?.snare;
+      const gmdLift=Array.isArray(lifts)&&Number.isFinite(Number(lifts[slot]))?Number(lifts[slot]):1;
+      if(gmdLift<policy.residualSnareMinGmdLift)continue;
+
+      residualProposed.push({
+        time,
+        note:NOTE_OF.snare,
+        group:'snare',
+        velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(Math.max(0,Number(candidate.score)||0))))),
+        score:Number(candidate.score)||0,
+        confidence,
+        arrangementRescued:false,
+        egmdResidualRescued:true,
+        egmdProbability,
+        egmdModelThreshold:Number(candidate.egmdModelThreshold)||null,
+        arrangementFamily:section.group,
+        arrangementLabel:section.label||section.group,
+        arrangementFamilyQuality:familyQuality(sections,section.group),
+        arrangementSupport:0,
+        arrangementEligible:0,
+        arrangementSupportRate:0,
+        arrangementBarIndex:barIndex,
+        arrangementSlot:slot,
+        gmdSlotLift:gmdLift,
+        arrangementRank:2+egmdProbability+.10*confidence+.05*Math.min(2,gmdLift),
+      });
+    }
+  }
+
+  const deduped=dedupeAdditions([...proposed,...residualProposed],policy.dedupeToleranceSec);
   const accepted=[];
   const rejectedHand=[];
   for(const candidate of deduped){
@@ -181,10 +234,15 @@ export function rescoreKstByArrangement(baselineEvents,diagnostics,arrangement,o
       sections:sections.length,
       repeatedSections:sections.filter(s=>(Number(s.occurrence)||1)>1).length,
       proposed:proposed.length,
+      residualProposed:residualProposed.length,
       accepted:accepted.length,
+      acceptedArrangement:accepted.filter(e=>e.arrangementRescued).length,
+      acceptedEgmdResidual:accepted.filter(e=>e.egmdResidualRescued).length,
       rejectedHand:rejectedHand.length,
       additions:accepted.map(e=>({
         time:e.time,group:e.group,confidence:e.confidence,
+        rescueType:e.egmdResidualRescued?'egmd-residual':'arrangement-family',
+        egmdProbability:Number.isFinite(Number(e.egmdProbability))?Number(e.egmdProbability):null,
         family:e.arrangementFamily,label:e.arrangementLabel,
         support:e.arrangementSupport,eligible:e.arrangementEligible,
         supportRate:e.arrangementSupportRate,slot:e.arrangementSlot,
@@ -195,3 +253,12 @@ export function rescoreKstByArrangement(baselineEvents,diagnostics,arrangement,o
 }
 
 export const arrangementKstPolicyV39D={...DEFAULT_POLICY};
+
+export const arrangementKstPolicyV46R1={
+  ...DEFAULT_POLICY,
+  name:'family-gmd-plus-egmd-residual-v46r1',
+  enableEgmdResidualSnare:true,
+  residualSnareMinProbability:.93,
+  residualSnareMinConfidence:.55,
+  residualSnareMinGmdLift:1.65,
+};
