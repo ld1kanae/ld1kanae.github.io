@@ -340,7 +340,7 @@ function draw(){
     if(lane>0){c.strokeStyle='rgba(109,137,157,.18)';c.lineWidth=1;c.beginPath();c.moveTo(0,Math.round(y)+.5);c.lineTo(cw,Math.round(y)+.5);c.stroke();}
     c.fillStyle='rgba(174,198,214,.42)';c.fillText(laneNames[lane],6,y+8);
   }
-  const colors={kick:'#aeb7c1',snare:'#e56b72',tom:'#a982d6',hat:'#63cbd1',open_hat:'#63cbd1',pedal_hat:'#63cbd1',crash:'#d8bd64',ride:'#70ab7d'},
+  const colors={kick:'#b7c8d7',snare:'#fd9b8e',tom:'#c4a2ff',hat:'#62d9e2',open_hat:'#62d9e2',pedal_hat:'#62d9e2',crash:'#e8ca83',ride:'#78b7a1'},
         lanes={crash:0,hat:1,open_hat:1,pedal_hat:1,ride:1,snare:2,tom:2,kick:3},
         offset=Number($('offset').value||0)/1000;
   for(const e of midiEvents){
