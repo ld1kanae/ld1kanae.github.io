@@ -112,7 +112,7 @@ function highGapThreshold(values,floor=.70,ceiling=.995){
 // It only uses the frozen context/choke acoustic model fitted offline from
 // synchronized WAV/MIDI pairs and operates on already-generated metal events.
 export async function rescoreHatContextGeneralV59(decoded,events,variant='off'){
-  const allowed=new Set(['off','closed-open-995','closed-open-990','closed-open-highgap','bidirectional-extreme']);
+  const allowed=new Set(['off','score-only','closed-open-995','closed-open-990','closed-open-highgap','bidirectional-extreme']);
   if(!allowed.has(variant)||variant==='off')return {events,info:{enabled:false,variant:'off'}};
   const samples=await monoAt44100(decoded),w=workspace();
   const all=events.slice().sort((a,b)=>a.time-b.time);
@@ -124,7 +124,8 @@ export async function rescoreHatContextGeneralV59(decoded,events,variant='off'){
   for(const e of eligible)probMap.set(e,probability(features(samples,e.time,nextMap.get(e),w)));
   const probs=[...probMap.values()];
   const highGap=highGapThreshold(probs);
-  const openThreshold=variant==='closed-open-990'?.99:
+  const openThreshold=variant==='score-only'?Infinity:
+    variant==='closed-open-990'?.99:
     variant==='closed-open-highgap'?(highGap??.995):.995;
   const closeThreshold=.005;
   let promoted=0,demoted=0,scored=0;
