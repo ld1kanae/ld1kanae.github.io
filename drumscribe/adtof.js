@@ -220,6 +220,16 @@ function logisticPredict(model,x){
   return sigmoid(z);
 }
 
+function egmdProbability(kstModel,st,group,classIndex,frame){
+  const model=kstModel?.models?.[group];
+  if(!model||!st)return {probability:null,modelThreshold:null,hypothesis:null};
+  return {
+    probability:logisticPredict(model,kstFeature(st,frame,classIndex)),
+    modelThreshold:Number(model.threshold)||.6,
+    hypothesis:model.hypothesis||null
+  };
+}
+
 function egmdSnareCandidates(acts,kstModel){
   const model=kstModel?.models?.snare;
   if(!model)return [];
@@ -289,20 +299,27 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
   let diagnosticKstCandidates=null;
   if(options.diagnosticKst===true){
     const diagnosticScales={kick:.65,snare:.50,tom:.65};
+    const diagnosticStats=assets.kstModel?buildKstStats(acts):null;
     diagnosticKstCandidates={};
     for(const [group,classIndex] of [['kick',0],['snare',1],['tom',2]]){
       const broadScale=diagnosticScales[group];
       const broadThreshold=BASE_THRESHOLDS[classIndex]*broadScale;
       const productionThreshold=BASE_THRESHOLDS[classIndex]*scale;
-      diagnosticKstCandidates[group]=pickClass(acts,classIndex,broadThreshold).map(p=>({
-        time:p.time,
-        group,
-        score:p.activation,
-        residual:p.residual,
-        confidence:p.activation/productionThreshold,
-        broadConfidence:p.activation/broadThreshold,
-        diagnostic:true
-      }));
+      diagnosticKstCandidates[group]=pickClass(acts,classIndex,broadThreshold).map(p=>{
+        const egmd=egmdProbability(assets.kstModel,diagnosticStats,group,classIndex,p.frame);
+        return {
+          time:p.time,
+          group,
+          score:p.activation,
+          residual:p.residual,
+          confidence:p.activation/productionThreshold,
+          broadConfidence:p.activation/broadThreshold,
+          egmdProbability:egmd.probability,
+          egmdModelThreshold:egmd.modelThreshold,
+          egmdHypothesis:egmd.hypothesis,
+          diagnostic:true
+        };
+      });
     }
   }
   return {
