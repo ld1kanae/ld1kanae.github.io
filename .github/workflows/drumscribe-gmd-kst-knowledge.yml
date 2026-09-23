@@ -47,6 +47,10 @@ jobs:
           node --check drumscribe/gmd-kst-prior.js
           node drumscribe/experiments/gmd-kst/test_section_analysis.mjs
           node drumscribe/experiments/gmd-kst/test_gmd_kst_prior.mjs
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Analyze five real off-vocal references
         run: |
           ffmpeg -version | head -n 1
