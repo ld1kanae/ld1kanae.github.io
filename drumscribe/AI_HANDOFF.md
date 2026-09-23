@@ -1,5 +1,43 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 Arrangement KST v38/v39 — A/A' acoustic rescue
+
+v37で確認したsame-family repetitionを、実ブラウザの低閾値K/S/T acoustic candidate rescoringへ接続して検証。
+
+前提:
+- A/A'は構造familyでありsemantic verse/chorusではない。
+- AのnoteをA'へcopyしない。対象時刻に低閾値音響candidateが存在する場合だけ候補昇格。
+- browser prediction stageはchart.midを読まない。chart.midはPython scoring stageのみ。
+- GMD symbolic slot priorはtrain 228 files / 13,550 barsから集約。
+
+v38 best:
+- sensitive H1: KST F1 0.937734 -> 0.938866 (+0.001132)
+- sensitive H3 family+GMD: 同じoverall KST F1 0.938866
+- H1追加: kick 4/4 TP, snare 5 TP + 1 FP, tom 1/1 TP
+- H3追加: kick 3/3 TP, snare 6 TP + 1 FP, tom 1/1 TP
+- 共通の唯一FPは diamondvirgin snare 205.88s。candidate confidence 1.92でproduction閾値自体は既に超えていたため、「弱候補の欠落」ではなく後段vetoをA/A'が覆した可能性が高い。
+
+v39 post-filter:
+- V39_A_subthreshold_hand: F1 0.938852, +0.001118, added TP/FP 9/0
+- V39_D_symbolic_gmd_plus_postfilter: F1 0.938852, +0.001118, added TP/FP 9/0
+- V39_D part delta:
+  - kick +0.000568
+  - snare +0.001899
+  - tom +0.006870
+- V39_Dを主候補。V39_Aを比較候補として保持。
+- Snare/Tomはproduction閾値以上なのにfinalから落ちているcandidateをarrangementだけで復活させない。
+- reusable API: `arrangement/rescoreKstByArrangement()`
+- compact GMD prior: `models/gmd-kst/slot-prior-v1.json`
+
+未完了:
+- v40で二手制約 + normal rhythm-grid/MIDI exportまで通したfresh Chromium non-regressionを確認する。
+- v40合格前にproduction appへ常時有効化しない。
+
+詳細:
+- `experiments/ARRANGEMENT_KST_V38.md`
+- `experiments/ARRANGEMENT_KST_V39.md`
+
+
 ## 2026-09-23 Arrangement prior v37 — A/A' repetition evidence
 
 5曲の `offvocal.mp3` を `arrangement/` で構造解析し、`chart.mid` は解析後の評価にのみ使用。
