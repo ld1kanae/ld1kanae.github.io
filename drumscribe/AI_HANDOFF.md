@@ -1,5 +1,37 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 E-GMD song-local domain calibration v45 — research candidate
+
+v44で確認したE-GMD domain shiftを、曲内候補分布だけでreference-free calibrationできるか検証。
+
+原則:
+- production採用済みfixed v39Dの9 TP / 0 FPは必ず保持
+- E-GMD calibrationは追加候補だけに使用し、v39D救済をvetoしない
+- song/group内E-GMD probability rank、logit probabilityのmedian/MAD robust z、acoustic confidence rank、GMD slot liftを利用
+
+結果:
+- fixed v39D: KST F1 0.938852, +0.001118, 9 TP / 0 FP
+- C1 percentile extreme: 同値
+- **C2 robust extreme: KST F1 0.938976, +0.001242, 10 TP / 0 FP**
+- C3 soft-score song-LOOCV: fixed v39Dと同値
+
+C2の追加1音:
+- diamondvirgin Kick 219.05 s
+- E-GMD raw p=.9125 / external threshold=.40
+- acoustic confidence=2.0190
+- GMD slot lift=2.5040
+- A/A' supportは0（family H単発）
+- referenceではTP
+
+判断:
+- domain calibration自体は有効性あり。
+- ただしC2閾値は固定仮説でありsong-held-outで追加救済を再現したものではない。C3 LOOCVは追加0。
+- **現時点ではproductionへ自動採用しない**。次にfresh runtime統合する場合は、このKickがなぜbaseline後段で落ちたか確認し、post-filter-origin guardを追加してから行う。
+
+資産:
+- `experiments/ARRANGEMENT_DOMAIN_CALIBRATION_V45.md`
+- `experiments/results-arrangement-domain-calibration-v45.json`
+
 ## 2026-09-23 Arrangement + E-GMD KST v44-v48 — production v46R1採用
 
 E-GMD v4の外部音響reclassifierを5曲の低閾値K/S/T候補へ付与し、A/A' fixed rescoringとの統合を検証。
