@@ -1,0 +1,309 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "hat-choke-five-v44",
+  "definition": {
+    "persistent": "GM46 -> next hat GM46",
+    "choked": "GM46 -> next hat GM42 or GM44",
+    "bandHz": [
+      5000,
+      18000
+    ],
+    "gapSec": [
+      0.1,
+      0.95
+    ],
+    "features": [
+      "pre_tail",
+      "post_70_130",
+      "post_130_210",
+      "cut_70_130",
+      "cut_130_210",
+      "gap_sec"
+    ]
+  },
+  "songs": {
+    "arcaround": {
+      "transitions": {
+        "open_pedal": 91
+      },
+      "usableRows": 91,
+      "persistent": 0,
+      "choked": 91
+    },
+    "diamondvirgin": {
+      "transitions": {
+        "open_open": 461,
+        "open_closed": 27,
+        "open_pedal": 4
+      },
+      "usableRows": 492,
+      "persistent": 461,
+      "choked": 31
+    },
+    "kaiju": {
+      "transitions": {
+        "open_closed": 7,
+        "open_pedal": 9,
+        "open_open": 6
+      },
+      "usableRows": 22,
+      "persistent": 6,
+      "choked": 16
+    },
+    "nanairo": {
+      "transitions": {
+        "open_closed": 154,
+        "open_pedal": 86
+      },
+      "usableRows": 240,
+      "persistent": 0,
+      "choked": 240
+    },
+    "ray": {
+      "transitions": {
+        "open_closed": 199,
+        "open_pedal": 115,
+        "open_open": 6
+      },
+      "usableRows": 320,
+      "persistent": 6,
+      "choked": 314
+    }
+  },
+  "rows": 1165,
+  "persistentRows": 473,
+  "chokedRows": 692,
+  "featureSummary": {
+    "choked": {
+      "pre_tail": {
+        "n": 692,
+        "median": 0.3630796637116032,
+        "q25": 0.14218214795652173,
+        "q75": 0.5572421185965544
+      },
+      "post_70_130": {
+        "n": 692,
+        "median": 0.46108418059412803,
+        "q25": 0.3574223794869803,
+        "q75": 0.6798680967874302
+      },
+      "post_130_210": {
+        "n": 692,
+        "median": 0.3563566054420122,
+        "q25": 0.23859469091731075,
+        "q75": 0.5683715434281897
+      },
+      "cut_70_130": {
+        "n": 692,
+        "median": 0.9462288481577253,
+        "q25": 0.6256616646296347,
+        "q75": 1.5342323292924882
+      },
+      "cut_130_210": {
+        "n": 692,
+        "median": 0.7896443879950411,
+        "q25": 0.4932948163578057,
+        "q75": 1.197682093594475
+      },
+      "gap_sec": {
+        "n": 692,
+        "median": 0.22727250000000154,
+        "q25": 0.227272499999998,
+        "q75": 0.2399355000000014
+      }
+    },
+    "persistent": {
+      "pre_tail": {
+        "n": 473,
+        "median": 0.653635135790744,
+        "q25": 0.5664274273799802,
+        "q75": 0.7556034417096347
+      },
+      "post_70_130": {
+        "n": 473,
+        "median": 0.6781165054364836,
+        "q25": 0.5892291053811816,
+        "q75": 0.7785767692450611
+      },
+      "post_130_210": {
+        "n": 473,
+        "median": 0.6604024539993056,
+        "q25": 0.5757279317741805,
+        "q75": 0.751900513226384
+      },
+      "cut_70_130": {
+        "n": 473,
+        "median": 0.7142405547241778,
+        "q25": 0.6432596900982682,
+        "q75": 0.7998396395204596
+      },
+      "cut_130_210": {
+        "n": 473,
+        "median": 0.6905206047934401,
+        "q25": 0.6054124469532602,
+        "q75": 0.791462199783738
+      },
+      "gap_sec": {
+        "n": 473,
+        "median": 0.22210300000000416,
+        "q25": 0.22190649999998868,
+        "q75": 0.22230249999998364
+      }
+    }
+  },
+  "leaveOneSongOutAll": {
+    "n": 1165,
+    "persistent": 473,
+    "precisionPersistent": 0.0847457627118644,
+    "recallPersistent": 0.042283298097251586,
+    "f1Persistent": 0.056417489421720736,
+    "confusionMatrix": {
+      "tn": 476,
+      "fp": 216,
+      "fn": 453,
+      "tp": 20
+    },
+    "folds": {
+      "arcaround": {
+        "n": 91,
+        "persistent": 0,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      },
+      "diamondvirgin": {
+        "n": 492,
+        "persistent": 461,
+        "precisionPersistent": 0.6060606060606061,
+        "recallPersistent": 0.04338394793926247,
+        "f1Persistent": 0.08097165991902834
+      },
+      "kaiju": {
+        "n": 22,
+        "persistent": 6,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      },
+      "nanairo": {
+        "n": 240,
+        "persistent": 0,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      },
+      "ray": {
+        "n": 320,
+        "persistent": 6,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      }
+    }
+  },
+  "leaveOneSongOutNoMetalContamination": {
+    "n": 1135,
+    "persistent": 469,
+    "precisionPersistent": 0.09345794392523364,
+    "recallPersistent": 0.042643923240938165,
+    "f1Persistent": 0.05856515373352855,
+    "confusionMatrix": {
+      "tn": 472,
+      "fp": 194,
+      "fn": 449,
+      "tp": 20
+    },
+    "folds": {
+      "arcaround": {
+        "n": 91,
+        "persistent": 0,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      },
+      "diamondvirgin": {
+        "n": 487,
+        "persistent": 457,
+        "precisionPersistent": 0.6060606060606061,
+        "recallPersistent": 0.0437636761487965,
+        "f1Persistent": 0.08163265306122448
+      },
+      "kaiju": {
+        "n": 20,
+        "persistent": 6,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      },
+      "nanairo": {
+        "n": 239,
+        "persistent": 0,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      },
+      "ray": {
+        "n": 298,
+        "persistent": 6,
+        "precisionPersistent": 0.0,
+        "recallPersistent": 0.0,
+        "f1Persistent": 0.0
+      }
+    }
+  },
+  "candidateModel": {
+    "schema": 1,
+    "kind": "hat-tail-persistence-logreg-candidate",
+    "featureNames": [
+      "pre_tail",
+      "post_70_130",
+      "post_130_210",
+      "cut_70_130",
+      "cut_130_210",
+      "gap_sec"
+    ],
+    "trainingSongs": [
+      "arcaround",
+      "diamondvirgin",
+      "kaiju",
+      "nanairo",
+      "ray"
+    ],
+    "trainingRows": 1135,
+    "persistentRows": 469,
+    "normalization": {
+      "mean": [
+        0.5116675848748641,
+        0.5939550822741924,
+        0.5251206522259415,
+        0.941249074209916,
+        0.817761352395182,
+        0.23781168436123423
+      ],
+      "scale": [
+        0.2860974242017432,
+        0.2561376198337141,
+        0.26781975528895724,
+        0.5307971003887882,
+        0.4456038855595549,
+        0.059751156676543404
+      ]
+    },
+    "coef": [
+      -0.36573878001244975,
+      -0.1911513611226487,
+      1.8398137590495258,
+      -0.9382537122185417,
+      -0.5433914726413933,
+      -0.11439347437929578
+    ],
+    "intercept": -0.37233817854242884,
+    "note": "chart.mid was used offline to label transitions. Candidate only; runtime adoption requires browser non-regression."
+  },
+  "limitations": [
+    "chart.mid labels are training/evaluation-only; no reference MIDI may be read by production prediction.",
+    "The synchronized nanairo pair has no GM46->GM46 transition, so persistent-open learning must come from the other songs/GMD.",
+    "Backbeat snare coincidence is retained because it is common in real drum performance; metal contamination is separately ablated."
+  ]
+}
