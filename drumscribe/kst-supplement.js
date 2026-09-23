@@ -1,4 +1,5 @@
 import {buildSectionKstContext,attachGridToContext,kstContextEvidence} from './kst-section-context.js';
+import {loadGmdKstKnowledge} from './gmd-kst-prior.js';
 
 const NEAR_SEC=.035;
 
@@ -45,15 +46,14 @@ export async function applyKstSupplementPolicy({
     });
     context=attachGridToContext(context,{bpm,barPhaseSec,numerator,denominator});
   }else if(spec.prior==='global'){
-    // Global prior still needs the knowledge file but not off-vocal sections.
-    const styleContext=await buildSectionKstContext({
-      offvocalDecoded,events:structural,bpm,barPhaseSec,numerator,denominator
-    });
-    if(styleContext.knowledge){
-      context=attachGridToContext({...styleContext,enabled:true,sections:[]},{
-        bpm,barPhaseSec,numerator,denominator
-      });
-    }
+    // Global prior does not require off-vocal context.
+    const knowledge=await loadGmdKstKnowledge();
+    context=attachGridToContext({
+      enabled:true,
+      method:'gmd-global-kst-prior-v1',
+      knowledge,
+      sections:[]
+    },{bpm,barPhaseSec,numerator,denominator});
   }
 
   const out=structural.slice();
