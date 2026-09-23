@@ -19,6 +19,97 @@ const thresholdControlIds={
   rideOpen:'thresholdRideOpen',openHatOverlay:'thresholdOpenHatOverlay',
   cymbal:'thresholdCymbal',cymbalGate:'thresholdCymbalGate'
 };
+const THRESHOLD_PROFILE_STORE='drumscribe-threshold-profiles-v1';
+function thresholdProfileKey(f=file){
+  const name=String(f?.name||'').normalize('NFC').trim().toLowerCase();
+  return name||null;
+}
+function loadThresholdProfileStore(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(THRESHOLD_PROFILE_STORE)||'{}');
+    return parsed&&typeof parsed==='object'&&!Array.isArray(parsed)?parsed:{};
+  }catch{return {};}
+}
+function saveThresholdProfileStore(store){
+  try{localStorage.setItem(THRESHOLD_PROFILE_STORE,JSON.stringify(store));return true;}
+  catch(err){console.warn('threshold profile save failed',err);return false;}
+}
+function applyThresholdValues(values){
+  if(!values||typeof values!=='object')return false;
+  let applied=false;
+  for(const [key,id] of Object.entries(thresholdControlIds)){
+    const v=Number(values[key]);
+    if(!Number.isFinite(v)||v<0||v>2)continue;
+    const el=$(id);
+    if(el){el.value=String(v);applied=true;}
+  }
+  return applied;
+}
+function thresholdProfileTimeText(iso){
+  const d=new Date(iso);
+  return Number.isFinite(d.getTime())?d.toLocaleString('ja-JP'):'日時不明';
+}
+function updateThresholdProfileStatus(profile=null,mode='idle'){
+  const el=$('thresholdProfileStatus'),forget=$('thresholdForget');
+  if(!el)return;
+  const key=thresholdProfileKey();
+  if(forget)forget.disabled=!key||!profile;
+  if(!key){
+    el.textContent='音源を選ぶと、このブラウザに感度設定を自動保存します。';
+    return;
+  }
+  if(mode==='restored'&&profile){
+    const result=profile.lastResult;
+    const resultText=result&&Number.isFinite(Number(result.notes))?' / 前回 '+result.notes+'ノート':'';
+    el.textContent='前回の感度設定を復元しました（'+thresholdProfileTimeText(profile.updatedAt)+resultText+'）。';
+  }else if(mode==='saved'){
+    el.textContent='「'+file.name+'」の感度設定をこのブラウザに保存しました。';
+  }else if(mode==='forgotten'){
+    el.textContent='「'+file.name+'」の保存済み感度設定を削除しました。';
+  }else{
+    el.textContent='「'+file.name+'」の感度設定は変更すると自動保存されます。';
+  }
+}
+function restoreThresholdProfile(f=file){
+  const key=thresholdProfileKey(f);
+  if(!key){updateThresholdProfileStatus();return null;}
+  const store=loadThresholdProfileStore(),profile=store[key]||null;
+  if(profile&&applyThresholdValues(profile.values)){
+    updateThresholdProfileStatus(profile,'restored');
+    return profile;
+  }
+  updateThresholdProfileStatus(null,'idle');
+  return null;
+}
+function saveThresholdProfile(lastResult){
+  const key=thresholdProfileKey();
+  if(!key)return null;
+  const store=loadThresholdProfileStore(),prev=store[key]||{};
+  const values=readThresholdMultipliers();
+  delete values.rideContextOpen;
+  const profile={
+    version:1,
+    fileName:file.name,
+    fileSize:Number(file.size)||null,
+    updatedAt:new Date().toISOString(),
+    values,
+    ...(lastResult?{lastResult}:{prev.lastResult?{lastResult:prev.lastResult}:{}})
+  };
+  store[key]=profile;
+  if(saveThresholdProfileStore(store)){
+    updateThresholdProfileStatus(profile,'saved');
+    return profile;
+  }
+  return null;
+}
+function forgetThresholdProfile(){
+  const key=thresholdProfileKey();
+  if(!key)return;
+  const store=loadThresholdProfileStore();
+  if(!store[key])return;
+  delete store[key];
+  if(saveThresholdProfileStore(store))updateThresholdProfileStatus(null,'forgotten');
+}
 function readThresholdMultipliers(){
   const out={};
   for(const [key,id] of Object.entries(thresholdControlIds)){
@@ -33,7 +124,12 @@ function readThresholdMultipliers(){
 }
 $('thresholdReset')?.addEventListener('click',()=>{
   for(const id of Object.values(thresholdControlIds)){const el=$(id);if(el)el.value='1.0';}
+  if(file)saveThresholdProfile();
 });
+$('thresholdForget')?.addEventListener('click',forgetThresholdProfile);
+for(const id of Object.values(thresholdControlIds)){
+  $(id)?.addEventListener('change',()=>{if(file)saveThresholdProfile();});
+}
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
 function setArrangementFile(f){
@@ -51,7 +147,7 @@ async function loadArrangementSlotPrior(){
   try{return await arrangementPriorPromise;}
   catch(err){arrangementPriorPromise=null;throw err;}
 }
-function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;reviewBeatTimes=[];setArrangementFile(null);if($('arrangementFile'))$('arrangementFile').value='';$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();tell(`${f.name} を選択しました。`);dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name}}));}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;reviewBeatTimes=[];setArrangementFile(null);if($('arrangementFile'))$('arrangementFile').value='';$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();const restored=restoreThresholdProfile(f);tell(restored?f.name+' を選択し、前回の採譜感度を復元しました。':f.name+' を選択しました。');dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name,thresholdProfileRestored:Boolean(restored)}}));}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 $('arrangementFile')?.addEventListener('change',e=>{
   setArrangementFile(e.target.files[0]||null);
@@ -219,6 +315,17 @@ $('analyze').addEventListener('click',async()=>{
       rhythmGridInfo:{...gridInfo,previewMedianDifferenceMs:timingMedianMs,previewP95DifferenceMs:timingP95Ms},
       meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
     };
+    saveThresholdProfile({
+      notes:events.length,
+      bpm:Number(detectedBpm.toFixed(3)),
+      kick:events.filter(e=>e.note===36).length,
+      snare:events.filter(e=>e.note===38).length,
+      closedHat:events.filter(e=>e.note===42).length,
+      openHat:events.filter(e=>e.note===46).length,
+      crash:events.filter(e=>e.note===49).length,
+      ride:events.filter(e=>e.note===51).length,
+      analyzedAt:new Date().toISOString()
+    });
     tell(`${events.length} ノートを推定しました。基準BPM ${detectedBpm.toFixed(3)}。${gridInfo.subdivision||'格子未判定'}へ量子化し、${gridInfo.tempoEvents||1}個のテンポ点で音源の揺れを保持しました。${arrangementInfo.enabled?` 構造反復補助で${arrangementInfo.rescore?.accepted||0}音を救済しました。`:''}プレビューも書き出しMIDIと同じ時刻です。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}`);
     reviewSelection=null;
     timelineView.resetFit();
