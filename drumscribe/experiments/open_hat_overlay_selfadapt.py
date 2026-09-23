@@ -94,7 +94,22 @@ def fold_predict(d,held,hx,hy,gx,gy,policy,seed):
     oo=d[held]["overlay"];times=np.asarray([a[0] for a in oo["anchors"]],dtype=float)
     pp=ov.probs(om,oo["X"])
     bpm=float(d[held]["side"].get("bpm") or 0)
-    mask,ainfo=select(policy,times,pp,bpm)
+    base_policy="repeat_gate" if policy=="repeat_gate_2hands" else policy
+    mask,ainfo=select(base_policy,times,pp,bpm)
+    physicalSkipped=0
+    if policy=="repeat_gate_2hands":
+        rows=d[held]["rows"]
+        safe=[]
+        for t,yes in zip(times,mask):
+            if not yes:
+                safe.append(False);continue
+            # Kick/pedal are feet. Existing hand events are snare/tom/hat/metal.
+            hands=sum(1 for u,g,pitch in rows
+                      if g in ("snare","tom","hat","crash","ride") and abs(u-float(t))<=.035)
+            ok=hands<2
+            if not ok:physicalSkipped+=1
+            safe.append(ok)
+        mask=np.asarray(safe,dtype=bool)
     rescued=[float(t) for t,yes in zip(times,mask) if yes and not ov.near(bo,float(t),.060)]
     met=oh.articulation_metrics(sorted(bo+rescued),bc,d[held]["refs"])
 
@@ -104,7 +119,8 @@ def fold_predict(d,held,hx,hy,gx,gy,policy,seed):
     rescue_tp=sum(1 for t in pred_resc if ov.near(true_open,t,.080))
     return met,{"baseOpen":len(bo),"candidates":len(times),"rescued":len(rescued),
       "rescuePredBeforeDedup":len(pred_resc),"rescueTpDiagnostic":rescue_tp,
-      "trueOverlayDiagnostic":int(oo["y"].sum()),"adapt":ainfo,"train":tinfo}
+      "trueOverlayDiagnostic":int(oo["y"].sum()),"physicalSkipped":physicalSkipped,
+      "adapt":ainfo,"train":tinfo}
 
 def main():
     d=ov.local_prepare();hx,hy,gx,gy,manifest=ov.gmd_collect()
@@ -120,7 +136,7 @@ def main():
 
     out={"schema":1,"description":"Held-song-label-free self-adaptive overlay policies; development-selected constants.",
       "baseline":base,"policies":{}}
-    for pi,policy in enumerate(("peak_gate","quantile_gate","repeat_gate")):
+    for pi,policy in enumerate(("peak_gate","quantile_gate","repeat_gate","repeat_gate_2hands")):
         per={};folds={}
         for i,held in enumerate(SONGS):
             m,diag=fold_predict(d,held,hx,hy,gx,gy,policy,300+pi*10+i)
