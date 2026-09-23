@@ -878,7 +878,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
         const others=hatTimes.filter(v=>Math.abs(v-t)>.035);
         const near8=near(others,t-beat/2,.055)||near(others,t+beat/2,.055);
         const score=1.5*Math.log(pp/ph)-.35*Math.min(tail2,3)-.35*Math.min(tail3,3)-.25*(near8?1:0);
-        if(score>=.4*thresholdMul(options,'pedalHat')){converted++;return {...e,group:'pedal_hat',pedalScore:score};}
+        if(score>=.4){converted++;return {...e,group:'pedal_hat',pedalScore:score};}
         return e;
       });
       adtofInfo.pedalPolicy={
@@ -888,8 +888,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
         tail2Weight:.35,
         tail3Weight:.35,
         near8Weight:-.25,
-        threshold:.4*thresholdMul(options,'pedalHat'),
-        thresholdMultiplier:thresholdMul(options,'pedalHat')
+        threshold:.4,
+        outputPolicy:'collapse-to-closed-hat'
       };
     }catch(err){
       console.warn('GMD pedal prior fallback',err);
@@ -1255,9 +1255,11 @@ export async function transcribe(decoded,report=()=>{},options={}){
   pruned=crashTail.events;
   adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashTailCompetition:crashTail.info};
 
-  const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:44,tom:45,crash:49,ride:51};
+  // Pedal hi-hat may remain as an internal articulation/context cue, but the
+  // user-facing transcription intentionally collapses it to Closed HH (GM42).
+  const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:42,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
-    time:e.time,note:noteOf[e.group],group:e.group,
+    time:e.time,note:noteOf[e.group],group:e.group==='pedal_hat'?'hat':e.group,
     velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score)))),
     ...(Number.isFinite(Number(e.openHatProbability))?{openHatProbability:Number(e.openHatProbability)}:{}),
     ...(Number.isFinite(Number(e.openHatBaseProbability))?{openHatBaseProbability:Number(e.openHatBaseProbability)}:{}),
