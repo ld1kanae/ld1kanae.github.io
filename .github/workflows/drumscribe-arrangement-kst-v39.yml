@@ -1,0 +1,51 @@
+name: DrumScribe arrangement KST v39
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/experiments/evaluate_arrangement_kst_v39.py"
+      - "drumscribe/experiments/results-arrangement-kst-candidates-v38.json"
+      - "drumscribe/experiments/results-arrangement-kst-rescore-v38.json"
+      - ".github/workflows/drumscribe-arrangement-kst-v39.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependency
+        run: pip install mido
+      - name: Evaluate post-filter gates
+        run: python drumscribe/experiments/evaluate_arrangement_kst_v39.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-arrangement-kst-postfilter-v39.json
+          git add drumscribe/experiments/ARRANGEMENT_KST_V39.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record arrangement KST v39 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-arrangement-kst-v39
+          path: |
+            drumscribe/experiments/results-arrangement-kst-postfilter-v39.json
+            drumscribe/experiments/ARRANGEMENT_KST_V39.md
+          retention-days: 14
