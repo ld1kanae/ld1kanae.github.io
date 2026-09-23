@@ -54,5 +54,12 @@ jobs:
           git add drumscribe/experiments/generated-v2-browser drumscribe/experiments/results-v2-browser.json
           git diff --cached --quiet && exit 0
           git commit -m "Record real browser DrumScribe validation [skip ci]"
-          git pull --rebase origin drumscribe-v2-eval
-          git push origin HEAD:drumscribe-v2-eval
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin drumscribe-v2-eval
+            if git push origin HEAD:drumscribe-v2-eval; then
+              exit 0
+            fi
+            echo "Push race on attempt $attempt; rebasing and retrying"
+            sleep $((attempt * 2))
+          done
+          exit 1
