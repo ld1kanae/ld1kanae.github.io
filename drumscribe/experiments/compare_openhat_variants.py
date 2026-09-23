@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT=Path(".");EXP=ROOT/"drumscribe/experiments"
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
-VARIANTS=["base","decay","gmd-rescue","decay-rescue","ride-open","ride-acoustic","ride-decay"]
+VARIANTS=["base","decay","gmd-rescue","decay-rescue","ride-open","ride-acoustic","ride-decay","ride-open-decay-rescue"]
 spec=importlib.util.spec_from_file_location("ev_open_browser",EXP/"evaluate_v2.py")
 ev=importlib.util.module_from_spec(spec);spec.loader.exec_module(ev)
 
