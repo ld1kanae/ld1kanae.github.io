@@ -1,0 +1,93 @@
+name: DrumScribe GMD KST browser matrix
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - drumscribe-gmd-kst-section-v1-20260923
+    paths:
+      - "drumscribe/adtof.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/app.js"
+      - "drumscribe/gmd-kst-prior.js"
+      - "drumscribe/gmd-kst-genre.js"
+      - "drumscribe/section-analysis.js"
+      - "drumscribe/kst-section-context.js"
+      - "drumscribe/kst-supplement.js"
+      - "drumscribe/models/gmd-kst/**"
+      - "drumscribe/experiments/browser_validate.mjs"
+      - "drumscribe/experiments/compare_browser.py"
+      - ".github/workflows/drumscribe-gmd-kst-browser-matrix.yml"
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        policy:
+          - baseline
+          - egmd-kick
+          - egmd-tom
+          - egmd-kicktom
+          - egmd-global-kicktom
+          - egmd-style-kicktom
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install browser scoring dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate five-song MIDI in real Chromium
+        env:
+          KST_POLICY: ${{ matrix.policy }}
+          OUT_DIR: drumscribe/experiments/generated-v2-browser
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Score against reference only after generation
+        run: python drumscribe/experiments/compare_browser.py
+      - name: Save policy result
+        run: |
+          mkdir -p drumscribe/experiments/gmd-kst/matrix
+          cp drumscribe/experiments/results-v2-browser.json \
+             "drumscribe/experiments/gmd-kst/matrix/${{ matrix.policy }}.json"
+          python - <<'PY'
+          import json, os
+          p=os.environ["POLICY"]
+          d=json.load(open(f"drumscribe/experiments/gmd-kst/matrix/{p}.json"))
+          s=d["summary"]
+          out={"policy":p,"overall":{k:s[k] for k in ("tp","predicted","reference","precision","recall","f1")},"kst":{}}
+          for g in ("kick","snare","tom"):
+              q=s["by_group"][g]
+              tp,pr,rf=q["tp"],q["predicted"],q["reference"]
+              out["kst"][g]={
+                  "tp":tp,"predicted":pr,"reference":rf,
+                  "precision":tp/pr if pr else 0,
+                  "recall":tp/rf if rf else 0,
+                  "f1":2*tp/(pr+rf) if pr+rf else 0,
+              }
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+        env:
+          POLICY: ${{ matrix.policy }}
+      - name: Upload policy result
+        uses: actions/upload-artifact@v4
+        with:
+          name: gmd-kst-browser-${{ matrix.policy }}
+          path: |
+            drumscribe/experiments/gmd-kst/matrix/${{ matrix.policy }}.json
+            drumscribe/experiments/generated-v2-browser/*.json
+          retention-days: 30
