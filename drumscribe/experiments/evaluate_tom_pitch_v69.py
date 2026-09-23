@@ -139,6 +139,72 @@ def metrics(rows,key):
         "confusion":{f"{a}->{b}":v for (a,b),v in sorted(conf.items())},
     }
 
+
+def optimal1d(values,k):
+    order=sorted(range(len(values)),key=lambda i:(values[i],i))
+    x=[values[i] for i in order];n=len(x)
+    p=[0.0]*(n+1);p2=[0.0]*(n+1)
+    for i,v in enumerate(x):
+        p[i+1]=p[i]+v;p2[i+1]=p2[i]+v*v
+    dp=[[float("inf")]*(n+1) for _ in range(k+1)]
+    prev=[[-1]*(n+1) for _ in range(k+1)]
+    dp[0][0]=0.0
+    def cost(i,j):
+        nn=j-i;ss=p[j]-p[i];ss2=p2[j]-p2[i]
+        return ss2-ss*ss/max(1,nn)
+    for c in range(1,k+1):
+        for j in range(c,n+1):
+            for i in range(c-1,j):
+                z=dp[c-1][i]+cost(i,j)
+                if z<dp[c][j]:
+                    dp[c][j]=z;prev[c][j]=i
+    bounds=[];j=n
+    for c in range(k,0,-1):
+        i=prev[c][j];bounds.append((i,j));j=i
+    bounds.reverse()
+    labels=[0]*n;centers=[]
+    for c,(a,b) in enumerate(bounds):
+        centers.append(float(np.median(x[a:b])))
+        for z in range(a,b): labels[z]=c
+    orig=[0]*n
+    for sorted_i,orig_i in enumerate(order): orig[orig_i]=labels[sorted_i]
+    return orig,centers
+
+def silhouette1d(values,labels,k):
+    groups=[[i for i,l in enumerate(labels) if l==g] for g in range(k)]
+    total=0.0
+    for i,v in enumerate(values):
+        own=groups[labels[i]]
+        if len(own)<=1: continue
+        a=sum(abs(v-values[j]) for j in own if j!=i)/(len(own)-1)
+        bs=[]
+        for g in range(k):
+            if g==labels[i] or not groups[g]: continue
+            bs.append(sum(abs(v-values[j]) for j in groups[g])/len(groups[g]))
+        b=min(bs) if bs else 0.0
+        total+=(b-a)/max(a,b,1e-9)
+    return total/len(values) if values else 0.0
+
+def current_cluster_predict(song_rows):
+    hz=[max(40.0,float(r["peak_hz"])) for r in song_rows]
+    loghz=[math.log(v) for v in hz]
+    chosen=None
+    if len(song_rows)>=4:
+        distinct=len(set(round(v,6) for v in hz))
+        for k in range(2,min(4,distinct,len(song_rows)-1)+1):
+            labels,centers=optimal1d(loghz,k)
+            sil=silhouette1d(loghz,labels,k)
+            if chosen is None or sil>chosen["silhouette"]:
+                chosen={"labels":labels,"centers":centers,"k":k,"silhouette":sil}
+    if chosen is None or chosen["silhouette"]<.35:
+        def fallback(v):
+            return 41 if v<110 else 45 if v<145 else 47 if v<190 else 50
+        return [fallback(v) for v in hz],{"method":"absolute","silhouette":chosen["silhouette"] if chosen else 0}
+    targets={2:[41,45],3:[41,45,50],4:[41,45,47,50]}[chosen["k"]]
+    order=sorted(range(chosen["k"]),key=lambda i:chosen["centers"][i])
+    cmap={cluster:targets[rank] for rank,cluster in enumerate(order)}
+    return [cmap[l] for l in chosen["labels"]],{"method":"cluster","silhouette":chosen["silhouette"],"k":chosen["k"]}
+
 def main():
     assets=build_assets()
     rows=[]
@@ -158,7 +224,7 @@ def main():
                 p,_=predict(d,assets,mode);row[key]=int(p)
             row["_desc"]=d
             rows.append(row);per_song_desc[song].append(row)
-    # Research-only LOO real-hit nearest centroid. Never production.
+    # Current production-style song-relative resonant-peak clustering, applied only\n    # to reference tom onset times for isolated pitch-subdivision evaluation.\n    current_cluster_info={}\n    for song,xs in per_song_desc.items():\n        preds,ci=current_cluster_predict(xs);current_cluster_info[song]=ci\n        for r,p in zip(xs,preds):r["pred_current_cluster"]=int(p)\n\n    # Research-only LOO real-hit nearest centroid. Never production.
     for song,xs in per_song_desc.items():
         train=[r for s,ys in per_song_desc.items() if s!=song for r in ys]
         prot={}
@@ -178,12 +244,12 @@ def main():
         "schema":1,
         "purpose":"tom pitch subdivision; chart.mid is scoring-only",
         "asset_prototypes":{str(n):{"peak_hz":assets[n]["peak"],"centroid_hz":assets[n]["centroid"]} for n in TOM_NOTES},
-        "reference_counts":dict(Counter(str(r["truth"]) for r in rows)),
+        "reference_counts":dict(Counter(str(r["truth"]) for r in rows)),\n        "current_cluster_info":current_cluster_info,
         "candidates":{
             "asset_peak":metrics(rows,"pred_peak"),
             "asset_profile":metrics(rows,"pred_profile"),
             "asset_hybrid":metrics(rows,"pred_hybrid"),
-            "loo_real_profile_research_only":metrics(rows,"pred_loo"),
+            "current_song_relative_cluster":metrics(rows,"pred_current_cluster"),\n            "loo_real_profile_research_only":metrics(rows,"pred_loo"),
         },
         "events":clean,
     }
