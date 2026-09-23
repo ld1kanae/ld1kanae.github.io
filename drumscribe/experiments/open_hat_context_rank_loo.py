@@ -42,6 +42,7 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
+from scipy.signal import find_peaks
 
 ROOT=Path(".");EXP=ROOT/"drumscribe/experiments"
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
@@ -101,6 +102,27 @@ def group_times(rows):
     for t,g,p in rows:
         if g in by:by[g].append(float(t))
     return by
+
+
+def build_candidates_fast(d,s,student,frameX):
+    """Equivalent to dist.build_candidates, but reuses full-song frame features."""
+    pp=student.predict_proba(frameX);cls=list(student.classes_)
+    prob=pp[:,cls.index(1)] if 1 in cls else np.zeros(len(frameX))
+    peaks,_=find_peaks(prob,height=dist.STUDENT_CANDIDATE_THRESHOLD,
+      distance=max(1,round(.025*dist.SR/dist.HOP)),prominence=.015)
+    times=peaks*dist.HOP/dist.SR
+    keep=np.asarray([not dist.near(d[s]["hats"],t,.060) for t in times],bool)
+    times=times[keep];peaks=peaks[keep]
+    raw=np.stack([oh.timbre_features(d[s]["audio"],t) for t in times]) if len(times) else np.zeros((0,26),np.float32)
+    norm=dist.robust_rows(raw,raw) if len(raw) else raw
+    ctx=[]
+    for i in peaks:
+        lo=max(0,i-2);hi=min(len(prob),i+3)
+        ctx.append([float(prob[i]),float(np.mean(prob[lo:hi])),float(np.max(prob[lo:hi])),
+                    float(prob[max(0,i-2)]),float(prob[min(len(prob)-1,i+2)])])
+    ctx=np.asarray(ctx,np.float32) if ctx else np.zeros((0,5),np.float32)
+    X=np.concatenate([norm,ctx],axis=1)
+    return {"times":times,"Xa":norm,"Xc":X}
 
 def context_features(d,s,c):
     times=np.asarray(c["times"],float)
@@ -238,11 +260,11 @@ def aggregate(per):
               "recall":tp/r if r else 0.,"f1":2*tp/(p+r) if p+r else 0.}
     out["macroF1"]=.5*(out["open"]["f1"]+out["closed"]["f1"]);return out
 
-def build_outer_items(d,teacher,outer,targets,seed):
+def build_outer_items(d,teacher,outer,targets,seed,frame_cache):
     student,sinfo=dist.fit_student(teacher,outer,seed)
     items={}
     for s in targets:
-        c=dist.build_candidates(d,s,student)
+        c=build_candidates_fast(d,s,student,frame_cache[s])
         X,info=context_features(d,s,c)
         items[s]={"times":c["times"],"X":X,"y":one_to_one_labels(c["times"],d[s]["refs"][46]),"info":info}
     return items,sinfo
@@ -271,40 +293,40 @@ def inner_choose(d,items,outer,kind,hx,hy,gx,gy,variant,seed):
     return (best[2] if best else 1.01),{"base":b,"ranking":[{"threshold":r[2],"eligible":r[0],
       "utility":r[1],"summary":r[3]} for r in rows]}
 
-def evaluate_strict(d,teacher,hx,hy,gx,gy,variant,kind):
-    per={};folds={}
+def evaluate_all(d,teacher,hx,hy,gx,gy,frame_cache):
+    specs=[("forest_context","forest_context"),("linear_context","linear_context"),("forest_repeat_rank","forest_context")]
+    per={v:{} for v,_ in specs};folds={v:{} for v,_ in specs}
+    gper={};gfolds={}
     for oi,held in enumerate(SONGS):
         outer=[s for s in SONGS if s!=held]
-        items,sinfo=build_outer_items(d,teacher,outer,[*outer,held],5000+oi)
-        th,inner=inner_choose(d,items,outer,kind,hx,hy,gx,gy,variant,6000+oi*20)
-        model,minfo=fit_selector(items,outer,kind,7000+oi)
+        items,sinfo=build_outer_items(d,teacher,outer,[*outer,held],5000+oi,frame_cache)
         bo,bc,bdiag=production_base(d,held,outer,hx,hy,gx,gy,8000+oi)
-        add,sdiag=select_student(d,held,items[held],model,variant,th,bo,bdiag)
-        m=articulation(sorted(bo+add),bc,d[held]["refs"])
-        per[held]=m;folds[held]={"threshold":th,"metrics":m,"base":bdiag,"selector":sdiag,
-          "candidate":items[held]["info"],"studentTrain":sinfo,"selectorTrain":minfo,"inner":inner,
-          "studentAddedTpDiagnostic":sum(ov.near(d[held]["refs"][46],t,.080) for t in add)}
-        print("CTX_FOLD",variant,held,json.dumps({"threshold":th,"open":m["open"],
-          "add":len(add),"tpDiag":folds[held]["studentAddedTpDiagnostic"],"candidate":items[held]["info"]}),flush=True)
-    return {"summary":aggregate(per),"songs":per,"folds":folds}
+        trained={}
+        for vi,(variant,kind) in enumerate(specs):
+            th,inner=inner_choose(d,items,outer,kind,hx,hy,gx,gy,variant,6000+oi*30+vi*7)
+            key=kind
+            if key not in trained:trained[key]=fit_selector(items,outer,kind,7000+oi+vi)
+            model,minfo=trained[key]
+            add,sdiag=select_student(d,held,items[held],model,variant,th,bo,bdiag)
+            m=articulation(sorted(bo+add),bc,d[held]["refs"])
+            per[variant][held]=m;folds[variant][held]={"threshold":th,"metrics":m,"base":bdiag,"selector":sdiag,
+              "candidate":items[held]["info"],"studentTrain":sinfo,"selectorTrain":minfo,"inner":inner,
+              "studentAddedTpDiagnostic":sum(ov.near(d[held]["refs"][46],t,.080) for t in add)}
+            print("CTX_FOLD",variant,held,json.dumps({"threshold":th,"open":m["open"],
+              "add":len(add),"tpDiag":folds[variant][held]["studentAddedTpDiagnostic"],"candidate":items[held]["info"]}),flush=True)
 
-def evaluate_guarded(d,teacher,hx,hy,gx,gy):
-    # Development-only held-song-label-free policy. Model excludes held song;
-    # constants are frozen from prior diagnostics, not tuned inside this run.
-    per={};folds={}
-    for oi,held in enumerate(SONGS):
-        outer=[s for s in SONGS if s!=held]
-        items,sinfo=build_outer_items(d,teacher,outer,[*outer,held],9000+oi)
-        model,minfo=fit_selector(items,outer,"forest_context",9100+oi)
-        bo,bc,bdiag=production_base(d,held,outer,hx,hy,gx,gy,9200+oi)
+        # Development-only guarded rank reuses the fold's forest model and candidates.
+        model,minfo=trained["forest_context"]
         add,sdiag=select_student(d,held,items[held],model,"guarded_rank_diagnostic",None,bo,bdiag)
         m=articulation(sorted(bo+add),bc,d[held]["refs"])
-        per[held]=m;folds[held]={"metrics":m,"base":bdiag,"selector":sdiag,
+        gper[held]=m;gfolds[held]={"metrics":m,"base":bdiag,"selector":sdiag,
           "candidate":items[held]["info"],"studentAddedTpDiagnostic":sum(ov.near(d[held]["refs"][46],t,.080) for t in add)}
         print("CTX_GUARD",held,json.dumps({"open":m["open"],"add":len(add),
-          "tpDiag":folds[held]["studentAddedTpDiagnostic"],"candidate":items[held]["info"],"selector":sdiag}),flush=True)
-    return {"summary":aggregate(per),"songs":per,"folds":folds,
+          "tpDiag":gfolds[held]["studentAddedTpDiagnostic"],"candidate":items[held]["info"],"selector":sdiag}),flush=True)
+    strict={v:{"summary":aggregate(per[v]),"songs":per[v],"folds":folds[v]} for v,_ in specs}
+    guarded={"summary":aggregate(gper),"songs":gper,"folds":gfolds,
       "warning":"Development-only self-adaptive gate; not an independent future-song estimate."}
+    return strict,guarded
 
 def main():
     from mdxnet_infer import MDX23CInference
@@ -320,6 +342,9 @@ def main():
         X,y,meta=dist.make_teacher_data(engine,s,tmp)
         teacher[s]={"X":X,"y":y,"segments":meta}
 
+    print("PRECOMPUTE_FULL_FRAME_FEATURES",flush=True)
+    frame_cache={s:dist.frame_matrix(d[s]["audio"]) for s in SONGS}
+
     # Current production held-out approximation.
     base={}
     for i,held in enumerate(SONGS):
@@ -332,15 +357,14 @@ def main():
       "baselineProductionApprox":baseline,
       "labelPolicy":"one nearest independent candidate per reference Open within 80 ms",
       "strictVariants":{}}
-    specs=[("forest_context","forest_context"),("linear_context","linear_context"),("forest_repeat_rank","forest_context")]
-    for variant,kind in specs:
-        q=evaluate_strict(d,teacher,hx,hy,gx,gy,variant,kind);s=q["summary"]
-        q["passesGuard"]=(s["open"]["f1"]>baseline["open"]["f1"] and
-          s["macroF1"]>baseline["macroF1"] and s["open"]["precision"]>=baseline["open"]["precision"]-.025)
+    strict,gd=evaluate_all(d,teacher,hx,hy,gx,gy,frame_cache)
+    for variant,q in strict.items():
+        ss=q["summary"]
+        q["passesGuard"]=(ss["open"]["f1"]>baseline["open"]["f1"] and
+          ss["macroF1"]>baseline["macroF1"] and ss["open"]["precision"]>=baseline["open"]["precision"]-.025)
         out["strictVariants"][variant]=q
-        print("CTX_RESULT",variant,json.dumps({"passes":q["passesGuard"],"summary":s}),flush=True)
+        print("CTX_RESULT",variant,json.dumps({"passes":q["passesGuard"],"summary":ss}),flush=True)
 
-    gd=evaluate_guarded(d,teacher,hx,hy,gx,gy)
     gs=gd["summary"]
     gd["passesDevelopmentGuard"]=(gs["open"]["f1"]>baseline["open"]["f1"] and
       gs["macroF1"]>baseline["macroF1"] and gs["open"]["precision"]>=baseline["open"]["precision"]-.025)
