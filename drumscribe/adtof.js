@@ -41,9 +41,11 @@ async function loadAssets(){
     if(!ort)throw Error('ONNX Runtime Web が読み込まれていません');
     ort.env.wasm.numThreads=1;
     ort.env.wasm.wasmPaths=new URL('./vendor/ort/',import.meta.url).href;
-    const [meta,fbBuf,kstModel]=await Promise.all([
+    const [meta,fbBuf,kstModelV4,kstModelV5]=await Promise.all([
       fetch(new URL('./models/adtof-model.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('ADTOF metadataを読み込めません');return r.json();}),
       fetch(new URL('./models/adtof-filterbank.f32',import.meta.url)).then(r=>{if(!r.ok)throw Error('ADTOF filterbankを読み込めません');return r.arrayBuffer();}),
+      fetch(new URL('./models/egmd-kst-reclassifier-v4.json',import.meta.url))
+        .then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(new URL('./models/egmd-kst-reclassifier-v5.json',import.meta.url))
         .then(r=>r.ok?r.json():null).catch(()=>null),
     ]);
@@ -53,7 +55,7 @@ async function loadAssets(){
       executionProviders:['wasm'],
       graphOptimizationLevel:'all'
     });
-    return {ort,meta,filterbank,session,kstModel};
+    return {ort,meta,filterbank,session,kstModelV4,kstModelV5};
   })();
   return assetsPromise;
 }
@@ -220,24 +222,33 @@ function logisticPredict(model,x){
   return sigmoid(z);
 }
 
-function egmdSnareCandidates(acts,kstModel){
-  const model=kstModel?.models?.snare;
-  if(!model)return [];
+function egmdSnareCandidates(acts,kstModelV4,kstModelV5){
+  const model4=kstModelV4?.models?.snare;
+  const model5=kstModelV5?.models?.snare;
+  if(!model4&&!model5)return [];
   const st=buildKstStats(acts);
-  const lowScale=Number(kstModel.lowScale)||.2;
+  const lowScale=Math.min(
+    Number(kstModelV4?.lowScale)||.2,
+    Number(kstModelV5?.lowScale)||.2
+  );
   const threshold=BASE_THRESHOLDS[1]*lowScale;
-  return pickClass(acts,1,threshold).map(p=>({
-    time:p.time,
-    group:'snare',
-    score:p.activation,
-    residual:p.residual,
-    probability:logisticPredict(model,kstFeature(st,p.frame,1)),
-    modelThreshold:Number(model.threshold)||.6,
-    kickActivation:st.cols[0][p.frame],
-    snareActivation:st.cols[1][p.frame],
-    tomActivation:st.cols[2][p.frame],
-    egmdKst:true
-  }));
+  return pickClass(acts,1,threshold).map(p=>{
+    const x=kstFeature(st,p.frame,1);
+    return {
+      time:p.time,
+      group:'snare',
+      score:p.activation,
+      residual:p.residual,
+      probability:logisticPredict(model4,x),
+      modelThreshold:Number(model4?.threshold)||.67,
+      probabilityV5:logisticPredict(model5,x),
+      modelThresholdV5:Number(model5?.threshold)||.31,
+      kickActivation:st.cols[0][p.frame],
+      snareActivation:st.cols[1][p.frame],
+      tomActivation:st.cols[2][p.frame],
+      egmdKst:true
+    };
+  });
 }
 
 function toEvents(acts,scale=PRECISION_SCALE){
@@ -281,7 +292,7 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     adtof:true,
     rescue:true
   }));
-  const egmdSnareSupport=egmdSnareCandidates(acts,assets.kstModel);
+  const egmdSnareSupport=egmdSnareCandidates(acts,assets.kstModelV4,assets.kstModelV5);
   return {
     events,
     snareRescue,
@@ -293,6 +304,6 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     coreFrames:CORE_FRAMES,
     overlapFrames:OVERLAP_FRAMES,
     modelSource:assets.meta.source,
-    egmdKstModel:assets.kstModel?.kind||null
+    egmdKstModel:[assets.kstModelV4?.kind,assets.kstModelV5?.kind].filter(Boolean).join('+')||null
   };
 }
