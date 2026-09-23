@@ -657,30 +657,13 @@ export async function transcribe(decoded,report=()=>{},options={}){
       }
       return n;
     };
-    let gmdKstPrior=null;
-    if(adaptiveSnareRescue){
-      try{
-        gmdKstPrior=await fetch('models/gmd-kst-prior.json').then(r=>{if(!r.ok)throw Error('GMD KST priorを読み込めません');return r.json();});
-      }catch(err){
-        console.warn('GMD KST prior fallback',err);
-      }
-    }
-    const gmdSnareGivenKick=t=>{
-      if(!gmdKstPrior)return 0;
-      const tab=gmdKstPrior.groups?.all?.conditional?.kick;
-      return Number(tab?.[String(slot16(t))]?.snare)||0;
-    };
     const rescued=[];
-    let gmdPriorRescued=0;
     for(const e of lowSnare){
       const k=nearEvent(kickEvents,e.time,.035);
       if(!k)continue;
       const repeat=repeatedAtSlot(e.time);
-      const gmdPrior=gmdSnareGivenKick(e.time);
-      const structuralSupport=repeat>=2||(repeat>=1&&gmdPrior>=.45);
-      if(e.score<.12||e.score<.25*(k.score||0)||!structuralSupport)continue;
-      if(repeat<2&&gmdPrior>=.45)gmdPriorRescued++;
-      rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat,gmdSnareGivenKick:gmdPrior});
+      if(e.score<.12||e.score<.25*(k.score||0)||repeat<2)continue;
+      rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat});
     }
     if(rescued.length)structural.push(...rescued);
 
@@ -708,9 +691,6 @@ export async function transcribe(decoded,report=()=>{},options={}){
       snareMinActivation:.12,
       snareKickRatio:.25,
       snareRepeatBars:2,
-      gmdKstPrior:!!gmdKstPrior,
-      gmdPriorSnareMin:.45,
-      gmdPriorRescued,
       tomKickRemoved,
       tomStrongKeep:1.45,
       tomRunWindowSec:.24
