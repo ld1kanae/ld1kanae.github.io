@@ -244,12 +244,14 @@ def main():
         "schema":1,
         "purpose":"tom pitch subdivision; chart.mid is scoring-only",
         "asset_prototypes":{str(n):{"peak_hz":assets[n]["peak"],"centroid_hz":assets[n]["centroid"]} for n in TOM_NOTES},
-        "reference_counts":dict(Counter(str(r["truth"]) for r in rows)),\n        "current_cluster_info":current_cluster_info,
+        "reference_counts":dict(Counter(str(r["truth"]) for r in rows)),
+        "current_cluster_info":current_cluster_info,
         "candidates":{
             "asset_peak":metrics(rows,"pred_peak"),
             "asset_profile":metrics(rows,"pred_profile"),
             "asset_hybrid":metrics(rows,"pred_hybrid"),
-            "current_song_relative_cluster":metrics(rows,"pred_current_cluster"),\n            "loo_real_profile_research_only":metrics(rows,"pred_loo"),
+            "current_song_relative_cluster":metrics(rows,"pred_current_cluster"),
+            "loo_real_profile_research_only":metrics(rows,"pred_loo"),
         },
         "events":clean,
     }
