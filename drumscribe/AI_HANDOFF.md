@@ -1,5 +1,11 @@
 # DrumScribe AI Handoff
 
+## CURRENT AUTHORITATIVE STATUS — Ride→Open HH threshold UI merge (2026-09-24)
+
+ユーザー向けUIでは `Ride→Open HH` と `Ride文脈→Open HH` を別表示しない。両者は内部的には別段階（音色モデル側の約0.60 gate / context-choke rescue側の0.99 gate）だが、最終動作はいずれも Ride候補をOpen HHへ丸めるため、UIは **「Ride→Open HH（音色＋文脈）」1項目** に統合する。
+
+`app.js` ではUIの `rideOpen` 倍率を読み、`rideContextOpen=rideOpen` として同じ倍率を両内部gateへ渡す。デフォルト1.0なら従来閾値を変更しない。
+
 ## CURRENT AUTHORITATIVE STATUS — Pedal HH output collapse (2026-09-24)
 
 ユーザー要件: **Closed HH と Pedal HH は採譜出力上で区別しない。Pedal HH候補も Closed HH (GM42) として丸める。**
