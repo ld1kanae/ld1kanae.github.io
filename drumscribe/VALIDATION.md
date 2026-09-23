@@ -1,5 +1,40 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: 5曲を現行mainでfresh Chromium再採譜し、grid/tempoを直接検証（v31）
+
+v30は既存browser生成イベントを現行grid/tempo層へ再投入した隔離試験だった。今回は `DruMaster/songs/{arcaround,diamondvirgin,kaiju,nanairo,ray}/drums.mp3` を、**現行mainをcheckoutしたGitHub Actions上の実Playwright Chromiumで最初から再採譜**し、download MIDIを直接パースした。
+
+Workflow run:
+- `35833299223`
+- head: `dd048ea92c2df1fb6e1b1e999379acd647cdda6c`
+- conclusion: **success**
+
+| 曲 | 格子 | ノート | tempo events | BPM range | 16分 | 32分のみ | raw→grid median | raw→grid p95 | MIDI grid残差 |
+|---|---|---:|---:|---|---:|---:|---:|---:|---:|
+| arcaround | 1/16 | 1086 | 549 | 131.831–132.159 | 100.00% | 0.00% | 4.29 ms | 13.53 ms | 0 ticks |
+| diamondvirgin | 1/16+1/32 | 1887 | 589 | 134.713–135.428 | 99.63% | 0.37% | 5.72 ms | 17.82 ms | 0 ticks |
+| kaiju | 1/16+1/32 | 1234 | 594 | 179.491–180.436 | 99.92% | 0.08% | 4.30 ms | 13.11 ms | 0 ticks |
+| nanairo | 1/16+1/32 | 1802 | 491 | 124.944–125.468 | 99.89% | 0.11% | 1.20 ms | 8.65 ms | 0 ticks |
+| ray | 1/16+1/32 | 2216 | 557 | 131.944–132.171 | 97.16% | 2.84% | 2.58 ms | 6.58 ms | 0 ticks |
+
+専用validator `experiments/validate_grid_browser.py` を追加し、各fresh MIDIについて:
+- 選択された16/32/triplet格子からのnote tick残差が0であること
+- runtimeの `tempoEvents` とMIDI内 `set_tempo` 個数が一致すること
+- raw検出時刻からtempo-map適用後preview時刻への差が median <= 10 ms / p95 <= 25 ms であること
+
+を自動確認。今回 **failures 0**。
+
+同じfresh runの `chart.mid` ±80 ms評価:
+- TP 7492 / Pred 8225 / Ref 10086
+- Precision 0.911 / Recall 0.743 / F1 **0.818**
+- `max_export_grid_residual_beats = 0.0`
+
+これにより、5曲については「音源からfresh採譜 → noteを譜面gridへ量子化 → 微小timing差をtempo mapへ移す → MIDI書き出し」までの完全経路を実ブラウザで確認できた。
+
+CIも更新し、今後 `rhythm-grid.js` / `midi.js` / `validate_grid_browser.py` の変更でこの5曲fresh検証が自動実行される。
+
+生データ: [results-grid-tempo-five-fresh-v31.json](experiments/results-grid-tempo-five-fresh-v31.json)
+
 ## 2026-09-23: 量子化＋可変BPMを5曲横断再検証（v30）
 
 ユーザー指摘「通常は8/16/32分へ量子化し、音源と合わなくなる分はBPM側で吸収する」に対する再検証。今回は既存の実ブラウザ生成 `generated-meter-v23` のノート列を、**現在の `rhythm-grid.js` / `midi.js` 書き出し層へ再投入**し、`chart.mid` へ再採点した。したがって分類器そのもののfresh再実行ではなく、今回変更した「譜面グリッド＋tempo map」層だけを隔離した非退行試験である。
