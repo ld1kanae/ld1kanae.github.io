@@ -22,21 +22,65 @@ Purpose: improve DrumScribe kick, snare, and tom transcription without regressin
 - occupied-slot transitions
 - velocity summaries
 
-Sparse genres are expected. Runtime consumers must shrink low-support genre experts toward the global GMD distribution rather than trust them independently.
+Sparse genres are expected. Runtime consumers must shrink low-support experts toward the global GMD distribution rather than trust them independently.
 
 ## Section-local context
 
-`../../section-analysis.js` accepts an off-vocal AudioBuffer (or mono samples) and estimates local arrangement sections from timbre/energy novelty. It also clusters repeated sections into structural groups A/B/C/... .
+`../../section-analysis.js` accepts an off-vocal AudioBuffer (or mono samples) and estimates local arrangement sections from timbre/energy novelty. It clusters repeated sections into structural groups A/B/C/... .
 
-The structural groups are **not** automatically named Verse / Pre-Chorus / Chorus. That semantic mapping requires additional evidence. A song-wide genre label is explicitly avoided: later genre mixtures will be estimated independently per section and crossfaded at boundaries.
+The structural groups are **not** automatically named Verse / Pre-Chorus / Chorus. A song-wide genre label is explicitly avoided. Sections may change rhythmic character independently, and repeated A/B/C sections may still differ later in the song.
 
-`../../gmd-kst-prior.js` consumes a local genre mixture and returns bounded K/S/T evidence. It cannot create notes by itself.
+## Held-out finding: semantic genre labels are not the runtime target
 
-## Initial hypotheses for the next K/S/T validation round
+A train-only GMD profile was tested on official held-out validation/test rows using K/S/T only.
 
-1. **Global prior**: use only GMD global K/S/T rhythmic evidence on acoustically plausible candidates.
-2. **Section-local genre mixture**: blend GMD genre experts per detected off-vocal section, with sparse-genre shrinkage.
-3. **Section-local genre + beat/fill**: combine genre mixture with local beat/fill state, especially for tom rescue near arrangement transitions.
-4. **E-GMD acoustic ensemble**: use E-GMD only as an acoustic reclassifier on candidates already admitted by the detector; do not replace K/S/T wholesale.
+- validation primary-genre Top-1: 19/111 = 17.1%; Top-3: 41/111 = 36.9%
+- test primary-genre Top-1: 43/124 = 34.7%; Top-3: 70/124 = 56.5%
+
+Therefore DrumScribe must **not** assert a section is “rock”, “pop”, etc. from K/S/T alone. Genre/style labels remain provenance for learned experts, not semantic truth about the input song.
+
+## Held-out finding: local exact-style mixtures are useful rhythmic evidence
+
+A more relevant continuation test uses the first half of each held-out GMD performance to select similar train-derived experts, then predicts occupied K/S/T 16th-grid positions in the second half.
+
+Validation macro AUC:
+- global GMD prior: 0.6505
+- primary-genre mixture: 0.7339
+- exact `primary/secondary` style mixture: **0.7621**
+
+Validation exact-style AUC:
+- kick 0.8079
+- snare 0.7742
+- tom 0.7041
+
+Test macro AUC:
+- global GMD prior: 0.6239
+- primary-genre mixture: 0.7039
+- exact style mixture: **0.7293**
+
+Test exact-style AUC:
+- kick 0.7970
+- snare 0.7670
+- tom 0.6240
+
+No DruMaster data is used in this selection/evaluation.
+
+Conclusion: the preferred runtime representation is a **section-local mixture of similar GMD exact-style experts**, not one genre label. Labels remain visible for traceability only.
+
+## Runtime safety rule
+
+`../../gmd-kst-prior.js` returns bounded K/S/T evidence and cannot create notes by itself. GMD rhythmic knowledge is only applied to acoustically plausible candidates. It must never force a note onto a “typical” beat merely because GMD often contains one there.
+
+## Current browser-transfer hypotheses
+
+The real-Chromium matrix keeps the current production path as a baseline and compares independently:
+
+1. **E-GMD kick supplement** — frozen E-GMD v4 kick candidates only.
+2. **E-GMD tom supplement** — frozen E-GMD v4 tom candidates only.
+3. **E-GMD kick+tom supplement** — both external acoustic candidate streams.
+4. **E-GMD + global GMD gate** — only candidates with neutral-or-positive global GMD rhythmic evidence.
+5. **E-GMD + section-local exact-style GMD gate** — off-vocal defines local arrangement sections, preliminary strong K/S/T events choose an exact-style mixture inside each section, then the mixture supplies bounded rhythmic evidence.
+
+The existing v4 snare path is left unchanged during this matrix so kick/tom effects can be measured independently.
 
 Promotion rule: a candidate must improve at least one of kick/snare/tom while not reducing the retained best F1 of either of the other two. Marginal gains that depend on one song only require additional held-out evidence before promotion.
