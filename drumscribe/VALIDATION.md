@@ -2402,3 +2402,60 @@ Guardrail:
 詳細:
 - `experiments/ARRANGEMENT_KST_V40.md`
 - `experiments/results-arrangement-kst-runtime-v40.json`
+
+
+---
+
+## 2026-09-23: Arrangement K/S/T learned v42/v43 — 楽器別rescoring学習
+
+目的:
+- v39Dの固定閾値を、Kick/Snare/Tomごとの学習済みrescoring条件へ置換できるか検証。
+- A/A'構造、音響candidate、GMD slot priorをprediction-time featureとして使用。
+- 5曲leave-one-song-out。held-out曲のchart.midは予測確定後の採点だけに使用。
+
+比較した3方式:
+1. per-instrument Logistic Regression
+2. per-instrument Extra Trees
+3. per-instrument Random Forest
+
+特徴量:
+- acoustic confidence / score / broad confidence
+- family quality
+- same-family same-position support rate / count / eligible count
+- GMD 16分slot lift
+- slot sin/cos
+- occurrence / repeat similarity
+- section内bar index / section length
+- acoustic residual
+
+v42:
+- support>=1を前処理で要求した結果、学習候補が12件しか残らず分類学習不能。
+- production変更なし。
+
+v43:
+- repeated familyに属する候補まで母集団を拡張し、support=0も負例として保持。
+- 83 candidates: Kick 6 (positive 5), Snare 36 (positive 7), Tom 41 (positive 2)。
+
+| variant | K/S/T F1 | delta | added TP/FP |
+|---|---:|---:|---:|
+| fixed v39D replay | **0.938852** | **+0.001118** | **9 / 0** |
+| Logistic LOOCV | 0.937734 | 0 | 0 / 0 |
+| Extra Trees LOOCV | 0.937734 | 0 | 0 / 0 |
+| Random Forest LOOCV | 0.937734 | 0 | 0 / 0 |
+
+観察:
+- Snareは4曲training内では学習器が追加候補を高precisionで拾えるfoldがある。
+- しかしheld-out songでは選択閾値を超える候補がなく、曲跨ぎ一般化は確認できなかった。
+- Kick positive 5、Tom positive 2では楽器別分類器の学習量として不足。
+
+採否:
+- learned v42/v43は**不採用**。production runtimeはfixed v39D-style arrangement rescoringを維持。
+- 学習用candidate corpusは今後の曲追加に備えて保存。
+
+資産:
+- `models/arrangement-kst/training-candidates-v43.json`
+- `models/arrangement-kst/learned-rescore-v43.json` (research only)
+- `experiments/results-arrangement-kst-learned-v42.json`
+- `experiments/results-arrangement-kst-learned-v43.json`
+- `experiments/ARRANGEMENT_KST_LEARNED_V42.md`
+- `experiments/ARRANGEMENT_KST_LEARNED_V43.md`
