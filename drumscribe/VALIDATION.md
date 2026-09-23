@@ -2378,3 +2378,80 @@ production:
 - `experiments/results-egmd-kst-transfer-v4.json`
 - `.github/workflows/drumscribe-main-kst-validation.yml`
 
+
+
+## 2026-09-23: Independent HF / offvocal / DrumSep HH teacher diagnostics
+
+### 独立5–18 kHz HF candidate stream
+
+既存hat detectorとは独立に、drums.mp3の5–18 kHz spectral flux + high-frequency levelから広い候補streamを生成した。
+既存hatから60 ms以内を除外し、drums-only ExtraTreesでOpen 46 rescueを選別するLOOを実施。
+
+現行snapshot baseline（このrun時点）:
+- Open TP 391 / Pred 587 / Ref 1179
+- P 0.666099 / R 0.331637 / F1 0.442809
+- Closed F1 0.807311
+- Macro F1 0.625060
+
+HF student:
+- Open TP 408 / Pred 740 / Ref 1179
+- P 0.551351 / R 0.346056 / F1 0.425221
+- Macro F1 0.616266
+
+HF student + training-song missed-reference-open positives:
+- Open F1 0.420546
+
+offvocal optional feature fusion:
+- Open F1 0.429342
+
+いずれもprecision低下が大きくproduction guardを通らず、不採用。
+
+重要な診断: diamondvirginでは広いHF streamに参照Openから80 ms以内のcandidate rowが1351件存在し、候補生成自体は十分広くできる。しかし同一参照Open周辺に複数peakがあり得るため1351はdistinct hit coverageではない。問題は候補生成上限だけでなく、false candidateを落とす選別器側にもある。
+
+### offvocalのOpen/Closed識別性
+
+参照42/46時刻で、held-out songを除いて学習するExtraTreesの識別AUCを比較。
+- drums-only mean AUC: 0.6984
+- offvocal-only mean AUC: 0.6052
+- drums+offvocal fusion mean AUC: 0.6868
+
+全体ではoffvocalはdrums単体より良くない。
+ただしdiamondvirginでは:
+- drums AUC 0.6959
+- offvocal AUC 0.6389
+- fusion AUC 0.7434
+
+となり、曲限定ではcross-view補助情報がある。したがってoffvocalはproduction必須入力ではなく、hard-case teacher / privileged training featureとして残す。
+
+### DrumSep HH stem — fast teacher diagnostic
+
+MDX23C DrumSep 6-stemをteacher-onlyで使用し、HH stemの広いonset candidate coverageを確認した。
+chart.midはこのfast diagnosticでは35秒のopen-dense区間選択にのみ使っているため、generalization metricではない。
+
+diamondvirgin 35秒区間:
+- reference Open 134
+- HH-stem candidate 647
+- Open coverage 134/134 = 1.000
+
+nanairo 35秒区間:
+- reference Open 67 / Closed 115
+- Open coverage 67/67 = 1.000
+- Closed coverage 112/115 = 0.974
+- simple tail Open/Closed AUC 0.529
+
+結論:
+- DrumSep HH stemはmissing HH onsetを拾うteacherとして非常に有望。
+- ただし分離stem上でも単純sustain/tailだけでOpen/Closedを決めるのは弱い。
+- よって次段は「HH onset teacherをdrums-only lightweight studentへ蒸留」し、articulation判定は別モデルとして扱う。
+
+外部teacherの扱い:
+- mdxnet-infer runtime codeはMIT系だが、community checkpointの原licenseは明確性に注意が必要。
+- checkpoint bytesはrepositoryへ保存・再配布しない。
+- 現段階ではworkflow実行時teacher/diagnosticのみに限定する。
+
+生成物:
+- experiments/open_hat_hf_offvocal_loo.py
+- experiments/results-open-hat-hf-offvocal-loo.json
+- experiments/open_hat_drumsep_teacher.py
+- experiments/open_hat_drumsep_teacher_fast.py
+- experiments/results-open-hat-drumsep-teacher-fast.json
