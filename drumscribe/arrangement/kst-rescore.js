@@ -143,9 +143,12 @@ export function rescoreKstByArrangement(baselineEvents,diagnostics,arrangement,o
 
       proposed.push({
         time,
-        note:NOTE_OF[group],
+        note:group==='tom'&&[41,45,47,50].includes(Number(candidate.tomNote))
+          ?Number(candidate.tomNote):NOTE_OF[group],
         group,
         ...(group==='tom'&&[41,45,47,50].includes(Number(candidate.tomNote))?{
+          tomNote:Number(candidate.tomNote),
+          tomPitchHz:Number(candidate.tomPitchHz)||0,
           diagnosticTomNote:Number(candidate.tomNote),
           diagnosticTomPitchHz:Number(candidate.tomPitchHz)||0
         }:{}),
