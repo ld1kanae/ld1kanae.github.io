@@ -832,3 +832,32 @@ DrumSep contextual + rhythmic-grid residual:
 - `index.html` のapp cache-busterを `20260923-hihat-choke-v36` に更新。
 - app commit: `cee4817ca3cbd2ead9847a08e648fa676ef42b4c`
 - cache-buster commit: `8e4570c708166009bd10d380753cc0419bed3570`
+
+
+---
+
+## 2026-09-23 Waveform viewport / range review UI v1
+
+- UI/preview only。採譜class判定・`rhythm-grid.js`・MIDI export algorithmは変更していない。
+- 通常ページ `index.html` に拡大率 / 表示位置 / 全体表示を追加。
+- 共通viewport: `timeline-view.js`
+  - wheel = 前後移動
+  - Ctrl/Cmd + wheel = pointer-anchor zoom
+  - `pxPerSec / viewStart`方式
+  - 再生中playhead auto-follow
+- Timing Correction参照元:
+  - `DruMaster/song-sync-editor-v2.html`
+  - `DruMaster/js/song-sync-history.js`
+- 新規 `feedback.html` + `feedback.js`:
+  - 波形dragで時間範囲選択
+  - 分類＋コメントを複数保存
+  - 選択範囲再生
+  - 編集 / 削除
+  - 5段undo/redo
+  - Ctrl/Cmd+Z, Ctrl/Cmd+Y, Ctrl/Cmd+Shift+Z
+  - AI修正依頼textをcopy
+  - `drumscribe-review-v1` JSON download
+  - localStorage保存
+- 通常previewとreview pageは同じ `app.js` を使うため、採譜結果分岐なし。
+- appは `globalThis.DrumScribeTimeline` と `drumscribe:* ` custom eventsをreview UIへ公開。
+- 詳細: `drumscribe/UI_REVIEW_WORKFLOW.md`
