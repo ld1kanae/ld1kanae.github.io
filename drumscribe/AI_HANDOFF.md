@@ -579,3 +579,42 @@ exportだけ `barPhaseSec` に基づきmusical gridへずらす。
 - Repo folder: https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe
 - Detailed history: `VALIDATION.md`
 
+
+
+---
+
+## 2026-09-23 Open HH / DrumSep 最新追記
+
+### main production
+- `open-hat-extra-trees-v2.json`: GMD128補助の42/46分類、threshold 0.575。
+- `open-hat-overlay-extra-trees-v1.json`: repeat_gate_2hands。既存K/S/T/metalは置換せずGM46だけ追加。
+- main real Chromium validation成功。
+- overall: TP 7492 / Pred 8225 / Ref 10086, F1 約0.818。
+- train-all Open: 571 / 738 / 1179, P 0.7737 / R 0.4843 / F1 0.5957。
+- held-out development estimateはOpen F1約0.4636。train-all値を未知曲精度と解釈しない。
+
+### offvocal diagnostic
+- 全曲平均ではdrums-onlyより良くない。
+- ただし diamondvirgin では drums+offvocal fusion AUC 0.7434 でdrums-only 0.6959を上回った。
+- production必須入力ではなく privileged/teacher feature候補。
+
+### DrumSep fast diagnostic
+- diamondvirginのopen-dense 35秒でHH stem candidateが参照Open 134/134をcoverage。
+- nanairoもOpen 67/67、Closed 112/115。
+- 単純tailだけのOpen/Closed識別は弱いので、DrumSepはarticulation classifierよりHH-onset teacher向き。
+
+### DrumSep蒸留v1
+`experiments/results-open-hat-drumsep-distill-loo.json`
+
+3仮説:
+1. acoustic_only
+2. acoustic_student
+3. acoustic_student_gmd
+
+いずれもproduction guard不通過。不採用。
+
+重要診断:
+- diamondvirgin held-outでdrums-only student candidate streamは参照Open 502中 **477** をdistinct coverage。
+- しかしinner validationが安全側threshold 1.01を選び、rescueは0。
+- つまり「Open HH候補が存在しない」問題はほぼ解けた一方、「未知曲でどのcandidateをOpenとして採用するか」が現在の主ボトルネック。
+- 次段はframe単発分類ではなく、bar/beat位置、反復周期、neighbor hat、同時kick/snare、DrumSep teacher confidence、offvocal cross-viewを利用したsequence/ranking型selectorが有力。
