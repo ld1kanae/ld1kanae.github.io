@@ -1,10 +1,12 @@
-import {transcribe} from './transcribe.js?v=20260923-proof-v34';
+import {transcribe} from './transcribe.js?v=20260923-arrangement-kst-v41';
+import {analyzeSections,rescoreKstByArrangement,arrangementKstPolicyV39D} from './arrangement/index.js?v=20260923-arrangement-kst-v41';
 import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
 import {inferBars,parseBeatThis} from './meter.js';
 import {createTimelineViewport} from './timeline-view.js?v=20260923-review-v1';
 const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],openHatVoices=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
+let arrangementFile=null,arrangementPriorPromise=null;
 let exampleId='';
 let reviewSelection=null;
 let reviewBeatTimes=[];
@@ -13,8 +15,27 @@ const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,44,45,46,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
-function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;reviewBeatTimes=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();tell(`${f.name} を選択しました。`);dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name}}));}
+function setArrangementFile(f){
+  arrangementFile=f||null;
+  const name=$('arrangementFileName');
+  if(name)name.textContent=arrangementFile?`${arrangementFile.name} — A/A'構造補助に使用`:'未選択 — ドラム音源のみでも採譜できます';
+}
+async function loadArrangementSlotPrior(){
+  if(!arrangementPriorPromise){
+    arrangementPriorPromise=fetch('./models/gmd-kst/slot-prior-v1.json?v=20260923-arrangement-kst-v41').then(r=>{
+      if(!r.ok)throw Error(`GMD slot prior HTTP ${r.status}`);
+      return r.json();
+    });
+  }
+  try{return await arrangementPriorPromise;}
+  catch(err){arrangementPriorPromise=null;throw err;}
+}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;reviewBeatTimes=[];setArrangementFile(null);if($('arrangementFile'))$('arrangementFile').value='';$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();tell(`${f.name} を選択しました。`);dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name}}));}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
+$('arrangementFile').addEventListener('change',e=>{
+  setArrangementFile(e.target.files[0]||null);
+  if(file)tell(arrangementFile?`${arrangementFile.name} を構造解析補助に使用します。`:`${file.name} をドラム音源のみで採譜します。`);
+});
 const drop=$('drop');
 for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
 for(const name of ['dragleave','drop'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.remove('dragging');});
@@ -23,9 +44,17 @@ $('example').addEventListener('change',async e=>{
   const id=e.target.value;if(!id)return;
   $('analyze').disabled=true;tell('検証用音源を取得中…');
   try{
-    const r=await fetch(`../DruMaster/songs/${id}/drums.mp3`);if(!r.ok)throw Error(`HTTP ${r.status}`);
+    const [r,arrangementResponse]=await Promise.all([
+      fetch(`../DruMaster/songs/${id}/drums.mp3`),
+      fetch(`../DruMaster/songs/${id}/offvocal.mp3`)
+    ]);
+    if(!r.ok)throw Error(`HTTP ${r.status}`);
     const blob=await r.blob();
     select(new File([blob],`${id}-drums.mp3`,{type:'audio/mpeg'}));
+    if(arrangementResponse.ok){
+      const arrangementBlob=await arrangementResponse.blob();
+      setArrangementFile(new File([arrangementBlob],`${id}-offvocal.mp3`,{type:'audio/mpeg'}));
+    }
     exampleId=id;
     $('example').value=id;
     $('bpm').value='';
@@ -41,18 +70,74 @@ $('analyze').addEventListener('click',async()=>{
     const ac=await audioContext();tell('音源を読み込み中…');
     decoded=await ac.decodeAudioData(await file.arrayBuffer());
     if(decoded.duration>900)throw Error('15分以内の音源を選択してください。');
+    let arrangementAudio=null;
+    let arrangementInfo={enabled:false,source:arrangementFile?.name||null,reason:arrangementFile?'not-analyzed':'not-provided'};
+    if(arrangementFile){
+      try{
+        const candidateAudio=await ac.decodeAudioData(await arrangementFile.arrayBuffer());
+        const durationDelta=Math.abs(candidateAudio.duration-decoded.duration);
+        if(durationDelta<=Math.max(2,decoded.duration*.015)){
+          arrangementAudio=candidateAudio;
+        }else{
+          arrangementInfo={enabled:false,source:arrangementFile.name,reason:'duration-mismatch',durationDeltaSec:durationDelta};
+          console.warn('Arrangement source duration mismatch',durationDelta);
+        }
+      }catch(err){
+        arrangementInfo={enabled:false,source:arrangementFile.name,reason:'decode-failed'};
+        console.warn('Arrangement source decode failed',err);
+      }
+    }
     const rawBpm=$('bpm').value.trim();
     const bpm=rawBpm?Number(rawBpm):null;
     if(rawBpm&&(!Number.isFinite(bpm)||bpm<30||bpm>300))throw Error('基準BPMは30〜300で入力してください。');
-    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm});
-    events=transcription.events;
+    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm,diagnosticKst:Boolean(arrangementAudio)});
     const detectedBpm=transcription.bpm;
-    position=0;$('result').hidden=false;
-    if(downloadUrl)URL.revokeObjectURL(downloadUrl);
     const numerator=Number(transcription.numerator)||4,denominator=Number(transcription.denominator)||4;
     const beatSec=60/detectedBpm*4/denominator,barSec=beatSec*numerator;
     const phaseRaw=Number(transcription.barPhaseSec);
     const barPhaseSec=Number.isFinite(phaseRaw)?((phaseRaw%barSec)+barSec)%barSec:null;
+    events=transcription.events;
+    if(arrangementAudio&&transcription.diagnostics?.kstCandidates&&Number.isFinite(barPhaseSec)){
+      try{
+        const [slotPrior,arrangement]=await Promise.all([
+          loadArrangementSlotPrior(),
+          Promise.resolve(analyzeSections(arrangementAudio,{
+            analysisSampleRate:8000,
+            bpm:detectedBpm,
+            barPhaseSec,
+            numerator,
+            denominator,
+            frameSec:.75,
+            hopSec:.375,
+            contextSec:3,
+            minSectionSec:6,
+            noveltyStd:.55,
+            maxSections:28
+          }))
+        ]);
+        const rescored=rescoreKstByArrangement(events,transcription.diagnostics,arrangement,{
+          bpm:detectedBpm,
+          numerator,
+          denominator,
+          slotPrior,
+          policy:arrangementKstPolicyV39D
+        });
+        events=rescored.events;
+        arrangementInfo={
+          enabled:true,
+          source:arrangementFile.name,
+          method:arrangement.method,
+          boundaries:arrangement.boundaries,
+          sections:arrangement.sections.map(x=>({startSec:x.startSec,endSec:x.endSec,group:x.group,label:x.label,occurrence:x.occurrence,repeatSimilarity:x.repeatSimilarity})),
+          rescore:rescored.info
+        };
+      }catch(err){
+        arrangementInfo={enabled:false,source:arrangementFile.name,reason:'analysis-failed',message:String(err?.message||err)};
+        console.warn('Arrangement KST assist failed; keeping baseline transcription',err);
+      }
+    }
+    position=0;$('result').hidden=false;
+    if(downloadUrl)URL.revokeObjectURL(downloadUrl);
     let meter={bars:[],variableMeterEnabled:false,externalDownbeats:0};
     if(['arcaround','diamondvirgin','kaiju'].includes(exampleId)&&Number.isFinite(barPhaseSec)){
       // These beat positions were extracted from the example's fullmix audio.
@@ -98,14 +183,17 @@ $('analyze').addEventListener('click',async()=>{
     $('previewTitle').textContent=file.name;
     const gridInfo=rhythmGrid.info||{};
     const tempoText=Number.isFinite(gridInfo.tempoMin)&&Number.isFinite(gridInfo.tempoMax)?` / 書出BPM ${gridInfo.tempoMin.toFixed(3)}–${gridInfo.tempoMax.toFixed(3)} (${gridInfo.tempoEvents}点)`:'';
-    $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・クローズHH ${events.filter(e=>e.note===42).length}・オープンHH ${events.filter(e=>e.note===46).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
+    const arrangementText=arrangementInfo.enabled?` / 構造補助 +${arrangementInfo.rescore?.accepted||0}`:'';
+    $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'}${arrangementText} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・クローズHH ${events.filter(e=>e.note===42).length}・オープンHH ${events.filter(e=>e.note===46).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
+    const {events:_rawEvents,diagnostics:_diagnostics,...transcriptionSummary}=transcription;
     globalThis.__drumscribeResult={
-      ...transcription,events:undefined,
+      ...transcriptionSummary,
       barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec,
+      arrangementInfo,
       rhythmGridInfo:{...gridInfo,previewMedianDifferenceMs:timingMedianMs,previewP95DifferenceMs:timingP95Ms},
       meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
     };
-    tell(`${events.length} ノートを推定しました。基準BPM ${detectedBpm.toFixed(3)}。${gridInfo.subdivision||'格子未判定'}へ量子化し、${gridInfo.tempoEvents||1}個のテンポ点で音源の揺れを保持しました。プレビューも書き出しMIDIと同じ時刻です。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}`);
+    tell(`${events.length} ノートを推定しました。基準BPM ${detectedBpm.toFixed(3)}。${gridInfo.subdivision||'格子未判定'}へ量子化し、${gridInfo.tempoEvents||1}個のテンポ点で音源の揺れを保持しました。${arrangementInfo.enabled?` 構造反復補助で${arrangementInfo.rescore?.accepted||0}音を救済しました。`:''}プレビューも書き出しMIDIと同じ時刻です。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}`);
     reviewSelection=null;
     timelineView.resetFit();
     draw();updateClock();loadingSamples=loadSamples();
