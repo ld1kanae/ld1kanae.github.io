@@ -24,12 +24,12 @@ function readThresholdMultipliers(){
   for(const [key,id] of Object.entries(thresholdControlIds)){
     const el=$(id),v=Number(el?.value);
     out[key]=Number.isFinite(v)&&v>=.50&&v<=1.50?v:1;
-    if(el&&!Number.isFinite(v))el.value='1.00';
+    if(el&&!Number.isFinite(v))el.value='1.0';
   }
   return out;
 }
 $('thresholdReset')?.addEventListener('click',()=>{
-  for(const id of Object.values(thresholdControlIds)){const el=$(id);if(el)el.value='1.00';}
+  for(const id of Object.values(thresholdControlIds)){const el=$(id);if(el)el.value='1.0';}
 });
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
