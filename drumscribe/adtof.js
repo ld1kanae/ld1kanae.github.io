@@ -282,10 +282,34 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     rescue:true
   }));
   const egmdSnareSupport=egmdSnareCandidates(acts,assets.kstModel);
+  // Experiment-only broad K/S/T streams. These candidates are never emitted
+  // into production transcription unless a caller explicitly requests them.
+  // They let arrangement/repetition experiments rescore real acoustic
+  // candidates instead of copying notes from another section.
+  let diagnosticKstCandidates=null;
+  if(options.diagnosticKst===true){
+    const diagnosticScales={kick:.65,snare:.50,tom:.65};
+    diagnosticKstCandidates={};
+    for(const [group,classIndex] of [['kick',0],['snare',1],['tom',2]]){
+      const broadScale=diagnosticScales[group];
+      const broadThreshold=BASE_THRESHOLDS[classIndex]*broadScale;
+      const productionThreshold=BASE_THRESHOLDS[classIndex]*scale;
+      diagnosticKstCandidates[group]=pickClass(acts,classIndex,broadThreshold).map(p=>({
+        time:p.time,
+        group,
+        score:p.activation,
+        residual:p.residual,
+        confidence:p.activation/productionThreshold,
+        broadConfidence:p.activation/broadThreshold,
+        diagnostic:true
+      }));
+    }
+  }
   return {
     events,
     snareRescue,
     egmdSnareSupport,
+    diagnosticKstCandidates,
     frames,
     thresholdScale:scale,
     snareRescueScale,
