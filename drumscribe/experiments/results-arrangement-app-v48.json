@@ -1,0 +1,444 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "arrangement-app-v48",
+  "purpose": "Verify the actual production UI/app.js path uses the v46R1 policy and reproduces v47 exported-MIDI metrics.",
+  "kst": {
+    "tp": 4018,
+    "pred": 4282,
+    "ref": 4274,
+    "precision": 0.9383465670247548,
+    "recall": 0.9401029480580253,
+    "f1": 0.9392239364188874,
+    "by_group": {
+      "kick": {
+        "tp": 2639,
+        "pred": 2768,
+        "ref": 2712,
+        "precision": 0.9533959537572254,
+        "recall": 0.9730825958702065,
+        "f1": 0.9631386861313869
+      },
+      "snare": {
+        "tp": 1309,
+        "pred": 1429,
+        "ref": 1470,
+        "precision": 0.9160251924422673,
+        "recall": 0.8904761904761904,
+        "f1": 0.9030700241462574
+      },
+      "tom": {
+        "tp": 70,
+        "pred": 85,
+        "ref": 92,
+        "precision": 0.8235294117647058,
+        "recall": 0.7608695652173914,
+        "f1": 0.7909604519774012
+      }
+    }
+  },
+  "all": {
+    "tp": 7504,
+    "pred": 8237,
+    "ref": 10086,
+    "precision": 0.9110112905183926,
+    "recall": 0.7440015863573269,
+    "f1": 0.8190798450035475,
+    "by_group": {
+      "kick": {
+        "tp": 2639,
+        "pred": 2768,
+        "ref": 2712,
+        "precision": 0.9533959537572254,
+        "recall": 0.9730825958702065,
+        "f1": 0.9631386861313869
+      },
+      "snare": {
+        "tp": 1309,
+        "pred": 1429,
+        "ref": 1470,
+        "precision": 0.9160251924422673,
+        "recall": 0.8904761904761904,
+        "f1": 0.9030700241462574
+      },
+      "hat": {
+        "tp": 3120,
+        "pred": 3405,
+        "ref": 4102,
+        "precision": 0.9162995594713657,
+        "recall": 0.7606045831301804,
+        "f1": 0.8312241907552951
+      },
+      "tom": {
+        "tp": 70,
+        "pred": 85,
+        "ref": 92,
+        "precision": 0.8235294117647058,
+        "recall": 0.7608695652173914,
+        "f1": 0.7909604519774012
+      },
+      "crash": {
+        "tp": 127,
+        "pred": 167,
+        "ref": 390,
+        "precision": 0.7604790419161677,
+        "recall": 0.32564102564102565,
+        "f1": 0.45601436265709155
+      },
+      "ride": {
+        "tp": 103,
+        "pred": 193,
+        "ref": 644,
+        "precision": 0.533678756476684,
+        "recall": 0.15993788819875776,
+        "f1": 0.24611708482676226
+      },
+      "other": {
+        "tp": 0,
+        "pred": 0,
+        "ref": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "pedal_hat": {
+        "tp": 136,
+        "pred": 190,
+        "ref": 676,
+        "precision": 0.7157894736842105,
+        "recall": 0.20118343195266272,
+        "f1": 0.3140877598152425
+      }
+    }
+  },
+  "rescued": 12,
+  "egmdResidualRescued": 3,
+  "songs": {
+    "arcaround": {
+      "score": {
+        "tp": 886,
+        "predicted": 1091,
+        "reference": 1400,
+        "precision": 0.812,
+        "recall": 0.633,
+        "f1": 0.711,
+        "by_group": {
+          "kick": {
+            "tp": 558,
+            "predicted": 590,
+            "reference": 576
+          },
+          "snare": {
+            "tp": 172,
+            "predicted": 192,
+            "reference": 292
+          },
+          "hat": {
+            "tp": 146,
+            "predicted": 272,
+            "reference": 293
+          },
+          "tom": {
+            "tp": 8,
+            "predicted": 18,
+            "reference": 12
+          },
+          "crash": {
+            "tp": 2,
+            "predicted": 4,
+            "reference": 78
+          },
+          "ride": {
+            "tp": 0,
+            "predicted": 1,
+            "reference": 58
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 14,
+            "reference": 91
+          }
+        },
+        "median_error": -0.014
+      },
+      "policy": "family-gmd-plus-egmd-residual-v46r1",
+      "accepted": 5,
+      "acceptedArrangement": 4,
+      "acceptedEgmdResidual": 1,
+      "max_grid_residual_ticks": 0,
+      "hand_tick_violations": 0,
+      "max_hands_same_tick": 2,
+      "meterInfo": {
+        "variableMeterEnabled": true,
+        "externalDownbeats": 152,
+        "threeFourBars": 20
+      }
+    },
+    "diamondvirgin": {
+      "score": {
+        "tp": 1699,
+        "predicted": 1887,
+        "reference": 2389,
+        "precision": 0.9,
+        "recall": 0.711,
+        "f1": 0.795,
+        "by_group": {
+          "kick": {
+            "tp": 688,
+            "predicted": 715,
+            "reference": 740
+          },
+          "snare": {
+            "tp": 588,
+            "predicted": 610,
+            "reference": 608
+          },
+          "hat": {
+            "tp": 246,
+            "predicted": 255,
+            "reference": 755
+          },
+          "tom": {
+            "tp": 40,
+            "predicted": 45,
+            "reference": 57
+          },
+          "crash": {
+            "tp": 34,
+            "predicted": 68,
+            "reference": 70
+          },
+          "ride": {
+            "tp": 103,
+            "predicted": 191,
+            "reference": 155
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 3,
+            "reference": 4
+          }
+        },
+        "median_error": -0.006
+      },
+      "policy": "family-gmd-plus-egmd-residual-v46r1",
+      "accepted": 0,
+      "acceptedArrangement": 0,
+      "acceptedEgmdResidual": 0,
+      "max_grid_residual_ticks": 0,
+      "hand_tick_violations": 0,
+      "max_hands_same_tick": 2,
+      "meterInfo": {
+        "variableMeterEnabled": false,
+        "externalDownbeats": 219,
+        "threeFourBars": 0
+      }
+    },
+    "kaiju": {
+      "score": {
+        "tp": 1176,
+        "predicted": 1234,
+        "reference": 1797,
+        "precision": 0.953,
+        "recall": 0.654,
+        "f1": 0.776,
+        "by_group": {
+          "kick": {
+            "tp": 387,
+            "predicted": 390,
+            "reference": 390
+          },
+          "snare": {
+            "tp": 200,
+            "predicted": 205,
+            "reference": 205
+          },
+          "hat": {
+            "tp": 537,
+            "predicted": 585,
+            "reference": 594
+          },
+          "tom": {
+            "tp": 22,
+            "predicted": 22,
+            "reference": 23
+          },
+          "crash": {
+            "tp": 30,
+            "predicted": 30,
+            "reference": 145
+          },
+          "ride": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 431
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "pedal_hat": {
+            "tp": 0,
+            "predicted": 2,
+            "reference": 9
+          }
+        },
+        "median_error": -0.006
+      },
+      "policy": "family-gmd-plus-egmd-residual-v46r1",
+      "accepted": 0,
+      "acceptedArrangement": 0,
+      "acceptedEgmdResidual": 0,
+      "max_grid_residual_ticks": 0,
+      "hand_tick_violations": 0,
+      "max_hands_same_tick": 2,
+      "meterInfo": {
+        "variableMeterEnabled": false,
+        "externalDownbeats": 184,
+        "threeFourBars": 0
+      }
+    },
+    "nanairo": {
+      "score": {
+        "tp": 1655,
+        "predicted": 1807,
+        "reference": 2009,
+        "precision": 0.916,
+        "recall": 0.824,
+        "f1": 0.867,
+        "by_group": {
+          "kick": {
+            "tp": 486,
+            "predicted": 486,
+            "reference": 486
+          },
+          "snare": {
+            "tp": 144,
+            "predicted": 217,
+            "reference": 155
+          },
+          "hat": {
+            "tp": 945,
+            "predicted": 1007,
+            "reference": 1063
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "crash": {
+            "tp": 18,
+            "predicted": 22,
+            "reference": 45
+          },
+          "ride": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "pedal_hat": {
+            "tp": 62,
+            "predicted": 75,
+            "reference": 260
+          }
+        },
+        "median_error": 0.006
+      },
+      "policy": "family-gmd-plus-egmd-residual-v46r1",
+      "accepted": 5,
+      "acceptedArrangement": 5,
+      "acceptedEgmdResidual": 0,
+      "max_grid_residual_ticks": 0,
+      "hand_tick_violations": 0,
+      "max_hands_same_tick": 2,
+      "meterInfo": {
+        "variableMeterEnabled": false,
+        "externalDownbeats": 0,
+        "threeFourBars": 0
+      }
+    },
+    "ray": {
+      "score": {
+        "tp": 2088,
+        "predicted": 2218,
+        "reference": 2491,
+        "precision": 0.941,
+        "recall": 0.838,
+        "f1": 0.887,
+        "by_group": {
+          "kick": {
+            "tp": 520,
+            "predicted": 587,
+            "reference": 520
+          },
+          "snare": {
+            "tp": 205,
+            "predicted": 205,
+            "reference": 210
+          },
+          "hat": {
+            "tp": 1246,
+            "predicted": 1286,
+            "reference": 1397
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "crash": {
+            "tp": 43,
+            "predicted": 43,
+            "reference": 52
+          },
+          "ride": {
+            "tp": 0,
+            "predicted": 1,
+            "reference": 0
+          },
+          "other": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0
+          },
+          "pedal_hat": {
+            "tp": 74,
+            "predicted": 96,
+            "reference": 312
+          }
+        },
+        "median_error": -0.01
+      },
+      "policy": "family-gmd-plus-egmd-residual-v46r1",
+      "accepted": 2,
+      "acceptedArrangement": 0,
+      "acceptedEgmdResidual": 2,
+      "max_grid_residual_ticks": 0,
+      "hand_tick_violations": 0,
+      "max_hands_same_tick": 2,
+      "meterInfo": {
+        "variableMeterEnabled": false,
+        "externalDownbeats": 0,
+        "threeFourBars": 0
+      }
+    }
+  },
+  "matches_v47_runtime": true
+}
