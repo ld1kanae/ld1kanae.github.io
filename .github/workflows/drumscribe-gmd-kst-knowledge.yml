@@ -41,6 +41,10 @@ jobs:
           test -s drumscribe/models/gmd-kst/manifest-v1.json
           python -m json.tool drumscribe/models/gmd-kst/knowledge-v1.json >/dev/null
           python -m json.tool drumscribe/models/gmd-kst/heldout-manifest-v1.json >/dev/null
+      - name: Evaluate held-out GMD genre signal
+        run: |
+          python drumscribe/experiments/gmd-kst/evaluate_gmd_kst_genre.py
+          test -s drumscribe/experiments/gmd-kst/results-gmd-genre-heldout-v1.json
       - name: Test section and prior modules
         run: |
           node --check drumscribe/section-analysis.js
@@ -80,4 +84,5 @@ jobs:
             drumscribe/models/gmd-kst/heldout-manifest-v1.json
             drumscribe/models/gmd-kst/manifest-v1.json
             drumscribe/experiments/gmd-kst/results-offvocal-sections-v1.json
+            drumscribe/experiments/gmd-kst/results-gmd-genre-heldout-v1.json
           retention-days: 30
