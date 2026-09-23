@@ -14,7 +14,7 @@ for(const song of songs){
   output.songs[song]=await page.evaluate(async({song,variants})=>{
     const [{transcribe},{repairAlternatingHiHats}]=await Promise.all([
       import('/drumscribe/transcribe.js?v=hat-sequence-review-v50'),
-      import('/drumscribe/hat-sequence.js?v=hat-sequence-review-v50')
+      import('/drumscribe/experiments/archive/hat-sequence-v52.js?v=hat-sequence-review-v50')
     ]);
     const ac=new AudioContext();
     const response=await fetch('/DruMaster/songs/'+song+'/drums.mp3');
