@@ -1,0 +1,66 @@
+name: DrumScribe hat fusion LOOCV v60
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/hat-context-v57.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/experiments/browser_hat_fusion_candidates_v60.mjs"
+      - "drumscribe/experiments/evaluate_hat_fusion_loocv_v60.py"
+      - ".github/workflows/drumscribe-hat-fusion-loocv-v60.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install mido numpy scikit-learn
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Collect fresh browser candidates
+        run: node drumscribe/experiments/browser_hat_fusion_candidates_v60.mjs
+      - name: Run five-song leave-one-song-out fusion
+        run: python drumscribe/experiments/evaluate_hat_fusion_loocv_v60.py
+      - name: Commit reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-hat-fusion-candidates-v60.json
+          git add drumscribe/experiments/results-hat-fusion-loocv-v60.json
+          git add drumscribe/experiments/HAT_FUSION_LOOCV_V60.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record five-song hat fusion v60 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-hat-fusion-v60
+          path: |
+            drumscribe/experiments/results-hat-fusion-candidates-v60.json
+            drumscribe/experiments/results-hat-fusion-loocv-v60.json
+            drumscribe/experiments/HAT_FUSION_LOOCV_V60.md
+          retention-days: 14
