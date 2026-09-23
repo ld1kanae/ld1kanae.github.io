@@ -1,0 +1,28 @@
+name: DrumScribe arrangement module check
+
+on:
+  push:
+    branches:
+      - drumscribe-arrangement-module-20260923
+    paths:
+      - "drumscribe/arrangement/**"
+      - ".github/workflows/drumscribe-arrangement-module-check.yml"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-arrangement-module-20260923
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax check
+        run: |
+          node --check drumscribe/arrangement/section-analysis.js
+          node --check drumscribe/arrangement/index.js
+          node --check drumscribe/arrangement/test.mjs
+      - name: Run module smoke test
+        run: node drumscribe/arrangement/test.mjs
