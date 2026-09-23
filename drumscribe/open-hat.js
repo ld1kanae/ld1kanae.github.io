@@ -472,9 +472,9 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     if(Number(model.featureCount)!==26)throw Error(`unexpected open-hat feature count ${model.featureCount}`);
     const closedTemplate=model.assetTemplates?.closed42,openTemplate=model.assetTemplates?.open46;
     if(!closedTemplate||!openTemplate||closedTemplate.length!==BINS||openTemplate.length!==BINS)throw Error('open-hat asset templates are invalid');
-    const thresholdMultiplier=Number.isFinite(Number(context?.thresholdMultiplier))&&Number(context.thresholdMultiplier)>0?Number(context.thresholdMultiplier):1;
-    const rideThresholdMultiplier=Number.isFinite(Number(context?.rideThresholdMultiplier))&&Number(context.rideThresholdMultiplier)>0?Number(context.rideThresholdMultiplier):1;
-    const overlayThresholdMultiplier=Number.isFinite(Number(context?.overlayThresholdMultiplier))&&Number(context.overlayThresholdMultiplier)>0?Number(context.overlayThresholdMultiplier):1;
+    const thresholdMultiplier=Number.isFinite(Number(context?.thresholdMultiplier))&&Number(context.thresholdMultiplier)>=0&&Number(context.thresholdMultiplier)<=2?Number(context.thresholdMultiplier):1;
+    const rideThresholdMultiplier=Number.isFinite(Number(context?.rideThresholdMultiplier))&&Number(context.rideThresholdMultiplier)>=0&&Number(context.rideThresholdMultiplier)<=2?Number(context.rideThresholdMultiplier):1;
+    const overlayThresholdMultiplier=Number.isFinite(Number(context?.overlayThresholdMultiplier))&&Number(context.overlayThresholdMultiplier)>=0&&Number(context.overlayThresholdMultiplier)<=2?Number(context.overlayThresholdMultiplier):1;
     const threshold=Number(model.probThreshold??.55)*thresholdMultiplier;
     report('オープンハイハットの音色を判定中…',99.05);
     const samples=await monoAt44100(decoded),w=workspace(),raw=[];
