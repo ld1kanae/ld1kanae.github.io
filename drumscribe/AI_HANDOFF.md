@@ -1329,3 +1329,11 @@ production既定を `ride-open-decay-rescue` に更新。
 - On note 42 or 44, all already-started/scheduled-prior open-hat voices are choked at that exact scheduled hit time with a 12 ms anti-click linear fade and source stop at 14 ms.
 - Future open-hat voices are not accidentally killed.
 - Both index.html and feedback.html use cache buster `app.js?v=20260924-hihat-choke-v1`.
+
+## 2026-09-23 UTC: 音響学習 v68 / 打点救済 v69（研究のみ）
+
+- `experiments/HAT_AUDIO_TRANSFER_V68_V69.md` に比較方法、曲別結果、次の作業を記録。
+- ユーザー提供の同期WAV/MIDI 5組を SHA-256 で照合。v68は同期音響教師、公開曲MP3から保存済みの実候補、`arrangement/` の反復解析結果、GMDの既存拍内priorをそれぞれ分離して曲単位除外評価した。
+- アルクアラウンド参照Ride位置のHH予測を採点から除外。MP3候補の現行HH macro F1は **0.738864**。最大の実験値は **0.739041** だがアルクアラウンドが退行したため不採用。
+- v69は高域フラックスで候補のないOpenを多数拾えることを示したが、学習判定器が誤候補を十分排除できず、F1改善には至らなかった。
+- `hat-mp3-transfer-v68-research-model.json` は学習済み研究モデル。**本番コードから参照せず、新版への採用根拠にしない。** v66/v67も本番OFFのまま。kick/snare/tomのruntimeは未変更。
