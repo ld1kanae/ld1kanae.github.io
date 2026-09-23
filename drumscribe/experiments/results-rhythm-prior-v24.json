@@ -82,7 +82,10 @@
       "ray": -154,
       "total": -721
     },
-    "decision": "reject"
+    "decision": "reject",
+    "origin": "assistant_added_unrequested_diagnostic",
+    "in_scope": false,
+    "note": "Not requested by the user and not part of the adopted bar-segmentation design."
   },
   "downbeat_four_candidate_test": {
     "description": "Using the current real-browser generated MIDI events, choose among four beat-phase offsets with the corpus prior alone.",
@@ -111,5 +114,6 @@
       "accuracy": 0.7954545454545454
     },
     "interpretation": "Useful supporting evidence, but not sufficient alone because common grooves are often symmetric between beats 1 and 3."
-  }
+  },
+  "user_intent": "Use typical kick/snare rhythmic placement only as evidence for bar/downbeat segmentation. Do not force-relabel kick/snare transcription events by metric position."
 }
