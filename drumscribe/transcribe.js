@@ -687,13 +687,9 @@ export async function transcribe(decoded,report=()=>{},options={}){
     };
     const snareAfterBase=[...snareEvents,...rescued];
     const egmdRescued=[];
-    const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0,top:[]};
+    const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
     const egmdThreshold=egmdSnareSupport[0]?.modelThreshold||1;
     egmdDiag.aboveThreshold=egmdSnareSupport.filter(e=>(e.probability||0)>=egmdThreshold).length;
-    egmdDiag.top=[...egmdSnareSupport]
-      .sort((a,b)=>(b.probability||0)-(a.probability||0))
-      .slice(0,12)
-      .map(e=>({time:e.time,probability:e.probability,score:e.score,kickActivation:e.kickActivation}));
     if(adaptiveSnareRescue){
       for(const e of egmdSnareSupport){
         if((e.probability||0)<(e.modelThreshold||1))continue;
@@ -701,9 +697,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
         egmdDiag.notExisting++;
         if(!nearEvent(kickEvents,e.time,.035))continue;
         egmdDiag.nearKick++;
-        // v3 is externally calibrated at >=.95 precision on disjoint kits.
-        // Do not re-apply the old hand-tuned activation floor here; the model
-        // already includes normalized activation, residual and class-ratio features.
+        if((e.score||0)<.12||(e.score||0)<.25*Math.max(e.kickActivation||0,1e-6))continue;
         egmdDiag.acoustic++;
         const repeat=repeatedEgmdAtSlot(e.time);
         if(repeat<1)continue;
@@ -735,7 +729,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v3-modelgate+kick-tom-veto-v3',
+      mode:'layered-snare-rescue+egmd-v3-support+kick-tom-veto-v2',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
