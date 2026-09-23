@@ -57,3 +57,25 @@ body[data-review-mode="1"] #timeline{cursor:ew-resize;touch-action:none;user-sel
 /* Review voice input */
 #reviewVoice.listening{border-color:#65d7e3;background:#21485a;color:#eefcff}
 #reviewVoice:disabled{opacity:.42;cursor:not-allowed}
+
+
+/* User-adjustable transcription threshold multipliers. */
+.threshold-controls{margin-top:16px;border:1px solid #304a5e;border-radius:11px;background:#0b1827;overflow:hidden}
+.threshold-controls summary{cursor:pointer;list-style:none;padding:11px 13px;font-weight:800;color:#dcebf4;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.threshold-controls summary::-webkit-details-marker{display:none}
+.threshold-controls summary:before{content:"＋";color:var(--cyan);font-weight:800;margin-right:7px}
+.threshold-controls[open] summary:before{content:"−"}
+.threshold-controls summary span{color:var(--muted);font-size:10px;font-weight:600}
+.threshold-controls[open] summary{border-bottom:1px solid #294156}
+.threshold-help{margin:12px 13px 8px;color:var(--muted);font-size:11px}
+.threshold-group{padding:8px 13px 4px}
+.threshold-group>strong{display:block;margin-bottom:7px;color:#a9c2d2;font-size:10px;letter-spacing:.08em}
+.threshold-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px 10px}
+.threshold-grid label{display:grid;grid-template-columns:minmax(0,1fr) 66px;gap:8px;align-items:center;color:#bdd0dc;font-size:11px}
+.threshold-grid input{width:66px;color:var(--text);background:#0b1726;border:1px solid #385166;border-radius:6px;padding:6px;text-align:right;font-variant-numeric:tabular-nums}
+.threshold-grid input:focus{outline:1px solid var(--cyan);border-color:var(--cyan)}
+.threshold-actions{display:flex;justify-content:flex-end;padding:8px 13px 13px}
+.threshold-actions button{border:1px solid #3d7186;border-radius:7px;background:#143047;color:#dff8ff;padding:6px 10px;font-size:10px;font-weight:700}
+.threshold-actions button:hover{background:#1b435d}
+@media(max-width:680px){.threshold-controls summary{align-items:flex-start;flex-direction:column}.threshold-grid{grid-template-columns:1fr 1fr}.threshold-grid label{grid-template-columns:minmax(0,1fr) 62px}.threshold-grid input{width:62px}}
+@media(max-width:430px){.threshold-grid{grid-template-columns:1fr}}
