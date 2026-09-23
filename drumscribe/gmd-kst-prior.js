@@ -56,6 +56,8 @@ export function gmdKstEvidence(knowledge,{
   slot,
   slotsPerBar=16,
   genreWeights={},
+  expertWeights=null,
+  expertFamily='genre',
   beatType=null,
   maxInfluence=.18,
 }={}){
@@ -63,18 +65,19 @@ export function gmdKstEvidence(knowledge,{
   const globalAgg=knowledge?.aggregates?.global?.all;
   if(!globalAgg)return {multiplier:1,global:1,genres:[],confidence:0};
 
-  const normalized=normalizeWeights(genreWeights);
+  const normalized=normalizeWeights(expertWeights||genreWeights);
+  const family=knowledge.aggregates?.[expertFamily]||{};
   const global=phaseMultiplier(globalAgg,group,slot,slotsPerBar);
   const genreRows=[];
   let weightedConfidence=0;
 
   for(const [genre,genreWeight] of Object.entries(normalized)){
-    const genreAgg=knowledge.aggregates?.genre?.[genre];
+    const genreAgg=family?.[genre];
     if(!genreAgg)continue;
     const rel=reliability(genreAgg);
     let local=phaseMultiplier(genreAgg,group,slot,slotsPerBar);
 
-    if(beatType){
+    if(beatType&&expertFamily==='genre'){
       const btAgg=knowledge.aggregates?.genre_beat_type?.[`${genre}|${beatType}`];
       if(btAgg){
         const btRel=reliability(btAgg);
@@ -97,7 +100,7 @@ export function gmdKstEvidence(knowledge,{
   // it is not allowed to overpower the acoustic detector.
   const influence=clamp(Number(maxInfluence)||0,.02,.30);
   const multiplier=clamp(1+(raw-1)*influence,.82,1.18);
-  return {multiplier,raw,global,genres:genreRows,confidence:weightedConfidence};
+  return {multiplier,raw,global,expertFamily,experts:genreRows,genres:genreRows,confidence:weightedConfidence};
 }
 
 export function sectionAtTime(sectionAnalysis,timeSec){
