@@ -3,7 +3,7 @@ import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
-let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
+let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],openHatVoices=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
 let exampleId='';
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
@@ -104,7 +104,20 @@ async function loadSamples(){
 }
 function now(){return playing?Math.max(0,Math.min(decoded.duration,position+context.currentTime-startAt)):position;}
 function gainUpdate(){const solo=Object.values(tracks).some(t=>t.solo);for(const t of Object.values(tracks))if(t.gain)t.gain.gain.value=t.volume*(t.mute||solo&&!t.solo?0:1);}
-function stopNodes(){try{source?.stop();}catch{}source?.disconnect();source=null;for(const n of active){try{n.stop();}catch{}n.disconnect();}active=[];}
+function stopNodes(){try{source?.stop();}catch{}source?.disconnect();source=null;for(const n of active){try{n.stop();}catch{}n.disconnect();}active=[];openHatVoices=[];}
+function chokeOpenHat(when){
+  if(!context||!openHatVoices.length)return;
+  const chokeAt=Math.max(context.currentTime,Number.isFinite(Number(when))?Number(when):context.currentTime);
+  for(const voice of openHatVoices.splice(0)){
+    try{
+      const param=voice.gain.gain;
+      param.cancelScheduledValues(chokeAt);
+      param.setValueAtTime(Math.max(.001,param.value),chokeAt);
+      param.exponentialRampToValueAtTime(.001,chokeAt+.065);
+      voice.source.stop(chokeAt+.08);
+    }catch{}
+  }
+}
 function pause(){if(playing)position=now();playing=false;clearInterval(timer);timer=0;stopNodes();$('play').textContent='▶ 再生';draw();updateClock();}
 function seek(time){const resume=playing;pause();position=Math.max(0,Math.min(decoded?.duration||0,time));if(resume)void play();else{draw();updateClock();}}
 async function play(){
@@ -120,10 +133,12 @@ async function play(){
     const end=now()+.15;
     while(next<midiEvents.length&&midiEvents[next].time+offset<=end){
       const e=midiEvents[next++],buffer=samples.get(e.note);if(!buffer||e.time+offset<now()-.04)continue;
-      const node=ac.createBufferSource(),velocity=ac.createGain();node.buffer=buffer;
+      const node=ac.createBufferSource(),velocity=ac.createGain(),when=Math.max(ac.currentTime,startAt+e.time+offset-position);node.buffer=buffer;
       velocity.gain.value=Math.min(1.3,(e.velocity||90)/100);node.connect(velocity).connect(tracks.midi.gain);
-      node.start(Math.max(ac.currentTime, startAt+e.time+offset-position));active.push(node);
-      node.onended=()=>{node.disconnect();velocity.disconnect();active=active.filter(n=>n!==node);};
+      if(e.note===42||e.note===44)chokeOpenHat(when);
+      node.start(when);active.push(node);
+      if(e.note===46)openHatVoices.push({source:node,gain:velocity});
+      node.onended=()=>{node.disconnect();velocity.disconnect();active=active.filter(n=>n!==node);openHatVoices=openHatVoices.filter(v=>v.source!==node);};
     }
     if(now()>=decoded.duration-.01){position=0;pause();}
   },25);
