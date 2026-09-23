@@ -38,6 +38,8 @@ instrumentalの強い構造変化10点について、nearest barline distance中
 詳細: [PROOF_V34.md](experiments/PROOF_V34.md)  
 機械可読: [results-proof-v34.json](experiments/results-proof-v34.json)
 
+triplet held-out post-promotion run `35847387266` も success。auto / oracle BPM とも 14/24 = 58.33%、triplet 2/12、straight control 12/12でv32と同値。今回の修正によるtriplet分岐の回帰なし。
+
 ## 2026-09-23: 5曲を現行mainでfresh Chromium再採譜し、grid/tempoを直接検証（v31）
 
 v30は既存browser生成イベントを現行grid/tempo層へ再投入した隔離試験だった。今回は `DruMaster/songs/{arcaround,diamondvirgin,kaiju,nanairo,ray}/drums.mp3` を、**現行mainをcheckoutしたGitHub Actions上の実Playwright Chromiumで最初から再採譜**し、download MIDIを直接パースした。
