@@ -1,32 +1,49 @@
 # DrumScribe
 
-ドラム単独音源をブラウザ内で解析して Standard MIDI File（チャンネル10、キック36・スネア38・ハイハット42・タム45・シンバル49）を作る試作です。[アプリを開く](https://ld1kanae.github.io/drumscribe/)。WAV / MP3 などの音源を選び、原音と作成MIDIを重ねて再生できます。両トラックの音量・ソロ・ミュート、シーク、プレビュー用のMIDI時間補正、MIDIダウンロードに対応します。参考音源は既存の `../DruMaster/assets/drums/{36,38,42,45,49}.wav` を同一サイトから読み込みます。音声ファイルはサーバーへ送信しません。
+ドラム単独音源（WAV / MP3など）をブラウザ内で解析し、Standard MIDI File（チャンネル10）を生成する試作です。[アプリを開く](https://ld1kanae.github.io/drumscribe/)。
 
-## 方法
+原音と生成MIDIの同時再生、個別音量、ソロ、ミュート、シーク、MIDIダウンロードに対応します。音声ファイルはサーバーへ送信せず、推論はブラウザ内で行います。
 
-1. Web Audio API で11,025 Hzのモノラルへ変換し、1,024サンプルのHann窓、110サンプル刻みで短時間フーリエ変換します。
-2. 約20 ms前との正の差を低音（35–140 Hz）、中低音（140–900 Hz）、中高音（900–3,000 Hz）、高音（3,000–5,500 Hz）に集約します。ローカル基準値を引き、曲内98パーセンタイルで正規化します。
-3. 各帯域のピークを候補にし、キック・スネアには帯域比、タム・シンバルには[DruMasterのサンプル](../DruMaster/assets/drums/samples.json)から作ったスペクトルテンプレートとの類似度を条件にします。近すぎるピークは音量の大きい方を残します。
-4. 推定時刻を秒単位で保持し、MIDIの120 BPM / PPQ 480へ変換して書き出します。グリッドへの強制吸着はしません。
+## 現在の採譜方式
 
-Pythonで行った実験の詳細、実測値、限界は[検証履歴](VALIDATION.md)を参照してください。Web実装は同じ閾値とFFT設定を使用しますが、ローカル中央値を高速化のため間引いて計算し、ブラウザの音声リサンプリングを使うため、Python側のスコアと完全に同一ではありません。
+1. 音声からテンポ・拍・小節位置と補助的なスペクトル特徴を推定します。従来の11,025 Hz帯域解析は、テンポ/構造推定、金物の補助証拠、ニューラル推論が使えない場合のfallbackとして残しています。
+2. kick / snare / tom / hi-hat / cymbal の主要打点は、44.1 kHz・100 fpsの特徴量を使うADTOF系モデルをONNX Runtime Web/WASMで実行します。モデル資産は `drumscribe/models/`、ブラウザ実装は `adtof.js` / `adtof-worker.js` です。
+3. **kick / snare / tom を優先**して後処理します。
+   - kickは高精度ADTOF出力を基本的に維持します。
+   - snareは通常閾値を維持しつつ、snare不足が強く示唆される曲だけ、同時kick・音響確信度・小節反復で支持された低閾値候補を限定的に救済します。
+   - tomは、kickとほぼ同時で弱く孤立した候補だけをkick bleedとして抑制し、強いtomとtom runは残します。
+4. hi-hatは44.1 kHzの追加特徴を使うExtraTreesフィルタで過検出を抑えます。pedal hi-hat、crash、rideは音響候補と周期/小節位置を組み合わせて推定します。
+5. 推定したBPM・小節情報を使ってMIDIを書き出します。検証曲の可変拍子処理も実装していますが、任意アップロード曲の拍子推定はまだ限定的です。
 
-## 検証の再現
+出力ノートは主に kick 36、snare 38、hi-hat 42、pedal hi-hat 44、tom 45、crash 49、ride 51 を使用します。
 
-Python 3.12、NumPy、SciPy、FFmpeg が必要です。各楽曲の `drums.mp3`、`chart.mid`、`song.json` と `DruMaster/assets/drums/*.wav` を、たとえば `data/<song>/` と `data/samples/` に配置します。ユーザーの曲のコピーはこのフォルダへ含めていません。
+## 現在の実ブラウザ検証
 
-```sh
-python drumscribe/experiments/evaluate.py --data data --seconds 80 --diagnostic --output drumscribe/experiments/results-80s.json
-python drumscribe/experiments/evaluate.py --data data --seconds 0 --patterns bands band-rhythm band-precision --output drumscribe/experiments/results-full.json
-python drumscribe/experiments/export.py --data data --output drumscribe/experiments/generated
-```
+5曲の `drums.mp3` を実Chromiumで採譜し、生成MIDIを `chart.mid` と±80 msで1対1照合した現在値です。参照MIDIは予測生成には使用しません。
 
-評価時に参照MIDIは予測器へ渡しません。予測後、楽器クラスが一致し、時刻差が80 ms以内の音符を1対1で対応付けます。F1は全曲の真陽性・予測数・参照数を集計してから算出します。オフセットは検証だけに使い、一般のアップロード音源に適用しません。
+| Part | TP / Pred / Ref | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|
+| kick | 2636 / 2765 / 2712 | 0.9533 | 0.9720 | **0.9626** |
+| snare | 1273 / 1389 / 1470 | 0.9165 | 0.8660 | **0.8905** |
+| tom | 69 / 84 / 92 | 0.8214 | 0.7500 | **0.7841** |
+
+全クラス合計は TP 7461 / Pred 8192 / Ref 10086、Precision 0.9108、Recall 0.7397、F1 **0.8164** です。
+
+詳細な仮説、各周回、曲別値、失敗した候補、評価上の注意は [検証履歴](VALIDATION.md) を参照してください。
+
+## 主なファイル
+
+- `transcribe.js`: 採譜パイプライン、テンポ/小節推定、構造優先後処理
+- `adtof.js` / `adtof-worker.js`: ADTOF ONNX推論
+- `hat-forest.js`: 高解像度hi-hat過検出フィルタ
+- `models/`: ONNX、filterbank、学習済み補助モデル
+- `midi.js`: MIDI書き出し
+- `experiments/`: 検証コード、生成MIDI、数値結果、履歴
 
 ## 既知の制約
 
-- タム・シンバルはこの検証で弱く、細かな奏法、ハイハットの開閉、クラッシュとライドの区別、同時打撃の音量再現はできません。
-- この方法は**ドラム単独の音源**を想定します。楽曲全体からの分離は実装していません。
-- 推定MIDIは原曲のBPMやテンポ変化を復元しません。秒単位の時刻を固定テンポのMIDIに写します。
-- 15分を超える音源は読み込みを拒否します。長い音源ではブラウザのメモリと解析時間が増えます。
-
+- 現在の数値は同じ5曲を使いながら改善を反復した結果であり、未知曲で同じ精度を保証しません。
+- tomは参照92打と母数が小さいため、追加曲での検証が必要です。
+- snare救済は曲単位の音声由来gateで誤発火を抑えていますが、未知曲での一般化は未確認です。
+- crash / ride / pedal hi-hatはkick/snare/tomより精度が低く、今後の改善対象です。
+- 基本対象は**ドラム単独音源**です。楽曲全体からドラムを分離する処理は現在のWebアプリには含めていません。
