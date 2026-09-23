@@ -26,7 +26,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          pip install all-in-one-infer==3.1.0
+          pip install all-in-one-infer==3.1.0 torchcodec
           all-in-one-infer --help | head -120
       - name: Analyze arcaround offvocal
         run: |
