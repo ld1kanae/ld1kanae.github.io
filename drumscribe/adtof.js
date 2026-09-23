@@ -7,6 +7,10 @@ const PRECISION_SCALE=1.15;
 let assetsPromise=null;
 
 const wait=()=>new Promise(resolve=>setTimeout(resolve,0));
+function thresholdMul(multipliers,key){
+  const v=Number(multipliers?.[key]);
+  return Number.isFinite(v)&&v>0?v:1;
+}
 
 async function mono44100(decoded){
   if(decoded.sampleRate===RATE){
@@ -225,12 +229,12 @@ function egmdProbability(kstModel,st,group,classIndex,frame){
   if(!model||!st)return {probability:null,modelThreshold:null,hypothesis:null};
   return {
     probability:logisticPredict(model,kstFeature(st,frame,classIndex)),
-    modelThreshold:Number(model.threshold)||.6,
+    modelThreshold:(Number(model.threshold)||.6)*thresholdMultiplier,
     hypothesis:model.hypothesis||null
   };
 }
 
-function egmdSnareCandidates(acts,kstModel){
+function egmdSnareCandidates(acts,kstModel,thresholdMultiplier=1){
   const model=kstModel?.models?.snare;
   if(!model)return [];
   const st=buildKstStats(acts);
@@ -250,10 +254,10 @@ function egmdSnareCandidates(acts,kstModel){
   }));
 }
 
-function toEvents(acts,scale=PRECISION_SCALE){
+function toEvents(acts,scale=PRECISION_SCALE,thresholdMultipliers={}){
   const out=[];
   for(let c=0;c<GROUPS.length;c++){
-    const threshold=BASE_THRESHOLDS[c]*scale;
+    const threshold=BASE_THRESHOLDS[c]*scale*thresholdMul(thresholdMultipliers,GROUPS[c]);
     for(const p of pickClass(acts,c,threshold)){
       out.push({
         time:p.time,
@@ -276,12 +280,13 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
   const {features,frames}=await frontend(samples,assets.filterbank,report);
   const acts=await inferChunks(features,frames,assets,report);
   const scale=Number.isFinite(options.thresholdScale)?options.thresholdScale:PRECISION_SCALE;
-  const events=toEvents(acts,scale);
+  const thresholdMultipliers=options.thresholdMultipliers||{};
+  const events=toEvents(acts,scale,thresholdMultipliers);
   // Keep a lower-threshold snare stream for conservative post-processing.
   // It is never emitted directly; transcribe.js may rescue only candidates
   // that are independently supported by a simultaneous kick and repetition.
   const snareRescueScale=Number.isFinite(options.snareRescueScale)?options.snareRescueScale:.50;
-  const snareRescueThreshold=BASE_THRESHOLDS[1]*snareRescueScale;
+  const snareRescueThreshold=BASE_THRESHOLDS[1]*snareRescueScale*thresholdMul(thresholdMultipliers,'snareRescue');
   const snareRescue=pickClass(acts,1,snareRescueThreshold).map(p=>({
     time:p.time,
     group:'snare',
@@ -291,7 +296,7 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     adtof:true,
     rescue:true
   }));
-  const egmdSnareSupport=egmdSnareCandidates(acts,assets.kstModel);
+  const egmdSnareSupport=egmdSnareCandidates(acts,assets.kstModel,thresholdMul(thresholdMultipliers,'egmdSnare'));
   // Experiment-only broad K/S/T streams. These candidates are never emitted
   // into production transcription unless a caller explicitly requests them.
   // They let arrangement/repetition experiments rescore real acoustic
@@ -330,6 +335,7 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     frames,
     thresholdScale:scale,
     snareRescueScale,
+    thresholdMultipliers,
     backend:'onnxruntime-web/wasm',
     coreFrames:CORE_FRAMES,
     overlapFrames:OVERLAP_FRAMES,
