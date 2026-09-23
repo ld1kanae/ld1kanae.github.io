@@ -41,9 +41,9 @@ def candidate_map(info,name):
         return k3_absolute_map(info.get("centersHz") or [])
     return None
 
-def absolute_peak_note(hz):
+def absolute_peak_note(hz,high_threshold=190):
     hz=float(hz or 0)
-    return 41 if hz<110 else 45 if hz<145 else 47 if hz<190 else 50
+    return 41 if hz<110 else 45 if hz<145 else 47 if hz<high_threshold else 50
 
 def decision_pairs(info,ref,shift,name):
     decisions=info.get("decisions") or []
@@ -53,7 +53,9 @@ def decision_pairs(info,ref,shift,name):
         note=int(d.get("note") or 45)
         rank=d.get("clusterRank")
         if name=="absolute_peak_v1":
-            note=absolute_peak_note(d.get("hz"))
+            note=absolute_peak_note(d.get("hz"),190)
+        elif name in ("absolute_peak_200_v2","absolute_peak_210_v2","absolute_peak_220_v2"):
+            note=absolute_peak_note(d.get("hz"),int(name.split("_")[2]))
         elif name=="hybrid_k3_absolute_v1" and int(info.get("clusters") or 0)==3:
             note=absolute_peak_note(d.get("hz"))
         elif mapping is not None and isinstance(rank,int) and 0<=rank<len(mapping):
@@ -100,7 +102,7 @@ def metrics(pairs):
 def main():
     out={"schema":2,"toleranceSec":TOL,"songs":{},"decisionCandidates":{}}
     allpairs=[]
-    candidate_names=["absolute_peak_v1","hybrid_k3_absolute_v1","k3_41_45_47","k3_41_45_50","k3_41_47_50","k3_45_47_50","k3_absolute_anchor_v1"]
+    candidate_names=["absolute_peak_v1","absolute_peak_200_v2","absolute_peak_210_v2","absolute_peak_220_v2","hybrid_k3_absolute_v1","k3_41_45_47","k3_41_45_50","k3_41_47_50","k3_45_47_50","k3_absolute_anchor_v1"]
     candidate_all={name:[] for name in candidate_names}
     for song in SONGS:
         folder=ROOT/"DruMaster/songs"/song
