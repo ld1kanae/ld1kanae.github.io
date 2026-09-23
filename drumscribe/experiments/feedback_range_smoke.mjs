@@ -54,10 +54,13 @@ if(state.beatTimes.length>2 && nearestBeatDistance(state.apiSelection.start)<.00
 }
 
 await page.click('#clearSelection');
-const clickX=box.x+box.width*.37;
+await canvas.scrollIntoViewIfNeeded();
+const seekBox=await canvas.boundingBox();
+if(!seekBox) throw new Error('timeline lost its bounding box');
+const clickX=seekBox.x+seekBox.width*.37,clickY=seekBox.y+seekBox.height*.45;
 const rawClickTime=await page.evaluate(x=>window.DrumScribeTimeline.clientXToTime(x),clickX);
 const expectedBeat=await page.evaluate(t=>window.DrumScribeTimeline.snapTimeToBeat(t),rawClickTime);
-await page.mouse.click(clickX,y);
+await page.mouse.click(clickX,clickY);
 await page.waitForTimeout(100);
 const snappedTime=await page.evaluate(()=>window.DrumScribeTimeline.getCurrentTime());
 console.log('SEEK_SNAP',JSON.stringify({rawClickTime,expectedBeat,snappedTime}));
@@ -70,7 +73,7 @@ await page.evaluate(({x1,x2,y})=>{
   canvas.dispatchEvent(new TouchEvent('touchstart',{touches:[a],targetTouches:[a],changedTouches:[a],bubbles:true,cancelable:true}));
   window.dispatchEvent(new TouchEvent('touchmove',{touches:[b],targetTouches:[b],changedTouches:[b],bubbles:true,cancelable:true}));
   window.dispatchEvent(new TouchEvent('touchend',{touches:[],targetTouches:[],changedTouches:[b],bubbles:true,cancelable:true}));
-},{x1:box.x+box.width*.58,x2:box.x+box.width*.72,y});
+},{x1:seekBox.x+seekBox.width*.58,x2:seekBox.x+seekBox.width*.72,y:seekBox.y+seekBox.height*.45});
 await page.waitForTimeout(100);
 const touchState=await page.evaluate(()=>({popoverHidden:document.querySelector('#reviewPopover')?.hidden,selection:window.DrumScribeTimeline?.getSelection?.()}));
 console.log('TOUCH_STATE',JSON.stringify(touchState));
