@@ -1613,3 +1613,73 @@ ADTOFのtomがkickから30 ms以内にあり、tom run（45–240 ms内の別tom
 
 この5曲を見ながらルールを選定しているため、未知曲で同じ改善幅を保証しない。特にsnare rescueのsong-level gateは未知曲での誤発火を今後追加曲で検証する必要がある。
 
+## 2026-09-23: GMD / E-GMD を kick・snare・tom 改善へ試験利用
+
+Google/Magenta Groove MIDI Dataset (GMD) の MIDI-only v1.0.0 を使用し、train split の4/4のみ **887ファイル / 18,534小節**から kick / snare / tom の16分位置別出現率、同時打ち条件付き確率、beat/fill・style family別の集計priorを生成した。元MIDIはリポジトリへ保存せず、集計結果のみ `drumscribe/models/gmd-kst-prior.json` に保存。GMDは CC BY 4.0 で、ライセンス表記も同梱した。
+
+既存の Magenta E-GMD Onsets & Frames 5曲ベースラインは、現行ADTOF単独より低かったため置換用途には採用しなかった（kick F1 0.9130 / snare 0.7502 / tom 0.4164）。今回はE-GMDモデルを第二判定器としてのみ使用した。
+
+### GMDから得られた重要な一般化上の修正
+
+現5曲だけを見るとkick+tom同時打ちは4件しかなかったが、GMD train 4/4集計では以下だった。
+
+- kick only: 41,888
+- snare only: 69,584
+- tom only: 16,055
+- kick+snare: 16,073
+- kick+tom: 4,419
+- snare+tom: 2,112
+- kick+snare+tom: 880
+
+kickを含む打点63,260のうちkick+tom系は5,299で約8.4%。16分位置別の `P(tom|kick)` も約2.9%〜17.6%に分布した。したがって「kickと同時のtomは一般に稀」という仮定は採用しない。現行のkick/tom vetoは、現5曲で確認されたbleed対策として **弱い・孤立したtomだけ** に限定しているため現時点では維持するが、未知曲一般化の確認対象とする。
+
+### 3方式の比較
+
+基準は実Chromium現行版:
+- kick F1 **0.962571**
+- snare F1 **0.890521**
+- tom F1 **0.784091**
+- overall F1 **0.816391**
+
+A. **GMD prior + E-GMD snare rescue**
+- E-GMD側でsnare候補
+- 現行snareから未検出
+- 現行kickとの近接
+- GMDの `P(snare|kick, slot)`
+- 同一16分位置の反復
+を条件に追加。
+
+最良候補:
+- prior: rock_family
+- kick window: 35 ms
+- GMD snare prior >= 0.08
+- 反復支持 >= 4
+- snare TP / Pred / Ref: **1282 / 1404 / 1470**
+- snare Precision **0.913105**
+- Recall **0.872109**
+- F1 **0.892136**
+- overall F1 **0.816706**
+- kick F1 **0.962571**、tom F1 **0.784091** は不変
+
+基準比でsnare F1 **+0.001615**。小幅だが改善。
+
+B. **GMD prior + E-GMD tom veto**
+現行tomがkickと近接し、E-GMD tomの支持がなく、GMD `P(tom|kick, slot)` が低い場合のみ削除する方式を探索。最良の安全候補は **変更なし** だった。現在のtom F1 0.784091を超えられず、不採用。
+
+C. **hybrid**
+snare rescue + tom vetoを同時使用。最良候補は:
+- snare F1 **0.891790**
+- tom F1 **0.784091**
+- overall F1 **0.816803**
+snare recallは上がるがprecision低下がAより大きく、KST優先目的ではAに劣るため不採用。
+
+### ブラウザ直接統合試験
+
+外部E-GMDモデルを常時動かさずGMD priorだけを現行低閾値snare救済へ足す試験も行った。既存の12件救済に対して **GMD prior由来の追加採用は0件**、5曲のkick/snare/tom/overall値はすべて基準と同一だった。効果がないためruntimeへの追加fetchは撤回し、productionロジックは元に戻した。現在の `transcribe.js` は採用済み高精度版とロジック同一で、GMDに関するコメントだけ一般化に合わせて修正した。
+
+### 判定
+
+GMD/E-GMDは **snareの第二判定・候補順位付けには有望**だが、今回の一周ではproductionへ入れるほど大きな改善ではない。特にtomについては、GMDにより「kick+tomを過度に抑制してはいけない」ことが分かった点の方が重要だった。
+
+次の有力案は、E-GMD 90GB全体を扱うのではなく、kit-held-outの小規模音声subsetでADTOFのkick/snare/tom誤分類を直接学習し、現在の低信頼候補だけを再分類する軽量モデルを作ること。
+
