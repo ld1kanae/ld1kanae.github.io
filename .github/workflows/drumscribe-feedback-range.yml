@@ -1,0 +1,41 @@
+name: DrumScribe feedback range selection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/feedback.html"
+      - "drumscribe/feedback.js"
+      - "drumscribe/app.js"
+      - "drumscribe/style.css"
+      - "drumscribe/experiments/feedback_range_smoke.mjs"
+      - ".github/workflows/drumscribe-feedback-range.yml"
+  workflow_dispatch:
+
+jobs:
+  range-selection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Wait for feedback page deployment
+        run: |
+          for i in $(seq 1 120); do
+            if curl -fsSL "https://ld1kanae.github.io/drumscribe/feedback.html?ci=$GITHUB_SHA" | grep -q "feedback.js?v=20260923-review-v4"; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "feedback page was not deployed" >&2
+          exit 1
+      - name: Verify waveform range selection
+        env:
+          DRUMSCRIBE_FEEDBACK_URL: "https://ld1kanae.github.io/drumscribe/feedback.html?ci=${{ github.sha }}"
+        run: node drumscribe/experiments/feedback_range_smoke.mjs
