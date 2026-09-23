@@ -40,17 +40,18 @@ jobs:
           sleep 2
       - name: Generate current and three alternating variants
         run: |
-          cp drumscribe/experiments/browser_validate_openhat_variants.mjs /tmp/browser_alt.mjs
+          cp drumscribe/experiments/browser_validate_openhat_variants.mjs drumscribe/experiments/browser_alt_v49.mjs
           python - <<'PY'
           from pathlib import Path
-          p=Path('/tmp/browser_alt.mjs');s=p.read_text()
+          p=Path('drumscribe/experiments/browser_alt_v49.mjs');s=p.read_text()
           s=s.replace("const variants=['base','decay','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue'];",
             "const variants=['ride-open-decay-rescue','ride-open-decay-rescue-alt-strict','ride-open-decay-rescue-alt-local','ride-open-decay-rescue-alt-global'];")
           s=s.replace("const root='drumscribe/experiments/generated-openhat-v40';",
             "const root='drumscribe/experiments/generated-openhat-alternating-v49';")
           p.write_text(s)
           PY
-          node /tmp/browser_alt.mjs
+          node drumscribe/experiments/browser_alt_v49.mjs
+          rm -f drumscribe/experiments/browser_alt_v49.mjs
       - name: Score five-song non-regression
         run: |
           cp drumscribe/experiments/compare_openhat_variants.py /tmp/compare_alt.py
