@@ -1,5 +1,11 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-24: Pedal HHをClosed HHへ出力統合
+
+仕様修正。Closed HHとPedal HHをユーザー向け採譜結果では区別せず、内部pedal_hat候補も最終出力時に **GM42 / group=hat** へ丸めるよう変更した。GM44はMIDIへ出力しない。
+
+内部pedal_hat判定自体はOpen-HH choke/context等の補助情報として残すが、ユーザー調整UIからPedal HH倍率を削除し、結果サマリーから個別Pedal HH件数も削除した。
+
 ## 2026-09-24: ユーザー調整用・判定閾値倍率 UI
 
 production UI に、既存のactivation / probability / score系閾値へ掛ける倍率を追加した。全項目デフォルト **1.0**、入力範囲 0.50–1.50、step 0.05。
