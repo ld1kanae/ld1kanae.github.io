@@ -1,0 +1,68 @@
+name: DrumScribe arrangement KST v38
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/adtof.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/arrangement/**"
+      - "drumscribe/experiments/browser_arrangement_kst_v38.mjs"
+      - "drumscribe/experiments/evaluate_arrangement_kst_v38.py"
+      - ".github/workflows/drumscribe-arrangement-kst-v38.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install mido remotezip
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Collect real-browser A/A-prime KST candidates
+        run: node drumscribe/experiments/browser_arrangement_kst_v38.mjs
+      - name: Score three rescue hypotheses
+        run: python drumscribe/experiments/evaluate_arrangement_kst_v38.py
+      - name: Commit reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-arrangement-kst-candidates-v38.json
+          git add drumscribe/experiments/results-arrangement-kst-rescore-v38.json
+          git add drumscribe/experiments/ARRANGEMENT_KST_V38.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record arrangement KST v38 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-arrangement-kst-v38
+          path: |
+            drumscribe/experiments/results-arrangement-kst-candidates-v38.json
+            drumscribe/experiments/results-arrangement-kst-rescore-v38.json
+            drumscribe/experiments/ARRANGEMENT_KST_V38.md
+          retention-days: 14
