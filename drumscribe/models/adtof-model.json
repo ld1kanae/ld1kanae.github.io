@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "source": "xavriley/ADTOF-pytorch",
+  "sampleRate": 44100,
+  "fps": 100,
+  "hopLength": 441,
+  "fftSize": 2048,
+  "nBins": 84,
+  "nChannels": 1,
+  "classes": [
+    {
+      "name": "kick",
+      "midi": 35,
+      "threshold": 0.22
+    },
+    {
+      "name": "snare",
+      "midi": 38,
+      "threshold": 0.24
+    },
+    {
+      "name": "tom",
+      "midi": 47,
+      "threshold": 0.32
+    },
+    {
+      "name": "hat",
+      "midi": 42,
+      "threshold": 0.22
+    },
+    {
+      "name": "cymbal",
+      "midi": 49,
+      "threshold": 0.3
+    }
+  ],
+  "filterbankShape": [
+    84,
+    1024
+  ],
+  "filterbankFile": "adtof-filterbank.f32",
+  "onnxFile": "adtof-frame-rnn.onnx",
+  "onnxBytes": 1822268,
+  "verification": {
+    "random": {
+      "shape": [
+        1,
+        731,
+        5
+      ],
+      "mae": 2.5089752497819973e-08,
+      "max_abs": 2.60770320892334e-07,
+      "p99_abs": 8.742790669202805e-08
+    },
+    "audio12s": {
+      "shape": [
+        1,
+        1201,
+        5
+      ],
+      "mae": 2.6912506001508518e-08,
+      "max_abs": 2.384185791015625e-07,
+      "p99_abs": 1.0428571783904772e-07
+    }
+  }
+}

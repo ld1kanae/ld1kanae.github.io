@@ -4,8 +4,7 @@ const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
-const groupNotes=[36,38,42,46,45,48,49,51,60];
-let lastBpm=null;
+const groupNotes=[36,38,42,44,45,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
 function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;decoded=null;events=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
@@ -17,27 +16,55 @@ drop.addEventListener('drop',e=>select(Array.from(e.dataTransfer.files).find(f=>
 $('example').addEventListener('change',async e=>{
   const id=e.target.value;if(!id)return;
   $('analyze').disabled=true;tell('検証用音源を取得中…');
-  try{const r=await fetch(`../DruMaster/songs/${id}/drums.mp3`);if(!r.ok)throw Error(`HTTP ${r.status}`);
-    const blob=await r.blob();select(new File([blob],`${id}-drums.mp3`,{type:'audio/mpeg'}));$('example').value=id;
-  }catch(err){tell(`音源を取得できませんでした: ${err.message}`,true);$('analyze').disabled=!file;}
+  try{
+    const r=await fetch(`../DruMaster/songs/${id}/drums.mp3`);if(!r.ok)throw Error(`HTTP ${r.status}`);
+    const blob=await r.blob();
+    select(new File([blob],`${id}-drums.mp3`,{type:'audio/mpeg'}));
+    $('example').value=id;
+    $('bpm').value='';
+  }catch(err){
+    tell(`音源を取得できませんでした: ${err.message}`,true);
+    $('analyze').disabled=!file;
+  }
 });
 async function audioContext(){if(!context){context=new AudioContext();tracks.audio.gain=context.createGain();tracks.midi.gain=context.createGain();tracks.audio.gain.connect(context.destination);tracks.midi.gain.connect(context.destination);}await context.resume();return context;}
 $('analyze').addEventListener('click',async()=>{
   if(!file)return;pause();$('analyze').disabled=true;$('progress').hidden=false;$('progress').value=0;
   try{
-    const bpmText=$('referenceBpm').value.trim();
-    if(bpmText&&!$('referenceBpm').checkValidity())throw Error('基準BPMは40～300の範囲で入力してください。');
-    lastBpm=bpmText?Number(bpmText):null;
     const ac=await audioContext();tell('音源を読み込み中…');
     decoded=await ac.decodeAudioData(await file.arrayBuffer());
     if(decoded.duration>900)throw Error('15分以内の音源を選択してください。');
-    events=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{referenceBpm:lastBpm});
+    const rawBpm=$('bpm').value.trim();
+    const bpm=rawBpm?Number(rawBpm):null;
+    if(rawBpm&&(!Number.isFinite(bpm)||bpm<30||bpm>300))throw Error('基準BPMは30〜300で入力してください。');
+    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm});
+    events=transcription.events;
+    const detectedBpm=transcription.bpm;
     position=0;$('result').hidden=false;
     if(downloadUrl)URL.revokeObjectURL(downloadUrl);
-    downloadUrl=URL.createObjectURL(new Blob([midiFile(events,lastBpm)],{type:'audio/midi'}));
+    const numerator=Number(transcription.numerator)||4,denominator=Number(transcription.denominator)||4;
+    const beatSec=60/detectedBpm*4/denominator,barSec=beatSec*numerator;
+    const phaseRaw=Number(transcription.barPhaseSec);
+    const barPhaseSec=Number.isFinite(phaseRaw)?((phaseRaw%barSec)+barSec)%barSec:null;
+    let exportOffsetSec=0,exportBarPad=0;
+    if(Number.isFinite(barPhaseSec)&&events.length){
+      const minMusical=Math.min(...events.map(e=>e.time-barPhaseSec));
+      if(minMusical<0)exportBarPad=Math.ceil(-minMusical/barSec);
+      exportOffsetSec=exportBarPad*barSec-barPhaseSec;
+    }
+    downloadUrl=URL.createObjectURL(new Blob([midiFile(events,detectedBpm,{
+      barPhaseSec,
+      numerator,
+      denominator
+    })],{type:'audio/midi'}));
     $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
-    $('previewTitle').textContent=file.name;$('resultSummary').textContent=`${fmt(decoded.duration)} / ${events.length} ノート / キック ${events.filter(e=>e.group==='kick').length}・スネア ${events.filter(e=>e.group==='snare').length}・ハイハット ${events.filter(e=>e.group==='hat').length}・タム ${events.filter(e=>e.group==='tom').length}・シンバル ${events.filter(e=>e.group==='cymbal').length}・その他 ${events.filter(e=>e.group==='other').length}`;
-    tell(`${events.length} ノートを推定しました。プレビューで確認し、MIDIを書き出せます。`);
+    $('previewTitle').textContent=file.name;
+    $('resultSummary').textContent=`${fmt(decoded.duration)} / BPM ${detectedBpm.toFixed(3)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
+    globalThis.__drumscribeResult={
+      ...transcription,events:undefined,
+      barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec
+    };
+    tell(`${events.length} ノートを推定しました。BPM ${detectedBpm.toFixed(3)}。プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
   finally{$('analyze').disabled=false;$('progress').hidden=true;}
@@ -101,7 +128,7 @@ function draw(){
     c.moveTo(x,h*.32-peak*h*.27);c.lineTo(x,h*.32+peak*h*.27);
   }c.stroke();c.globalAlpha=1;
   c.fillStyle='#203144';c.fillRect(0,h*.64,w,h*.36);
-  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',tom:'#e8ca83',cymbal:'#8dd3a0',other:'#f9a9cc'},offset=Number($('offset').value||0)/1000;
-  for(const e of events){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,tom:3,cymbal:4,other:5}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.052),Math.max(1.5*dpr,w/1500),4*dpr);}
+  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',tom:'#e8ca83',crash:'#8dd3a0',ride:'#78b7a1'},offset=Number($('offset').value||0)/1000;
+  for(const e of events){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,tom:3,crash:4,ride:4}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.058),Math.max(1.5*dpr,w/1500),4*dpr);}
   const cursor=now()/decoded.duration*w;c.fillStyle='#eaf7fc';c.fillRect(cursor,0,2*dpr,h);
 }
