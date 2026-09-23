@@ -171,7 +171,7 @@ def score_selfcal(d,s,bm,th):
     bc=[t for t,p in zip(d[s]["hats"],hp) if p<BASE_THRESHOLD]
     sm,info=pseudo_selfcal(d,s,bm);h=d[s]["hf"]
     if sm is None:rp=np.zeros(len(h["times"]))
-    else:rp=p1(sm,h["Xone"][:,:26])
+    else:rp=p1(sm,h["Xd"][:,:26])
     rescue=[t for t in nms(h["times"],rp,th) if not near_times(bo,t,.060)]
     met=oh.articulation_metrics(sorted(bo+rescue),bc,d[s]["refs"])
     info.update({"baseOpen":len(bo),"rescue":len(rescue),"maxProb":float(np.max(rp)) if len(rp) else 0.,
