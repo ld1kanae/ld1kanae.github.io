@@ -1,0 +1,40 @@
+name: DrumScribe downbeat LOO v20
+
+on:
+  push:
+    branches: [drumscribe-v2-eval]
+    paths:
+      - "drumscribe/experiments/downbeat_loo_v20.py"
+      - ".github/workflows/drumscribe-downbeat-loo-v20.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install mido numpy scikit-learn
+      - run: python drumscribe/experiments/downbeat_loo_v20.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-downbeat-loo-v20.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record downbeat LOO v20 results [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin drumscribe-v2-eval
+            git push origin HEAD:drumscribe-v2-eval && exit 0
+            sleep $((attempt*2))
+          done
+          exit 1
