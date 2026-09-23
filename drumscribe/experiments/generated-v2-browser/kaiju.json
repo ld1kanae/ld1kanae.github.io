@@ -176,7 +176,7 @@
       "cymbal": 59
     },
     "structuralPriority": {
-      "mode": "layered-snare-rescue+egmd-v3-support+kick-tom-veto-v2",
+      "mode": "layered-snare-rescue+egmd-v3-modelgate+kick-tom-veto-v3",
       "snareRescueCandidates": 215,
       "rescueDensity": 1.048780487804878,
       "snareKickDensity": 0.5256410256410257,
@@ -246,16 +246,30 @@
       "meanProbability": 0.6646944471407904
     },
     "openHat": {
-      "mode": "open-hat-extra-trees-v2-gmd128",
+      "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
       "candidates": 585,
       "promoted": 11,
+      "rescued": 0,
       "enabled": true,
       "threshold": 0.575,
       "closed": 574,
       "modelTrees": 320,
       "modelFeatures": 26,
       "meanProbability": 0.16896704496976986,
-      "maxProbability": 0.7047577818472184
+      "maxProbability": 0.7047577818472184,
+      "overlay": {
+        "enabled": true,
+        "gate": false,
+        "candidates": 260,
+        "rescued": 0,
+        "physicalSkipped": 0,
+        "maxProbability": 0.7334829986594743,
+        "maxRepeatScore": 0.6564306745630188,
+        "scoreThreshold": 0.68,
+        "modelTrees": 280,
+        "modelFeatures": 29,
+        "policy": "repeat_gate_2hands"
+      }
     }
   },
   "numerator": 4,
