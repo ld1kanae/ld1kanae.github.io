@@ -1,0 +1,48 @@
+name: DrumScribe crash acoustic selector v51
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/transcribe.js"
+      - "drumscribe/experiments/browser_crash_diagnostics_v51.mjs"
+      - "drumscribe/experiments/train_crash_selector_v51.py"
+      - ".github/workflows/drumscribe-crash-v51.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy scikit-learn
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Fresh-generate crash diagnostics
+        run: node drumscribe/experiments/browser_crash_diagnostics_v51.mjs
+      - name: Train and LOO-evaluate selectors
+        run: python drumscribe/experiments/train_crash_selector_v51.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-crash-v51.json drumscribe/experiments/crash-selector-v51-logistic.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "drumscribe: record crash acoustic selector v51"
+          git pull --rebase origin main
+          git push origin HEAD:main
