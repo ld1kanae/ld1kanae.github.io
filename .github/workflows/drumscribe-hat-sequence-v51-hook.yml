@@ -1,0 +1,61 @@
+name: DrumScribe alternating hi-hat v51 inversion gate
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/drumscribe-hat-sequence-v51-hook.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - name: Add domain inversion gate
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('drumscribe/hat-sequence.js');s=p.read_text()
+          def once(old,new):
+              global s
+              if old not in s: raise SystemExit('missing replacement:\n'+old)
+              s=s.replace(old,new,1)
+          once("  const variants=new Set(['off','articulation','metal-grid','guarded-rescue']);\n  if(!variants.has(variant)||variant==='off')return {events,info:{enabled:false,variant:'off'}};",
+               "  const variants=new Set(['off','articulation','metal-grid','guarded-rescue','inversion-articulation','inversion-metal-grid','inversion-guarded-rescue']);\n  if(!variants.has(variant)||variant==='off')return {events,info:{enabled:false,variant:'off'}};\n  const inversionOnly=variant.startsWith('inversion-');\n  const baseVariant=inversionOnly?variant.slice('inversion-'.length):variant;")
+          once("    const currentMetal=current.filter(e=>metalGroups.has(e.group)),currentTimes=currentMetal.map(e=>e.time);\n    const used=new Set(),replace=new Map();let changed=0,convertedCymbal=0,removedOffGrid=0,rescued=0;",
+               "    const currentMetal=current.filter(e=>metalGroups.has(e.group)),currentTimes=currentMetal.map(e=>e.time);\n    // Song-local domain gate. The supplied review song has a distinctive failure:\n    // legacy Open probabilities are compressed and anti-correlated with the\n    // sequence model's alternating parity. Ordinary songs must not be rewritten.\n    const legacyOpen=[],legacyClosed=[],legacyAll=[];\n    for(const slot of selected){\n      const ci=nearIndex(currentTimes,slot.time,Number(policy.gridToleranceSec)||.09);\n      if(ci<0)continue;\n      const p=Number(currentMetal[ci].openHatProbability);\n      if(!Number.isFinite(p))continue;\n      legacyAll.push(p);\n      if(slot.voteOpen>slot.voteClosed)legacyOpen.push(p);else legacyClosed.push(p);\n    }\n    const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;\n    const legacyOpenMean=avg(legacyOpen),legacyClosedMean=avg(legacyClosed);\n    const legacyParityDelta=Number.isFinite(legacyOpenMean)&&Number.isFinite(legacyClosedMean)?legacyOpenMean-legacyClosedMean:null;\n    const maxLegacyProbability=legacyAll.length?Math.max(...legacyAll):null;\n    const hatDen=currentMetal.filter(e=>e.group==='hat'||e.group==='open_hat').length;\n    const currentOpenRatio=hatDen?currentMetal.filter(e=>e.group==='open_hat').length/hatDen:0;\n    const minSamples=Number(policy.minLegacyProbabilitySamples)||24;\n    const maxParity=Number(policy.maxLegacyParityDelta??-.055);\n    const maxProbability=Number(policy.maxLegacyProbability??.70);\n    const maxOpenRatio=Number(policy.maxLegacyOpenRatio??.12);\n    const inversionGate=legacyAll.length>=minSamples&&Number.isFinite(legacyParityDelta)&&legacyParityDelta<=maxParity&&\n      Number.isFinite(maxLegacyProbability)&&maxLegacyProbability<=maxProbability&&currentOpenRatio<=maxOpenRatio;\n    const gateInfo={inversionOnly,inversionGate,legacyProbSamples:legacyAll.length,legacyOpenMean,legacyClosedMean,\n      legacyParityDelta,maxLegacyProbability,currentOpenRatio,minSamples,maxParity,maxProbability,maxOpenRatio};\n    if(inversionOnly&&!inversionGate){\n      return {events,info:{enabled:true,gated:false,variant,model:model.name,acceptedWindows,runs:runs.length,selectedSlots:selected.length,...gateInfo}};\n    }\n    const used=new Set(),replace=new Map();let changed=0,convertedCymbal=0,removedOffGrid=0,rescued=0;")
+          once("      if(variant!=='guarded-rescue')continue;",
+               "      if(baseVariant!=='guarded-rescue')continue;")
+          once("    if(variant==='metal-grid'||variant==='guarded-rescue'){",
+               "    if(baseVariant==='metal-grid'||baseVariant==='guarded-rescue'){")
+          once("      changed,convertedCymbal,removedOffGrid,rescued,attackFloor}};",
+               "      changed,convertedCymbal,removedOffGrid,rescued,attackFloor,...gateInfo}};")
+          p.write_text(s)
+
+          mp=Path('drumscribe/models/alternating-hi-hat-review-v1.json')
+          m=json.loads(mp.read_text())
+          m['policy'].update({
+            'minLegacyProbabilitySamples':24,
+            'maxLegacyParityDelta':-0.055,
+            'maxLegacyProbability':0.70,
+            'maxLegacyOpenRatio':0.12
+          })
+          mp.write_text(json.dumps(m,ensure_ascii=False,indent=2)+'\n')
+          Path('.github/workflows/drumscribe-hat-sequence-v51-hook.yml').unlink()
+          PY
+      - name: Static checks
+        run: |
+          node --check drumscribe/hat-sequence.js
+          grep -q "inversion-guarded-rescue" drumscribe/hat-sequence.js
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "drumscribe: gate alternating hi-hat repair by domain inversion"
+          git pull --rebase origin main
+          git push origin HEAD:main
