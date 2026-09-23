@@ -687,29 +687,35 @@ export async function transcribe(decoded,report=()=>{},options={}){
     };
     const snareAfterBase=[...snareEvents,...rescued];
     const egmdRescued=[];
-    const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
-    const egmdThreshold=Math.max(egmdSnareSupport[0]?.modelThreshold||1,.80);
-    egmdDiag.aboveThreshold=egmdSnareSupport.filter(e=>(e.probability||0)>=egmdThreshold).length;
+    const egmdDiag={v4Pass:0,v5High:0,v5Supplement:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
+    const egmdThreshold=egmdSnareSupport[0]?.modelThreshold||.67;
+    const egmdV5HighThreshold=.90;
     if(adaptiveSnareRescue){
       for(const e of egmdSnareSupport){
-        if((e.probability||0)<egmdThreshold)continue;
+        const v4Pass=(e.probability||0)>=egmdThreshold;
+        const v5High=(e.probabilityV5||0)>=egmdV5HighThreshold;
+        if(v4Pass)egmdDiag.v4Pass++;
+        if(v5High)egmdDiag.v5High++;
+        if(!v4Pass&&!v5High)continue;
         if(nearEvent(snareAfterBase,e.time,.035))continue;
         egmdDiag.notExisting++;
         if(!nearEvent(kickEvents,e.time,.035))continue;
         egmdDiag.nearKick++;
-        // The E-GMD model already uses clip-normalized activation, residual,
-        // local context and class-ratio features. Do not re-apply the old
-        // absolute activation floor here.
+        // v4 remains the production primary model. v5 may only supplement
+        // candidates at very high confidence; no v4 candidate is vetoed.
         egmdDiag.acoustic++;
         const repeat=repeatedEgmdAtSlot(e.time);
-        if(repeat<1)continue;
+        const minRepeat=v4Pass?1:2;
+        if(repeat<minRepeat)continue;
+        if(!v4Pass)egmdDiag.v5Supplement++;
         egmdDiag.repeat++;
         egmdRescued.push({
           ...e,
           group:'snare',
-          confidence:e.probability,
+          confidence:v4Pass?e.probability:e.probabilityV5,
           rescuedSnare:true,
           egmdRescued:true,
+          egmdEnsembleSource:v4Pass?'v4':'v5-high',
           repeatSupport:repeat
         });
         snareAfterBase.push(e);
@@ -731,7 +737,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v5-t080+kick-tom-veto-v3',
+      mode:'layered-snare-rescue+egmd-v4-primary-v5hi+kick-tom-veto-v3',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
@@ -742,7 +748,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       egmdSnareRescued:egmdRescued.length,
       egmdModel:adtofInfo.egmdKstModel||null,
       egmdDiag,
-      egmdRescueDetails:egmdRescued.map(e=>({time:e.time,probability:e.probability,score:e.score,kickActivation:e.kickActivation,repeatSupport:e.repeatSupport})),
+      egmdRescueDetails:egmdRescued.map(e=>({time:e.time,probability:e.probability,probabilityV5:e.probabilityV5,source:e.egmdEnsembleSource,score:e.score,kickActivation:e.kickActivation,repeatSupport:e.repeatSupport})),
       snareMinActivation:.12,
       snareKickRatio:.25,
       snareRepeatBars:2,
