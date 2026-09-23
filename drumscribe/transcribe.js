@@ -975,7 +975,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       else if(crashSupport)group='crash';
       if(group)selected.push({
         ...e,group,
-        confidence:e.confidence*(1+(group==='crash'?.35:.25)*Math.max(per,headDistance<=.30?1:0)),
+        confidence:e.confidence*(1+(group==='crash' ? .35 : .25)*Math.max(per,headDistance<=.30?1:0)),
         cymbalEvidence:{
           headDistance,periodicSupport:per,crashSupport,rideSupport,hatSupport,
           hatGrid16,hatGrid8,
@@ -1167,7 +1167,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
         // hat run raises the evidence required for a simultaneous Crash.
         // This targets bar-head promotions inside continuing hat figures.
         const strongHatContext=strongOpen||regularHatRun;
-        const requiredMargin=strongOpen?.045:(regularHatRun?.030:.005);
+        const requiredMargin=strongOpen ? .045 : (regularHatRun ? .030 : .005);
         const requiredConfidence=strongOpen?1.45:(regularHatRun?1.40:1.25);
         keep=raw||(conf>=requiredConfidence&&margin>=requiredMargin)||(conf>=1.85&&margin>=-.015);
         if(!keep){reason=strongOpen?'hybrid-open':(regularHatRun?'hybrid-run':'hybrid-template');crashCompetition.hybridWins++;}
