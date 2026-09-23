@@ -17,6 +17,7 @@ for(let length=2;length<=NFFT;length*=2){
   TWIDDLES.push([length,cos,sin]);
 }
 let modelPromise=null;
+const monoCache=new WeakMap();
 
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 
@@ -28,24 +29,29 @@ async function loadModel(){
   return modelPromise;
 }
 
-async function monoAt44100(decoded){
-  try{
-    const offline=new OfflineAudioContext(1,Math.ceil(decoded.duration*SR),SR);
-    const source=offline.createBufferSource();source.buffer=decoded;
-    source.connect(offline.destination);source.start();
-    const rendered=await offline.startRendering();
-    return new Float32Array(rendered.getChannelData(0));
-  }catch{
-    const a=decoded.getChannelData(0);
-    const b=decoded.numberOfChannels>1?decoded.getChannelData(1):a;
-    const out=new Float32Array(Math.ceil(decoded.duration*SR));
-    const scale=decoded.sampleRate/SR;
-    for(let i=0;i<out.length;i++){
-      const p=i*scale,j=Math.min(a.length-2,Math.max(0,p|0)),f=p-j;
-      out[i]=.5*((a[j]*(1-f)+a[j+1]*f)+(b[j]*(1-f)+b[j+1]*f));
+export async function monoAt44100(decoded){
+  if(monoCache.has(decoded))return monoCache.get(decoded);
+  const promise=(async()=>{
+    try{
+      const offline=new OfflineAudioContext(1,Math.ceil(decoded.duration*SR),SR);
+      const source=offline.createBufferSource();source.buffer=decoded;
+      source.connect(offline.destination);source.start();
+      const rendered=await offline.startRendering();
+      return new Float32Array(rendered.getChannelData(0));
+    }catch{
+      const a=decoded.getChannelData(0);
+      const b=decoded.numberOfChannels>1?decoded.getChannelData(1):a;
+      const out=new Float32Array(Math.ceil(decoded.duration*SR));
+      const scale=decoded.sampleRate/SR;
+      for(let i=0;i<out.length;i++){
+        const p=i*scale,j=Math.min(a.length-2,Math.max(0,p|0)),f=p-j;
+        out[i]=.5*((a[j]*(1-f)+a[j+1]*f)+(b[j]*(1-f)+b[j+1]*f));
+      }
+      return out;
     }
-    return out;
-  }
+  })();
+  monoCache.set(decoded,promise);
+  return promise;
 }
 
 function fftMagnitude(input,real,imag,out){
