@@ -33,8 +33,9 @@ jobs:
       - name: Fresh-generate candidates
         run: |
           rm -rf drumscribe/experiments/generated-crash-diagnostics-v54
-          sed 's/generated-crash-diagnostics-v51/generated-crash-diagnostics-v54/g' drumscribe/experiments/browser_crash_diagnostics_v51.mjs > /tmp/browser-v54.mjs
-          node /tmp/browser-v54.mjs
+          sed 's/generated-crash-diagnostics-v51/generated-crash-diagnostics-v54/g' drumscribe/experiments/browser_crash_diagnostics_v51.mjs > drumscribe/experiments/browser-v54.tmp.mjs
+          node drumscribe/experiments/browser-v54.tmp.mjs
+          rm -f drumscribe/experiments/browser-v54.tmp.mjs
       - name: Train high-resolution selectors
         run: python drumscribe/experiments/train_crash_hires_v54.py
       - name: Commit result
