@@ -1,5 +1,49 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 Arrangement + E-GMD KST fusion v44 — production据え置き
+
+目的:
+- frozen E-GMD v4 acoustic reclassifierを、A/A' arrangement rescoringと融合できるか検証。
+- fresh browserで5曲の低閾値K/S/T候補へKick/Snare/Tom別E-GMD probabilityを付与。
+
+外部E-GMD v4学習量:
+- Kick 4,422 candidates
+- Snare 6,580
+- Tom 7,934
+- total 18,936
+
+5曲transfer candidate pool:
+- total 141
+- Kick 11 / recoverable positive 9
+- Snare 68 / positive 14
+- Tom 62 / positive 2
+
+比較:
+- fixed_v39d: KST F1 **0.938852** (+0.001118), 9 TP / 0 FP
+- H1 E-GMD acoustic only: 0.933968 (-0.003766), 18 TP / 55 FP
+- H2 A/A' + E-GMD hard gate: 0.938231 (+0.000497), 4 TP / 0 FP
+- H3 Logistic fusion LOOCV: 0.936762 (-0.000972), 1 TP / 10 FP
+- H4 Extra Trees fusion LOOCV: 0.938012 (+0.000278), 4 TP / 2 FP
+
+重要な観察:
+- E-GMD acoustic model単独はdomain transferでFPが多く、production rescue gateには不適。
+- hard E-GMD thresholdをA/A'救済へ追加するとprecisionは保てるが、fixed v39Dの真陽性を落とす。
+- 実際にfixed v39Dで正解だった一部候補はE-GMD probabilityが低い:
+  - arcaround Kick 29.18s p=.356 (<.40), 54.43s p=.048, 143.08s p=.114
+  - nanairo Snare 78.25s p=.142 (<.67), 228.00s p=.483
+- よってE-GMD probabilityはhard vetoではなく、将来のsoft feature / calibration候補として扱う。
+- H4はheld-out songでも4 TP/2 FPを拾い、v43の0 rescueより前進したが、fixed v39Dの9 TP/0 FPには届かない。
+
+採否:
+- **v44融合案はproduction不採用**。
+- productionはfresh Chromium v40合格済みfixed v39D-style arrangement rescoringを維持。
+- `adtof.js` のdiagnostic KST candidatesにはE-GMD probabilityを付与するようになったが、通常production判定ロジックは変更していない。
+
+資産:
+- `experiments/results-arrangement-kst-candidates-v44.json`
+- `experiments/results-arrangement-egmd-fusion-v44.json`
+- `experiments/ARRANGEMENT_EGMD_FUSION_V44.md`
+
 ## 2026-09-23 Arrangement KST learned v42/v43 — research only, production据え置き
 
 固定v39D rescoringを楽器別学習器へ置換できるか検証。
