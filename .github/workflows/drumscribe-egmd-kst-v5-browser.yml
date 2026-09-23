@@ -1,0 +1,59 @@
+name: DrumScribe E-GMD KST v5 browser validation
+
+on:
+  push:
+    branches:
+      - drumscribe-egmd-kst-v5-eval
+    paths:
+      - "drumscribe/adtof.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/app.js"
+      - "drumscribe/index.html"
+      - ".github/workflows/drumscribe-egmd-kst-v5-browser.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-eval
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate MIDI in real Chromium
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Score generated MIDI
+        run: python drumscribe/experiments/compare_browser.py
+      - name: Preserve v5 result and diagnostics
+        run: |
+          cp drumscribe/experiments/results-v2-browser.json drumscribe/experiments/results-egmd-kst-browser-v5.json
+          mkdir -p drumscribe/experiments/egmd-kst-v5-browser-sidecars
+          cp drumscribe/experiments/generated-v2-browser/*.json drumscribe/experiments/egmd-kst-v5-browser-sidecars/
+      - name: Commit v5 browser result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-egmd-kst-v5-eval
+          git add drumscribe/experiments/results-egmd-kst-browser-v5.json             drumscribe/experiments/egmd-kst-v5-browser-sidecars
+          git diff --cached --quiet && exit 0
+          git commit -m "Record E-GMD KST v5 browser benchmark [skip ci]"
+          git push origin HEAD:drumscribe-egmd-kst-v5-eval
