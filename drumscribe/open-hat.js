@@ -486,7 +486,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     let probabilities=features.map(x=>predict(model,x));
     const baseProbabilities=probabilities.slice();
     let sequenceInfo={variant:requestedVariant,decay:{enabled:false},gmd:{enabled:false},gmdRescue:{enabled:false},ride:{enabled:false}};
-    if(['decay','combined','decay-rescue','ride-decay','arrangement-decay'].includes(requestedVariant)){
+    if(['decay','combined','decay-rescue','ride-decay','ride-open-decay-rescue','arrangement-decay'].includes(requestedVariant)){
       const seq=acousticSequenceRescore(samples,hats,events,probabilities,threshold,w);
       probabilities=seq.probabilities;sequenceInfo.decay=seq.info;
     }
