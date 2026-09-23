@@ -111,6 +111,27 @@ for song in SONGS:
     median_ms = float(info.get("previewMedianDifferenceMs") or 0)
     p95_ms = float(info.get("previewP95DifferenceMs") or 0)
 
+    tempo_min_gap_ticks = None
+    tempo_gap_violations = 0
+    if info.get("tempoResolution") == "bar" and len(stats["tempo_ticks"]) > 1:
+        signatures = sorted(stats["time_signatures"]) or [(0, 4, 4)]
+        def signature_at(tick):
+            current = signatures[0]
+            for row in signatures:
+                if row[0] > tick:
+                    break
+                current = row
+            return current[1], current[2]
+        gaps = []
+        for a, b in zip(stats["tempo_ticks"], stats["tempo_ticks"][1:]):
+            n, d = signature_at(a)
+            min_gap = round(stats["division"] * 4 * n / d)
+            gap = b - a
+            gaps.append(gap)
+            if gap < min_gap:
+                tempo_gap_violations += 1
+        tempo_min_gap_ticks = min(gaps) if gaps else None
+
     song_result = {
         "family": info.get("family"),
         "subdivision": label,
@@ -119,6 +140,10 @@ for song in SONGS:
         "max_grid_residual_ticks": max_residual,
         "tempo_meta_events": tempo_meta_events,
         "reported_tempo_events": expected_tempo_events,
+        "tempo_resolution": info.get("tempoResolution"),
+        "tempo_beats_per_measure": info.get("tempoBeatsPerMeasure"),
+        "tempo_min_gap_ticks": tempo_min_gap_ticks,
+        "tempo_gap_violations": tempo_gap_violations,
         "tempo_min": info.get("tempoMin"),
         "tempo_max": info.get("tempoMax"),
         "tempo_mean": info.get("tempoMean"),
@@ -134,6 +159,10 @@ for song in SONGS:
     if tempo_meta_events != expected_tempo_events:
         results["failures"].append(
             f"{song}: tempo event mismatch MIDI={tempo_meta_events} runtime={expected_tempo_events}"
+        )
+    if tempo_gap_violations:
+        results["failures"].append(
+            f"{song}: {tempo_gap_violations} tempo changes occur less than one measure apart"
         )
     if median_ms > 10:
         results["failures"].append(f"{song}: preview median timing delta {median_ms:.2f} ms > 10 ms")
