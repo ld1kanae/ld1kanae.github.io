@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "grid-tempo-five-song-fresh-browser-v31",
+  "source_run": {
+    "workflow": "DrumScribe main KST browser validation",
+    "run_id": 35833299223,
+    "head_sha": "dd048ea92c2df1fb6e1b1e999379acd647cdda6c",
+    "conclusion": "success"
+  },
+  "method": "Fresh acoustic transcription of the five DruMaster drums.mp3 examples in real Playwright Chromium on main, followed by direct parsing of the generated MIDI and comparison of runtime rhythmGridInfo against written tempo meta-events.",
+  "songs": {
+    "arcaround": {
+      "subdivision": "1/16",
+      "notes": 1086,
+      "tempo_events": 549,
+      "tempo_min": 131.83123646581916,
+      "tempo_max": 132.15944249478048,
+      "tempo_mean": 132.0007330020824,
+      "straight16_share": 1.0,
+      "straight32_only_share": 0.0,
+      "preview_median_difference_ms": 4.294470344035517,
+      "preview_p95_difference_ms": 13.526521284973114,
+      "max_grid_residual_ticks": 0
+    },
+    "diamondvirgin": {
+      "subdivision": "1/16+1/32",
+      "notes": 1887,
+      "tempo_events": 589,
+      "tempo_min": 134.71263507127765,
+      "tempo_max": 135.4278800600888,
+      "tempo_mean": 135.07145912729862,
+      "straight16_share": 0.9962904080551139,
+      "straight32_only_share": 0.0037095919448860626,
+      "preview_median_difference_ms": 5.721846102460404,
+      "preview_p95_difference_ms": 17.818399670090912,
+      "max_grid_residual_ticks": 0
+    },
+    "kaiju": {
+      "subdivision": "1/16+1/32",
+      "notes": 1234,
+      "tempo_events": 594,
+      "tempo_min": 179.49123842401906,
+      "tempo_max": 180.43626402319623,
+      "tempo_mean": 180.00867146920106,
+      "straight16_share": 0.9991896272285251,
+      "straight32_only_share": 0.0008103727714748784,
+      "preview_median_difference_ms": 4.304257087994756,
+      "preview_p95_difference_ms": 13.114833030385853,
+      "max_grid_residual_ticks": 0
+    },
+    "nanairo": {
+      "subdivision": "1/16+1/32",
+      "notes": 1802,
+      "tempo_events": 491,
+      "tempo_min": 124.94449669411225,
+      "tempo_max": 125.46827213047376,
+      "tempo_mean": 125.01913146951098,
+      "straight16_share": 0.9988901220865705,
+      "straight32_only_share": 0.0011098779134295228,
+      "preview_median_difference_ms": 1.2021423361687766,
+      "preview_p95_difference_ms": 8.646082565178403,
+      "max_grid_residual_ticks": 0
+    },
+    "ray": {
+      "subdivision": "1/16+1/32",
+      "notes": 2216,
+      "tempo_events": 557,
+      "tempo_min": 131.94391070493703,
+      "tempo_max": 132.1713670756416,
+      "tempo_mean": 132.00452293172876,
+      "straight16_share": 0.9715703971119134,
+      "straight32_only_share": 0.028429602888086644,
+      "preview_median_difference_ms": 2.582639737426007,
+      "preview_p95_difference_ms": 6.575043715741913,
+      "max_grid_residual_ticks": 0
+    }
+  },
+  "aggregate": {
+    "grid_failures": 0,
+    "max_grid_residual_ticks": 0,
+    "max_preview_median_difference_ms": 5.721846102460404,
+    "max_preview_p95_difference_ms": 17.818399670090912,
+    "tp": 7492,
+    "predicted": 8225,
+    "reference": 10086,
+    "precision": 0.911,
+    "recall": 0.743,
+    "f1": 0.818,
+    "max_export_grid_residual_beats": 0.0
+  },
+  "ci_changes": {
+    "validator": "drumscribe/experiments/validate_grid_browser.py",
+    "workflow": ".github/workflows/drumscribe-main-kst-validation.yml",
+    "watched_paths_added": [
+      "drumscribe/rhythm-grid.js",
+      "drumscribe/midi.js",
+      "drumscribe/experiments/validate_grid_browser.py"
+    ]
+  }
+}
