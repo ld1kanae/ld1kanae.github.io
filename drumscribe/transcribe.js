@@ -731,7 +731,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v3-modelgate+kick-tom-veto-v3',
+      mode:'layered-snare-rescue+egmd-v4-modelgate+kick-tom-veto-v3',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
