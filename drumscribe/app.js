@@ -1,4 +1,4 @@
-import {transcribe} from './transcribe.js?v=20260923-rhythm-v24';
+import {transcribe} from './transcribe.js';
 import {midiFile} from './midi.js';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
