@@ -47,7 +47,7 @@ git log -n 20 -- drumscribe/
 
 ```html
 <script src="vendor/ort/ort.wasm.min.js?v=1.30.0"></script>
-<script type="module" src="app.js?v=20260923-meter-v25"></script>
+<script type="module" src="app.js?v=20260923-egmd-kst-v3"></script>
 ```
 
 cache-busting文字列は「変更時期の手掛かり」であり、仕様のsource of truthではない。
