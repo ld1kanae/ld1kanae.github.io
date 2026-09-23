@@ -178,10 +178,26 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
   const acts=await inferChunks(features,frames,assets,report);
   const scale=Number.isFinite(options.thresholdScale)?options.thresholdScale:PRECISION_SCALE;
   const events=toEvents(acts,scale);
+  // Keep a lower-threshold snare stream for conservative post-processing.
+  // It is never emitted directly; transcribe.js may rescue only candidates
+  // that are independently supported by a simultaneous kick and repetition.
+  const snareRescueScale=Number.isFinite(options.snareRescueScale)?options.snareRescueScale:.86;
+  const snareRescueThreshold=BASE_THRESHOLDS[1]*snareRescueScale;
+  const snareRescue=pickClass(acts,1,snareRescueThreshold).map(p=>({
+    time:p.time,
+    group:'snare',
+    score:p.activation,
+    confidence:p.activation/(BASE_THRESHOLDS[1]*scale),
+    rescueConfidence:p.activation/snareRescueThreshold,
+    adtof:true,
+    rescue:true
+  }));
   return {
     events,
+    snareRescue,
     frames,
     thresholdScale:scale,
+    snareRescueScale,
     backend:'onnxruntime-web/wasm',
     coreFrames:CORE_FRAMES,
     overlapFrames:OVERLAP_FRAMES,
