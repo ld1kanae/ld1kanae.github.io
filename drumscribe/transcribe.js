@@ -604,6 +604,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   let structural=base.filter(e=>e.group!=='cymbal_raw');
   let adtofCymbal=[];
   let adtofSnareRescue=[];
+  let egmdSnareSupport=[];
   let adtofInfo={enabled:false,fallback:true};
   try{
     const ad=await transcribeAdtof(decoded,(message,p)=>{
@@ -613,6 +614,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const replacement=ad.events.filter(e=>e.group!=='cymbal');
     adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
     adtofSnareRescue=ad.snareRescue||[];
+    egmdSnareSupport=ad.egmdSnareSupport||[];
     if(replacement.length){
       structural=replacement;
       adtofInfo={
@@ -620,6 +622,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
         thresholdScale:ad.thresholdScale,
         snareRescueScale:ad.snareRescueScale,
         snareRescueCandidates:adtofSnareRescue.length,
+        egmdSnareCandidates:egmdSnareSupport.length,
+        egmdKstModel:ad.egmdKstModel||null,
         backend:ad.backend,
         frames:ad.frames,
         coreFrames:ad.coreFrames,
@@ -668,9 +672,54 @@ export async function transcribe(decoded,report=()=>{},options={}){
     }
     if(rescued.length)structural.push(...rescued);
 
-    // Kick/tom simultaneity is rare in the reference corpus, while a large
-    // share of current tom false positives are kick bleed. Suppress only weak,
-    // isolated toms that collide with a kick; keep strong toms and tom runs.
+    // E-GMD v3 is trained on independent train/validation sequences and
+    // disjoint drum kits. It is used only as a second opinion on low-threshold
+    // snare candidates. Existing kick/tom decisions are left untouched.
+    const egmdTimes=egmdSnareSupport.map(e=>e.time);
+    const repeatedEgmdAtSlot=t=>{
+      const s=slot16(t),b=barIndex(t);let n=0;
+      for(const x of egmdTimes){
+        if(Math.abs(x-t)<=.035)continue;
+        if(Math.abs(barIndex(x)-b)>8)continue;
+        if(slot16(x)===s)n++;
+      }
+      return n;
+    };
+    const snareAfterBase=[...snareEvents,...rescued];
+    const egmdRescued=[];
+    const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
+    const egmdThreshold=egmdSnareSupport[0]?.modelThreshold||1;
+    egmdDiag.aboveThreshold=egmdSnareSupport.filter(e=>(e.probability||0)>=egmdThreshold).length;
+    if(adaptiveSnareRescue){
+      for(const e of egmdSnareSupport){
+        if((e.probability||0)<(e.modelThreshold||1))continue;
+        if(nearEvent(snareAfterBase,e.time,.035))continue;
+        egmdDiag.notExisting++;
+        if(!nearEvent(kickEvents,e.time,.035))continue;
+        egmdDiag.nearKick++;
+        // The E-GMD model already uses clip-normalized activation, residual,
+        // local context and class-ratio features. Do not re-apply the old
+        // absolute activation floor here.
+        egmdDiag.acoustic++;
+        const repeat=repeatedEgmdAtSlot(e.time);
+        if(repeat<1)continue;
+        egmdDiag.repeat++;
+        egmdRescued.push({
+          ...e,
+          group:'snare',
+          confidence:e.probability,
+          rescuedSnare:true,
+          egmdRescued:true,
+          repeatSupport:repeat
+        });
+        snareAfterBase.push(e);
+      }
+    }
+    if(egmdRescued.length)structural.push(...egmdRescued);
+
+    // The current five-song set contains kick/tom bleed false positives.
+    // GMD shows kick+tom is not globally rare, so keep this veto deliberately
+    // narrow: only weak, isolated toms colliding with a kick are suppressed.
     const toms=structural.filter(e=>e.group==='tom');
     let tomKickRemoved=0;
     structural=structural.filter(e=>{
@@ -682,13 +731,18 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+kick-tom-veto-v1',
+      mode:'layered-snare-rescue+egmd-v3-modelgate+kick-tom-veto-v3',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
       adaptiveSnareRescue,
       snareLayeredCandidates:lowSnare.length,
       snareRescued:rescued.length,
+      egmdSnareCandidates:egmdSnareSupport.length,
+      egmdSnareRescued:egmdRescued.length,
+      egmdModel:adtofInfo.egmdKstModel||null,
+      egmdDiag,
+      egmdRescueDetails:egmdRescued.map(e=>({time:e.time,probability:e.probability,score:e.score,kickActivation:e.kickActivation,repeatSupport:e.repeatSupport})),
       snareMinActivation:.12,
       snareKickRatio:.25,
       snareRepeatBars:2,
