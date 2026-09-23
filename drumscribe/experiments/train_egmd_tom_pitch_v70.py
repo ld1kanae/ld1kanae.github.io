@@ -229,7 +229,7 @@ def collect(z,names,rows,tag):
             if t<.14 or t>len(audio)/TARGET_SR-.15:continue
             d=descriptor(audio,t)
             samples.append({"x":d["vec"],"profile":d["profile"],"peak":d["peak"],
-                            "centroid":d["centroid"],"note":n,"velocity":v,
+                            "centroid":d["centroid"],"note":tier4(n),"noteRaw":n,"velocity":v,
                             "sequence":row.get("id"),"kit":row.get("kit_name")})
             counts[n]+=1
         manifest.append({"id":row.get("id"),"kit":row.get("kit_name"),
@@ -246,12 +246,11 @@ def tier4(n):
     return 50
 
 def score_pred(y,p):
-    y=np.asarray(y,int);p=np.asarray(p,int)
-    conf=Counter((int(a),int(b)) for a,b in zip(y,p))
+    # Production target is four robust tom tiers. E-GMD 43 maps to low/floor 41\n    # and 48 maps to the mid/high-mid 47 tier.\n    y=np.asarray([tier4(int(x)) for x in y],int)\n    p=np.asarray([tier4(int(x)) for x in p],int)\n    conf=Counter((int(a),int(b)) for a,b in zip(y,p))
     exact=float(np.mean(y==p)) if len(y) else 0.
     tier=float(np.mean([tier4(a)==tier4(b) for a,b in zip(y,p)])) if len(y) else 0.
     by={}
-    for n in NOTES:
+    for n in CORE:
         ix=np.where(y==n)[0]
         if len(ix):by[str(n)]={"n":int(len(ix)),"exact":float(np.mean(p[ix]==n)),
                               "tier4":float(np.mean([tier4(y[j])==tier4(p[j]) for j in ix]))}
@@ -261,7 +260,7 @@ def score_pred(y,p):
 
 def fit_peak(train):
     med={}
-    for n in NOTES:
+    for n in CORE:
         xs=[s for s in train if s["note"]==n]
         if xs:
             med[n]=(float(np.median([s["peak"] for s in xs])),
@@ -376,7 +375,7 @@ def main():
         val,va_manifest=collect(z,names,va_rows,"val")
 
     train_counts=Counter(s["note"] for s in train);val_counts=Counter(s["note"] for s in val)
-    missing=[n for n in NOTES if train_counts[n]<8 or val_counts[n]<2]
+    missing=[n for n in CORE if train_counts[n]<8 or val_counts[n]<2]
     if missing:
         raise RuntimeError(f"insufficient class coverage {missing}; train={train_counts}, val={val_counts}")
 
@@ -393,7 +392,7 @@ def main():
     }
     frozen={
       "schema":1,
-      "kind":"egmd-tom-pitch-logreg-v70",
+      "kind":"egmd-tom-pitch-4tier-logreg-v70",
       "sampleRate":TARGET_SR,"fft":FFT,
       "profileFrequenciesHz":[float(x) for x in PROFILE_FREQS.tolist()],
       "bandsHz":[list(map(float,b)) for b in BANDS],
@@ -406,21 +405,22 @@ def main():
         "dataset":"E-GMD v1.0.0","license":"CC BY 4.0",
         "trainSplit":"official train","validationSplit":"official validation",
         "trainKits":train_kits,"validationKits":val_kits,
-        "trainCounts":{str(n):int(train_counts[n]) for n in NOTES},
-        "validationCounts":{str(n):int(val_counts[n]) for n in NOTES},
+        "trainCounts":{str(n):int(train_counts[n]) for n in CORE},
+        "validationCounts":{str(n):int(val_counts[n]) for n in CORE},
         "selectedC":float(C),"validation":validation,
       }
     }
     transfer=drumaster_transfer((sc,clf),peak_model,profile_model)
     result={
       "schema":1,
+      "targetTiers":{"41":"E-GMD 41/43","45":"45","47":"47/48","50":"50"},
       "hypotheses":["median_peak","class_profile","multinomial_logreg"],
       "selectionRule":"choose on disjoint E-GMD validation by tier4 accuracy, then exact accuracy; DruMaster is transfer-only",
       "trainKits":train_kits,"validationKits":val_kits,
       "trainSequences":[x[0] for x in tr_sel],"validationSequences":[x[0] for x in va_sel],
       "trainManifest":tr_manifest,"validationManifest":va_manifest,
-      "trainCounts":{str(n):int(train_counts[n]) for n in NOTES},
-      "validationCounts":{str(n):int(val_counts[n]) for n in NOTES},
+      "trainCounts":{str(n):int(train_counts[n]) for n in CORE},
+      "validationCounts":{str(n):int(val_counts[n]) for n in CORE},
       "logregSweep":[{"C":c,"exact":e,"tier4":t} for c,e,t in sweep],
       "validation":validation,
       "drumasterTransfer":transfer,
