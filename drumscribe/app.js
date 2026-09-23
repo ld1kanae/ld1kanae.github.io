@@ -1,16 +1,17 @@
-import {transcribe} from './transcribe.js?v=20260923-egmd-kst-v4-openhat-v2';
+import {transcribe} from './transcribe.js?v=20260923-gmd-kst-section-v1';
 import {midiFile} from './midi.js?v=20260923-grid-v29';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-grid-v29';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
-let exampleId='';
+let exampleId='',offvocalDecoded=null;
+const kstPolicy=new URLSearchParams(location.search).get('kstPolicy')||'baseline';
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,44,45,46,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
-function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';offvocalDecoded=null;decoded=null;events=[];midiEvents=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 const drop=$('drop');
 for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
@@ -41,7 +42,16 @@ $('analyze').addEventListener('click',async()=>{
     const rawBpm=$('bpm').value.trim();
     const bpm=rawBpm?Number(rawBpm):null;
     if(rawBpm&&(!Number.isFinite(bpm)||bpm<30||bpm>300))throw Error('基準BPMは30〜300で入力してください。');
-    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm});
+    if(exampleId&&kstPolicy==='egmd-style-kicktom'){
+      try{
+        tell('offvocalから曲構造を準備中…');
+        const ov=await fetch(`../DruMaster/songs/${exampleId}/offvocal.mp3`);
+        if(ov.ok)offvocalDecoded=await ac.decodeAudioData(await ov.arrayBuffer());
+      }catch(err){console.warn('offvocal context unavailable',err);offvocalDecoded=null;}
+    }
+    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{
+      bpm,kstPolicy,offvocalDecoded
+    });
     events=transcription.events;
     const detectedBpm=transcription.bpm;
     position=0;$('result').hidden=false;
@@ -83,7 +93,7 @@ $('analyze').addEventListener('click',async()=>{
     const tempoText=Number.isFinite(gridInfo.tempoMin)&&Number.isFinite(gridInfo.tempoMax)?` / 書出BPM ${gridInfo.tempoMin.toFixed(3)}–${gridInfo.tempoMax.toFixed(3)} (${gridInfo.tempoEvents}点)`:'';
     $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・クローズHH ${events.filter(e=>e.note===42).length}・オープンHH ${events.filter(e=>e.note===46).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
     globalThis.__drumscribeResult={
-      ...transcription,events:undefined,
+      ...transcription,events:undefined,kstPolicy,
       barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec,
       rhythmGridInfo:{...gridInfo,previewMedianDifferenceMs:timingMedianMs,previewP95DifferenceMs:timingP95Ms},
       meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
