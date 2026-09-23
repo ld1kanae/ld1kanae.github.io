@@ -1,0 +1,30 @@
+name: DrumScribe tom pitch v69 experiment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/experiments/evaluate_tom_pitch_v69.py"
+      - ".github/workflows/drumscribe-tom-pitch-v69.yml"
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install numpy scipy
+      - name: Evaluate three tom pitch hypotheses
+        run: python drumscribe/experiments/evaluate_tom_pitch_v69.py
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: tom-pitch-v69
+          path: drumscribe/experiments/results-tom-pitch-v69.json
