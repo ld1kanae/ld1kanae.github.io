@@ -9,6 +9,7 @@ export {
   rescoreKstByArrangement,
   arrangementKstPolicyV39D,
   arrangementKstPolicyV46R1,
+  arrangementKstPolicyCurrent,
 } from './kst-rescore.js';
 
 export {
