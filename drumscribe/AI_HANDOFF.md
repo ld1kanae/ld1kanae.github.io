@@ -6,6 +6,28 @@
 >
 > 詳細な試行錯誤は `VALIDATION.md` にあるが、最初から全文を読まないこと。必要な節だけ参照する。
 
+## 2026-09-23 Arrangement/offvocal shared module
+
+offvocal / instrumental の構造解析コードを `drumscribe/arrangement/` に集約。
+
+正式な参照入口:
+```js
+import {analyzeSections, extractSectionFeatures} from './arrangement/index.js';
+```
+
+現行機能:
+- timbre / energy novelty から構造境界候補を検出
+- 類似した反復セクションを `A/B/C/...` にグループ化
+- 既知の BPM / barPhaseSec があれば境界候補を拍・小節側へsnap可能
+
+重要:
+- `A/B/C` は構造ラベルであり、**Aメロ/Bメロ/サビの意味ラベルではない**
+- production transcription pathにはまだ接続していない
+- Proof v34では同系統の解析をinstrumentalの補助的な小節位相検証に使用した
+- 将来semantic section classifierを実装する場合はこのmoduleの出力を入力にし、特徴抽出や境界検出を重複実装しない
+
+詳細: `arrangement/README.md`
+
 ## 2026-09-23 Tempo map v35 — 1小節単位
 
 ユーザー要望によりBPM変化だけを変更。内部beat-level tempo推定は残し、preview/exportに使うtempo mapを**小節単位のduration-equivalent BPM**へ集約。
