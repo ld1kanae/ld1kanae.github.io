@@ -23,6 +23,8 @@ jobs:
         with: {python-version: "3.12"}
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
           npm install --no-save playwright
           npx playwright install --with-deps chromium
           pip install numpy scipy scikit-learn
