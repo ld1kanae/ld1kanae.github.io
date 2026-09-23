@@ -1,0 +1,53 @@
+name: DrumScribe GMD hi-hat articulation prior v40
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/experiments/build_gmd_hat_articulation_prior.py"
+      - ".github/workflows/drumscribe-gmd-hat-prior-v40.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install mido
+      - name: Download official GMD MIDI-only archive
+        run: |
+          curl -L --fail --retry 3 \
+            -o /tmp/groove.zip \
+            https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip
+          echo "651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e  /tmp/groove.zip" | sha256sum -c -
+          unzip -q /tmp/groove.zip -d /tmp/gmd
+      - name: Build genre/slot/transition prior
+        run: |
+          python drumscribe/experiments/build_gmd_hat_articulation_prior.py \
+            --groove-root /tmp/gmd/groove \
+            --model-out drumscribe/models/gmd-hat-articulation-prior-v1.json \
+            --results-out drumscribe/experiments/results-gmd-hat-articulation-v40.json
+      - name: Commit aggregate model and validation result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/models/gmd-hat-articulation-prior-v1.json \
+                  drumscribe/experiments/results-gmd-hat-articulation-v40.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "drumscribe: build GMD hi-hat articulation prior v40"
+          git pull --rebase origin main
+          git push origin HEAD:main
