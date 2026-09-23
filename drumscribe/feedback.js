@@ -116,40 +116,66 @@ function downloadJson(){
 }
 function installTimeline(){
   api=globalThis.DrumScribeTimeline;if(!api)return false;
-  const pointTime=e=>api.clientXToTime(e.clientX);
-  const move=e=>{
-    if(!drag||e.pointerId!==drag.id)return;
-    if(e.cancelable)e.preventDefault();
-    if(Math.abs(e.clientX-drag.x)>3)drag.moved=true;
-    if(drag.moved)setSelection(drag.start,pointTime(e),false,{open:false});
+  const pointTime=clientX=>api.clientXToTime(clientX);
+  const begin=(clientX,kind)=>{
+    if(!api.getDuration())return false;
+    playToken++;api.pause();closeEditor();
+    drag={kind,x:clientX,start:pointTime(clientX),moved:false,lastX:clientX};
+    return true;
   };
-  const finish=e=>{
-    if(!drag||e.pointerId!==drag.id)return;
-    if(e.cancelable)e.preventDefault();
+  const move=clientX=>{
+    if(!drag)return;
+    drag.lastX=clientX;
+    if(Math.abs(clientX-drag.x)>3)drag.moved=true;
+    if(drag.moved)setSelection(drag.start,pointTime(clientX),false,{open:false});
+  };
+  const finish=clientX=>{
+    if(!drag)return;
     const d=drag;drag=null;
-    try{if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId)}catch{}
     if(d.moved){
       editingId=null;text.value='';category.value='採譜ミス';save.textContent='保存';
-      setSelection(d.start,pointTime(e),false,{open:true});
+      setSelection(d.start,pointTime(clientX),false,{open:true});
       setStatus('選択範囲を設定しました。レビューを書いて保存してください。');
     }else{
       closeEditor();
-      if(api.seekSnapped)api.seekSnapped(pointTime(e),{bypass:e.altKey});
-      else api.seek(pointTime(e));
+      if(api.seekSnapped)api.seekSnapped(pointTime(clientX));
+      else api.seek(pointTime(clientX));
     }
   };
-  const cancel=e=>{if(drag&&e.pointerId===drag.id){drag=null;api.clearSelection?.();}};
-  canvas.addEventListener('pointerdown',e=>{
-    if(!api.getDuration()||e.isPrimary===false)return;
-    if(e.pointerType==='mouse'&&e.button!==0)return;
-    if(e.cancelable)e.preventDefault();
-    playToken++;api.pause();closeEditor();
-    drag={id:e.pointerId,x:e.clientX,start:pointTime(e),moved:false};
-    try{canvas.setPointerCapture?.(e.pointerId)}catch{}
+
+  canvas.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;
+    e.preventDefault();
+    if(!begin(e.clientX,'mouse'))return;
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!drag||drag.kind!=='mouse')return;
+    e.preventDefault();move(e.clientX);
   },{passive:false});
-  window.addEventListener('pointermove',move,{capture:true,passive:false});
-  window.addEventListener('pointerup',finish,{capture:true,passive:false});
-  window.addEventListener('pointercancel',cancel,{capture:true});
+  window.addEventListener('mouseup',e=>{
+    if(!drag||drag.kind!=='mouse')return;
+    e.preventDefault();finish(e.clientX);
+  },{passive:false});
+
+  canvas.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    e.preventDefault();
+    begin(e.touches[0].clientX,'touch');
+  },{passive:false});
+  window.addEventListener('touchmove',e=>{
+    if(!drag||drag.kind!=='touch'||e.touches.length<1)return;
+    e.preventDefault();move(e.touches[0].clientX);
+  },{passive:false});
+  window.addEventListener('touchend',e=>{
+    if(!drag||drag.kind!=='touch')return;
+    e.preventDefault();
+    const touch=e.changedTouches[0];
+    finish(touch?touch.clientX:drag.lastX);
+  },{passive:false});
+  window.addEventListener('touchcancel',()=>{if(drag?.kind==='touch'){drag=null;api.clearSelection?.();}});
+
+  canvas.addEventListener('dragstart',e=>e.preventDefault());
+  canvas.addEventListener('selectstart',e=>e.preventDefault());
   return true;
 }
 $('playSelection').addEventListener('click',()=>playRange());
