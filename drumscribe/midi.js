@@ -1,7 +1,9 @@
+import {buildRhythmGrid,GRID_PPQ as PPQ} from './rhythm-grid.js';
+
 // Standard MIDI file type 0: channel 10 percussion, PPQ 480.
-// Preview events stay on the audio timeline. Export can independently align
-// the MIDI grid so detected bar heads land exactly on MIDI measure boundaries.
-const PPQ=480;
+// Preview events stay on the audio timeline. Export uses score-grid ticks plus
+// a tempo map so audible timing can follow the source without leaving notes
+// between notation subdivisions.
 const bytes32=x=>[(x>>>24)&255,(x>>>16)&255,(x>>>8)&255,x&255];
 const vlq=x=>{const out=[x&127];while(x>>=7)out.unshift((x&127)|128);return out;};
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -16,51 +18,41 @@ export function midiFile(events,bpm=120,timing={}){
   bpm=Number.isFinite(bpm)&&bpm>=30&&bpm<=300?bpm:120;
   const numerator=Number.isFinite(timing?.numerator)?Math.max(1,Math.round(timing.numerator)):4;
   const denominator=Number.isFinite(timing?.denominator)?Math.max(1,Math.round(timing.denominator)):4;
-  const beatSec=60/bpm*4/denominator;
-  const barSec=beatSec*numerator;
-  const rawPhase=Number(timing?.barPhaseSec);
-  const hasPhase=Number.isFinite(rawPhase)&&barSec>0;
-  const phase=hasPhase?((rawPhase%barSec)+barSec)%barSec:0;
-  const align=timing?.alignToBar!==false&&hasPhase;
+  const grid=timing?.rhythmGrid||buildRhythmGrid(events,bpm,{...timing,numerator,denominator});
+  const ticksPerBeat=PPQ*4/denominator;
 
-  // Keep events that occur before the first detected downbeat by placing them
-  // in a pickup measure. Whole-measure padding never changes grid alignment.
-  let barPad=0;
-  if(align&&events?.length){
-    let minMusical=Infinity;
-    for(const e of events)minMusical=Math.min(minMusical,Number(e.time)-phase);
-    if(Number.isFinite(minMusical)&&minMusical<0)barPad=Math.ceil(-minMusical/barSec);
+  const packets=[];
+  for(const t of grid.tempoMap||[]){
+    const us=clamp(Math.round(Number(t.us)||60000000/bpm),1,0xffffff);
+    packets.push({tick:Math.max(0,Math.round(Number(t.tick)||0)),order:0,data:[255,81,3,(us>>16)&255,(us>>8)&255,us&255]});
   }
-  const exportOffsetSec=align?barPad*barSec-phase:0;
-
-  const ticksPerSecond=PPQ*bpm/60;
-  const tempo=Math.round(60000000/bpm);
-  const packets=[
-    {tick:0,order:0,data:[255,81,3,(tempo>>16)&255,(tempo>>8)&255,tempo&255]},
-    // FF 58: numerator, log2(denominator), MIDI clocks/metronome, 32nd notes/quarter.
-    {tick:0,order:0,data:[255,88,4,clamp(numerator,1,255),pow2Exp(denominator),24,8]},
-  ];
+  if(!packets.length){
+    const us=Math.round(60000000/bpm);
+    packets.push({tick:0,order:0,data:[255,81,3,(us>>16)&255,(us>>8)&255,us&255]});
+  }
+  packets.push({tick:0,order:0,data:[255,88,4,clamp(numerator,1,255),pow2Exp(denominator),24,8]});
 
   // A signature event is required at every change, not merely at tick zero.
-  // beatIndex is measured from the first audio downbeat; exportOffsetSec puts
-  // that downbeat at a MIDI bar boundary, including a complete pickup bar.
+  // beatIndex is measured from the first audio downbeat; barPad places pickup
+  // material before that downbeat without changing the musical grid.
   let previous=numerator;
   for(const bar of timing?.bars||[]){
     if(!Number.isInteger(bar.beatIndex)||bar.beatIndex<0||!Number.isFinite(bar.numerator))continue;
     const next=clamp(Math.round(bar.numerator),1,255);
     if(next===previous)continue;
-    const tick=Math.max(0,Math.round((bar.beatIndex*60/bpm+barPad*barSec)*ticksPerSecond));
-    packets.push({tick,order:0,data:[255,88,4,next,pow2Exp(bar.denominator||4),24,8]});
+    const tick=Math.max(0,Math.round((bar.beatIndex+grid.barPad*numerator)*ticksPerBeat));
+    packets.push({tick,order:0,data:[255,88,4,next,pow2Exp(bar.denominator||denominator),24,8]});
     previous=next;
   }
 
-  for(const e of events||[]){
-    const musicalTime=Math.max(0,Number(e.time)+exportOffsetSec);
-    const tick=Math.max(0,Math.round(musicalTime*ticksPerSecond));
+  const noteLength=Math.max(1,Math.round(PPQ/16));
+  for(let i=0;i<(events||[]).length;i++){
+    const e=events[i];
+    const tick=Math.max(0,Math.round(grid.eventTicks?.[i]??0));
     const note=clamp(Math.round(Number(e.note)||0),0,127);
     const vel=clamp(Math.round(Number(e.velocity)||90),1,127);
     packets.push({tick,order:2,data:[0x99,note,vel]});
-    packets.push({tick:tick+Math.max(1,Math.round(.07*ticksPerSecond)),order:1,data:[0x89,note,0]});
+    packets.push({tick:tick+noteLength,order:1,data:[0x89,note,0]});
   }
 
   packets.sort((a,b)=>a.tick-b.tick||a.order-b.order||((a.data[1]||0)-(b.data[1]||0)));
