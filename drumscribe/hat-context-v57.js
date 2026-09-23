@@ -269,3 +269,31 @@ export async function rescoreHatArticulationFusionV61(decoded,events,options={})
     patternParityUsed:false
   }};
 }
+
+
+// Research/runtime shared raw per-hit acoustic descriptor.
+// Vector order follows features(): five decay-RMS ratios, three HF tail ratios,
+// onset centroid, next gap, pre-next persistence, post-next choke ratio,
+// pre-next centroid, post-next centroid.
+// No chart, review range, beat parity or song identity is read here.
+export async function extractHatAcousticFeaturesV63(decoded,events){
+  const candidates=events.filter(e=>
+    (e.group==='hat'||e.group==='open_hat')&&Number.isFinite(Number(e.openHatProbability))
+  );
+  if(!candidates.length)return [];
+  const samples=await monoAt44100(decoded),w=workspace();
+  const art=events.filter(e=>['hat','open_hat','pedal_hat','ride'].includes(e.group))
+    .slice().sort((a,b)=>a.time-b.time);
+  const nextMap=new Map();
+  for(let i=0;i<art.length;i++)nextMap.set(art[i],art[i+1]?.time);
+  return candidates.map(e=>({
+    time:e.time,
+    group:e.group,
+    note:e.note,
+    score:Number(e.score)||0,
+    confidence:Number(e.confidence)||0,
+    openHatProbability:Number(e.openHatProbability),
+    openHatBaseProbability:Number(e.openHatBaseProbability),
+    vector:features(samples,e.time,nextMap.get(e),w)
+  }));
+}
