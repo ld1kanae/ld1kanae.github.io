@@ -228,7 +228,7 @@ def main():
         if ok:eligible.append(p)
     retained=max(eligible,key=lambda p:(policies[p]["summary"]["by_group"]["snare"]["f1"]+policies[p]["summary"]["by_group"]["tom"]["f1"],policies[p]["summary"]["f1"])) if eligible else "baseline"
     result={"schema":3,"description":"E-GMD KST clip-normalized hard-negative transfer; DruMaster charts scoring-only.",
-      "model":"models/egmd-kst-reclassifier-v2.json","policies":policies,"retained":retained}
+      "model":"models/egmd-kst-reclassifier-v3.json","policies":policies,"retained":retained}
     (EXP/"results-egmd-kst-transfer-v3.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
     print("RETAINED",retained,flush=True)
 
