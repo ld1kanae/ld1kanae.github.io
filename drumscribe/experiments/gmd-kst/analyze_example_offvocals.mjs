@@ -1,4 +1,4 @@
-import {readFile,writeFile} from 'node:fs/promises';
+import {writeFile} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import {analyzeSections} from '../../section-analysis.js';
 
@@ -11,8 +11,13 @@ function decode(path){
     '-v','error','-i',path,
     '-f','f32le','-ac','1','-ar',String(sampleRate),'pipe:1'
   ],{maxBuffer:256*1024*1024});
-  if(p.status!==0)throw new Error(`ffmpeg failed for ${path}: ${p.stderr.toString()}`);
+  if(p.error)throw new Error(`ffmpeg spawn failed for ${path}: ${p.error.message}`);
+  if(p.status!==0){
+    const stderr=p.stderr?String(p.stderr):'no stderr';
+    throw new Error(`ffmpeg failed for ${path}: ${stderr}`);
+  }
   const b=p.stdout;
+  if(!b?.byteLength)throw new Error(`ffmpeg produced no PCM for ${path}`);
   return new Float32Array(b.buffer,b.byteOffset,Math.floor(b.byteLength/4));
 }
 
