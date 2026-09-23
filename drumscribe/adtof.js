@@ -220,18 +220,18 @@ function logisticPredict(model,x){
   return sigmoid(z);
 }
 
-function egmdSnareCandidates(acts,kstModel){
-  const model=kstModel?.models?.snare;
+function egmdKstCandidates(acts,kstModel,target,group){
+  const model=kstModel?.models?.[group];
   if(!model)return [];
   const st=buildKstStats(acts);
   const lowScale=Number(kstModel.lowScale)||.2;
-  const threshold=BASE_THRESHOLDS[1]*lowScale;
-  return pickClass(acts,1,threshold).map(p=>({
+  const threshold=BASE_THRESHOLDS[target]*lowScale;
+  return pickClass(acts,target,threshold).map(p=>({
     time:p.time,
-    group:'snare',
+    group,
     score:p.activation,
     residual:p.residual,
-    probability:logisticPredict(model,kstFeature(st,p.frame,1)),
+    probability:logisticPredict(model,kstFeature(st,p.frame,target)),
     modelThreshold:Number(model.threshold)||.6,
     kickActivation:st.cols[0][p.frame],
     snareActivation:st.cols[1][p.frame],
@@ -281,11 +281,21 @@ export async function transcribeAdtof(decoded,report=()=>{},options={}){
     adtof:true,
     rescue:true
   }));
-  const egmdSnareSupport=egmdSnareCandidates(acts,assets.kstModel);
+  // Frozen E-GMD v4 candidate streams for all three structural classes.
+  // These are diagnostics/second opinions only; callers decide whether a
+  // candidate is safe to add. Keeping all K/S/T streams lets us improve kick
+  // and tom without changing the established production baseline by default.
+  const egmdKstSupport={
+    kick:egmdKstCandidates(acts,assets.kstModel,0,'kick'),
+    snare:egmdKstCandidates(acts,assets.kstModel,1,'snare'),
+    tom:egmdKstCandidates(acts,assets.kstModel,2,'tom')
+  };
+  const egmdSnareSupport=egmdKstSupport.snare; // backward-compatible alias
   return {
     events,
     snareRescue,
     egmdSnareSupport,
+    egmdKstSupport,
     frames,
     thresholdScale:scale,
     snareRescueScale,
