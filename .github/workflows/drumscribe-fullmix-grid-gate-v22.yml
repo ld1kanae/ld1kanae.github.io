@@ -1,0 +1,39 @@
+name: DrumScribe fullmix grid gate v22
+
+on:
+  push:
+    branches: [drumscribe-v2-eval]
+    paths:
+      - "drumscribe/experiments/fullmix_meter_grid_gate_v22.py"
+      - ".github/workflows/drumscribe-fullmix-grid-gate-v22.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-v2-eval
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install mido
+      - run: python drumscribe/experiments/fullmix_meter_grid_gate_v22.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-fullmix-meter-grid-gate-v22.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record fullmix grid gate v22 [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin drumscribe-v2-eval
+            git push origin HEAD:drumscribe-v2-eval && exit 0
+            sleep $((attempt*2))
+          done
+          exit 1
