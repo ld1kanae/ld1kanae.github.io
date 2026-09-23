@@ -94,3 +94,59 @@ export async function rescueRideOpenV57(decoded,events,options={}){
   });
   return {events:out,info:{...info,enabled:true,scored,changed}};
 }
+
+
+function highGapThreshold(values,floor=.70,ceiling=.995){
+  const xs=values.filter(Number.isFinite).filter(x=>x>=floor&&x<=ceiling).sort((a,b)=>a-b);
+  if(xs.length<6)return null;
+  let bestGap=-1,best=null;
+  for(let i=0;i<xs.length-1;i++){
+    const gap=xs[i+1]-xs[i];
+    if(gap>bestGap){bestGap=gap;best=(xs[i]+xs[i+1])/2;}
+  }
+  return bestGap>=.015?best:null;
+}
+
+// Generic synchronized-corpus articulation rescoring.
+// No review-song labels, filename, grid parity, or user review ranges are used.
+// It only uses the frozen context/choke acoustic model fitted offline from
+// synchronized WAV/MIDI pairs and operates on already-generated metal events.
+export async function rescoreHatContextGeneralV59(decoded,events,variant='off'){
+  const allowed=new Set(['off','closed-open-995','closed-open-990','closed-open-highgap','bidirectional-extreme']);
+  if(!allowed.has(variant)||variant==='off')return {events,info:{enabled:false,variant:'off'}};
+  const samples=await monoAt44100(decoded),w=workspace();
+  const all=events.slice().sort((a,b)=>a.time-b.time);
+  const art=all.filter(e=>['hat','open_hat','pedal_hat','ride'].includes(e.group));
+  const nextMap=new Map();
+  for(let i=0;i<art.length;i++)nextMap.set(art[i],art[i+1]?.time);
+  const eligible=art.filter(e=>e.group==='hat'||e.group==='open_hat');
+  const probMap=new Map();
+  for(const e of eligible)probMap.set(e,probability(features(samples,e.time,nextMap.get(e),w)));
+  const probs=[...probMap.values()];
+  const highGap=highGapThreshold(probs);
+  const openThreshold=variant==='closed-open-990'?.99:
+    variant==='closed-open-highgap'?(highGap??.995):.995;
+  const closeThreshold=.005;
+  let promoted=0,demoted=0,scored=0;
+  const out=all.map(e=>{
+    const p=probMap.get(e);
+    if(!Number.isFinite(p))return e;
+    scored++;
+    if(e.group==='hat'&&p>=openThreshold){
+      promoted++;
+      return {...e,group:'open_hat',note:46,hatContextProbability:p,hatContextGeneralV59:true};
+    }
+    if(variant==='bidirectional-extreme'&&e.group==='open_hat'&&p<=closeThreshold){
+      demoted++;
+      return {...e,group:'hat',note:42,hatContextProbability:p,hatContextGeneralV59:true};
+    }
+    return {...e,hatContextProbability:p};
+  });
+  return {events:out,info:{
+    enabled:true,variant,scored,promoted,demoted,
+    openThreshold,closeThreshold,
+    highGapThreshold:highGap,
+    probabilityMin:probs.length?Math.min(...probs):null,
+    probabilityMax:probs.length?Math.max(...probs):null
+  }};
+}
