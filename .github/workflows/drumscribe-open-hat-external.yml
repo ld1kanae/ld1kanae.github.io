@@ -26,6 +26,8 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
           pip install numpy scipy scikit-learn requests remotezip
       - name: Run GMD / E-GMD augmentation
         run: python drumscribe/experiments/external_hat_augmentation.py
