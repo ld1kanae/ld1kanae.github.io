@@ -16,7 +16,7 @@ const groupNotes=[36,38,41,42,44,45,46,47,49,50,51];
 const thresholdControlIds={
   kick:'thresholdKick',snare:'thresholdSnare',snareRescue:'thresholdSnareRescue',egmdSnare:'thresholdEgmdSnare',tom:'thresholdTom',
   hat:'thresholdHat',hatCollision:'thresholdHatCollision',hatFilter:'thresholdHatFilter',openHat:'thresholdOpenHat',
-  rideOpen:'thresholdRideOpen',rideContextOpen:'thresholdRideContextOpen',openHatOverlay:'thresholdOpenHatOverlay',
+  rideOpen:'thresholdRideOpen',openHatOverlay:'thresholdOpenHatOverlay',
   cymbal:'thresholdCymbal',cymbalGate:'thresholdCymbalGate'
 };
 function readThresholdMultipliers(){
@@ -26,6 +26,9 @@ function readThresholdMultipliers(){
     out[key]=Number.isFinite(v)&&v>=.50&&v<=1.50?v:1;
     if(el&&!Number.isFinite(v))el.value='1.0';
   }
+  // Ride→Open has two internal gates (timbre and context/choke), but the
+  // user-facing control is intentionally one multiplier for both.
+  out.rideContextOpen=out.rideOpen;
   return out;
 }
 $('thresholdReset')?.addEventListener('click',()=>{
