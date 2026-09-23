@@ -472,7 +472,10 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     if(Number(model.featureCount)!==26)throw Error(`unexpected open-hat feature count ${model.featureCount}`);
     const closedTemplate=model.assetTemplates?.closed42,openTemplate=model.assetTemplates?.open46;
     if(!closedTemplate||!openTemplate||closedTemplate.length!==BINS||openTemplate.length!==BINS)throw Error('open-hat asset templates are invalid');
-    const threshold=Number(model.probThreshold??.55);
+    const thresholdMultiplier=Number.isFinite(Number(context?.thresholdMultiplier))&&Number(context.thresholdMultiplier)>0?Number(context.thresholdMultiplier):1;
+    const rideThresholdMultiplier=Number.isFinite(Number(context?.rideThresholdMultiplier))&&Number(context.rideThresholdMultiplier)>0?Number(context.rideThresholdMultiplier):1;
+    const overlayThresholdMultiplier=Number.isFinite(Number(context?.overlayThresholdMultiplier))&&Number(context.overlayThresholdMultiplier)>0?Number(context.overlayThresholdMultiplier):1;
+    const threshold=Number(model.probThreshold??.55)*thresholdMultiplier;
     report('オープンハイハットの音色を判定中…',99.05);
     const samples=await monoAt44100(decoded),w=workspace(),raw=[];
     for(let i=0;i<hats.length;i++){
@@ -532,6 +535,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
       'ride-selective80-decay-rescue':.80,
       'ride-selective90-decay-rescue':.90
     }[requestedVariant];
+    const effectiveSelectiveRideThreshold=Number.isFinite(selectiveRideThreshold)?selectiveRideThreshold*rideThresholdMultiplier:selectiveRideThreshold;
     if(['ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','ride-selective55-decay-rescue','ride-selective60-decay-rescue','ride-selective65-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue'].includes(requestedVariant)){
       const rides=events.filter(e=>e.group==='ride').slice().sort((a,b)=>a.time-b.time);
       if(requestedVariant==='ride-open'||requestedVariant==='ride-open-decay-rescue'){
@@ -543,8 +547,8 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
         const rf=normalizeWithStats(rr,stats),rp=rf.map(x=>predict(model,x));
         let ro=0,rc=0,keptRide=0;
         for(let i=0;i<rides.length;i++){
-          if(Number.isFinite(selectiveRideThreshold)){
-            if(rp[i]>=selectiveRideThreshold){
+          if(Number.isFinite(effectiveSelectiveRideThreshold)){
+            if(rp[i]>=effectiveSelectiveRideThreshold){
               rideMap.set(rides[i],'open_hat');ro++;
               rideProbability.set(rides[i],{probability:rp[i],baseProbability:rp[i]});
             }else keptRide++;
@@ -555,8 +559,8 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
           }
         }
         sequenceInfo.ride={enabled:true,
-          mode:Number.isFinite(selectiveRideThreshold)?'selective-ride-to-open':'acoustic-42-46',
-          threshold:Number.isFinite(selectiveRideThreshold)?selectiveRideThreshold:threshold,
+          mode:Number.isFinite(effectiveSelectiveRideThreshold)?'selective-ride-to-open':'acoustic-42-46',
+          threshold:Number.isFinite(effectiveSelectiveRideThreshold)?effectiveSelectiveRideThreshold:threshold,
           candidates:rides.length,open:ro,closed:rc,keptRide,
           meanProbability:rp.length?rp.reduce((a,b)=>a+b,0)/rp.length:0};
       }
@@ -586,13 +590,18 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
       const pw=Number(policy.scoreProbabilityWeight??.72),rw=Number(policy.scoreRepeatWeight??.28);
       const scores=probs.map((p,i)=>pw*p+rw*rep[i]);
       const maxProb=probs.length?Math.max(...probs):0,maxScore=scores.length?Math.max(...scores):0;
-      const gate=maxProb>=Number(policy.gateMaxProbability??.78)&&maxScore>=Number(policy.gateMaxRepeatScore??.72);
-      const scoreThreshold=Math.max(Number(policy.minimumScore??.68),scores.length?quantile(scores,Number(policy.scoreQuantile??.96)):99);
+      const gateMaxProbability=Number(policy.gateMaxProbability??.78)*overlayThresholdMultiplier;
+      const gateMaxRepeatScore=Number(policy.gateMaxRepeatScore??.72)*overlayThresholdMultiplier;
+      const minimumScore=Number(policy.minimumScore??.68)*overlayThresholdMultiplier;
+      const minimumProbability=Number(policy.minimumProbability??.58)*overlayThresholdMultiplier;
+      const minimumRepeatSupport=Number(policy.minimumRepeatSupport??.35)*overlayThresholdMultiplier;
+      const gate=maxProb>=gateMaxProbability&&maxScore>=gateMaxRepeatScore;
+      const scoreThreshold=Math.max(minimumScore,scores.length?quantile(scores,Number(policy.scoreQuantile??.96)):99);
       const openTimes=hats.filter(h=>openSet.has(h)).map(h=>h.time);
       let physicalSkipped=0;
       if(gate){
         for(let i=0;i<anchors.length;i++){
-          if(scores[i]<scoreThreshold||probs[i]<Number(policy.minimumProbability??.58)||rep[i]<Number(policy.minimumRepeatSupport??.35))continue;
+          if(scores[i]<scoreThreshold||probs[i]<minimumProbability||rep[i]<minimumRepeatSupport)continue;
           const a=anchors[i];
           if(nearTime(openTimes,a.time,Number(policy.existingHatExclusionSec??.060)))continue;
           let hands=0;
@@ -605,7 +614,8 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
         }
       }
       overlayInfo={enabled:true,gate,candidates:anchors.length,rescued:rescued.length,physicalSkipped,
-        maxProbability:maxProb,maxRepeatScore:maxScore,scoreThreshold,
+        maxProbability:maxProb,maxRepeatScore:maxScore,scoreThreshold,overlayThresholdMultiplier,
+        gateMaxProbability,gateMaxRepeatScore,minimumScore,minimumProbability,minimumRepeatSupport,
         modelTrees:overlay.trees.length,modelFeatures:overlay.featureCount,policy:policy.name||'repeat_gate_2hands'};
     }catch(overlayErr){
       console.warn('open-hat overlay fallback',overlayErr);
@@ -625,7 +635,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
       return e;
     }).concat(rescued);
     return {events:promoted,info:{
-      ...baseInfo,enabled:true,promoted:openSet.size,rescued:rescued.length,threshold,
+      ...baseInfo,enabled:true,promoted:openSet.size,rescued:rescued.length,threshold,thresholdMultiplier,rideThresholdMultiplier,overlayThresholdMultiplier,
       closed:hats.length-openSet.size,modelTrees:model.trees.length,modelFeatures:model.featureCount,
       meanProbability:hats.length?probSum/hats.length:0,maxProbability,sequence:sequenceInfo,overlay:overlayInfo
     }};
