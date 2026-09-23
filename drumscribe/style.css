@@ -37,7 +37,7 @@ body[data-review-mode="1"] #timeline{cursor:ew-resize}
 .timeline-stage{position:relative}
 .review-popover[hidden]{display:none}
 .review-popover{position:absolute;z-index:12;top:10px;left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 24px));padding:12px;border:1px solid #8c75bd;border-radius:12px;background:rgba(14,24,39,.97);box-shadow:0 14px 35px rgba(0,0,0,.42);backdrop-filter:blur(8px)}
-.review-popover:after{content:"";position:absolute;left:50%;bottom:-9px;width:16px;height:16px;transform:translateX(-50%) rotate(45deg);background:#101c2d;border-right:1px solid #8c75bd;border-bottom:1px solid #8c75bd}
+.review-popover:after{content:"";position:absolute;left:var(--review-arrow-x,50%);bottom:-9px;width:16px;height:16px;transform:translateX(-50%) rotate(45deg);background:#101c2d;border-right:1px solid #8c75bd;border-bottom:1px solid #8c75bd}
 .review-popover-range{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px}
 .review-popover-range strong{font:800 11px/1 ui-monospace,SFMono-Regular,Consolas,monospace;color:#e2d5ff}
 .review-popover-range span{font-size:10px;color:var(--muted)}
