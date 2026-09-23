@@ -262,3 +262,7 @@ export const arrangementKstPolicyV46R1={
   residualSnareMinConfidence:.55,
   residualSnareMinGmdLift:1.65,
 };
+
+// Current production selection. Keep the explicit versioned exports above so
+// historical experiments remain reproducible.
+export const arrangementKstPolicyCurrent={...arrangementKstPolicyV46R1};
