@@ -12,6 +12,10 @@ on:
       - ".github/workflows/drumscribe-feedback-range.yml"
   workflow_dispatch:
 
+concurrency:
+  group: drumscribe-feedback-range
+  cancel-in-progress: true
+
 jobs:
   range-selection:
     runs-on: ubuntu-latest
