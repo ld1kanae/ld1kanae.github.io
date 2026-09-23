@@ -1,0 +1,72 @@
+name: DrumScribe arrangement KST runtime v40
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/arrangement/kst-rescore.js"
+      - "drumscribe/arrangement/index.js"
+      - "drumscribe/arrangement/test-kst-rescore.mjs"
+      - "drumscribe/models/gmd-kst/slot-prior-v1.json"
+      - "drumscribe/experiments/browser_arrangement_kst_runtime_v40.mjs"
+      - "drumscribe/experiments/evaluate_arrangement_kst_runtime_v40.py"
+      - ".github/workflows/drumscribe-arrangement-kst-runtime-v40.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install numpy scipy mido
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Unit-test arrangement modules
+        run: |
+          node drumscribe/arrangement/test.mjs
+          node drumscribe/arrangement/test-kst-rescore.mjs
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate production-like rescored MIDI in Chromium
+        run: node drumscribe/experiments/browser_arrangement_kst_runtime_v40.mjs
+      - name: Score exported MIDI and non-regression guards
+        run: python drumscribe/experiments/evaluate_arrangement_kst_runtime_v40.py
+      - name: Commit reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-arrangement-kst-runtime-v40.json
+          git add drumscribe/experiments/ARRANGEMENT_KST_V40.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record arrangement KST runtime v40"
+            git pull --rebase origin main
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-arrangement-kst-runtime-v40
+          path: |
+            drumscribe/experiments/generated-arrangement-kst-v40/**/*.json
+            drumscribe/experiments/generated-arrangement-kst-v40/**/*.mid
+            drumscribe/experiments/results-arrangement-kst-runtime-v40.json
+            drumscribe/experiments/ARRANGEMENT_KST_V40.md
+          retention-days: 14
