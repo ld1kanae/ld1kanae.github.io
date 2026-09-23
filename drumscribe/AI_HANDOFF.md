@@ -977,3 +977,13 @@ DrumSep contextual + rhythmic-grid residual:
 - Review ranges snap to the preview/export musical beat grid in **1-beat units**. `app.js` exposes beat-boundary helpers based on the same `rhythmGrid.timeForScore()` tempo map used for MIDI preview/export, rather than assuming a fixed seconds-per-beat across the song.
 - Pressing **保存** appends the review to the chronological log and closes the editor. Saved blocks can be played, reopened/rewritten, or deleted.
 - Existing localStorage persistence, 5-level undo/redo, AI prompt copy, and JSON export remain.
+
+
+## 2026-09-23 Timeline interaction v6
+- Concrete feedback-page startup bug fixed: `app.js` previously unconditionally bound `#arrangementFile`, but `feedback.html` did not contain that element. This stopped module initialization before `DrumScribeTimeline` was exposed. The binding is now optional.
+- Review range selection is deliberately **not beat-snapped**. Dragging the waveform stores the raw selected time interval. This is independent from the musical grid.
+- Manual playback seeking is beat-snapped instead: the transport seek slider and normal timeline click move to the nearest beat boundary generated from the same rhythm-grid tempo mapping used by preview/export. Alt+click bypasses snap.
+- The preview now draws musical beat grid lines.
+- MIDI preview visualization is four lanes, top to bottom: シンバル / ハイハット・ライド / スネア・タム / バスドラム.
+- Note colors follow the DruMaster performance-page palette where applicable: snare #ff3d73, cymbal #ffd45a, hi-hat #52dfcf, ride #63d66f, kick #aeb9c7; toms are unified to requested purple #d76bff.
+- Feedback range browser smoke test now verifies free-drag selection and beat-snapped click seeking, and the workflow uses concurrency cancellation so only the latest smoke run matters.
