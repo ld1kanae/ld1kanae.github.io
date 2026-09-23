@@ -48,7 +48,7 @@ This shows that bar aggregation removes most tempo events while preserving the e
 
 ## Five-song fresh Chromium regression
 
-Workflow run: `35849376347` — success.
+Workflow run: `35849808016` — success.
 
 | Song | Old tempo events | Bar-level events | Minimum event gap | Violations |
 |---|---:|---:|---:|---:|
