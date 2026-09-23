@@ -224,7 +224,14 @@ def main():
                 p,_=predict(d,assets,mode);row[key]=int(p)
             row["_desc"]=d
             rows.append(row);per_song_desc[song].append(row)
-    # Current production-style song-relative resonant-peak clustering, applied only\n    # to reference tom onset times for isolated pitch-subdivision evaluation.\n    current_cluster_info={}\n    for song,xs in per_song_desc.items():\n        preds,ci=current_cluster_predict(xs);current_cluster_info[song]=ci\n        for r,p in zip(xs,preds):r["pred_current_cluster"]=int(p)\n\n    # Research-only LOO real-hit nearest centroid. Never production.
+    # Current production-style song-relative resonant-peak clustering, applied only
+    # to reference tom onset times for isolated pitch-subdivision evaluation.
+    current_cluster_info={}
+    for song,xs in per_song_desc.items():
+        preds,ci=current_cluster_predict(xs);current_cluster_info[song]=ci
+        for r,p in zip(xs,preds):r["pred_current_cluster"]=int(p)
+
+    # Research-only LOO real-hit nearest centroid. Never production.
     for song,xs in per_song_desc.items():
         train=[r for s,ys in per_song_desc.items() if s!=song for r in ys]
         prot={}
