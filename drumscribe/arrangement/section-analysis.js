@@ -198,6 +198,13 @@ function sectionVector(normalized,times,start,end){
   return averageVectors(normalized,idx[0],idx[idx.length-1]+1);
 }
 
+function occurrenceLabel(group,occurrence){
+  if(occurrence<=1)return group;
+  // Keep the first repeat visually close to the original structural family:
+  // A -> A' -> A'' ... while group remains the stable family key "A".
+  return group+"'".repeat(occurrence-1);
+}
+
 function assignStructuralGroups(sections){
   const reps=[];
   const alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -210,14 +217,20 @@ function assignStructuralGroups(sections){
       if(score>bestSim){bestSim=score;best=i;}
     }
     if(best>=0&&bestSim>=.87){
-      section.group=reps[best].group;
+      const rep=reps[best];
+      rep.occurrences++;
+      section.group=rep.group;
+      section.occurrence=rep.occurrences;
+      section.label=occurrenceLabel(rep.group,rep.occurrences);
       section.repeatSimilarity=bestSim;
-      reps[best].vector=reps[best].vector.map((v,j)=>(v+section.vector[j])*.5);
-      reps[best].duration=(reps[best].duration+section.duration)*.5;
+      rep.vector=rep.vector.map((v,j)=>(v+section.vector[j])*.5);
+      rep.duration=(rep.duration+section.duration)*.5;
     }else{
       section.group=alphabet[reps.length]||`S${reps.length+1}`;
+      section.occurrence=1;
+      section.label=section.group;
       section.repeatSimilarity=1;
-      reps.push({group:section.group,vector:section.vector.slice(),duration:section.duration});
+      reps.push({group:section.group,vector:section.vector.slice(),duration:section.duration,occurrences:1});
     }
   }
 }
@@ -252,7 +265,11 @@ export function analyzeSections(input,options={}){
       vector:sectionVector(features.normalized,features.times,start,end),
       // Naming is deliberately structural, not semantic. A/B/C can later be
       // mapped to verse/chorus only when stronger evidence exists.
+      // group is the stable structural family; label distinguishes recurrences.
+      // Example: group A may appear as labels A, A', A'', ...
       group:null,
+      label:null,
+      occurrence:0,
       repeatSimilarity:0,
     });
   }
