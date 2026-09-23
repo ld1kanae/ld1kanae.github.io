@@ -1,5 +1,21 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: 一般リズム prior を小節頭判定へ限定導入
+
+ユーザー指摘の「4つ打ちではスネアが2・4拍、キックが小節頭に来やすい」を、固定規則ではなく一般的なリズム事前分布として検証した。
+
+外部資料として、Lucerne Groove Research Library の211個のWestern popular musicドラムパターンから16分位置ごとの kick / snare / cymbal 出現確率を算出した Senn et al. (2023) Table 3 を採用した。1拍目kick 0.914、2拍目snare 0.887、3拍目kick 0.641、4拍目snare 0.847。一方、Open Music Theory は4/4のbackbeatを2・4拍のsnareと説明しつつ、kickはsyncopationが多く、four-on-the-floor、half-time、double-time、dembow等の例外があると整理している。このため、一般パターンを音符クラスの強制変換には使わない。
+
+5曲の現行 chart.mid の4/4区間を16分位置へ落とし、Lucerne priorとの相関を計算した。曲別kick相関は arcaround 0.590 / diamondvirgin 0.640 / kaiju 0.864 / nanairo 0.577 / ray 0.582（平均0.651）。snare相関は 0.980 / 0.118 / 0.973 / 0.821 / 0.967（平均0.772）。diamondvirginのような例外もあるため、一律ハードルールにはしない。
+
+**不採用検証:** 現行生成MIDIのkick/snareを拍位置priorだけで直接入れ替える試験では、near-simultaneous kick+snareを保護しても、prior比4倍閾値で5曲合計のkick+snare真陽性が **721打減少**した。四つ打ちの同時kick、syncopation、欠落したsnare等を誤って書き換えるため不採用。
+
+**小節頭用途の検証:** 現行実ブラウザ生成イベントについて、beat phaseから得られる4個の小節頭候補をLucerne priorだけで選ぶと **4/5曲**で参照側候補と一致した。rayは1拍目と3拍目のパターン対称性のためprior単独では逆側を選んだ。一方、現行の音響selectorは5/5で正しい候補を選んでいた。chart.midを使った局所窓検証でも、prior単独の正しい小節頭選択率は1小節 517/742=69.7%、8小節 69/89=77.5%、16小節 35/44=79.5%で、支持材料にはなるが単独決定器には不足する。
+
+したがって transcribe.js では、既存のsnare backbeat / kick / low-band判定を維持し、**snare contrastが弱くlow_fallbackになった場合だけ**、low-band上位候補が1.5%以内の僅差ならLucerne priorをタイブレークに使うよう変更した。強い音響根拠がある場合はpriorで上書きしない。これにより5曲の現行4候補選択は5/5のまま変化しない。一般パターンの役割は「音符を修正する規則」ではなく「曖昧なdownbeat候補の補助証拠」とする。
+
+生データ: [results-rhythm-prior-v24.json](experiments/results-rhythm-prior-v24.json)
+
 ## 2026-09-23: 可変拍子のMIDI書き出し・全小節評価
 
 検証ブランチで比較した `fullmix_meter_grid_gate_v22.py` の0.50案を、検証用3曲のfullmix音声から事前抽出したBeatThis小節頭と、ドラム音源から推定済みの打点を使う `meter.js` に移植。固定4/4グリッドに対する音声小節頭のずれが中央値0.5拍以上の場合だけ、3/4と4/4の動的計画法を使う。`chart.mid` は推定器とMIDI書き出しには渡さない。小節頭データのない2曲、およびユーザーが持ち込む音源は現状4/4のままであり、任意の伴奏ファイルをWeb画面で解析する処理は未実装。
