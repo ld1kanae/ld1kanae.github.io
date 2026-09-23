@@ -1,4 +1,4 @@
-import {transcribe} from './transcribe.js?v=20260923-egmd-kst-v4';
+import {transcribe} from './transcribe.js?v=20260923-egmd-kst-v4-openhat-v2';
 import {midiFile} from './midi.js?v=20260923-grid-v29';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-grid-v29';
 import {inferBars,parseBeatThis} from './meter.js';
@@ -7,7 +7,7 @@ let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,po
 let exampleId='';
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
-const groupNotes=[36,38,42,44,45,49,51];
+const groupNotes=[36,38,42,44,45,46,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
 function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
@@ -81,7 +81,7 @@ $('analyze').addEventListener('click',async()=>{
     $('previewTitle').textContent=file.name;
     const gridInfo=rhythmGrid.info||{};
     const tempoText=Number.isFinite(gridInfo.tempoMin)&&Number.isFinite(gridInfo.tempoMax)?` / 書出BPM ${gridInfo.tempoMin.toFixed(3)}–${gridInfo.tempoMax.toFixed(3)} (${gridInfo.tempoEvents}点)`:'';
-    $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
+    $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・クローズHH ${events.filter(e=>e.note===42).length}・オープンHH ${events.filter(e=>e.note===46).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
     globalThis.__drumscribeResult={
       ...transcription,events:undefined,
       barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec,
@@ -152,7 +152,7 @@ function draw(){
     c.moveTo(x,h*.32-peak*h*.27);c.lineTo(x,h*.32+peak*h*.27);
   }c.stroke();c.globalAlpha=1;
   c.fillStyle='#203144';c.fillRect(0,h*.64,w,h*.36);
-  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',tom:'#e8ca83',crash:'#8dd3a0',ride:'#78b7a1'},offset=Number($('offset').value||0)/1000;
-  for(const e of midiEvents){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,tom:3,crash:4,ride:4}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.058),Math.max(1.5*dpr,w/1500),4*dpr);}
+  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',open_hat:'#d5baff',pedal_hat:'#a98be2',tom:'#e8ca83',crash:'#8dd3a0',ride:'#78b7a1'},offset=Number($('offset').value||0)/1000;
+  for(const e of midiEvents){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,open_hat:2,pedal_hat:2,tom:3,crash:4,ride:4}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.058),Math.max(1.5*dpr,w/1500),4*dpr);}
   const cursor=now()/decoded.duration*w;c.fillStyle='#eaf7fc';c.fillRect(cursor,0,2*dpr,h);
 }
