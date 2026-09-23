@@ -115,7 +115,22 @@ Guardrails:
 - Snare/Tom candidates already above the production threshold but removed downstream are not resurrected by default;
 - a two-hand guard rejects a new hand-played event when it would create a third simultaneous hand event.
 
-The compact GMD prior used by the v39D research candidate is:
+The compact GMD slot prior is:
 `../models/gmd-kst/slot-prior-v1.json`.
 
-Fresh Chromium v40 non-regression validation passed, and the v39D-style rescoring is now integrated into the production app when an arrangement source is present. Validation details are in `../experiments/ARRANGEMENT_KST_V40.md`.
+The current production policy is exported as `arrangementKstPolicyCurrent` and currently points to `arrangementKstPolicyV46R1`.
+
+It preserves the validated v39D A/A' family rescue and adds a **Snare-only residual E-GMD gate** for candidates not already rescued by the family rule:
+- frozen E-GMD v4 Snare probability >= 0.93;
+- acoustic confidence >= 0.55;
+- GMD Snare slot lift >= 1.65;
+- the candidate must already exist acoustically and must remain below the production threshold;
+- the two-hand guard still applies.
+
+Fresh Chromium v47 passed normal rhythm-grid / MIDI export non-regression, and v48 exercised the actual `index.html -> app.js` production path. v48 K/S/T F1 is 0.939224, all-class F1 is 0.819080, grid residual is 0 and hand-grid violations are 0.
+
+The v46R1 portable thresholds were proposed after inspecting earlier results on the same five-song development set, so these results do **not** establish unknown-song generalization. Keep that distinction when interpreting the production gain.
+
+Validation details:
+- `../experiments/ARRANGEMENT_KST_V47.md`
+- `../experiments/ARRANGEMENT_APP_V48.md`
