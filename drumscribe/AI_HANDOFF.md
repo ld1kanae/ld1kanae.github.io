@@ -1,5 +1,43 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 Arrangement KST learned v42/v43 — research only, production据え置き
+
+固定v39D rescoringを楽器別学習器へ置換できるか検証。
+
+方式:
+- 5曲leave-one-song-out (LOOCV)
+- held-out曲のchart.midは予測確定後の採点だけ
+- 比較: per-instrument Logistic Regression / Extra Trees / Random Forest
+- prediction-time features: acoustic confidence/score/broad confidence, family quality, A/A' same-position support rate/count, eligible occurrences, GMD slot lift, 16分slot sin/cos, occurrence, repeat similarity, bar index, section length, residual
+- Snare/Tomのproduction閾値以上だが後段vetoで落ちたcandidateは学習候補から除外
+
+v42:
+- same-position support>=1まで事前filterしたため12 candidatesのみ
+- kick 5/5 positive, snare 6 candidates/5 positive, tom 1/1 positive
+- 3学習器ともデータ不足でLOOCV rescue 0
+
+v43:
+- repeated familyに属するcandidateを広げ、support=0も負例/弱証拠として保持
+- corpus 83 candidates
+  - kick 6 / positives 5
+  - snare 36 / positives 7
+  - tom 41 / positives 2
+- fixed v39D replay: KST F1 0.938852 (+0.001118), added 9 TP / 0 FP
+- Logistic / Extra Trees / Random Forest LOOCV: 全て KST F1 0.937734 (baseline同値), rescue 0
+- training folds内ではSnareモデルが改善候補を見つけるが、held-out songでは閾値を超えず、曲跨ぎ一般化を確認できなかった
+
+判断:
+- **learned v42/v43はproduction不採用**。
+- productionはfresh Chromium v40合格済みのfixed v39D-style rescoringを維持。
+- 「学習が無効」ではなく、現在のrecoverable positiveが少なく曲偏在している。特にKick/Tomは分類器を学習するには不足。
+- 新しいpaired songを追加したら同じfeature schemaでcorpusへ追加し、LOOCVまたはsong-grouped CVを再実行する。
+
+蓄積資産:
+- `models/arrangement-kst/training-candidates-v43.json` — 83 labeled candidate rows
+- `models/arrangement-kst/learned-rescore-v43.json` — research-only logistic export (Snareのみ学習可能、runtime未使用)
+- `experiments/ARRANGEMENT_KST_LEARNED_V42.md`
+- `experiments/ARRANGEMENT_KST_LEARNED_V43.md`
+
 ## 2026-09-23 Arrangement KST v40/v41 — production採用済み
 
 v38/v39のA/A' acoustic candidate rescueを、通常のrhythm-grid/MIDI exportまで通すfresh Chromiumで再検証し、production appへ統合済み。
