@@ -1,5 +1,6 @@
 import {transcribe} from './transcribe.js?v=20260923-egmd-kst-v4';
-import {midiFile} from './midi.js';
+import {midiFile} from './midi.js?v=20260923-grid-v28';
+import {buildRhythmGrid} from './rhythm-grid.js?v=20260923-grid-v28';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
@@ -57,27 +58,27 @@ $('analyze').addEventListener('click',async()=>{
       const response=await fetch(`./experiments/${beatFile}`);
       if(response.ok)meter=inferBars(events,detectedBpm,barPhaseSec,decoded.duration,parseBeatThis(await response.text()));
     }
-    let exportOffsetSec=0,exportBarPad=0;
-    if(Number.isFinite(barPhaseSec)&&events.length){
-      const minMusical=Math.min(...events.map(e=>e.time-barPhaseSec));
-      if(minMusical<0)exportBarPad=Math.ceil(-minMusical/barSec);
-      exportOffsetSec=exportBarPad*barSec-barPhaseSec;
-    }
+    const rhythmGrid=buildRhythmGrid(events,detectedBpm,{barPhaseSec,numerator,denominator,bars:meter.bars});
+    const exportOffsetSec=rhythmGrid.exportOffsetSec,exportBarPad=rhythmGrid.barPad;
     downloadUrl=URL.createObjectURL(new Blob([midiFile(events,detectedBpm,{
       barPhaseSec,
       numerator,
       denominator,
-      bars:meter.bars
+      bars:meter.bars,
+      rhythmGrid
     })],{type:'audio/midi'}));
     $('download').href=downloadUrl;$('download').download=`${file.name.replace(/\.[^.]+$/,'')}-drumscribe.mid`;
     $('previewTitle').textContent=file.name;
-    $('resultSummary').textContent=`${fmt(decoded.duration)} / BPM ${detectedBpm.toFixed(3)} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
+    const gridInfo=rhythmGrid.info||{};
+    const tempoText=Number.isFinite(gridInfo.tempoMin)&&Number.isFinite(gridInfo.tempoMax)?` / 書出BPM ${gridInfo.tempoMin.toFixed(3)}–${gridInfo.tempoMax.toFixed(3)} (${gridInfo.tempoEvents}点)`:'';
+    $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・ハイハット ${events.filter(e=>e.note===42).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
     globalThis.__drumscribeResult={
       ...transcription,events:undefined,
       barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec,
+      rhythmGridInfo:gridInfo,
       meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
     };
-    tell(`${events.length} ノートを推定しました。BPM ${detectedBpm.toFixed(3)}。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}プレビューで確認し、MIDIを書き出せます。`);
+    tell(`${events.length} ノートを推定しました。基準BPM ${detectedBpm.toFixed(3)}。${gridInfo.subdivision||'格子未判定'}へ量子化し、${gridInfo.tempoEvents||1}個のテンポ点で音源の揺れを保持しました。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}プレビューで確認し、MIDIを書き出せます。`);
     draw();updateClock();loadingSamples=loadSamples();
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
   finally{$('analyze').disabled=false;$('progress').hidden=true;}
