@@ -1,5 +1,4 @@
 import json
-import math
 from collections import Counter
 from pathlib import Path
 
@@ -40,26 +39,19 @@ def reference_evidence(path):
         vals = sorted((distance_to_grid(q, step), w) for q, _, w in notes)
         weighted_mean = sum(d * w for d, w in vals) / total
         acc = 0.0
-        median = 0.0
-        p95 = 0.0
+        median = None
+        p95 = None
         for d, w in vals:
             acc += w
-            if acc >= total * 0.5 and median == 0.0:
+            if median is None and acc >= total * 0.5:
                 median = d
-            if acc >= total * 0.95:
+            if p95 is None and acc >= total * 0.95:
                 p95 = d
                 break
-        residuals[name] = {"weighted_mean_beats": weighted_mean, "median_beats": median, "p95_beats": p95}
+        residuals[name] = {"weighted_mean_beats": weighted_mean, "median_beats": median or 0.0, "p95_beats": p95 or 0.0}
     triplet_only = sum(w for q, _, w in notes if min(distance_to_grid(q, 1/3), distance_to_grid(q, 1/6)) <= 0.035 and distance_to_grid(q, 0.25) >= 0.055) / total
     straight_only = sum(w for q, _, w in notes if distance_to_grid(q, 0.25) <= 0.035 and min(distance_to_grid(q, 1/3), distance_to_grid(q, 1/6)) >= 0.055) / total
-    return {
-        "notes": len(notes),
-        "weighted_notes": total,
-        "residuals": residuals,
-        "triplet_only_share": triplet_only,
-        "straight_only_share": straight_only,
-        "triplet_supported": triplet_only >= 0.06,
-    }
+    return {"notes": len(notes), "weighted_notes": total, "residuals": residuals, "triplet_only_share": triplet_only, "straight_only_share": straight_only}
 
 
 def generated_midi_stats(path, subdivision):
@@ -73,13 +65,7 @@ def generated_midi_stats(path, subdivision):
             tempo_events += 1
         elif msg.type == "note_on" and msg.velocity > 0:
             note_ticks.append(tick)
-    quantum = {
-        "1/16": mid.ticks_per_beat // 4,
-        "1/16+1/32": mid.ticks_per_beat // 8,
-        "1/32": mid.ticks_per_beat // 8,
-        "1/8T": mid.ticks_per_beat // 3,
-        "1/16T": mid.ticks_per_beat // 6,
-    }.get(subdivision)
+    quantum = {"1/16": mid.ticks_per_beat // 4, "1/16+1/32": mid.ticks_per_beat // 8, "1/32": mid.ticks_per_beat // 8, "1/8T": mid.ticks_per_beat // 3, "1/16T": mid.ticks_per_beat // 6}.get(subdivision)
     if not quantum:
         return {"notes": len(note_ticks), "tempo_events": tempo_events, "grid_quantum_ticks": None, "max_grid_residual_ticks": None}
     residuals = []
@@ -90,15 +76,16 @@ def generated_midi_stats(path, subdivision):
 
 
 out = {
-    "schema": 1,
+    "schema": 2,
     "experiment": "gmd-triplet-heldout-v32",
-    "prediction_rule": "Reference MIDI is read only after browser transcription. auto uses audio only; oracle_bpm supplies metadata BPM only.",
+    "prediction_rule": "Reference MIDI is used to select and label held-out cases, but is read by the scorer only after browser transcription. auto uses audio only; oracle_bpm supplies metadata BPM only.",
     "cases": [],
 }
 
 for item in MANIFEST["cases"]:
     evidence = reference_evidence(item["local_midi"])
     case = {"item": item, "reference_evidence": evidence, "modes": {}}
+    expected = item["expected_family_from_reference"]
     for mode in ("auto", "oracle_bpm"):
         stem = f"{item['case_id']}-{mode}"
         payload = json.loads((GENERATED / f"{stem}.json").read_text())
@@ -107,12 +94,12 @@ for item in MANIFEST["cases"]:
         family = info.get("family")
         subdivision = info.get("subdivision")
         midi_stats = generated_midi_stats(GENERATED / f"{stem}.mid", subdivision)
-        expected = item["expected_family_from_metadata"]
         case["modes"][mode] = {
             "family": family,
             "subdivision": subdivision,
-            "correct_vs_metadata": family == expected,
+            "correct_vs_reference": family == expected,
             "bpm": timing.get("bpm"),
+            "bpm_ratio_to_metadata": (timing.get("bpm") / item["bpm"]) if timing.get("bpm") and item.get("bpm") else None,
             "fit": info.get("fit"),
             "tempo_events_reported": info.get("tempoEvents"),
             "tempo_min": info.get("tempoMin"),
@@ -128,25 +115,26 @@ for item in MANIFEST["cases"]:
 summary = {}
 for mode in ("auto", "oracle_bpm"):
     counts = Counter()
-    evidence_counts = Counter()
+    errors = []
     for case in out["cases"]:
-        expected = case["item"]["expected_family_from_metadata"]
-        predicted = case["modes"][mode]["family"]
+        expected = case["item"]["expected_family_from_reference"]
+        result = case["modes"][mode]
+        predicted = result["family"]
         counts["total"] += 1
         counts["correct"] += predicted == expected
         counts[f"expected_{expected}"] += 1
         counts[f"expected_{expected}_correct"] += predicted == expected
-        if expected == "triplet" and case["reference_evidence"]["triplet_supported"]:
-            evidence_counts["triplet_supported"] += 1
-            evidence_counts["triplet_supported_detected"] += predicted == "triplet"
+        if predicted != expected:
+            errors.append({"case_id": case["item"]["case_id"], "style": case["item"]["style"], "expected": expected, "predicted": predicted, "bpm": result["bpm"], "reference_bpm": case["item"]["bpm"], "fit": result["fit"]})
     summary[mode] = {
         "total": counts["total"],
-        "accuracy_vs_metadata": counts["correct"] / max(1, counts["total"]),
-        "triplet_recall_vs_metadata": counts["expected_triplet_correct"] / max(1, counts["expected_triplet"]),
+        "accuracy_vs_reference": counts["correct"] / max(1, counts["total"]),
+        "triplet_cases": counts["expected_triplet"],
+        "triplet_recall": counts["expected_triplet_correct"] / max(1, counts["expected_triplet"]),
+        "straight_controls": counts["expected_straight"],
         "straight_control_accuracy": counts["expected_straight_correct"] / max(1, counts["expected_straight"]),
-        "reference_triplet_supported_cases": evidence_counts["triplet_supported"],
-        "triplet_recall_on_reference_supported": evidence_counts["triplet_supported_detected"] / max(1, evidence_counts["triplet_supported"]),
         "max_generated_grid_residual_ticks": max((c["modes"][mode]["midi"]["max_grid_residual_ticks"] or 0) for c in out["cases"]),
+        "errors": errors,
     }
 out["summary"] = summary
 RESULT.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n")
