@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "grid-tempo-v28",
+  "runtime_changed": true,
+  "scope": "MIDI export timing only; detected kick/snare/tom/cymbal classes are not modified",
+  "user_upload": {
+    "audio": {
+      "name": "君は詩人になった [drums].wav",
+      "duration_sec": 181.79104308390023,
+      "sample_rate": 44100,
+      "channels": 2
+    },
+    "existing_midi": {
+      "name": "君は詩人になった [drums]-drumscribe.mid",
+      "notes": 1211,
+      "base_bpm": 134.00783945860832,
+      "tempo_events": 1,
+      "exact_straight_16th_share": 0.037985136251032205,
+      "mean_distance_to_16th_ticks": 9.108175061932288,
+      "p95_distance_to_16th_ticks": 20
+    },
+    "grid_detection": {
+      "family": "straight",
+      "subdivision": "1/16",
+      "fit": {
+        "straight_8th": 0.7258690904453501,
+        "straight_16th": 0.967264114823856,
+        "straight_32nd": 0.8847457325273979,
+        "triplet_8th": 0.4854927049351963,
+        "triplet_16th": 0.6953385686743851
+      }
+    },
+    "quantized_output": {
+      "name": "君は詩人になった [drums]-drumscribe-grid-v28.mid",
+      "exact_straight_16th_share": 1,
+      "tempo_events": 391,
+      "tempo_min_bpm": 133.74382183106636,
+      "tempo_max_bpm": 134.43427152579417,
+      "tempo_mean_bpm": 134.00640352854205,
+      "playback_difference_from_existing_midi_ms": {
+        "median_abs": 2.8145000004542453,
+        "p95_abs": 8.437843750214835,
+        "max_abs": 50.000375002070996,
+        "mean_signed": -0.17835569770715728
+      }
+    },
+    "audio_onset_check": {
+      "method": "spectral onset envelope; optimized constant offset; nearest local envelope maximum",
+      "existing_midi_median_abs_ms": 7.136281179139559,
+      "existing_midi_p95_abs_ms": 25.431292517001935,
+      "note": "Onset detection is not a gold transcription reference. It only confirms that the existing detected event times already follow audio transients reasonably well. The new tempo map is designed to preserve those times while moving score ticks onto the notation grid."
+    }
+  },
+  "reference_chart_observation": {
+    "diamondvirgin": {
+      "reference_tempo_events": 527,
+      "reference_bpm_min": 134.14266071967538,
+      "reference_bpm_max": 135.55768431326476,
+      "reference_exact_16th_share": 0.9953955629970699,
+      "reference_exact_32nd_share": 0.9979070740895772,
+      "old_generated_exact_16th_share": 0.040318302387267906
+    },
+    "nanairo": {
+      "reference_tempo_events": 419,
+      "reference_bpm_min": 125.00963615945396,
+      "reference_bpm_max": 125.05940321652785,
+      "reference_exact_16th_share": 1,
+      "old_generated_exact_16th_share": 0
+    },
+    "ray": {
+      "reference_tempo_events": 1,
+      "reference_bpm_min": 132.000132000132,
+      "reference_bpm_max": 132.000132000132,
+      "reference_exact_16th_share": 1,
+      "old_generated_exact_16th_share": 0.004963898916967509
+    }
+  },
+  "gmd_shuffle_observation": {
+    "gmd_beat_rows": 503,
+    "rows_labeled_shuffle_swing_or_triplet": 21,
+    "primary_genre_counts": {
+      "jazz": 11,
+      "rock": 4,
+      "blues": 4,
+      "funk": 1,
+      "neworleans": 1
+    },
+    "runtime_policy": "Do not choose triplet timing from a genre label alone. Timing evidence must clearly prefer the triplet grid; GMD genre/pattern information may be used later only as a weak prior for borderline cases."
+  },
+  "implementation": {
+    "rhythm-grid.js": "Select straight 16th/32nd or triplet subdivision, estimate overlapping-window phase drift, snap note ticks, derive a smoothed local tempo map.",
+    "midi.js": "Write quantized note ticks and tempo meta-events instead of converting raw seconds with one fixed BPM.",
+    "app.js": "Preview uses the same quantized/tempo-mapped event times as the exported MIDI.",
+    "tempo_limit": "Local BPM is conservatively clamped to +/-3% of the estimated base BPM."
+  },
+  "limitations": [
+    "The uploaded song has no gold chart.mid, so note-class precision/recall cannot be measured for this song.",
+    "The generated confirmation MIDI was reconstructed from the previously exported MIDI. A fresh browser transcription should be run to verify the full WAV-to-MIDI path after deployment.",
+    "Triplet/shuffle detection has not yet been calibrated on a large held-out set of shuffle recordings."
+  ]
+}
