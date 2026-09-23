@@ -2,7 +2,7 @@ import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
 import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';
-import {rescueRideOpenV57,rescoreHatArticulationFusionV61} from './hat-context-v57.js?v=20260924-acoustic-fusion-v61';
+import {rescueRideOpenV57,rescoreHatArticulationFusionV61,rescoreHatSyncCandidateV66} from './hat-context-v57.js?v=20260924-sync-candidate-v66';
 import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
@@ -1120,6 +1120,19 @@ export async function transcribe(decoded,report=()=>{},options={}){
     adtofInfo.hatContextV57=hatContext.info;
   }else{
     adtofInfo.hatContextV57={enabled:false,variant:hatContextVariant};
+  }
+
+  // v66 research candidate: learned on five synchronized WAV/MIDI pairs,
+  // but on the actual generated hat/open-hat candidate distribution. Runtime
+  // reads only audio + generated candidates; chart/review ranges are absent.
+  // Keep OFF until fresh browser replay of the repository five-song suite passes.
+  const hatSyncCandidateVariant=options.hatSyncCandidateVariant??'off';
+  if(hatSyncCandidateVariant==='sync-candidate-rf-v66'){
+    const hatSyncCandidate=await rescoreHatSyncCandidateV66(decoded,pruned,{enabled:true});
+    pruned=hatSyncCandidate.events;
+    adtofInfo.hatSyncCandidateV66=hatSyncCandidate.info;
+  }else{
+    adtofInfo.hatSyncCandidateV66={enabled:false,variant:hatSyncCandidateVariant};
   }
 
   // v61 research candidate: per-hit acoustic Open/Closed fusion. Production
