@@ -2686,3 +2686,32 @@ C2追加TP:
 詳細:
 - `experiments/OPENHAT_DEFAULT_VS_COMBINED_V46.md`
 - `experiments/results-openhat-default-vs-combined-v46.json`
+
+
+---
+
+## 2026-09-23: Domain calibration v45 / Open-hat strict v46
+
+### K/S/T v45
+
+E-GMD probabilityを曲内rank / robust-zへ補正し、fixed v39Dの救済を保持したまま追加候補だけ探索。
+
+| variant | K/S/T F1 | delta | added TP/FP |
+|---|---:|---:|---:|
+| fixed v39D | 0.938852 | +0.001118 | 9 / 0 |
+| C1 rank extreme | 0.938852 | +0.001118 | 9 / 0 |
+| C2 robust extreme | **0.938976** | **+0.001242** | **10 / 0** |
+| C3 soft-rank LOOCV | 0.938852 | +0.001118 | 9 / 0 |
+
+C2はdiamondvirgin Kick 219.05sを1 TP / 0 FPで追加。だがLOOCV方式C3では追加0のため、C2はproduction未採用。
+
+### Hi-hat v46
+
+fresh browserでdefault `decay-rescue` と `ride-open-decay-rescue` をRide込みで比較。
+
+| variant | Closed F1 | Open F1 | Ride F1 | Hat macro | Metal macro | collapsed onset F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| default | 0.843895 | 0.598647 | 0.246117 | 0.721271 | 0.562886 | 0.812081 |
+| combined | 0.843895 | **0.647770** | **0.000000** | 0.745832 | 0.497222 | 0.817466 |
+
+combinedはOpenだけなら大幅改善だがRideを消すため不採用。今後はRide preservationを必須guardrailにする。
