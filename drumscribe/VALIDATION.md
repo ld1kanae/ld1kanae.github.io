@@ -1,5 +1,45 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: 小節区切りをゼロから再検証（v25）
+
+直前に追加した一般リズム prior の本番実装は撤回し、`transcribe.js` / `app.js` / `index.html` を pre-v24 状態へ戻した。その上で、既存の `results-meter-v23.json` の集計値を前提にせず、5本の `generated-meter-v23/*.mid` と5本の現行 `chart.mid` をMIDIとして再パースして小節線を再評価した。
+
+### 4/4の小節頭候補
+
+外部資料として以下を参照した。
+
+- Google Groove MIDI Dataset: 1,150 MIDI、22,000小節超、4/4中心、ジャンル/BPM/beat・fillラベル付き、CC BY 4.0。
+- Drum Groove Corpora / Lucerne: 62 drummers、19,000小節超。kick 1/3、snare 2/4を中心とするarchetypical rock beatが3コーパスで強く現れると報告。
+- Senn et al. (2023): 211個のpopular-music drum patternsから16分位置別のkick/snare/cymbal出現確率を集計。
+- GrooveSteps CC0 patterns: four-on-the-floor / backbeat / money beat / half-time等の明示的16-stepテンプレート。
+
+生成MIDIだけから4つの小節頭候補を選び、参照MIDIは採点だけに使用した。比較は (A) 211パターンの位置確率、(B) 典型グルーヴテンプレート、(C) kick小節頭 + snare 2/4拍の役割特徴、(D) 等重みensemble。
+
+| 方式 | 5曲で正しい候補 |
+|---|---:|
+| 211-pattern positional likelihood | 4 / 5 |
+| Groove template mixture | 4 / 5 |
+| kick/downbeat + snare/backbeat roles | **5 / 5** |
+| equal-weight ensemble | 4 / 5 |
+
+外部一般パターンを足すだけでは改善せず、rayでは1拍目/3拍目の対称性、kaijuではテンプレート類似性が逆候補を選ぶ場合があった。このため一般リズムpriorの本番追加は行わない。kick/snareは小節頭候補を評価する手掛かりとして使うが、強制的な一般パターンへ寄せない。
+
+### 5本のMIDIを直接再評価
+
+生成MIDIと参照MIDIの同楽器打点から固定時間差を独立推定し、その差を使って両MIDIの小節線を比較した。曲別平均小節頭誤差は arcaround 0.0639 / diamondvirgin 0.0149 / kaiju 0.0140 / nanairo 0.0514 / ray 0.0213 beats、5曲平均 **0.0331 beats**。0.25拍以内の一致率の曲平均は **99.16%**。arcaround以外は今回の範囲では4/4小節線が安定している。
+
+### arcaround の3/4取りこぼし
+
+問題は3/4へ入る位置より、**3/4から4/4へ早く戻り過ぎること**だった。BeatThisの完全な拍番号列を確認すると、誤復帰点付近では `1,2,1,2,...` などとラベルが崩れている一方、正しい4/4復帰点付近では `1,2,3,4,1,2,3,4` が明瞭。
+
+従来DPはBeatThisから `label==1` の時刻だけを取り出しており、この違いを捨てていた。そこでDP自体は変更せず、DP後の **3/4→4/4遷移だけ**を完全な拍番号列で再検証する候補を評価した。次の2小節ぶんの4拍ラベル整合スコアが0.65未満なら、その復帰点を棄却し、3拍単位で次の候補を探す。
+
+独立再構成した評価では、arcaround の3/4一致が **11/18 → 17/18**、誤3/4は **0 → 0**、小節頭平均誤差は **0.1028 → 0.0349 beats**。diamondvirgin / kaiju は可変拍子ゲートがfalse（外部downbeatの固定4/4グリッド残差中央値がそれぞれ約0.028 / 0.031 beats）なので、この後処理は作動しない。
+
+この結果を受け、`meter.js` ではBeatThisの完全な `time + beat label` を保持し、可変拍子が有効な場合だけ3/4→4/4復帰を検証する処理を採用した。kick/snareノートのクラス・時刻には触れない。
+
+生データは `experiments/results-meter-fresh-v25.json` に保存する。
+
 ## 2026-09-23: 一般リズム prior を小節頭判定へ導入
 
 ユーザーの意図は、**小節区切り・小節頭を推定する際の手掛かりとして、典型的なドラム配置（例: 4/4で1拍目付近のkick、2・4拍目付近のsnare）を利用すること**である。kick/snareの採譜結果そのものを拍位置に合わせて強制修正する指示ではない。
