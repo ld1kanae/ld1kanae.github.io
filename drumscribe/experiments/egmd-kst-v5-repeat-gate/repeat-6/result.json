@@ -1,0 +1,1469 @@
+{
+  "schema": 2,
+  "source": "real browser-generated MIDI with audio-only tempo/bar estimation",
+  "songs": {
+    "arcaround": {
+      "tp": 886,
+      "predicted": 1092,
+      "reference": 1400,
+      "precision": 0.811,
+      "recall": 0.633,
+      "f1": 0.711,
+      "by_group": {
+        "kick": {
+          "tp": 555,
+          "predicted": 587,
+          "reference": 576
+        },
+        "snare": {
+          "tp": 175,
+          "predicted": 196,
+          "reference": 292
+        },
+        "hat": {
+          "tp": 147,
+          "predicted": 273,
+          "reference": 293
+        },
+        "tom": {
+          "tp": 7,
+          "predicted": 17,
+          "reference": 12
+        },
+        "crash": {
+          "tp": 2,
+          "predicted": 4,
+          "reference": 78
+        },
+        "ride": {
+          "tp": 0,
+          "predicted": 1,
+          "reference": 58
+        },
+        "other": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "pedal_hat": {
+          "tp": 0,
+          "predicted": 14,
+          "reference": 91
+        }
+      },
+      "median_error": -0.014,
+      "count_ratio": {
+        "kick": 1.019,
+        "snare": 0.671,
+        "hat": 0.932,
+        "tom": 1.417,
+        "crash": 0.051,
+        "ride": 0.017,
+        "other": null,
+        "pedal_hat": 0.154
+      },
+      "confusion": {
+        "class_errors": {
+          "kick_to_tom": 5,
+          "hat_to_kick": 10,
+          "hat_to_tom": 1,
+          "kick_to_snare": 2,
+          "snare_to_tom": 2,
+          "kick_to_hat": 75,
+          "kick_to_pedal_hat": 10,
+          "snare_to_kick": 19,
+          "snare_to_hat": 1,
+          "crash_to_hat": 18,
+          "hat_to_snare": 3,
+          "crash_to_snare": 2,
+          "snare_to_pedal_hat": 3,
+          "crash_to_kick": 2,
+          "kick_to_ride": 1,
+          "kick_to_crash": 2,
+          "ride_to_hat": 29,
+          "ride_to_pedal_hat": 1,
+          "ride_to_snare": 1
+        },
+        "kick_to_snare": 2,
+        "snare_to_kick": 19,
+        "unmatched_predicted": {
+          "tom": 2,
+          "hat": 3,
+          "snare": 13,
+          "kick": 1
+        },
+        "kick_snare_double_supported": 72,
+        "kick_snare_double_unsupported": 6
+      },
+      "timing": {
+        "estimated_bpm": 132.00295332390013,
+        "truth_bpm": 132.000132,
+        "bpm_error_percent": 0.0021373644536369077,
+        "bar_phase_sec": 0.3444099079241476,
+        "reference_bar_phase_sec": 0.3296349999981816,
+        "bar_error_sec": 0.01477490792596603,
+        "bar_error_beats": 0.032504829941922705,
+        "bar_timeline": {
+          "mean_abs_error_beats": 0.5773011354990774,
+          "p95_abs_error_beats": 1.017803745207606,
+          "max_abs_error_beats": 1.982201811908869,
+          "bar_recall_025": 0.4563758389261745,
+          "signature_bar_accuracy_025": 0.4228187919463087,
+          "reference_bars": 149,
+          "predicted_bars": 145
+        },
+        "reference_meter_changes": [
+          [
+            0,
+            4,
+            4
+          ],
+          [
+            120960,
+            3,
+            4
+          ],
+          [
+            133920,
+            4,
+            4
+          ],
+          [
+            260640,
+            3,
+            4
+          ]
+        ],
+        "export_offset_sec": -0.3444099079241476,
+        "export_bar_pad": 0,
+        "export_grid_residual_sec": 0.0,
+        "export_grid_residual_beats": 0.0,
+        "beat_phase_sec": 0.346228049063847,
+        "bar_phase_info": {
+          "phaseSec": 0.3444099079241476,
+          "source": "low_fallback",
+          "maxSnareContrast": 0.034785928785015456,
+          "selectedOffset": 0,
+          "coarsePhaseSec": 0.3462280490638472,
+          "selectionScore": 0.9278633906572363,
+          "refinedScore": 0.20524921075542718,
+          "crashAnchors": 13,
+          "gridCandidates": [
+            {
+              "offset": 0,
+              "phaseSec": 0.3462280490638472,
+              "kickHead": 0.21717739927405644,
+              "kickThird": 0.22108969744422619,
+              "snareBack": 0.2449531400800027,
+              "snareFront": 0.26441114631129126,
+              "snareContrast": -0.034785928785015456,
+              "crashAnchor": 0.08108457184725434,
+              "lowMean": 0.9278633906572363,
+              "lowTop": 1.1631045793664867,
+              "midMean": 0.8376201295266771,
+              "highMean": 1.0924128833058258,
+              "highTop": 2.230902207308802,
+              "selectionScore": 0.9278633906572363
+            },
+            {
+              "offset": 1,
+              "phaseSec": 0.8007633339886921,
+              "kickHead": 0.22490374095596993,
+              "kickThird": 0.21701340588411336,
+              "snareBack": 0.26441114631129126,
+              "snareFront": 0.2449531400800027,
+              "snareContrast": 0.034785928785015456,
+              "crashAnchor": 0.1625012122306083,
+              "lowMean": 0.9206387131649724,
+              "lowTop": 1.1568486443881332,
+              "midMean": 0.8706519575237601,
+              "highMean": 1.1772958631474717,
+              "highTop": 2.376847369917508,
+              "selectionScore": 0.9206387131649724
+            },
+            {
+              "offset": 2,
+              "phaseSec": 1.2552986189135376,
+              "kickHead": 0.22108969744422619,
+              "kickThird": 0.21717739927405644,
+              "snareBack": 0.2449531400800027,
+              "snareFront": 0.26441114631129126,
+              "snareContrast": -0.034785928785015456,
+              "crashAnchor": 0.23329905207615415,
+              "lowMean": 0.9158588807425421,
+              "lowTop": 1.1644174271616443,
+              "midMean": 0.8229177674550587,
+              "highMean": 1.1685571917945896,
+              "highTop": 2.246401001667154,
+              "selectionScore": 0.9158588807425421
+            },
+            {
+              "offset": 3,
+              "phaseSec": 1.709833903838383,
+              "kickHead": 0.21701340588411336,
+              "kickThird": 0.22490374095596993,
+              "snareBack": 0.26441114631129126,
+              "snareFront": 0.2449531400800027,
+              "snareContrast": 0.034785928785015456,
+              "crashAnchor": 0.2085072111907831,
+              "lowMean": 0.917826660662652,
+              "lowTop": 1.14550650530848,
+              "midMean": 0.8468857768926783,
+              "highMean": 1.1567417824100832,
+              "highTop": 2.2680589823887267,
+              "selectionScore": 0.917826660662652
+            }
+          ]
+        },
+        "tempo_info": {
+          "bpm": 132.00295332390013,
+          "coarseBpm": 132.25,
+          "spectralBpm": 132.004015,
+          "phaseSec": 0.33798514561452053,
+          "confidence": 0.6318429713482672,
+          "snarePeaks": 774,
+          "source": "audio",
+          "eventFamily": {
+            "bpm": 132,
+            "score": 0.7410362700795494,
+            "candidates": [
+              {
+                "bpm": 132,
+                "score": 0.7410362700795494,
+                "kickHist": 0.4606649218007669,
+                "snareHist": 1,
+                "kickCoh": 0.7374036973884096,
+                "snareCoh": 0.16775277320369988
+              },
+              {
+                "bpm": 88.5,
+                "score": 0.555551172660887,
+                "kickHist": 0.34274055974861717,
+                "snareHist": 0.8681497651247132,
+                "kickCoh": 0.028066858033889336,
+                "snareCoh": 0.044760027261215855
+              },
+              {
+                "bpm": 87.75,
+                "score": 0.5495809321463907,
+                "kickHist": 0.34274055974861717,
+                "snareHist": 0.8681497651247132,
+                "kickCoh": 0.0037422698729194888,
+                "snareCoh": 0.021174815938553
+              },
+              {
+                "bpm": 177,
+                "score": 0.5409219358340384,
+                "kickHist": 0.25377610263102807,
+                "snareHist": 0.8564068939147925,
+                "kickCoh": 0.038890612252420714,
+                "snareCoh": 0.1016924161963654
+              },
+              {
+                "bpm": 211,
+                "score": 0.5173939002149037,
+                "kickHist": 0,
+                "snareHist": 0.929921271463481,
+                "kickCoh": 0.005573240379613225,
+                "snareCoh": 0.035865845813519696
+              },
+              {
+                "bpm": 105.5,
+                "score": 0.4629780260981378,
+                "kickHist": 0.19317672999905097,
+                "snareHist": 0.7551760257349063,
+                "kickCoh": 0.009322069849187887,
+                "snareCoh": 0.0537577263947354
+              },
+              {
+                "bpm": 130.75,
+                "score": 0.3966977811327854,
+                "kickHist": 1,
+                "snareHist": 0.34355238078722206,
+                "kickCoh": 0.027031801454269734,
+                "snareCoh": 0.03360527702924151
+              },
+              {
+                "bpm": 65.375,
+                "score": 0.3401987522628262,
+                "kickHist": 0.5871453717143652,
+                "snareHist": 0.3866420450737446,
+                "kickCoh": 0.01257572457501975,
+                "snareCoh": 0.059059871145944055
+              }
+            ]
+          }
+        },
+        "midi_tempo_bpm": 132.0190107375462,
+        "midi_time_signature": [
+          4,
+          4
+        ]
+      }
+    },
+    "diamondvirgin": {
+      "tp": 1699,
+      "predicted": 1887,
+      "reference": 2389,
+      "precision": 0.9,
+      "recall": 0.711,
+      "f1": 0.795,
+      "by_group": {
+        "kick": {
+          "tp": 688,
+          "predicted": 715,
+          "reference": 740
+        },
+        "snare": {
+          "tp": 588,
+          "predicted": 610,
+          "reference": 608
+        },
+        "hat": {
+          "tp": 246,
+          "predicted": 255,
+          "reference": 755
+        },
+        "tom": {
+          "tp": 40,
+          "predicted": 45,
+          "reference": 57
+        },
+        "crash": {
+          "tp": 34,
+          "predicted": 68,
+          "reference": 70
+        },
+        "ride": {
+          "tp": 103,
+          "predicted": 191,
+          "reference": 155
+        },
+        "other": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "pedal_hat": {
+          "tp": 0,
+          "predicted": 3,
+          "reference": 4
+        }
+      },
+      "median_error": -0.006,
+      "count_ratio": {
+        "kick": 0.966,
+        "snare": 1.003,
+        "hat": 0.338,
+        "tom": 0.789,
+        "crash": 0.971,
+        "ride": 1.232,
+        "other": null,
+        "pedal_hat": 0.75
+      },
+      "confusion": {
+        "class_errors": {
+          "tom_to_snare": 9,
+          "hat_to_ride": 86,
+          "kick_to_crash": 16,
+          "snare_to_crash": 3,
+          "tom_to_kick": 2,
+          "ride_to_snare": 1,
+          "kick_to_hat": 1,
+          "kick_to_tom": 4,
+          "hat_to_crash": 14,
+          "hat_to_kick": 7,
+          "hat_to_snare": 4,
+          "crash_to_hat": 6,
+          "crash_to_ride": 1,
+          "hat_to_pedal_hat": 3,
+          "snare_to_ride": 1,
+          "crash_to_kick": 1,
+          "kick_to_snare": 3,
+          "snare_to_kick": 2,
+          "ride_to_kick": 1,
+          "snare_to_hat": 1
+        },
+        "kick_to_snare": 3,
+        "snare_to_kick": 2,
+        "unmatched_predicted": {
+          "snare": 5,
+          "tom": 1,
+          "kick": 13,
+          "crash": 1,
+          "hat": 1
+        },
+        "kick_snare_double_supported": 0,
+        "kick_snare_double_unsupported": 0
+      },
+      "timing": {
+        "estimated_bpm": 135.07536988005626,
+        "truth_bpm": 135.201213,
+        "bpm_error_percent": 0.09307839563816503,
+        "bar_phase_sec": 0.574186378825911,
+        "reference_bar_phase_sec": 0.5561320026988219,
+        "bar_error_sec": 0.018054376127089045,
+        "bar_error_beats": 0.04068289253901135,
+        "bar_timeline": {
+          "mean_abs_error_beats": 0.01009066628983471,
+          "p95_abs_error_beats": 0.025203022401170016,
+          "max_abs_error_beats": 0.03754178664982337,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "reference_bars": 152,
+          "predicted_bars": 155
+        },
+        "reference_meter_changes": [
+          [
+            0,
+            4,
+            4
+          ]
+        ],
+        "export_offset_sec": -0.574186378825911,
+        "export_bar_pad": 0,
+        "export_grid_residual_sec": 0.0,
+        "export_grid_residual_beats": 0.0,
+        "beat_phase_sec": 0.13620867754304414,
+        "bar_phase_info": {
+          "phaseSec": 0.574186378825911,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.46515124198100155,
+          "selectedOffset": 1,
+          "coarsePhaseSec": 0.5804051291483858,
+          "selectionScore": 0.21883204773237067,
+          "refinedScore": 0.23338606185253935,
+          "crashAnchors": 0,
+          "gridCandidates": [
+            {
+              "offset": 0,
+              "phaseSec": 0.13620867754304422,
+              "kickHead": 0.06704032864362829,
+              "kickThird": 0.07387234306297473,
+              "snareBack": 0.052657006402085954,
+              "snareFront": 0.18773165109322598,
+              "snareContrast": -0.46515124198100155,
+              "crashAnchor": 0,
+              "lowMean": 0.16918809679706512,
+              "lowTop": 0.7257392300713447,
+              "midMean": 0.45690131456099004,
+              "highMean": 1.0971973037927396,
+              "highTop": 2.560723835422147
+            },
+            {
+              "offset": 1,
+              "phaseSec": 0.5804051291483858,
+              "kickHead": 0.177608700548186,
+              "kickThird": 0.13284720766955027,
+              "snareBack": 0.18773165109322598,
+              "snareFront": 0.05265700640208595,
+              "snareContrast": 0.46515124198100155,
+              "crashAnchor": 0,
+              "lowMean": 0.8244669436836932,
+              "lowTop": 1.1811229413555515,
+              "midMean": 0.22922350025836485,
+              "highMean": 1.2300425429573103,
+              "highTop": 2.3870189612911594,
+              "selectionScore": 0.21883204773237067
+            },
+            {
+              "offset": 2,
+              "phaseSec": 1.0246015807537272,
+              "kickHead": 0.07387234306297473,
+              "kickThird": 0.06704032864362829,
+              "snareBack": 0.05265700640208595,
+              "snareFront": 0.18773165109322598,
+              "snareContrast": -0.46515124198100155,
+              "crashAnchor": 0,
+              "lowMean": 0.25344914474984936,
+              "lowTop": 1.0704475025976858,
+              "midMean": 0.39172314853475976,
+              "highMean": 1.0746803579945867,
+              "highTop": 2.750376324499807
+            },
+            {
+              "offset": 3,
+              "phaseSec": 1.4687980323590686,
+              "kickHead": 0.13284720766955024,
+              "kickThird": 0.177608700548186,
+              "snareBack": 0.18773165109322598,
+              "snareFront": 0.05265700640208595,
+              "snareContrast": 0.46515124198100155,
+              "crashAnchor": 0,
+              "lowMean": 0.4971821871338927,
+              "lowTop": 1.1139570513079244,
+              "midMean": 0.28271046286778523,
+              "highMean": 0.9547638807225785,
+              "highTop": 1.9719774876871417,
+              "selectionScore": 0.15770631702624488
+            }
+          ]
+        },
+        "tempo_info": {
+          "bpm": 135.07536988005626,
+          "coarseBpm": 135.25,
+          "spectralBpm": 135.0836425,
+          "phaseSec": 0.3455973786395234,
+          "confidence": 0.2632431494001661,
+          "snarePeaks": 1193,
+          "source": "audio",
+          "eventFamily": {
+            "bpm": 135,
+            "score": 0.7733552963312511,
+            "candidates": [
+              {
+                "bpm": 135,
+                "score": 0.7733552963312511,
+                "kickHist": 0.7845840978967511,
+                "snareHist": 1,
+                "kickCoh": 0.15595620985902728,
+                "snareCoh": 0.33895237177332055
+              },
+              {
+                "bpm": 136,
+                "score": 0.7585188756097216,
+                "kickHist": 0.8842760305565464,
+                "snareHist": 1,
+                "kickCoh": 0.08851499644469851,
+                "snareCoh": 0.15208113235961593
+              },
+              {
+                "bpm": 67.5,
+                "score": 0.4172371901218704,
+                "kickHist": 1,
+                "snareHist": 0.33593672093020277,
+                "kickCoh": 0.1288673595959931,
+                "snareCoh": 0.13056838433773002
+              },
+              {
+                "bpm": 136.75,
+                "score": 0.41498584277088224,
+                "kickHist": 0.8842760305565464,
+                "snareHist": 0.39959114556938413,
+                "kickCoh": 0.05879480283338414,
+                "snareCoh": 0.08317350875382183
+              },
+              {
+                "bpm": 66.75,
+                "score": 0.4129871094037728,
+                "kickHist": 1,
+                "snareHist": 0.33593672093020277,
+                "kickCoh": 0.14600512281147274,
+                "snareCoh": 0.09080933740675982
+              },
+              {
+                "bpm": 133.75,
+                "score": 0.37827676656615106,
+                "kickHist": 0.818615328350545,
+                "snareHist": 0.382252232084358,
+                "kickCoh": 0.002604268892928143,
+                "snareCoh": 0.027030309069015223
+              },
+              {
+                "bpm": 89.75,
+                "score": 0.35746011902369146,
+                "kickHist": 0.5857085716467616,
+                "snareHist": 0.430242349130291,
+                "kickCoh": 0.01761720925910181,
+                "snareCoh": 0.012822611645125562
+              },
+              {
+                "bpm": 91.125,
+                "score": 0.30327475486514016,
+                "kickHist": 0.5171763900793581,
+                "snareHist": 0.3542985570800327,
+                "kickCoh": 0.010424091615771723,
+                "snareCoh": 0.026219075291155677
+              }
+            ]
+          }
+        },
+        "midi_tempo_bpm": 135.0949717651509,
+        "midi_time_signature": [
+          4,
+          4
+        ]
+      }
+    },
+    "kaiju": {
+      "tp": 1176,
+      "predicted": 1234,
+      "reference": 1797,
+      "precision": 0.953,
+      "recall": 0.654,
+      "f1": 0.776,
+      "by_group": {
+        "kick": {
+          "tp": 387,
+          "predicted": 390,
+          "reference": 390
+        },
+        "snare": {
+          "tp": 200,
+          "predicted": 205,
+          "reference": 205
+        },
+        "hat": {
+          "tp": 537,
+          "predicted": 585,
+          "reference": 594
+        },
+        "tom": {
+          "tp": 22,
+          "predicted": 22,
+          "reference": 23
+        },
+        "crash": {
+          "tp": 30,
+          "predicted": 30,
+          "reference": 145
+        },
+        "ride": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 431
+        },
+        "other": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "pedal_hat": {
+          "tp": 0,
+          "predicted": 2,
+          "reference": 9
+        }
+      },
+      "median_error": -0.006,
+      "count_ratio": {
+        "kick": 1.0,
+        "snare": 1.0,
+        "hat": 0.985,
+        "tom": 0.957,
+        "crash": 0.207,
+        "ride": 0.0,
+        "other": null,
+        "pedal_hat": 0.222
+      },
+      "confusion": {
+        "class_errors": {
+          "hat_to_kick": 3,
+          "crash_to_hat": 9,
+          "ride_to_hat": 29,
+          "crash_to_pedal_hat": 2,
+          "crash_to_snare": 2,
+          "hat_to_snare": 1,
+          "kick_to_hat": 9,
+          "ride_to_snare": 1
+        },
+        "kick_to_snare": 0,
+        "snare_to_kick": 0,
+        "unmatched_predicted": {
+          "hat": 1,
+          "snare": 1
+        },
+        "kick_snare_double_supported": 2,
+        "kick_snare_double_unsupported": 2
+      },
+      "timing": {
+        "estimated_bpm": 180.0068159173802,
+        "truth_bpm": 180.00504,
+        "bpm_error_percent": 0.0009865931421701045,
+        "bar_phase_sec": 0.7811110472868721,
+        "reference_bar_phase_sec": 0.6973719989546958,
+        "bar_error_sec": 0.08373904833217627,
+        "bar_error_beats": 0.2512241790765887,
+        "bar_timeline": {
+          "mean_abs_error_beats": 0.009360696624032393,
+          "p95_abs_error_beats": 0.026941720752924836,
+          "max_abs_error_beats": 0.16745178851008458,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "reference_bars": 185,
+          "predicted_bars": 190
+        },
+        "reference_meter_changes": [
+          [
+            0,
+            4,
+            4
+          ]
+        ],
+        "export_offset_sec": -0.7811110472868721,
+        "export_bar_pad": 0,
+        "export_grid_residual_sec": 0.0,
+        "export_grid_residual_beats": 0.0,
+        "beat_phase_sec": 0.11913611376717535,
+        "bar_phase_info": {
+          "phaseSec": 0.7811110472868721,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.8693860098605396,
+          "selectedOffset": 2,
+          "coarsePhaseSec": 0.7857775372512605,
+          "selectionScore": 0.40989817597876843,
+          "refinedScore": 0.6353847022482448,
+          "crashAnchors": 1,
+          "gridCandidates": [
+            {
+              "offset": 0,
+              "phaseSec": 0.11913611376717537,
+              "kickHead": 0.1082706446512291,
+              "kickThird": 0.3690718156795227,
+              "snareBack": 1.05882557232729,
+              "snareFront": 0.05072688672652077,
+              "snareContrast": 0.8693860098605396,
+              "crashAnchor": 4.225466405866161e-09,
+              "lowMean": 0.24933410848824153,
+              "lowTop": 1.0390049815177917,
+              "midMean": 0.25259011692051947,
+              "highMean": 0.7258786927155119,
+              "highTop": 1.7629614974323071,
+              "selectionScore": 0.12073735007564118
+            },
+            {
+              "offset": 1,
+              "phaseSec": 0.45245682550921784,
+              "kickHead": 0.11153003466792527,
+              "kickThird": 0.10948511368326184,
+              "snareBack": 0.05072688672652077,
+              "snareFront": 1.05882557232729,
+              "snareContrast": -0.8693860098605396,
+              "crashAnchor": 1.646646945082892e-34,
+              "lowMean": 0.306028568937951,
+              "lowTop": 1.0431712065872394,
+              "midMean": 0.8985783677025833,
+              "highMean": 1.4775706498611008,
+              "highTop": 2.82117770220104
+            },
+            {
+              "offset": 2,
+              "phaseSec": 0.7857775372512605,
+              "kickHead": 0.3690718156795227,
+              "kickThird": 0.1082706446512291,
+              "snareBack": 1.0588255723272895,
+              "snareFront": 0.05072688672652077,
+              "snareContrast": 0.8693860098605396,
+              "crashAnchor": 3.5525350883870227e-09,
+              "lowMean": 0.816527205984915,
+              "lowTop": 1.273640745564511,
+              "midMean": 0.5053034019460795,
+              "highMean": 1.1748910943602249,
+              "highTop": 2.2380483652416028,
+              "selectionScore": 0.40989817597876843
+            },
+            {
+              "offset": 3,
+              "phaseSec": 1.1190982489933032,
+              "kickHead": 0.10948511368326184,
+              "kickThird": 0.11153003466792526,
+              "snareBack": 0.05072688672652077,
+              "snareFront": 1.0588255723272895,
+              "snareContrast": -0.8693860098605396,
+              "crashAnchor": 1.1763068183342684,
+              "lowMean": 0.29691796295815304,
+              "lowTop": 1.0676945636146946,
+              "midMean": 0.8148950791245813,
+              "highMean": 1.4151721692253854,
+              "highTop": 3.014624419965242
+            }
+          ]
+        },
+        "tempo_info": {
+          "bpm": 180.0068159173802,
+          "coarseBpm": 179.5,
+          "spectralBpm": 180.00619,
+          "phaseSec": 0.10902411337876405,
+          "confidence": 0.5555579613712869,
+          "snarePeaks": 657,
+          "source": "audio",
+          "eventFamily": {
+            "bpm": 179.5,
+            "score": 0.7074141064951809,
+            "candidates": [
+              {
+                "bpm": 179.5,
+                "score": 0.7074141064951809,
+                "kickHist": 0.5721200276786489,
+                "snareHist": 1,
+                "kickCoh": 0.23850976930044293,
+                "snareCoh": 0.12759416019604525
+              },
+              {
+                "bpm": 182.25,
+                "score": 0.4834803676715784,
+                "kickHist": 1,
+                "snareHist": 0.48167060277723933,
+                "kickCoh": 0.08743266831570222,
+                "snareCoh": 0.06545512875017717
+              },
+              {
+                "bpm": 89.75,
+                "score": 0.4616825085659172,
+                "kickHist": 0.8359758174153554,
+                "snareHist": 0.4650949727717339,
+                "kickCoh": 0.0346257788391501,
+                "snareCoh": 0.23481688116318294
+              },
+              {
+                "bpm": 91.125,
+                "score": 0.3191723188750808,
+                "kickHist": 0.3823237872590577,
+                "snareHist": 0.36773799569356447,
+                "kickCoh": 0.07906359003309893,
+                "snareCoh": 0.2169686985899925
+              },
+              {
+                "bpm": 181,
+                "score": 0.24993503957589555,
+                "kickHist": 0.24604090138967227,
+                "snareHist": 0.21692304136472748,
+                "kickCoh": 0.34553074295692354,
+                "snareCoh": 0.31244074834445745
+              },
+              {
+                "bpm": 60.125,
+                "score": 0.23026008842280923,
+                "kickHist": 0.4376243108581176,
+                "snareHist": 0.24781480705160036,
+                "kickCoh": 0.008031720361103879,
+                "snareCoh": 0.037559402244634145
+              },
+              {
+                "bpm": 120.25,
+                "score": 0.21935418489890932,
+                "kickHist": 0.5380226371861476,
+                "snareHist": 0.19508796299986786,
+                "kickCoh": 0.004843629576135118,
+                "snareCoh": 0.02644609902759299
+              },
+              {
+                "bpm": 119.5,
+                "score": 0.21882821388017112,
+                "kickHist": 0.5380226371861476,
+                "snareHist": 0.19508796299986786,
+                "kickCoh": 0.01635879919043692,
+                "snareCoh": 0.01526284582647052
+              }
+            ]
+          }
+        },
+        "midi_tempo_bpm": 180.03636734620395,
+        "midi_time_signature": [
+          4,
+          4
+        ]
+      }
+    },
+    "nanairo": {
+      "tp": 1650,
+      "predicted": 1802,
+      "reference": 2009,
+      "precision": 0.916,
+      "recall": 0.821,
+      "f1": 0.866,
+      "by_group": {
+        "kick": {
+          "tp": 486,
+          "predicted": 486,
+          "reference": 486
+        },
+        "snare": {
+          "tp": 139,
+          "predicted": 212,
+          "reference": 155
+        },
+        "hat": {
+          "tp": 945,
+          "predicted": 1007,
+          "reference": 1063
+        },
+        "tom": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "crash": {
+          "tp": 18,
+          "predicted": 22,
+          "reference": 45
+        },
+        "ride": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "other": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "pedal_hat": {
+          "tp": 62,
+          "predicted": 75,
+          "reference": 260
+        }
+      },
+      "median_error": 0.006,
+      "count_ratio": {
+        "kick": 1.0,
+        "snare": 1.368,
+        "hat": 0.947,
+        "tom": null,
+        "crash": 0.489,
+        "ride": null,
+        "other": null,
+        "pedal_hat": 0.288
+      },
+      "confusion": {
+        "class_errors": {
+          "kick_to_hat": 33,
+          "crash_to_hat": 5,
+          "hat_to_crash": 4,
+          "snare_to_pedal_hat": 4,
+          "snare_to_hat": 3,
+          "kick_to_pedal_hat": 8,
+          "hat_to_pedal_hat": 1,
+          "hat_to_snare": 1,
+          "crash_to_snare": 2
+        },
+        "kick_to_snare": 0,
+        "snare_to_kick": 0,
+        "unmatched_predicted": {
+          "snare": 70,
+          "hat": 19
+        },
+        "kick_snare_double_supported": 87,
+        "kick_snare_double_unsupported": 1
+      },
+      "timing": {
+        "estimated_bpm": 125.0064386919991,
+        "truth_bpm": 125.029955,
+        "bpm_error_percent": 0.018808539122410557,
+        "bar_phase_sec": 0.037430571968605886,
+        "reference_bar_phase_sec": 0.0335,
+        "bar_error_sec": 0.003930571968605884,
+        "bar_error_beats": 0.008190653939317585,
+        "bar_timeline": {
+          "mean_abs_error_beats": 0.06281068094148329,
+          "p95_abs_error_beats": 0.10804311303395152,
+          "max_abs_error_beats": 0.11329564611755435,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "reference_bars": 135,
+          "predicted_bars": 137
+        },
+        "reference_meter_changes": [
+          [
+            0,
+            4,
+            4
+          ]
+        ],
+        "export_offset_sec": -0.037430571968605886,
+        "export_bar_pad": 0,
+        "export_grid_residual_sec": 0.0,
+        "export_grid_residual_beats": 0.0,
+        "beat_phase_sec": 0.04031042362878321,
+        "bar_phase_info": {
+          "phaseSec": 0.037430571968605886,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.5236118538445648,
+          "selectedOffset": 0,
+          "coarsePhaseSec": 0.04031042362878323,
+          "selectionScore": 0.2806399869215604,
+          "refinedScore": 0.39892249850001127,
+          "crashAnchors": 0,
+          "gridCandidates": [
+            {
+              "offset": 0,
+              "phaseSec": 0.04031042362878323,
+              "kickHead": 0.23369003742888317,
+              "kickThird": 0.22967672108500672,
+              "snareBack": 0.13660567425181722,
+              "snareFront": 0.025529291545454542,
+              "snareContrast": 0.5236118538445642,
+              "crashAnchor": 0,
+              "lowMean": 0.9389989898535446,
+              "lowTop": 1.114231683589794,
+              "midMean": 0.4064805487504049,
+              "highMean": 1.6644237755878954,
+              "highTop": 2.7794738522282354,
+              "selectionScore": 0.2806399869215604
+            },
+            {
+              "offset": 1,
+              "phaseSec": 0.5202857003249928,
+              "kickHead": 0.22875312010103135,
+              "kickThird": 0.22307333787066277,
+              "snareBack": 0.025529291545454542,
+              "snareFront": 0.13660567425181722,
+              "snareContrast": -0.5236118538445642,
+              "crashAnchor": 0,
+              "lowMean": 0.928013031704271,
+              "lowTop": 1.1103213451526783,
+              "midMean": 0.5759525598355903,
+              "highMean": 1.7024672966249488,
+              "highTop": 2.764735945948848
+            },
+            {
+              "offset": 2,
+              "phaseSec": 1.0002609770212019,
+              "kickHead": 0.22967672108500672,
+              "kickThird": 0.23369003742888317,
+              "snareBack": 0.1366056742518175,
+              "snareFront": 0.025529291545454542,
+              "snareContrast": 0.5236118538445648,
+              "crashAnchor": 0,
+              "lowMean": 0.9250755399671099,
+              "lowTop": 1.114752800376327,
+              "midMean": 0.4093393704158992,
+              "highMean": 1.7722858987412122,
+              "highTop": 2.906534292079784,
+              "selectionScore": 0.27593049808336223
+            },
+            {
+              "offset": 3,
+              "phaseSec": 1.4802362537174114,
+              "kickHead": 0.22307333787066277,
+              "kickThird": 0.22875312010103135,
+              "snareBack": 0.025529291545454542,
+              "snareFront": 0.13660567425181722,
+              "snareContrast": -0.5236118538445642,
+              "crashAnchor": 0,
+              "lowMean": 0.905688806253799,
+              "lowTop": 1.110149167202137,
+              "midMean": 1.094348074265665,
+              "highMean": 2.1032325645326,
+              "highTop": 3.421381844414605
+            }
+          ]
+        },
+        "tempo_info": {
+          "bpm": 125.0064386919991,
+          "coarseBpm": 125.25,
+          "spectralBpm": 125.002005,
+          "phaseSec": 0.013019375792535925,
+          "confidence": 0.6149951612042184,
+          "fitUsed": 483,
+          "source": "audio-event-corrected",
+          "initialBpm": 167.63205053186832,
+          "initialConfidence": 0.027252575155090285,
+          "eventFamily": {
+            "bpm": 125.25,
+            "score": 0.740321313676719,
+            "candidates": [
+              {
+                "bpm": 125.25,
+                "score": 0.740321313676719,
+                "kickHist": 1,
+                "snareHist": 0.9297730578131602,
+                "kickCoh": 0.07585633106525844,
+                "snareCoh": 0.14240332515303325
+              },
+              {
+                "bpm": 83.5,
+                "score": 0.5911719028671707,
+                "kickHist": 0.1769579889765688,
+                "snareHist": 1,
+                "kickCoh": 0.005491949544010576,
+                "snareCoh": 0.03487406744970529
+              },
+              {
+                "bpm": 200.5,
+                "score": 0.3611968826876159,
+                "kickHist": 0,
+                "snareHist": 0.6205650687394739,
+                "kickCoh": 0.006248426356259854,
+                "snareCoh": 0.12840834830186137
+              },
+              {
+                "bpm": 143.25,
+                "score": 0.30899783216535415,
+                "kickHist": 0,
+                "snareHist": 0.5219500362972876,
+                "kickCoh": 0.011324539418252804,
+                "snareCoh": 0.13861905506680416
+              },
+              {
+                "bpm": 91,
+                "score": 0.21228815218908717,
+                "kickHist": 0,
+                "snareHist": 0.3639310643621538,
+                "kickCoh": 0.01377579193262119,
+                "snareCoh": 0.07165658397760309
+              },
+              {
+                "bpm": 167,
+                "score": 0.2038124919447394,
+                "kickHist": 0.1388384241468035,
+                "snareHist": 0.3082183121921317,
+                "kickCoh": 0.0019788182590580634,
+                "snareCoh": 0.04217902389200311
+              },
+              {
+                "bpm": 126.5,
+                "score": 0.19351327365314536,
+                "kickHist": 0,
+                "snareHist": 0.3087386994734501,
+                "kickCoh": 0.05197381367657863,
+                "snareCoh": 0.1233973838339328
+              },
+              {
+                "bpm": 141.5,
+                "score": 0.17746571551876697,
+                "kickHist": 0,
+                "snareHist": 0.2609750181486438,
+                "kickCoh": 0.0035509606982424735,
+                "snareCoh": 0.22382906311459064
+              }
+            ]
+          }
+        },
+        "midi_tempo_bpm": 125.22096282398316,
+        "midi_time_signature": [
+          4,
+          4
+        ]
+      }
+    },
+    "ray": {
+      "tp": 2086,
+      "predicted": 2216,
+      "reference": 2491,
+      "precision": 0.941,
+      "recall": 0.837,
+      "f1": 0.886,
+      "by_group": {
+        "kick": {
+          "tp": 520,
+          "predicted": 587,
+          "reference": 520
+        },
+        "snare": {
+          "tp": 203,
+          "predicted": 203,
+          "reference": 210
+        },
+        "hat": {
+          "tp": 1246,
+          "predicted": 1286,
+          "reference": 1397
+        },
+        "tom": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "crash": {
+          "tp": 43,
+          "predicted": 43,
+          "reference": 52
+        },
+        "ride": {
+          "tp": 0,
+          "predicted": 1,
+          "reference": 0
+        },
+        "other": {
+          "tp": 0,
+          "predicted": 0,
+          "reference": 0
+        },
+        "pedal_hat": {
+          "tp": 74,
+          "predicted": 96,
+          "reference": 312
+        }
+      },
+      "median_error": -0.01,
+      "count_ratio": {
+        "kick": 1.129,
+        "snare": 0.967,
+        "hat": 0.921,
+        "tom": null,
+        "crash": 0.827,
+        "ride": null,
+        "other": null,
+        "pedal_hat": 0.308
+      },
+      "confusion": {
+        "class_errors": {
+          "kick_to_pedal_hat": 11,
+          "hat_to_pedal_hat": 4,
+          "kick_to_hat": 11,
+          "snare_to_pedal_hat": 7,
+          "snare_to_hat": 14,
+          "snare_to_kick": 7,
+          "crash_to_hat": 1,
+          "kick_to_ride": 1
+        },
+        "kick_to_snare": 0,
+        "snare_to_kick": 7,
+        "unmatched_predicted": {
+          "kick": 60,
+          "hat": 1
+        },
+        "kick_snare_double_supported": 127,
+        "kick_snare_double_unsupported": 6
+      },
+      "timing": {
+        "estimated_bpm": 131.99993362508744,
+        "truth_bpm": 132.000132,
+        "bpm_error_percent": 0.000150283874391393,
+        "bar_phase_sec": 0.027457400170322277,
+        "reference_bar_phase_sec": 0.005,
+        "bar_error_sec": 0.022457400170322276,
+        "bar_error_beats": 0.04940632978098939,
+        "bar_timeline": {
+          "mean_abs_error_beats": 0.0005415715596549959,
+          "p95_abs_error_beats": 0.0005461292754362471,
+          "max_abs_error_beats": 0.04491480034064455,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "reference_bars": 152,
+          "predicted_bars": 169
+        },
+        "reference_meter_changes": [
+          [
+            0,
+            4,
+            4
+          ]
+        ],
+        "export_offset_sec": -0.027457400170322277,
+        "export_bar_pad": 0,
+        "export_grid_residual_sec": 0.0,
+        "export_grid_residual_beats": 0.0,
+        "beat_phase_sec": 0.030184674268978147,
+        "bar_phase_info": {
+          "phaseSec": 0.027457400170322277,
+          "source": "backbeat_kick",
+          "maxSnareContrast": 0.7868287669503973,
+          "selectedOffset": 0,
+          "coarsePhaseSec": 0.030184674268978195,
+          "selectionScore": 0.2865312412648681,
+          "refinedScore": 0.48927430063259303,
+          "crashAnchors": 1,
+          "gridCandidates": [
+            {
+              "offset": 0,
+              "phaseSec": 0.030184674268978195,
+              "kickHead": 0.2510774205837446,
+              "kickThird": 0.2388046711673525,
+              "snareBack": 0.6617846138689459,
+              "snareFront": 0.05693438883783244,
+              "snareContrast": 0.7868287669503973,
+              "crashAnchor": 9.712339003451647e-10,
+              "lowMean": 0.7090764136224706,
+              "lowTop": 1.1174459247028126,
+              "midMean": 0.4043286197423686,
+              "highMean": 1.3849315927788435,
+              "highTop": 2.4243638305103077,
+              "selectionScore": 0.2865312412648681
+            },
+            {
+              "offset": 1,
+              "phaseSec": 0.4847303573782962,
+              "kickHead": 0.21721069863492795,
+              "kickThird": 0.1983517890331407,
+              "snareBack": 0.05693438883783244,
+              "snareFront": 0.6617846138689459,
+              "snareContrast": -0.7868287669503973,
+              "crashAnchor": 2.066381238804816e-33,
+              "lowMean": 0.797571148950755,
+              "lowTop": 1.1329812021816479,
+              "midMean": 0.908774484156235,
+              "highMean": 1.944892409962471,
+              "highTop": 3.5917121242074406
+            },
+            {
+              "offset": 2,
+              "phaseSec": 0.9392760404876142,
+              "kickHead": 0.2388046711673525,
+              "kickThird": 0.2510774205837446,
+              "snareBack": 0.6617846138689459,
+              "snareFront": 0.05693438883783244,
+              "snareContrast": 0.7868287669503973,
+              "crashAnchor": 1.4809592557652135e-08,
+              "lowMean": 0.8290617048050896,
+              "lowTop": 1.146499430432039,
+              "midMean": 0.4324865607597606,
+              "highMean": 1.5014026075565805,
+              "highTop": 2.4624813234104828,
+              "selectionScore": 0.280257756407607
+            },
+            {
+              "offset": 3,
+              "phaseSec": 1.3938217235969321,
+              "kickHead": 0.1983517890331407,
+              "kickThird": 0.21721069863492795,
+              "snareBack": 0.05693438883783244,
+              "snareFront": 0.6617846138689459,
+              "snareContrast": -0.7868287669503973,
+              "crashAnchor": 1.151456594157981,
+              "lowMean": 0.7983136469264573,
+              "lowTop": 1.1300639194600723,
+              "midMean": 1.0556254465135724,
+              "highMean": 2.281881641269224,
+              "highTop": 3.900805908090928
+            }
+          ]
+        },
+        "tempo_info": {
+          "bpm": 131.99993362508744,
+          "coarseBpm": 132.25,
+          "spectralBpm": 132.00004750000002,
+          "phaseSec": 0.017635091730160257,
+          "confidence": 0.680761995694648,
+          "snarePeaks": 1297,
+          "source": "audio",
+          "eventFamily": {
+            "bpm": 132,
+            "score": 0.822036124387344,
+            "candidates": [
+              {
+                "bpm": 132,
+                "score": 0.822036124387344,
+                "kickHist": 0.7845840978967503,
+                "snareHist": 1,
+                "kickCoh": 0.8774558935716875,
+                "snareCoh": 0.1824914363388339
+              },
+              {
+                "bpm": 66,
+                "score": 0.45586809944979784,
+                "kickHist": 1,
+                "snareHist": 0.3065953970937296,
+                "kickCoh": 0.17006427319213946,
+                "snareCoh": 0.4682280248602175
+              },
+              {
+                "bpm": 130.75,
+                "score": 0.22233540781874125,
+                "kickHist": 0.7683288219723057,
+                "snareHist": 0.08636614212436348,
+                "kickCoh": 0.042240890756197524,
+                "snareCoh": 0.11296117453506972
+              },
+              {
+                "bpm": 198.25,
+                "score": 0.21692931443626348,
+                "kickHist": 0.4603388170838112,
+                "snareHist": 0.18700837906477447,
+                "kickCoh": 0.01367777720598388,
+                "snareCoh": 0.1375944320885125
+              },
+              {
+                "bpm": 211,
+                "score": 0.1965829463757464,
+                "kickHist": 0,
+                "snareHist": 0.3487420642824765,
+                "kickCoh": 0.002480441417940848,
+                "snareCoh": 0.030178445857268057
+              },
+              {
+                "bpm": 133.75,
+                "score": 0.1464840791439618,
+                "kickHist": 0.6262031699374366,
+                "snareHist": 0,
+                "kickCoh": 0.07225163415352799,
+                "snareCoh": 0.09345521160747797
+              },
+              {
+                "bpm": 176.75,
+                "score": 0.13843522595188865,
+                "kickHist": 0.3154898216458039,
+                "snareHist": 0.1238809649986967,
+                "kickCoh": 0.002723362319834402,
+                "snareCoh": 0.04620263094307485
+              },
+              {
+                "bpm": 105.5,
+                "score": 0.13639159833292275,
+                "kickHist": 0.39965915688178916,
+                "snareHist": 0.09480893232631263,
+                "kickCoh": 0.002311292624827527,
+                "snareCoh": 0.027224832764068015
+              }
+            ]
+          }
+        },
+        "midi_tempo_bpm": 132.0928348443286,
+        "midi_time_signature": [
+          4,
+          4
+        ]
+      }
+    }
+  },
+  "summary": {
+    "tp": 7497,
+    "predicted": 8231,
+    "reference": 10086,
+    "precision": 0.911,
+    "recall": 0.743,
+    "f1": 0.819,
+    "kick_to_snare": 5,
+    "snare_to_kick": 28,
+    "by_group": {
+      "kick": {
+        "tp": 2636,
+        "predicted": 2765,
+        "reference": 2712,
+        "count_ratio": 1.02
+      },
+      "snare": {
+        "tp": 1305,
+        "predicted": 1426,
+        "reference": 1470,
+        "count_ratio": 0.97
+      },
+      "hat": {
+        "tp": 3121,
+        "predicted": 3406,
+        "reference": 4102,
+        "count_ratio": 0.83
+      },
+      "tom": {
+        "tp": 69,
+        "predicted": 84,
+        "reference": 92,
+        "count_ratio": 0.913
+      },
+      "crash": {
+        "tp": 127,
+        "predicted": 167,
+        "reference": 390,
+        "count_ratio": 0.428
+      },
+      "ride": {
+        "tp": 103,
+        "predicted": 193,
+        "reference": 644,
+        "count_ratio": 0.3
+      },
+      "other": {
+        "tp": 0,
+        "predicted": 0,
+        "reference": 0,
+        "count_ratio": null
+      },
+      "pedal_hat": {
+        "tp": 136,
+        "predicted": 190,
+        "reference": 676,
+        "count_ratio": 0.281
+      }
+    },
+    "timing": {
+      "mean_bpm_error_percent": 0.023032235246154796,
+      "max_bpm_error_percent": 0.09307839563816503,
+      "mean_bar_timeline_error_beats": 0.13202095018281654,
+      "max_song_mean_bar_timeline_error_beats": 0.5773011354990774,
+      "mean_bar_error_beats": 0.13202095018281654,
+      "max_bar_error_beats": 1.982201811908869,
+      "max_export_grid_residual_beats": 0.0,
+      "all_midi_time_signatures_4_4": true
+    }
+  }
+}
