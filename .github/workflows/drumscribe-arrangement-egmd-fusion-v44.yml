@@ -1,0 +1,67 @@
+name: DrumScribe arrangement E-GMD fusion v44
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/adtof.js"
+      - "drumscribe/experiments/browser_arrangement_kst_v44.mjs"
+      - "drumscribe/experiments/evaluate_arrangement_egmd_fusion_v44.py"
+      - "drumscribe/models/egmd-kst-reclassifier-v4.json"
+      - "drumscribe/models/gmd-kst/slot-prior-v1.json"
+      - ".github/workflows/drumscribe-arrangement-egmd-fusion-v44.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install mido numpy scikit-learn
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Collect fresh browser candidates with frozen E-GMD probabilities
+        run: node drumscribe/experiments/browser_arrangement_kst_v44.mjs
+      - name: Evaluate four fusion hypotheses
+        run: python drumscribe/experiments/evaluate_arrangement_egmd_fusion_v44.py
+      - name: Commit reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-arrangement-kst-candidates-v44.json
+          git add drumscribe/experiments/results-arrangement-egmd-fusion-v44.json
+          git add drumscribe/experiments/ARRANGEMENT_EGMD_FUSION_V44.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record arrangement E-GMD fusion v44 results"
+            git pull --rebase origin main
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-arrangement-egmd-fusion-v44
+          path: |
+            drumscribe/experiments/results-arrangement-kst-candidates-v44.json
+            drumscribe/experiments/results-arrangement-egmd-fusion-v44.json
+            drumscribe/experiments/ARRANGEMENT_EGMD_FUSION_V44.md
+          retention-days: 14
