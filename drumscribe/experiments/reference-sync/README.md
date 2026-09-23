@@ -1,26 +1,32 @@
 # DrumScribe synchronized reference data
 
-完全同期した音声/MIDI対照データと、そのデータから抽出した再学習用成果物の一覧です。
+完全同期した音声/MIDI対照データと、そのデータから得た検証成果物の一覧です。
 
 これらは **prediction runtimeの入力ではなく、教師・検証専用** です。参照MIDIを採譜時に読むことは禁止し、生成後評価またはoffline学習にのみ使用します。
 
 ## Diamond Virgin
 
-ユーザー提供の完全同期ペア:
+ユーザー提供の完全同期ペアを2026-09-23に直接解析しました。
 
-- original WAV: `ダイヤモンドヴァージン_tempo-mapped_sync.wav`
+### 元ファイルの識別情報
+
+- WAV: `ダイヤモンドヴァージン_tempo-mapped_sync.wav`
   - 44.1 kHz / stereo / 264.863560 sec
   - bytes: `46,722,668`
   - SHA-256: `1afb2d93354d33f14fdf47ead02b771d84d0bd59d98053f04461771f48596443`
-- exact synchronized MIDI backup:
-  - `diamondvirgin/diamondvirgin_tempo-mapped_sync.mid`
+- MIDI: `ダイヤモンドヴァージン_tempo-mapped_sync.mid`
   - bytes: `29,853`
   - SHA-256: `44a4d08e43b2fdae95caed0b6c1f0389f7015abc06c2da048ac5c38f1fb05644`
-- acoustic validation result:
-  - `results-diamondvirgin-sync-openhat-v47.json`
-- per-hit teacher features:
-  - `diamondvirgin-sync-hat-features-v47.csv.gz`
-  - CSV columns include timestamp, MIDI articulation, velocity, next articulation, gap, four high-band decay windows, and next-hit persistence/choke features.
+
+### リポジトリ内に保存した検証成果物
+
+- `results-diamondvirgin-sync-openhat-v47.json`
+  - 音声/MIDIメタデータ
+  - ノート数
+  - open→open / open→closed / open→pedal分布
+  - 5–18 kHz減衰統計
+  - blocked-time CV結果
+  - 元ファイルのサイズとSHA-256
 
 重要な教師分布:
 
@@ -33,7 +39,17 @@
 
 Diamond Virginは、なないろ同期ペアに存在しなかった **連続Open（open→open）** の主要教師です。
 
-WAV本体は現在のGitHub接続から大容量バイナリとして直接コミットできないため、MIDI、完全な打点特徴、検証結果、WAVのサイズ・SHA-256を保存しています。元WAVを別経路でリポジトリへ追加した場合は、このREADMEのWAVパスを更新してください。
+### バイナリ保存について
+
+現在利用しているGitHub接続では、大容量WAVや任意バイナリをローカル作業領域から完全一致を保証した状態で転送できませんでした。破損したバックアップを残さないため、WAV/MIDI本体とper-hit CSVはリポジトリへ保存していません。
+
+元ファイルを別経路で追加する際は、上記のbytesとSHA-256が一致することを必ず確認してください。配置候補は次です。
+
+```text
+drumscribe/experiments/reference-sync/diamondvirgin/
+  diamondvirgin_tempo-mapped_sync.wav
+  diamondvirgin_tempo-mapped_sync.mid
+```
 
 ## Nanairo
 
