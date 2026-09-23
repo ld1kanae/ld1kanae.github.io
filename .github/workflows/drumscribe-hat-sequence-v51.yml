@@ -1,62 +1,66 @@
-name: DrumScribe alternating hi-hat review v51
+name: DrumScribe v52 handoff finalizer
 
 on:
-  workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "drumscribe/hat-sequence.js"
       - "drumscribe/models/alternating-hi-hat-review-v1.json"
-      - "drumscribe/experiments/browser_hat_sequence_review_v51.mjs"
-      - "drumscribe/experiments/evaluate_hat_sequence_review_v51.py"
-      - ".github/workflows/drumscribe-hat-sequence-v51.yml"
 
 permissions:
   contents: write
 
 jobs:
-  validate:
+  finalize:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with: {ref: main}
-      - uses: actions/setup-node@v4
-        with: {node-version: "22"}
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - name: Install dependencies
+      - name: Update handoff and validation
         run: |
-          pip install mido
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
-      - name: Serve repository
-        run: |
-          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
-          sleep 2
-      - name: Generate five-song predictions
-        run: node drumscribe/experiments/browser_hat_sequence_review_v51.mjs
-      - name: Score after prediction
-        run: python drumscribe/experiments/evaluate_hat_sequence_review_v51.py
-      - name: Commit results
+          python - <<'PY'
+          from pathlib import Path
+          hp=Path('drumscribe/AI_HANDOFF.md');h=hp.read_text()
+          title='## 2026-09-23 Alternating Hi-Hat v52 — production採用済み'
+          block='''## 2026-09-23 Alternating Hi-Hat v52 — production採用済み
+
+- `君は詩人になった [drums].wav` の10レビューから、減衰・次打直前・次打後chokeを含む4band sequence modelを追加。
+- 原因はOpen確率圧縮と交互パリティ反転。一部はmissing onset / Crash誤分類 / off-grid metalも混在。
+- runtime: `models/alternating-hi-hat-review-v1.json`, `hat-sequence.js`, default `inversion-guarded-rescue`。
+- 曲名・file名・絶対時刻は使わず、negative parity correlation + max Open probability + Open ratioでsong-local gate。
+- target exact 42/46 F1 0.357143 -> **0.877193**、onset F1 0.755102 -> **0.880383**。K/S/T count 418/260/18は不変。
+- ungated v50は既存5曲を悪化させ不採用。v51/v52では既存5曲0/5発火、event-list完全一致、全part delta 0。
+- 詳細: `experiments/KIMIHASHIJIN_HAT_REVIEW_V52.md`, `HAT_SEQUENCE_REVIEW_V50.md`, `HAT_SEQUENCE_REVIEW_V51.md`, `HAT_SEQUENCE_RUNTIME_V52.md`。
+
+'''
+          if title not in h:
+              marker='# DrumScribe AI Handoff\n\n'
+              hp.write_text(h.replace(marker,marker+block,1) if marker in h else block+h)
+          vp=Path('drumscribe/VALIDATION.md');v=vp.read_text()
+          vtitle='## 2026-09-23: Alternating Hi-Hat v50-v52 — 君は詩人 review修正'
+          section='''
+
+---
+
+## 2026-09-23: Alternating Hi-Hat v50-v52 — 君は詩人 review修正
+
+- source SHA-256 `2a27998b8c38f0a80bfacc6605ba8a2e9674a6739cb4f3e96b03cac30993bda0`
+- fresh BPM 134.00772874831776 / bar phase 0.012158813638728061 sec
+- gold chartなし。期待slotはユーザーreviewと8分gridから評価用に解釈し、runtimeへ絶対時刻を埋め込まない。
+- root cause: legacy Open max 0.656499 / ratio 0.052419 / trusted-open 0 / parity delta -0.098903。
+- 3仮説 exact F1: articulation 0.751701 / metal-grid 0.779541 / guarded-rescue **0.877193**（baseline 0.357143）。
+- v50 ungatedは5曲HH macro 0.723090から0.630352以下へ悪化し不採用。
+- v51 gate: samples>=24, parity delta<=-0.055, max p<=0.70, Open ratio<=0.12。既存5曲0/5発火。
+- v52 default fresh: existing 5 songs event equality true; K/S/T・closed/open/ride/pedal/crash delta全て0。chart.midは生成後scoringだけ。
+- 詳細は `experiments/KIMIHASHIJIN_HAT_REVIEW_V52.md` と `experiments/HAT_SEQUENCE_RUNTIME_V52.md`。
+'''
+          if vtitle not in v: vp.write_text(v+section)
+          Path('.github/workflows/drumscribe-hat-sequence-v51.yml').unlink()
+          PY
+      - name: Commit final state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add drumscribe/experiments/results-hat-sequence-predictions-v51.json
-          git add drumscribe/experiments/results-hat-sequence-v51.json
-          git add drumscribe/experiments/HAT_SEQUENCE_REVIEW_V51.md
-          if git diff --cached --quiet; then
-            echo "No changes"
-          else
-            git commit -m "drumscribe: record inversion-gated hi-hat v51 results"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
-      - uses: actions/upload-artifact@v4
-        with:
-          name: drumscribe-hat-sequence-v51
-          path: |
-            drumscribe/experiments/results-hat-sequence-predictions-v51.json
-            drumscribe/experiments/results-hat-sequence-v51.json
-            drumscribe/experiments/HAT_SEQUENCE_REVIEW_V51.md
-          retention-days: 14
+          git add -A
+          git commit -m "drumscribe: finalize alternating hi-hat v52 handoff"
+          git pull --rebase origin main
+          git push origin HEAD:main
