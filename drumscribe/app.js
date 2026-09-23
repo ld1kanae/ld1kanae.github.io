@@ -221,15 +221,19 @@ function stopNodes(){try{source?.stop();}catch{}source?.disconnect();source=null
 function chokeOpenHat(when){
   if(!context||!openHatVoices.length)return;
   const chokeAt=Math.max(context.currentTime,Number.isFinite(Number(when))?Number(when):context.currentTime);
-  for(const voice of openHatVoices.splice(0)){
+  const keep=[];
+  for(const voice of openHatVoices){
+    if(Number.isFinite(voice.startWhen)&&voice.startWhen>chokeAt+.0005){keep.push(voice);continue;}
     try{
       const param=voice.gain.gain;
+      const level=Math.max(.001,Number(voice.level)||Number(param.value)||.001);
       param.cancelScheduledValues(chokeAt);
-      param.setValueAtTime(Math.max(.001,param.value),chokeAt);
-      param.exponentialRampToValueAtTime(.001,chokeAt+.065);
-      voice.source.stop(chokeAt+.08);
+      param.setValueAtTime(level,chokeAt);
+      param.linearRampToValueAtTime(0,chokeAt+.012);
+      voice.source.stop(chokeAt+.014);
     }catch{}
   }
+  openHatVoices=keep;
 }
 function pause(){if(playing)position=now();playing=false;clearInterval(timer);timer=0;stopNodes();$('play').textContent='▶ 再生';draw();updateClock();}
 function nearestBeatTime(time){
@@ -259,11 +263,11 @@ async function play(){
     const end=now()+.15;
     while(next<midiEvents.length&&midiEvents[next].time+offset<=end){
       const e=midiEvents[next++],buffer=samples.get(e.note);if(!buffer||e.time+offset<now()-.04)continue;
-      const node=ac.createBufferSource(),velocity=ac.createGain(),when=Math.max(ac.currentTime,startAt+e.time+offset-position);node.buffer=buffer;
-      velocity.gain.value=Math.min(1.3,(e.velocity||90)/100);node.connect(velocity).connect(tracks.midi.gain);
+      const node=ac.createBufferSource(),velocity=ac.createGain(),when=Math.max(ac.currentTime,startAt+e.time+offset-position),level=Math.min(1.3,(e.velocity||90)/100);node.buffer=buffer;
+      velocity.gain.setValueAtTime(level,when);node.connect(velocity).connect(tracks.midi.gain);
       if(e.note===42||e.note===44)chokeOpenHat(when);
       node.start(when);active.push(node);
-      if(e.note===46)openHatVoices.push({source:node,gain:velocity});
+      if(e.note===46)openHatVoices.push({source:node,gain:velocity,startWhen:when,level});
       node.onended=()=>{node.disconnect();velocity.disconnect();active=active.filter(n=>n!==node);openHatVoices=openHatVoices.filter(v=>v.source!==node);};
     }
     if(now()>=decoded.duration-.01){position=0;pause();}
