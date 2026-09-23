@@ -17,11 +17,14 @@ import {analyzeSections, extractSectionFeatures} from './arrangement/index.js';
 
 現行機能:
 - timbre / energy novelty から構造境界候補を検出
-- 類似した反復セクションを `A/B/C/...` にグループ化
+- 類似した反復セクションを `A/B/C/...` の構造ファミリへグループ化
+- 再登場は `A -> A' -> A''` のように occurrence label を付ける
+- `section.group` は安定したファミリキー（A'でも group は A）、`section.label` が表示ラベル、`section.occurrence` が出現回数
 - 既知の BPM / barPhaseSec があれば境界候補を拍・小節側へsnap可能
+- 合成 `A -> B -> A -> B` テストでは boundaries `[0,6,12,18,24]`、labels `[A,B,A',B']` を確認済み
 
 重要:
-- `A/B/C` は構造ラベルであり、**Aメロ/Bメロ/サビの意味ラベルではない**
+- `A/B/C/A'/...` は構造ラベルであり、**Aメロ/Bメロ/サビの意味ラベルではない**
 - production transcription pathにはまだ接続していない
 - Proof v34では同系統の解析をinstrumentalの補助的な小節位相検証に使用した
 - 将来semantic section classifierを実装する場合はこのmoduleの出力を入力にし、特徴抽出や境界検出を重複実装しない
