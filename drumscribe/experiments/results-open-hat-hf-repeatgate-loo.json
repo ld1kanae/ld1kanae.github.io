@@ -1,0 +1,1073 @@
+{
+  "schema": 1,
+  "triggerSha": "15b5362b5b1eabe47f2811613f577a6226e4e7b3",
+  "frozenBrowserRef": "8ef45bf10b97f4ae5e324b88376821c2f5f27fa5",
+  "description": "Structural repeat gate vs independent-HF union rescue on frozen pre-overlay browser MIDI.",
+  "variants": {
+    "structural_repeat_safe": {
+      "summary": {
+        "open": {
+          "tp": 425,
+          "predicted": 645,
+          "reference": 1179,
+          "precision": 0.6589147286821705,
+          "recall": 0.3604749787955895,
+          "f1": 0.46600877192982454
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2808,
+          "reference": 2923,
+          "precision": 0.823005698005698,
+          "recall": 0.7906260691070818,
+          "f1": 0.8064910137846798
+        },
+        "macroF1": 0.6362498928572522
+      },
+      "songs": {
+        "arcaround": {
+          "open": {
+            "tp": 4,
+            "predicted": 7,
+            "reference": 93,
+            "precision": 0.5714285714285714,
+            "recall": 0.043010752688172046,
+            "f1": 0.08
+          },
+          "closed": {
+            "tp": 115,
+            "predicted": 269,
+            "reference": 200,
+            "precision": 0.4275092936802974,
+            "recall": 0.575,
+            "f1": 0.4904051172707889
+          },
+          "macroF1": 0.28520255863539445
+        },
+        "diamondvirgin": {
+          "open": {
+            "tp": 31,
+            "predicted": 49,
+            "reference": 502,
+            "precision": 0.6326530612244898,
+            "recall": 0.061752988047808766,
+            "f1": 0.11252268602540835
+          },
+          "closed": {
+            "tp": 203,
+            "predicted": 250,
+            "reference": 253,
+            "precision": 0.812,
+            "recall": 0.8023715415019763,
+            "f1": 0.8071570576540755
+          },
+          "macroF1": 0.45983987183974195
+        },
+        "kaiju": {
+          "open": {
+            "tp": 3,
+            "predicted": 10,
+            "reference": 22,
+            "precision": 0.3,
+            "recall": 0.13636363636363635,
+            "f1": 0.1875
+          },
+          "closed": {
+            "tp": 517,
+            "predicted": 575,
+            "reference": 572,
+            "precision": 0.8991304347826087,
+            "recall": 0.9038461538461539,
+            "f1": 0.9014821272885789
+          },
+          "macroF1": 0.5444910636442895
+        },
+        "nanairo": {
+          "open": {
+            "tp": 216,
+            "predicted": 352,
+            "reference": 240,
+            "precision": 0.6136363636363636,
+            "recall": 0.9,
+            "f1": 0.7297297297297297
+          },
+          "closed": {
+            "tp": 577,
+            "predicted": 655,
+            "reference": 823,
+            "precision": 0.8809160305343512,
+            "recall": 0.701093560145808,
+            "f1": 0.7807848443843031
+          },
+          "macroF1": 0.7552572870570164
+        },
+        "ray": {
+          "open": {
+            "tp": 171,
+            "predicted": 227,
+            "reference": 322,
+            "precision": 0.7533039647577092,
+            "recall": 0.531055900621118,
+            "f1": 0.6229508196721312
+          },
+          "closed": {
+            "tp": 899,
+            "predicted": 1059,
+            "reference": 1075,
+            "precision": 0.8489140698772427,
+            "recall": 0.8362790697674418,
+            "f1": 0.8425492033739457
+          },
+          "macroF1": 0.7327500115230384
+        }
+      },
+      "folds": {
+        "arcaround": {
+          "metrics": {
+            "open": {
+              "tp": 4,
+              "predicted": 7,
+              "reference": 93,
+              "precision": 0.5714285714285714,
+              "recall": 0.043010752688172046,
+              "f1": 0.08
+            },
+            "closed": {
+              "tp": 115,
+              "predicted": 269,
+              "reference": 200,
+              "precision": 0.4275092936802974,
+              "recall": 0.575,
+              "f1": 0.4904051172707889
+            },
+            "macroF1": 0.28520255863539445
+          },
+          "diag": {
+            "candidates": 602,
+            "rescued": 0,
+            "blocked": 0,
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.6251383506629488,
+              "scoreMax": 0.5486571232356163,
+              "q95": 0.40873655427755756,
+              "q99": 0.4621670867758533,
+              "repeatMax": 0.4419150288356056
+            },
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "localRows": 2078,
+            "localPositive": 384,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "diamondvirgin": {
+          "metrics": {
+            "open": {
+              "tp": 31,
+              "predicted": 49,
+              "reference": 502,
+              "precision": 0.6326530612244898,
+              "recall": 0.061752988047808766,
+              "f1": 0.11252268602540835
+            },
+            "closed": {
+              "tp": 203,
+              "predicted": 250,
+              "reference": 253,
+              "precision": 0.812,
+              "recall": 0.8023715415019763,
+              "f1": 0.8071570576540755
+            },
+            "macroF1": 0.45983987183974195
+          },
+          "diag": {
+            "candidates": 1172,
+            "rescued": 46,
+            "blocked": 0,
+            "adapt": {
+              "active": true,
+              "threshold": 0.6858739233566801,
+              "max": 0.8444559920553046,
+              "scoreMax": 0.8024771551576457,
+              "q95": 0.7086815786062356,
+              "q99": 0.7954749407350976,
+              "repeatMax": 0.79344131991602
+            },
+            "rescueTpDiagnostic": 28
+          },
+          "train": {
+            "localRows": 1508,
+            "localPositive": 33,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "kaiju": {
+          "metrics": {
+            "open": {
+              "tp": 3,
+              "predicted": 10,
+              "reference": 22,
+              "precision": 0.3,
+              "recall": 0.13636363636363635,
+              "f1": 0.1875
+            },
+            "closed": {
+              "tp": 517,
+              "predicted": 575,
+              "reference": 572,
+              "precision": 0.8991304347826087,
+              "recall": 0.9038461538461539,
+              "f1": 0.9014821272885789
+            },
+            "macroF1": 0.5444910636442895
+          },
+          "diag": {
+            "candidates": 260,
+            "rescued": 0,
+            "blocked": 0,
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.7481814549621869,
+              "scoreMax": 0.7194813195721461,
+              "q95": 0.6702211559334076,
+              "q99": 0.7337022321049123,
+              "repeatMax": 0.6846829486763456
+            },
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "localRows": 2420,
+            "localPositive": 399,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "nanairo": {
+          "metrics": {
+            "open": {
+              "tp": 216,
+              "predicted": 352,
+              "reference": 240,
+              "precision": 0.6136363636363636,
+              "recall": 0.9,
+              "f1": 0.7297297297297297
+            },
+            "closed": {
+              "tp": 577,
+              "predicted": 655,
+              "reference": 823,
+              "precision": 0.8809160305343512,
+              "recall": 0.701093560145808,
+              "f1": 0.7807848443843031
+            },
+            "macroF1": 0.7552572870570164
+          },
+          "diag": {
+            "candidates": 318,
+            "rescued": 0,
+            "blocked": 0,
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.5322956889487289,
+              "scoreMax": 0.44900126457520434,
+              "q95": 0.39326987658084606,
+              "q99": 0.5036595658452725,
+              "repeatMax": 0.45875279522071843
+            },
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "localRows": 2362,
+            "localPositive": 404,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "ray": {
+          "metrics": {
+            "open": {
+              "tp": 171,
+              "predicted": 227,
+              "reference": 322,
+              "precision": 0.7533039647577092,
+              "recall": 0.531055900621118,
+              "f1": 0.6229508196721312
+            },
+            "closed": {
+              "tp": 899,
+              "predicted": 1059,
+              "reference": 1075,
+              "precision": 0.8489140698772427,
+              "recall": 0.8362790697674418,
+              "f1": 0.8425492033739457
+            },
+            "macroF1": 0.7327500115230384
+          },
+          "diag": {
+            "candidates": 328,
+            "rescued": 0,
+            "blocked": 0,
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.7471403201675594,
+              "scoreMax": 0.658386501723259,
+              "q95": 0.5556267049287833,
+              "q99": 0.6593774222319797,
+              "repeatMax": 0.6462843001963642
+            },
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "localRows": 2352,
+            "localPositive": 396,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        }
+      },
+      "eligible": false
+    },
+    "hf_union_existing29": {
+      "summary": {
+        "open": {
+          "tp": 420,
+          "predicted": 655,
+          "reference": 1179,
+          "precision": 0.6412213740458015,
+          "recall": 0.356234096692112,
+          "f1": 0.4580152671755725
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2808,
+          "reference": 2923,
+          "precision": 0.823005698005698,
+          "recall": 0.7906260691070818,
+          "f1": 0.8064910137846798
+        },
+        "macroF1": 0.6322531404801262
+      },
+      "songs": {
+        "arcaround": {
+          "open": {
+            "tp": 4,
+            "predicted": 7,
+            "reference": 93,
+            "precision": 0.5714285714285714,
+            "recall": 0.043010752688172046,
+            "f1": 0.08
+          },
+          "closed": {
+            "tp": 115,
+            "predicted": 269,
+            "reference": 200,
+            "precision": 0.4275092936802974,
+            "recall": 0.575,
+            "f1": 0.4904051172707889
+          },
+          "macroF1": 0.28520255863539445
+        },
+        "diamondvirgin": {
+          "open": {
+            "tp": 25,
+            "predicted": 47,
+            "reference": 502,
+            "precision": 0.5319148936170213,
+            "recall": 0.049800796812749,
+            "f1": 0.09107468123861566
+          },
+          "closed": {
+            "tp": 203,
+            "predicted": 250,
+            "reference": 253,
+            "precision": 0.812,
+            "recall": 0.8023715415019763,
+            "f1": 0.8071570576540755
+          },
+          "macroF1": 0.4491158694463456
+        },
+        "kaiju": {
+          "open": {
+            "tp": 4,
+            "predicted": 22,
+            "reference": 22,
+            "precision": 0.18181818181818182,
+            "recall": 0.18181818181818182,
+            "f1": 0.18181818181818182
+          },
+          "closed": {
+            "tp": 517,
+            "predicted": 575,
+            "reference": 572,
+            "precision": 0.8991304347826087,
+            "recall": 0.9038461538461539,
+            "f1": 0.9014821272885789
+          },
+          "macroF1": 0.5416501545533804
+        },
+        "nanairo": {
+          "open": {
+            "tp": 216,
+            "predicted": 352,
+            "reference": 240,
+            "precision": 0.6136363636363636,
+            "recall": 0.9,
+            "f1": 0.7297297297297297
+          },
+          "closed": {
+            "tp": 577,
+            "predicted": 655,
+            "reference": 823,
+            "precision": 0.8809160305343512,
+            "recall": 0.701093560145808,
+            "f1": 0.7807848443843031
+          },
+          "macroF1": 0.7552572870570164
+        },
+        "ray": {
+          "open": {
+            "tp": 171,
+            "predicted": 227,
+            "reference": 322,
+            "precision": 0.7533039647577092,
+            "recall": 0.531055900621118,
+            "f1": 0.6229508196721312
+          },
+          "closed": {
+            "tp": 899,
+            "predicted": 1059,
+            "reference": 1075,
+            "precision": 0.8489140698772427,
+            "recall": 0.8362790697674418,
+            "f1": 0.8425492033739457
+          },
+          "macroF1": 0.7327500115230384
+        }
+      },
+      "folds": {
+        "arcaround": {
+          "metrics": {
+            "open": {
+              "tp": 4,
+              "predicted": 7,
+              "reference": 93,
+              "precision": 0.5714285714285714,
+              "recall": 0.043010752688172046,
+              "f1": 0.08
+            },
+            "closed": {
+              "tp": 115,
+              "predicted": 269,
+              "reference": 200,
+              "precision": 0.4275092936802974,
+              "recall": 0.575,
+              "f1": 0.4904051172707889
+            },
+            "macroF1": 0.28520255863539445
+          },
+          "diag": {
+            "candidates": 1696,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.6777519829194878,
+              "scoreMax": 0.6095399111900213,
+              "q95": 0.5261970264694149,
+              "q99": 0.5968343257943095,
+              "repeatMax": 0.5946666255478554
+            },
+            "maxProbability": 0.6777519829194878,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "localRows": 2078,
+            "localPositive": 384,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "diamondvirgin": {
+          "metrics": {
+            "open": {
+              "tp": 25,
+              "predicted": 47,
+              "reference": 502,
+              "precision": 0.5319148936170213,
+              "recall": 0.049800796812749,
+              "f1": 0.09107468123861566
+            },
+            "closed": {
+              "tp": 203,
+              "predicted": 250,
+              "reference": 253,
+              "precision": 0.812,
+              "recall": 0.8023715415019763,
+              "f1": 0.8071570576540755
+            },
+            "macroF1": 0.4491158694463456
+          },
+          "diag": {
+            "candidates": 2512,
+            "rescued": 44,
+            "blocked": 0,
+            "rescuedByKind": {
+              "hf": 1,
+              "struct": 43
+            },
+            "adapt": {
+              "active": true,
+              "threshold": 0.68,
+              "max": 0.8323206514998146,
+              "scoreMax": 0.7797504681723829,
+              "q95": 0.6284916626834703,
+              "q99": 0.7354590171326036,
+              "repeatMax": 0.7991479136127921
+            },
+            "maxProbability": 0.8323206514998146,
+            "rescueTpDiagnostic": 22
+          },
+          "train": {
+            "localRows": 1508,
+            "localPositive": 33,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "kaiju": {
+          "metrics": {
+            "open": {
+              "tp": 4,
+              "predicted": 22,
+              "reference": 22,
+              "precision": 0.18181818181818182,
+              "recall": 0.18181818181818182,
+              "f1": 0.18181818181818182
+            },
+            "closed": {
+              "tp": 517,
+              "predicted": 575,
+              "reference": 572,
+              "precision": 0.8991304347826087,
+              "recall": 0.9038461538461539,
+              "f1": 0.9014821272885789
+            },
+            "macroF1": 0.5416501545533804
+          },
+          "diag": {
+            "candidates": 1084,
+            "rescued": 12,
+            "blocked": 0,
+            "rescuedByKind": {
+              "struct": 11,
+              "hf": 1
+            },
+            "adapt": {
+              "active": true,
+              "threshold": 0.68,
+              "max": 0.787457171610085,
+              "scoreMax": 0.7241366656172701,
+              "q95": 0.5868025777921723,
+              "q99": 0.7037604951946232,
+              "repeatMax": 0.7085323376343906
+            },
+            "maxProbability": 0.787457171610085,
+            "rescueTpDiagnostic": 1
+          },
+          "train": {
+            "localRows": 2420,
+            "localPositive": 399,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "nanairo": {
+          "metrics": {
+            "open": {
+              "tp": 216,
+              "predicted": 352,
+              "reference": 240,
+              "precision": 0.6136363636363636,
+              "recall": 0.9,
+              "f1": 0.7297297297297297
+            },
+            "closed": {
+              "tp": 577,
+              "predicted": 655,
+              "reference": 823,
+              "precision": 0.8809160305343512,
+              "recall": 0.701093560145808,
+              "f1": 0.7807848443843031
+            },
+            "macroF1": 0.7552572870570164
+          },
+          "diag": {
+            "candidates": 777,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.5835622634454173,
+              "scoreMax": 0.5427600981522461,
+              "q95": 0.5051481710200514,
+              "q99": 0.5540653539760935,
+              "repeatMax": 0.5268251278201057
+            },
+            "maxProbability": 0.5835622634454173,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "localRows": 2362,
+            "localPositive": 404,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        },
+        "ray": {
+          "metrics": {
+            "open": {
+              "tp": 171,
+              "predicted": 227,
+              "reference": 322,
+              "precision": 0.7533039647577092,
+              "recall": 0.531055900621118,
+              "f1": 0.6229508196721312
+            },
+            "closed": {
+              "tp": 899,
+              "predicted": 1059,
+              "reference": 1075,
+              "precision": 0.8489140698772427,
+              "recall": 0.8362790697674418,
+              "f1": 0.8425492033739457
+            },
+            "macroF1": 0.7327500115230384
+          },
+          "diag": {
+            "candidates": 1000,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.752752189400903,
+              "scoreMax": 0.720623256934882,
+              "q95": 0.6806400619710363,
+              "q99": 0.7149331023015171,
+              "repeatMax": 0.7073644089403158
+            },
+            "maxProbability": 0.752752189400903,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "localRows": 2352,
+            "localPositive": 396,
+            "gmdRows": 460,
+            "gmdPositive": 115
+          }
+        }
+      },
+      "eligible": false
+    },
+    "hf_union_retrained41": {
+      "summary": {
+        "open": {
+          "tp": 397,
+          "predicted": 599,
+          "reference": 1179,
+          "precision": 0.662771285475793,
+          "recall": 0.33672603901611536,
+          "f1": 0.4465691788526434
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2808,
+          "reference": 2923,
+          "precision": 0.823005698005698,
+          "recall": 0.7906260691070818,
+          "f1": 0.8064910137846798
+        },
+        "macroF1": 0.6265300963186616
+      },
+      "songs": {
+        "arcaround": {
+          "open": {
+            "tp": 4,
+            "predicted": 7,
+            "reference": 93,
+            "precision": 0.5714285714285714,
+            "recall": 0.043010752688172046,
+            "f1": 0.08
+          },
+          "closed": {
+            "tp": 115,
+            "predicted": 269,
+            "reference": 200,
+            "precision": 0.4275092936802974,
+            "recall": 0.575,
+            "f1": 0.4904051172707889
+          },
+          "macroF1": 0.28520255863539445
+        },
+        "diamondvirgin": {
+          "open": {
+            "tp": 3,
+            "predicted": 3,
+            "reference": 502,
+            "precision": 1.0,
+            "recall": 0.00597609561752988,
+            "f1": 0.011881188118811881
+          },
+          "closed": {
+            "tp": 203,
+            "predicted": 250,
+            "reference": 253,
+            "precision": 0.812,
+            "recall": 0.8023715415019763,
+            "f1": 0.8071570576540755
+          },
+          "macroF1": 0.4095191228864437
+        },
+        "kaiju": {
+          "open": {
+            "tp": 3,
+            "predicted": 10,
+            "reference": 22,
+            "precision": 0.3,
+            "recall": 0.13636363636363635,
+            "f1": 0.1875
+          },
+          "closed": {
+            "tp": 517,
+            "predicted": 575,
+            "reference": 572,
+            "precision": 0.8991304347826087,
+            "recall": 0.9038461538461539,
+            "f1": 0.9014821272885789
+          },
+          "macroF1": 0.5444910636442895
+        },
+        "nanairo": {
+          "open": {
+            "tp": 216,
+            "predicted": 352,
+            "reference": 240,
+            "precision": 0.6136363636363636,
+            "recall": 0.9,
+            "f1": 0.7297297297297297
+          },
+          "closed": {
+            "tp": 577,
+            "predicted": 655,
+            "reference": 823,
+            "precision": 0.8809160305343512,
+            "recall": 0.701093560145808,
+            "f1": 0.7807848443843031
+          },
+          "macroF1": 0.7552572870570164
+        },
+        "ray": {
+          "open": {
+            "tp": 171,
+            "predicted": 227,
+            "reference": 322,
+            "precision": 0.7533039647577092,
+            "recall": 0.531055900621118,
+            "f1": 0.6229508196721312
+          },
+          "closed": {
+            "tp": 899,
+            "predicted": 1059,
+            "reference": 1075,
+            "precision": 0.8489140698772427,
+            "recall": 0.8362790697674418,
+            "f1": 0.8425492033739457
+          },
+          "macroF1": 0.7327500115230384
+        }
+      },
+      "folds": {
+        "arcaround": {
+          "metrics": {
+            "open": {
+              "tp": 4,
+              "predicted": 7,
+              "reference": 93,
+              "precision": 0.5714285714285714,
+              "recall": 0.043010752688172046,
+              "f1": 0.08
+            },
+            "closed": {
+              "tp": 115,
+              "predicted": 269,
+              "reference": 200,
+              "precision": 0.4275092936802974,
+              "recall": 0.575,
+              "f1": 0.4904051172707889
+            },
+            "macroF1": 0.28520255863539445
+          },
+          "diag": {
+            "candidates": 1696,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.5816948113863257,
+              "scoreMax": 0.5214437203450759,
+              "q95": 0.3914087302552188,
+              "q99": 0.49406505761333874,
+              "repeatMax": 0.46677061984259854
+            },
+            "maxProbability": 0.5816948113863257,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "rows": 6109,
+            "positive": 1086,
+            "songs": [
+              "diamondvirgin",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ],
+            "gmdRows": 460
+          }
+        },
+        "diamondvirgin": {
+          "metrics": {
+            "open": {
+              "tp": 3,
+              "predicted": 3,
+              "reference": 502,
+              "precision": 1.0,
+              "recall": 0.00597609561752988,
+              "f1": 0.011881188118811881
+            },
+            "closed": {
+              "tp": 203,
+              "predicted": 250,
+              "reference": 253,
+              "precision": 0.812,
+              "recall": 0.8023715415019763,
+              "f1": 0.8071570576540755
+            },
+            "macroF1": 0.4095191228864437
+          },
+          "diag": {
+            "candidates": 2512,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.6082951771156285,
+              "scoreMax": 0.5659370327524746,
+              "q95": 0.45596505337917564,
+              "q99": 0.5230405743220216,
+              "repeatMax": 0.5724479371066621
+            },
+            "maxProbability": 0.6082951771156285,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "rows": 3945,
+            "positive": 325,
+            "songs": [
+              "arcaround",
+              "kaiju",
+              "nanairo",
+              "ray"
+            ],
+            "gmdRows": 460
+          }
+        },
+        "kaiju": {
+          "metrics": {
+            "open": {
+              "tp": 3,
+              "predicted": 10,
+              "reference": 22,
+              "precision": 0.3,
+              "recall": 0.13636363636363635,
+              "f1": 0.1875
+            },
+            "closed": {
+              "tp": 517,
+              "predicted": 575,
+              "reference": 572,
+              "precision": 0.8991304347826087,
+              "recall": 0.9038461538461539,
+              "f1": 0.9014821272885789
+            },
+            "macroF1": 0.5444910636442895
+          },
+          "diag": {
+            "candidates": 1084,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.7138555849146591,
+              "scoreMax": 0.6990362022309339,
+              "q95": 0.5550145764369626,
+              "q99": 0.6592571433235889,
+              "repeatMax": 0.6807896691025725
+            },
+            "maxProbability": 0.7138555849146591,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "rows": 6497,
+            "positive": 1147,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "nanairo",
+              "ray"
+            ],
+            "gmdRows": 460
+          }
+        },
+        "nanairo": {
+          "metrics": {
+            "open": {
+              "tp": 216,
+              "predicted": 352,
+              "reference": 240,
+              "precision": 0.6136363636363636,
+              "recall": 0.9,
+              "f1": 0.7297297297297297
+            },
+            "closed": {
+              "tp": 577,
+              "predicted": 655,
+              "reference": 823,
+              "precision": 0.8809160305343512,
+              "recall": 0.701093560145808,
+              "f1": 0.7807848443843031
+            },
+            "macroF1": 0.7552572870570164
+          },
+          "diag": {
+            "candidates": 777,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.666541788220294,
+              "scoreMax": 0.622483712204394,
+              "q95": 0.4820332073788994,
+              "q99": 0.5929405169834507,
+              "repeatMax": 0.5720343124767165
+            },
+            "maxProbability": 0.666541788220294,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "rows": 6406,
+            "positive": 1119,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "ray"
+            ],
+            "gmdRows": 460
+          }
+        },
+        "ray": {
+          "metrics": {
+            "open": {
+              "tp": 171,
+              "predicted": 227,
+              "reference": 322,
+              "precision": 0.7533039647577092,
+              "recall": 0.531055900621118,
+              "f1": 0.6229508196721312
+            },
+            "closed": {
+              "tp": 899,
+              "predicted": 1059,
+              "reference": 1075,
+              "precision": 0.8489140698772427,
+              "recall": 0.8362790697674418,
+              "f1": 0.8425492033739457
+            },
+            "macroF1": 0.7327500115230384
+          },
+          "diag": {
+            "candidates": 1000,
+            "rescued": 0,
+            "blocked": 0,
+            "rescuedByKind": {},
+            "adapt": {
+              "active": false,
+              "threshold": 0.68,
+              "max": 0.7599085186249669,
+              "scoreMax": 0.7242528550096247,
+              "q95": 0.6709841075163827,
+              "q99": 0.7037368770542618,
+              "repeatMax": 0.7037313696977183
+            },
+            "maxProbability": 0.7599085186249669,
+            "rescueTpDiagnostic": 0
+          },
+          "train": {
+            "rows": 6383,
+            "positive": 1098,
+            "songs": [
+              "arcaround",
+              "diamondvirgin",
+              "kaiju",
+              "nanairo"
+            ],
+            "gmdRows": 460
+          }
+        }
+      },
+      "eligible": false
+    }
+  },
+  "retained": "structural_repeat_safe",
+  "retainedSummary": {
+    "open": {
+      "tp": 425,
+      "predicted": 645,
+      "reference": 1179,
+      "precision": 0.6589147286821705,
+      "recall": 0.3604749787955895,
+      "f1": 0.46600877192982454
+    },
+    "closed": {
+      "tp": 2311,
+      "predicted": 2808,
+      "reference": 2923,
+      "precision": 0.823005698005698,
+      "recall": 0.7906260691070818,
+      "f1": 0.8064910137846798
+    },
+    "macroF1": 0.6362498928572522
+  },
+  "note": "Development benchmark; current best must still pass real-browser grouped K/S/T non-regression before runtime adoption."
+}
