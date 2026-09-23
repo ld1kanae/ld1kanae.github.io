@@ -464,7 +464,7 @@ function repeatSupport(times,probs,bpm,policy){
 
 export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
-  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue','arrangement','arrangement-decay'].includes(context?.variant)?context.variant:'base';
+  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','ride-selective55-decay-rescue','ride-selective60-decay-rescue','ride-selective65-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue','arrangement','arrangement-decay'].includes(context?.variant)?context.variant:'base';
   const baseInfo={mode:'open-hat-extra-trees-v2-gmd128+overlay-v1',variant:requestedVariant,candidates:hats.length,promoted:0,rescued:0,enabled:false};
   if(!hats.length)return {events,info:{...baseInfo,skipReason:'no-hat'}};
   try{
@@ -486,7 +486,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     let probabilities=features.map(x=>predict(model,x));
     const baseProbabilities=probabilities.slice();
     let sequenceInfo={variant:requestedVariant,decay:{enabled:false},gmd:{enabled:false},gmdRescue:{enabled:false},ride:{enabled:false}};
-    if(['decay','combined','decay-rescue','ride-decay','ride-open-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue','arrangement-decay'].includes(requestedVariant)){
+    if(['decay','combined','decay-rescue','ride-decay','ride-open-decay-rescue','ride-selective55-decay-rescue','ride-selective60-decay-rescue','ride-selective65-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue','arrangement-decay'].includes(requestedVariant)){
       const seq=acousticSequenceRescore(samples,hats,events,probabilities,threshold,w);
       probabilities=seq.probabilities;sequenceInfo.decay=seq.info;
     }
@@ -500,7 +500,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
         sequenceInfo.gmd={enabled:false,error:String(gmdErr?.message||gmdErr)};
       }
     }
-    if(requestedVariant==='gmd-rescue'||requestedVariant==='decay-rescue'||requestedVariant==='ride-open-decay-rescue'||requestedVariant==='ride-selective70-decay-rescue'||requestedVariant==='ride-selective80-decay-rescue'||requestedVariant==='ride-selective90-decay-rescue'){
+    if(requestedVariant==='gmd-rescue'||requestedVariant==='decay-rescue'||requestedVariant==='ride-open-decay-rescue'||requestedVariant==='ride-selective55-decay-rescue'||requestedVariant==='ride-selective60-decay-rescue'||requestedVariant==='ride-selective65-decay-rescue'||requestedVariant==='ride-selective70-decay-rescue'||requestedVariant==='ride-selective80-decay-rescue'||requestedVariant==='ride-selective90-decay-rescue'){
       try{
         const prior=await loadGmdHatPrior();
         const seq=gmdOpenRunRescue(prior,hats,events,probabilities,bpm,threshold);
@@ -525,11 +525,14 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
 
     const rideMap=new Map(),rideProbability=new Map();
     const selectiveRideThreshold={
+      'ride-selective55-decay-rescue':.55,
+      'ride-selective60-decay-rescue':.60,
+      'ride-selective65-decay-rescue':.65,
       'ride-selective70-decay-rescue':.70,
       'ride-selective80-decay-rescue':.80,
       'ride-selective90-decay-rescue':.90
     }[requestedVariant];
-    if(['ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue'].includes(requestedVariant)){
+    if(['ride-open','ride-acoustic','ride-decay','ride-open-decay-rescue','ride-selective55-decay-rescue','ride-selective60-decay-rescue','ride-selective65-decay-rescue','ride-selective70-decay-rescue','ride-selective80-decay-rescue','ride-selective90-decay-rescue'].includes(requestedVariant)){
       const rides=events.filter(e=>e.group==='ride').slice().sort((a,b)=>a.time-b.time);
       if(requestedVariant==='ride-open'||requestedVariant==='ride-open-decay-rescue'){
         for(const e of rides)rideMap.set(e,'open_hat');
