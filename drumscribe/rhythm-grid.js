@@ -179,7 +179,8 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   if(!usable.length){
     return {
       ppq,bpm,numerator,denominator,beatSec,barSec,phase,barPad,exportOffsetSec,
-      eventTicks:[],tempoMap:[{tick:0,bpm}],info:{enabled:false,reason:'no-events'}
+      eventTicks:[],tempoMap:[{tick:0,bpm,us:Math.round(60000000/bpm)}],
+      info:{enabled:false,reason:'no-events'}
     };
   }
 
@@ -197,14 +198,17 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   const correctedQ=raw=>raw-delta(raw);
   const snapQ=raw=>Math.round(correctedQ(raw)/grid.step)*grid.step;
 
-  // Convert the phase-drift derivative into one tempo value per quarter note.
+  // Convert the phase-drift derivative into quarter-note BPM values. q is a
+  // denominator-beat coordinate, while MIDI set_tempo always describes a
+  // quarter note.
   const maxBeat=Math.ceil(maxQ+4);
   const rawBeatTimes=[];
   for(let b=0;b<=maxBeat;b++)rawBeatTimes.push(rawQForScore(b)*beatSec);
   let localBpms=[];
   for(let b=0;b<rawBeatTimes.length-1;b++){
     const sec=rawBeatTimes[b+1]-rawBeatTimes[b];
-    localBpms.push(sec>0?60/sec:bpm);
+    const denominatorBeatBpm=sec>0?60/sec:bpm*denominator/4;
+    localBpms.push(denominatorBeatBpm*4/denominator);
   }
   localBpms=movingMean(localBpms,2);
   // Tempo changes caused by phase-noise should not create implausible jumps.
@@ -214,14 +218,14 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   // Reintegrate the smoothed tempo sequence so score ticks map to a continuous
   // playback timeline anchored at MIDI tick 0.
   const beatTimes=[0];
-  for(const x of localBpms)beatTimes.push(beatTimes[beatTimes.length-1]+60/x);
+  for(const x of localBpms)beatTimes.push(beatTimes[beatTimes.length-1]+60/x*4/denominator);
 
   const timeForScore=q=>{
-    if(q<=0)return q*60/(localBpms[0]||bpm);
+    if(q<=0)return q*60/(localBpms[0]||bpm)*4/denominator;
     const i=Math.floor(q),f=q-i;
     if(i>=beatTimes.length-1){
       const tail=localBpms[localBpms.length-1]||bpm;
-      return beatTimes[beatTimes.length-1]+(q-(beatTimes.length-1))*60/tail;
+      return beatTimes[beatTimes.length-1]+(q-(beatTimes.length-1))*60/tail*4/denominator;
     }
     return beatTimes[i]+f*(beatTimes[i+1]-beatTimes[i]);
   };
@@ -230,20 +234,21 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   let straight16Count=0;
   for(const e of usable){
     const scoreQ=snapQ(e.q);
-    const tick=Math.max(0,Math.round(scoreQ*ppq));
+    const tick=Math.max(0,Math.round(scoreQ*ppq*4/denominator));
     eventTicks[e.index]=tick;
     if(tick%(ppq/4)===0)straight16Count++;
   }
 
   const tempoMap=[];
   let previousUs=null;
+  const ticksPerBeat=ppq*4/denominator;
   for(let b=0;b<localBpms.length;b++){
     const local=localBpms[b];
     const us=Math.round(60000000/local);
-    // Emit at quarter-note resolution, matching the structure of reference
-    // charts that encode small tempo variation independently of note ticks.
+    // Emit at denominator-beat resolution; reference charts commonly encode
+    // small tempo variation independently of note ticks.
     if(previousUs===null||us!==previousUs){
-      tempoMap.push({tick:b*ppq,bpm:local,us});
+      tempoMap.push({tick:Math.round(b*ticksPerBeat),bpm:local,us});
       previousUs=us;
     }
   }
