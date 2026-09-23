@@ -1321,3 +1321,11 @@ production既定を `ride-open-decay-rescue` に更新。
 - Reason: the sequence algorithm could choose the opposite alternating phase (Open→Closed where the performance is Closed→Open). It is not a valid general transcription rule.
 - Also fixed stale browser cache keys: `app.js` now imports `transcribe.js?v=20260924-remove-review-hat-v67`, and `index.html` points to the corresponding fresh `app.js` URL.
 - Production Open/Closed work must use general per-hit acoustic models trained/validated on synchronized multi-song data; no review-song parity/range is permitted.
+
+
+## 2026-09-24 Open-hi-hat playback choke
+- MIDI preview playback already had a choke path for closed HH (42) / pedal HH (44) against open HH (46), but the old behavior faded for 65 ms and stopped at 80 ms, which was too long perceptually.
+- Runtime playback now tracks each open-hat voice with its scheduled start time and level.
+- On note 42 or 44, all already-started/scheduled-prior open-hat voices are choked at that exact scheduled hit time with a 12 ms anti-click linear fade and source stop at 14 ms.
+- Future open-hat voices are not accidentally killed.
+- Both index.html and feedback.html use cache buster `app.js?v=20260924-hihat-choke-v1`.
