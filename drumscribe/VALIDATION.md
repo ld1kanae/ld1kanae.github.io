@@ -1,5 +1,58 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: GMD原MIDIで単純3曲を限定再検証（v26）
+
+対象を **diamondvirgin / nanairo / ray** の3曲に限定し、kaiju / arcaround は複雑曲として除外した。kick/snareイベント自体は変更せず、4/4の小節頭候補選択だけを評価した。ランタイム変更は行っていない。
+
+### GMD入力の訂正
+
+以前使った公開GMD派生テキストは、この用途には採用しない。派生リポジトリの `midi_to_text.py` と `text_to_midi.py` で6列のprimary-note順が一致しておらず、kick/snare列を誤読する危険が確認されたため。
+
+今回から **元GMD MIDIを直接パース**。公式マッピング通り kick=36、snare=37/38/40 を使用する。
+
+### 原GMD平均テンプレート
+
+ジャンルを散らしたtrain 30演奏、計3,670小節から16分位置分布を学習。
+
+- kick四分位置: beat1 0.332 / beat2 0.387 / beat3 0.680 / beat4 0.346
+- snare四分位置: beat1 0.073 / beat2 0.587 / beat3 0.266 / beat4 0.573
+
+snareの2・4拍バックビートは明確。一方kickは1拍目固定ではなく3拍目も非常に強く、「1拍目kick」という固定規則だけでは不十分。
+
+ただし単一平均テンプレートはジャンル混合で不安定。原GMD held-out小サンプルでは4小節窓の正解率が dev 24.6%、test 38.3%だったため、置換方式は不採用。
+
+### 3曲への適用
+
+生成MIDIは現行小節頭でtick 0へ書き出されているため、相対rotation 0が現行候補、rotation 2が半小節反対候補。
+
+- diamondvirgin: GMD平均=0、Senn 211パターンprior=0 → 現行と一致。
+- nanairo: GMD平均=0、Senn prior=0 → 現行と一致。
+- ray: GMD平均=2、Senn prior=2 → 現行と逆。典型パターンpriorだけでは誤る。
+
+### 複数パターン / 直接分類
+
+単一平均の欠点を避けるため、4小節GMDパターンを複数保持する最近傍方式と、正しいrotationを直接学習するロジスティック分類器を検証。
+
+直接分類器を、互いに異なるGMD trainサンプル3組で別々に学習した結果:
+
+| 曲 | batch 1 | batch 2 | batch 3 | 安定性 |
+|---|---:|---:|---:|---:|
+| diamondvirgin | 0 ✓ | 0 ✓ | 0 ✓ | **3/3** |
+| nanairo | 2 ✗ | 0 ✓ | 2 ✗ | **1/3** |
+| ray | 2 ✗ | 0 ✓ | 2 ✗ | **1/3** |
+
+現行selectorは3曲すべて参照側候補と一致している。したがって、現時点のGMD学習器を補助priorとして追加しても **diamondvirginには整合するが、nanairo/rayを壊す可能性が高い**。
+
+### 判断
+
+- 現行小節頭selectorを維持。
+- GMD priorはランタイムへまだ追加しない。
+- 「典型的リズム配置を学習する」方針自体は継続。
+- 次は原GMDの学習量を増やし、単一平均ではなく **genre/pattern mixture またはbagging ensemble** として学習する。
+- 現行の強いsnare-contrast音響証拠をGMD priorで上書きしない。
+
+生データ: [results-gmd-simple3-v26.json](experiments/results-gmd-simple3-v26.json)
+
 ## 2026-09-23: GMD一般リズム学習を単純3曲で限定検証（v26）
 
 対象を **diamondvirgin / nanairo / ray** の3曲に限定し、arcaround / kaiju は複雑系として除外した。kick/snareイベントそのものは変更せず、小節頭4候補の評価だけを検証した。
