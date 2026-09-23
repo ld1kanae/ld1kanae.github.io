@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Permissions-Policy" content="display-capture=()">
 <title>詩人</title>
 
 <!-- ▼ リンクを共有したときに表示される情報。作品ごとに書き換えてください ▼ -->
@@ -47,6 +48,22 @@ body{
   display:flex;flex-direction:column;overflow:hidden;
   -webkit-text-size-adjust:100%;
 }
+
+/* ═══ 閲覧保護 ═══
+   通常操作による本文の選択・コピーを抑止する。
+   入力欄は編集性を維持するため選択可能。 */
+body{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+input,textarea,select,[contenteditable="true"]{
+  -webkit-user-select:text;
+  user-select:text;
+  -webkit-touch-callout:default;
+}
+/* 印刷ボタン自体も出さない。ブラウザーの印刷メニュー対策は @media print 側で行う。 */
+#pvPrint{display:none !important;}
 
 /* ═══ ヘッダー ═══ */
 header{
@@ -244,13 +261,22 @@ footer{
 .pv-folio{position:absolute;left:18mm;bottom:12mm;font-size:9pt;color:#000;font-family:'Yu Mincho','游明朝',serif;}
 
 @media print{
-  body > *:not(.pv){display:none !important;}
-  .pv{position:static;background:#fff;display:block;}
-  .pv-bar{display:none;}
-  .pv-stage{padding:0;overflow:visible;display:block;}
-  .pv-scaler{transform:none !important;}
-  .pv-page{box-shadow:none;}
-  @page{size:A4 landscape;margin:0;}
+  html,body{
+    background:#fff !important;
+    color:#000 !important;
+    overflow:visible !important;
+  }
+  body > *{display:none !important;}
+  body::before{
+    content:"このページは印刷できません。";
+    display:block !important;
+    padding:24mm;
+    font-family:var(--font-ui);
+    font-size:14px;
+    line-height:1.8;
+    color:#000;
+  }
+  @page{size:auto;margin:0;}
 }
 
 body.ui-dim header,body.ui-dim footer{opacity:0;pointer-events:none;}
@@ -388,6 +414,55 @@ const DIR = PARAMS.get('dir') ||
             'aster';
 /* 応募原稿の書き出し機能は ?edit=1 を付けたときだけ表示する（公開用リンクでは出ない） */
 const EDIT_MODE = PARAMS.has('edit') || location.hash === '#edit';
+
+/* ═══ 閲覧保護（通常ブラウザー操作の抑止）══════════════
+   これは DRM ではない。開発者ツールや外部キャプチャまで防ぐものではない。 */
+function isEditableTarget(target){
+  return !!(target && target.closest &&
+    target.closest('input, textarea, select, [contenteditable="true"]'));
+}
+
+['copy','cut','contextmenu','dragstart','selectstart'].forEach(type => {
+  document.addEventListener(type, e => {
+    if(!isEditableTarget(e.target)) e.preventDefault();
+  }, true);
+});
+
+document.addEventListener('keydown', e => {
+  if(!(e.ctrlKey || e.metaKey)) return;
+  const key = String(e.key || '').toLowerCase();
+
+  /* 印刷は入力欄にフォーカスがあっても抑止 */
+  if(key === 'p'){
+    e.preventDefault();
+    return;
+  }
+
+  /* 本文側のコピー・切り取り・全選択を抑止。入力欄は通常操作を維持 */
+  if(!isEditableTarget(e.target) && (key === 'c' || key === 'x' || key === 'a')){
+    e.preventDefault();
+  }
+}, true);
+
+/* この文書自身が Screen Capture API を開始する経路を拒否する。
+   他サイト/OS側からこのタブを共有・録画することを防ぐものではない。 */
+try{
+  if(navigator.mediaDevices && typeof navigator.mediaDevices.getDisplayMedia === 'function'){
+    const denyDisplayCapture = () => Promise.reject(
+      new DOMException('Display capture is disabled on this page.', 'NotAllowedError')
+    );
+    try{
+      Object.defineProperty(navigator.mediaDevices, 'getDisplayMedia', {
+        value: denyDisplayCapture,
+        configurable: false,
+        writable: false
+      });
+    }catch(_e){
+      navigator.mediaDevices.getDisplayMedia = denyDisplayCapture;
+    }
+  }
+}catch(_e){}
+
 /* API が使えないときの保険（aster フォルダの既知の構成） */
 const FALLBACK = { title: '詩人', chapters: ['前篇', '後篇', '追篇'] };
 
@@ -1495,7 +1570,7 @@ document.getElementById('pvClose').addEventListener('click', () => { pvModal.hid
 document.getElementById('pvPrev').addEventListener('click', () => pvShow(pvIndex - 1));
 document.getElementById('pvNext').addEventListener('click', () => pvShow(pvIndex + 1));
 pvNum.addEventListener('change', () => pvShow(+pvNum.value));
-document.getElementById('pvPrint').addEventListener('click', () => window.print());
+document.getElementById('pvPrint').addEventListener('click', e => { e.preventDefault(); });
 addEventListener('resize', () => { if(!pvModal.hidden) pvFit(); });
 document.addEventListener('keydown', e => {
   if(pvModal.hidden) return;
