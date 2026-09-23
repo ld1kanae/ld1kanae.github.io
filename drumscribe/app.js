@@ -12,12 +12,12 @@ let reviewSelection=null;
 let reviewBeatTimes=[];
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
-const groupNotes=[36,38,42,44,45,46,49,51];
+const groupNotes=[36,38,42,45,46,49,51];
 const thresholdControlIds={
   kick:'thresholdKick',snare:'thresholdSnare',snareRescue:'thresholdSnareRescue',egmdSnare:'thresholdEgmdSnare',tom:'thresholdTom',
   hat:'thresholdHat',hatCollision:'thresholdHatCollision',hatFilter:'thresholdHatFilter',openHat:'thresholdOpenHat',
   rideOpen:'thresholdRideOpen',rideContextOpen:'thresholdRideContextOpen',openHatOverlay:'thresholdOpenHatOverlay',
-  pedalHat:'thresholdPedalHat',cymbal:'thresholdCymbal',cymbalGate:'thresholdCymbalGate'
+  cymbal:'thresholdCymbal',cymbalGate:'thresholdCymbalGate'
 };
 function readThresholdMultipliers(){
   const out={};
@@ -206,7 +206,7 @@ $('analyze').addEventListener('click',async()=>{
     const gridInfo=rhythmGrid.info||{};
     const tempoText=Number.isFinite(gridInfo.tempoMin)&&Number.isFinite(gridInfo.tempoMax)?` / 書出BPM ${gridInfo.tempoMin.toFixed(3)}–${gridInfo.tempoMax.toFixed(3)} (${gridInfo.tempoEvents}点)`:'';
     const arrangementText=arrangementInfo.enabled?` / 構造補助 +${arrangementInfo.rescore?.accepted||0}`:'';
-    $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'}${arrangementText} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・クローズHH ${events.filter(e=>e.note===42).length}・オープンHH ${events.filter(e=>e.note===46).length}・ペダルHH ${events.filter(e=>e.note===44).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
+    $('resultSummary').textContent=`${fmt(decoded.duration)} / 基準BPM ${detectedBpm.toFixed(3)}${tempoText} / 格子 ${gridInfo.subdivision||'未判定'}${arrangementText} / ${events.length} ノート / キック ${events.filter(e=>e.note===36).length}・スネア ${events.filter(e=>e.note===38).length}・クローズHH ${events.filter(e=>e.note===42).length}・オープンHH ${events.filter(e=>e.note===46).length}・クラッシュ ${events.filter(e=>e.note===49).length}・ライド ${events.filter(e=>e.note===51).length}`;
     const {events:_rawEvents,diagnostics:_diagnostics,...transcriptionSummary}=transcription;
     globalThis.__drumscribeResult={
       ...transcriptionSummary,
