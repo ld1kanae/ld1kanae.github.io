@@ -1,4 +1,4 @@
-import {transcribe} from './transcribe.js?v=20260924-remove-review-hat-v67';
+import {transcribe} from './transcribe.js?v=20260924-threshold-controls-v1';
 import {analyzeSections,rescoreKstByArrangement,arrangementKstPolicyCurrent} from './arrangement/index.js?v=20260923-arrangement-kst-v47';
 import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
@@ -13,6 +13,24 @@ let reviewBeatTimes=[];
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,44,45,46,49,51];
+const thresholdControlIds={
+  kick:'thresholdKick',snare:'thresholdSnare',snareRescue:'thresholdSnareRescue',egmdSnare:'thresholdEgmdSnare',tom:'thresholdTom',
+  hat:'thresholdHat',hatCollision:'thresholdHatCollision',hatFilter:'thresholdHatFilter',openHat:'thresholdOpenHat',
+  rideOpen:'thresholdRideOpen',rideContextOpen:'thresholdRideContextOpen',openHatOverlay:'thresholdOpenHatOverlay',
+  pedalHat:'thresholdPedalHat',cymbal:'thresholdCymbal',cymbalGate:'thresholdCymbalGate'
+};
+function readThresholdMultipliers(){
+  const out={};
+  for(const [key,id] of Object.entries(thresholdControlIds)){
+    const el=$(id),v=Number(el?.value);
+    out[key]=Number.isFinite(v)&&v>=.50&&v<=1.50?v:1;
+    if(el&&!Number.isFinite(v))el.value='1.00';
+  }
+  return out;
+}
+$('thresholdReset')?.addEventListener('click',()=>{
+  for(const id of Object.values(thresholdControlIds)){const el=$(id);if(el)el.value='1.00';}
+});
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
 function setArrangementFile(f){
@@ -93,7 +111,8 @@ $('analyze').addEventListener('click',async()=>{
     const params=new URLSearchParams(location.search);
     const openHatVariant=params.get('openHatVariant')||undefined;
     const cymbalVariant=params.get('cymbalVariant')||undefined;
-    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm,diagnosticKst:Boolean(arrangementAudio),openHatVariant,cymbalVariant});
+    const thresholdMultipliers=readThresholdMultipliers();
+    const transcription=await transcribe(decoded,(message,p)=>{tell(message);$('progress').value=p;},{bpm,diagnosticKst:Boolean(arrangementAudio),openHatVariant,cymbalVariant,thresholdMultipliers});
     const detectedBpm=transcription.bpm;
     const numerator=Number(transcription.numerator)||4,denominator=Number(transcription.denominator)||4;
     const beatSec=60/detectedBpm*4/denominator,barSec=beatSec*numerator;
@@ -193,6 +212,7 @@ $('analyze').addEventListener('click',async()=>{
       ...transcriptionSummary,
       barPhaseSec,exportOffsetSec,exportBarPad,barSec,beatSec,
       arrangementInfo,
+      thresholdMultipliers,
       rhythmGridInfo:{...gridInfo,previewMedianDifferenceMs:timingMedianMs,previewP95DifferenceMs:timingP95Ms},
       meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
     };
