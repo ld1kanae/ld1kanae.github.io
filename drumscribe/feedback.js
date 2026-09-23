@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const $=id=>document.getElementById(id),canvas=$('timeline');
+const $=id=>document.getElementById(id),canvas=$('timeline'),rangeSurface=$('rangeSurface');
 const card=$('reviewCard'),popover=$('reviewPopover'),rangeOut=$('selectionRange'),rangeHint=$('selectionHint'),category=$('reviewCategory'),text=$('reviewText'),save=$('addReview'),list=$('reviewList'),status=$('reviewStatus'),prompt=$('aiPromptPreview'),undoButton=$('reviewUndo'),redoButton=$('reviewRedo');
 let api=null,selection=null,reviews=[],source={fileName:'',exampleId:'',duration:0},undoStack=[],redoStack=[],editingId=null,drag=null,playToken=0;
 const HISTORY_LIMIT=5;
@@ -117,7 +117,7 @@ function downloadJson(){
   const blob=new Blob([JSON.stringify(payload(),null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(source.fileName||'drumscribe').replace(/\.[^.]+$/,'')+'-review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus('レビューJSONを書き出しました。');
 }
 function installTimeline(){
-  api=globalThis.DrumScribeTimeline;if(!api)return false;
+  api=globalThis.DrumScribeTimeline;if(!api||!rangeSurface)return false;
   const pointTime=e=>api.clientXToTime(e.clientX);
   const move=e=>{
     if(!drag||e.pointerId!==drag.id)return;
@@ -130,7 +130,7 @@ function installTimeline(){
     if(!drag||e.pointerId!==drag.id)return;
     if(e.cancelable)e.preventDefault();
     const d=drag;drag=null;
-    try{if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId)}catch{}
+    try{if(rangeSurface.hasPointerCapture?.(e.pointerId))rangeSurface.releasePointerCapture(e.pointerId)}catch{}
     if(d.moved){
       editingId=null;text.value='';category.value='採譜ミス';save.textContent='保存';
       setSelection(d.start,pointTime(e),false,{open:true,snap:true});
@@ -140,17 +140,18 @@ function installTimeline(){
     }
   };
   const cancel=e=>{if(drag&&e.pointerId===drag.id){drag=null;api.clearSelection?.();}};
-  canvas.addEventListener('pointerdown',e=>{
+  rangeSurface.addEventListener('pointerdown',e=>{
     if(!api.getDuration()||e.isPrimary===false)return;
     if(e.pointerType==='mouse'&&e.button!==0)return;
     if(e.cancelable)e.preventDefault();
     playToken++;api.pause();closeEditor();
     drag={id:e.pointerId,x:e.clientX,lastX:e.clientX,start:pointTime(e),moved:false};
-    try{canvas.setPointerCapture?.(e.pointerId)}catch{}
+    rangeSurface.classList.add('selecting');
+    try{rangeSurface.setPointerCapture?.(e.pointerId)}catch{}
   },{passive:false});
   window.addEventListener('pointermove',move,{capture:true,passive:false});
-  window.addEventListener('pointerup',finish,{capture:true,passive:false});
-  window.addEventListener('pointercancel',cancel,{capture:true});
+  window.addEventListener('pointerup',e=>{if(drag&&e.pointerId===drag.id)rangeSurface.classList.remove('selecting');finish(e)},{capture:true,passive:false});
+  window.addEventListener('pointercancel',e=>{rangeSurface.classList.remove('selecting');cancel(e)},{capture:true});
   return true;
 }
 $('playSelection').addEventListener('click',()=>playRange());
