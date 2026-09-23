@@ -2,7 +2,8 @@ import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
 import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';
-import {rescueRideOpenV57} from './hat-context-v57.js?v=20260924-production-v58';\nimport {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
+import {rescueRideOpenV57} from './hat-context-v57.js?v=20260924-production-v58';
+import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
