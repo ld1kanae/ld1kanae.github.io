@@ -464,7 +464,7 @@ function repeatSupport(times,probs,bpm,policy){
 
 export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
-  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay'].includes(context?.variant)?context.variant:'base';
+  const requestedVariant=['base','decay','gmd','combined','gmd-rescue','decay-rescue','ride-open','ride-acoustic','ride-decay','arrangement','arrangement-decay'].includes(context?.variant)?context.variant:'base';
   const baseInfo={mode:'open-hat-extra-trees-v2-gmd128+overlay-v1',variant:requestedVariant,candidates:hats.length,promoted:0,rescued:0,enabled:false};
   if(!hats.length)return {events,info:{...baseInfo,skipReason:'no-hat'}};
   try{
@@ -486,7 +486,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     let probabilities=features.map(x=>predict(model,x));
     const baseProbabilities=probabilities.slice();
     let sequenceInfo={variant:requestedVariant,decay:{enabled:false},gmd:{enabled:false},gmdRescue:{enabled:false},ride:{enabled:false}};
-    if(['decay','combined','decay-rescue','ride-decay'].includes(requestedVariant)){
+    if(['decay','combined','decay-rescue','ride-decay','arrangement-decay'].includes(requestedVariant)){
       const seq=acousticSequenceRescore(samples,hats,events,probabilities,threshold,w);
       probabilities=seq.probabilities;sequenceInfo.decay=seq.info;
     }
@@ -518,8 +518,12 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     }
     sequenceInfo.basePromoted=basePromoted;
     sequenceInfo.reclassified=openSet.size-basePromoted;
+    const hatProbability=new Map(hats.map((h,i)=>[h,{
+      probability:probabilities[i],
+      baseProbability:baseProbabilities[i]
+    }]));
 
-    const rideMap=new Map();
+    const rideMap=new Map(),rideProbability=new Map();
     if(['ride-open','ride-acoustic','ride-decay'].includes(requestedVariant)){
       const rides=events.filter(e=>e.group==='ride').slice().sort((a,b)=>a.time-b.time);
       if(requestedVariant==='ride-open'){
@@ -532,6 +536,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
         let ro=0,rc=0;
         for(let i=0;i<rides.length;i++){
           const g=rp[i]>=threshold?'open_hat':'hat';rideMap.set(rides[i],g);
+          rideProbability.set(rides[i],{probability:rp[i],baseProbability:rp[i]});
           if(g==='open_hat')ro++;else rc++;
         }
         sequenceInfo.ride={enabled:true,mode:'acoustic-42-46',candidates:rides.length,open:ro,closed:rc,
@@ -590,8 +595,15 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={
     }
 
     const promoted=events.map(e=>{
-      if(openSet.has(e))return {...e,group:'open_hat'};
-      const rg=rideMap.get(e);if(rg)return {...e,group:rg,rideRoundedToHat:true};
+      const hp=hatProbability.get(e);
+      if(hp)return {...e,group:openSet.has(e)?'open_hat':'hat',
+        openHatProbability:hp.probability,openHatBaseProbability:hp.baseProbability};
+      const rg=rideMap.get(e);
+      if(rg){
+        const rp=rideProbability.get(e);
+        return {...e,group:rg,rideRoundedToHat:true,
+          ...(rp?{openHatProbability:rp.probability,openHatBaseProbability:rp.baseProbability}:{})};
+      }
       return e;
     }).concat(rescued);
     return {events:promoted,info:{
