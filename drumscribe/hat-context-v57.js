@@ -413,8 +413,9 @@ export async function rescoreHatSyncCandidateV66(decoded,events,options={}){
   for(let i=0;i<art.length;i++)nextMap.set(art[i],art[i+1]?.time);
   const idx=new Map(candidates.map((e,i)=>[e,i]));
   const raw=candidates.map(e=>features(samples,e.time,nextMap.get(e),w));
-  const openThreshold=Number(model.confidenceThreshold)||.55;
-  const closedThreshold=Number(model.closedThreshold)||.45;
+  const openThreshold=Number.isFinite(Number(options.openThreshold))?Number(options.openThreshold):(Number(model.confidenceThreshold)||.55);
+  const closedThreshold=Number.isFinite(Number(options.closedThreshold))?Number(options.closedThreshold):(Number(model.closedThreshold)||.45);
+  const allowDemotion=options.allowDemotion!==false;
   let scored=0,changed=0,promoted=0,demoted=0;
   const out=events.map(e=>{
     const i=idx.get(e);if(i==null)return e;
@@ -429,7 +430,7 @@ export async function rescoreHatSyncCandidateV66(decoded,events,options={}){
     if(p>=openThreshold&&e.group!=='open_hat'){
       changed++;promoted++;return {...e,...meta,group:'open_hat',note:46};
     }
-    if(p<=closedThreshold&&e.group==='open_hat'){
+    if(allowDemotion&&p<=closedThreshold&&e.group==='open_hat'){
       changed++;demoted++;return {...e,...meta,group:'hat',note:42};
     }
     return {...e,...meta};
@@ -437,7 +438,7 @@ export async function rescoreHatSyncCandidateV66(decoded,events,options={}){
   return {events:out,info:{
     enabled:true,variant:'sync-candidate-rf-v66',
     candidates:candidates.length,scored,changed,promoted,demoted,
-    openThreshold,closedThreshold,modelTrees:Number(model.treeCount)||model.trees.length,
+    openThreshold,closedThreshold,allowDemotion,modelTrees:Number(model.treeCount)||model.trees.length,
     reviewSpecificInputsUsed:false,patternParityUsed:false,
     trainingRows:Number(model.trainingRows)||null
   }};
