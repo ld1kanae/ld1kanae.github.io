@@ -8,11 +8,14 @@ on:
       - "drumscribe/app.js"
       - "drumscribe/transcribe.js"
       - "drumscribe/hat-forest.js"
+      - "drumscribe/open-hat.js"
       - "drumscribe/models/hat-extra-trees-v11.json"
+      - "drumscribe/models/open-hat-extra-trees-v2.json"
       - "drumscribe/midi.js"
       - "drumscribe/index.html"
       - "drumscribe/experiments/browser_validate.mjs"
       - "drumscribe/experiments/compare_browser.py"
+      - "drumscribe/experiments/compare_open_hat_browser.py"
       - ".github/workflows/drumscribe-browser-validation.yml"
   workflow_dispatch:
 
@@ -47,11 +50,13 @@ jobs:
         run: node drumscribe/experiments/browser_validate.mjs
       - name: Compare browser MIDI with reference MIDI
         run: python drumscribe/experiments/compare_browser.py
+      - name: Compare open and closed hi-hat articulation
+        run: python drumscribe/experiments/compare_open_hat_browser.py
       - name: Commit browser validation outputs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add drumscribe/experiments/generated-v2-browser drumscribe/experiments/results-v2-browser.json
+          git add drumscribe/experiments/generated-v2-browser drumscribe/experiments/results-v2-browser.json drumscribe/experiments/results-v2-browser-open-hat.json
           git diff --cached --quiet && exit 0
           git commit -m "Record real browser DrumScribe validation [skip ci]"
           for attempt in 1 2 3 4; do
