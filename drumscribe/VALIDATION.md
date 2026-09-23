@@ -18,7 +18,7 @@ Proof v34 MIDIのtempo metadataだけを同方式で変換:
 - 小節境界の累積時刻差 max **0.010 ms**
 - BPM range 98.735–100.369
 
-5曲fresh Chromium regression run `35849376347`:
+5曲fresh Chromium regression run `35849808016`:
 - arcaround 549 -> **139** tempo events
 - diamondvirgin 589 -> **149**
 - kaiju 594 -> **153**
