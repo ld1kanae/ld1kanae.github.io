@@ -17,7 +17,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,6 +47,11 @@ jobs:
           node --check drumscribe/gmd-kst-prior.js
           node drumscribe/experiments/gmd-kst/test_section_analysis.mjs
           node drumscribe/experiments/gmd-kst/test_gmd_kst_prior.mjs
+      - name: Analyze five real off-vocal references
+        run: |
+          ffmpeg -version | head -n 1
+          node drumscribe/experiments/gmd-kst/analyze_example_offvocals.mjs
+          test -s drumscribe/experiments/gmd-kst/results-offvocal-sections-v1.json
       - name: Commit derived knowledge to branch
         run: |
           git config user.name "github-actions[bot]"
@@ -68,4 +73,5 @@ jobs:
             drumscribe/models/gmd-kst/knowledge-v1.json
             drumscribe/models/gmd-kst/heldout-manifest-v1.json
             drumscribe/models/gmd-kst/manifest-v1.json
+            drumscribe/experiments/gmd-kst/results-offvocal-sections-v1.json
           retention-days: 30
