@@ -118,7 +118,7 @@ function mappedNotes(k){
 }
 export function assignTomPitches(samples,events){
   const toms=events.filter(e=>e.group==='tom');
-  const info={enabled:true,method:'song-relative-resonance-cluster-v1',tomCount:toms.length,clusters:0,silhouette:0,counts:{41:0,45:0,47:0,50:0}};
+  const info={enabled:true,method:'song-relative-resonance-cluster-v1',tomCount:toms.length,clusters:0,silhouette:0,counts:{41:0,45:0,47:0,50:0},decisions:[]};
   if(!toms.length)return {events,info};
   const hz=toms.map(e=>resonantPeak(samples,e.time));
   const logHz=hz.map(v=>Math.log(Math.max(40,v)));
@@ -130,7 +130,7 @@ export function assignTomPitches(samples,events){
       if(!chosen||s>chosen.silhouette)chosen={...c,k,silhouette:s};
     }
   }
-  let notes;
+  let notes,decisionClusters=new Array(toms.length).fill(null),clusterNoteByRank=null;
   if(!chosen||chosen.silhouette<.35){
     notes=hz.map(absoluteFallback);
     info.method='resonance-absolute-fallback-v1';
@@ -139,13 +139,17 @@ export function assignTomPitches(samples,events){
     const targets=mappedNotes(chosen.k),clusterNote={};
     order.forEach((q,rank)=>{clusterNote[q.i]=targets[rank];});
     notes=Array.from(chosen.labels,l=>clusterNote[l]);
+    decisionClusters=Array.from(chosen.labels,l=>order.findIndex(q=>q.i===l));
+    clusterNoteByRank=targets.slice();
     info.clusters=chosen.k;info.silhouette=chosen.silhouette;
     info.centersHz=order.map(q=>Math.exp(q.v));
+    info.clusterNoteByRank=clusterNoteByRank;
   }
   for(let i=0;i<toms.length;i++){
     toms[i].tomNote=notes[i];
     toms[i].tomPitchHz=hz[i];
     info.counts[notes[i]]=(info.counts[notes[i]]||0)+1;
+    info.decisions.push({time:Number(toms[i].time)||0,hz:Number(hz[i])||0,clusterRank:decisionClusters[i],note:notes[i]});
   }
   return {events,info};
 }
