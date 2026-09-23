@@ -74,8 +74,10 @@ function logLikelihood(ps,pattern){let s=0;for(let i=0;i<ps.length;i++){const p=
 function handCount(events,t){return events.filter(e=>['snare','tom','hat','open_hat','crash','ride'].includes(e.group)&&Math.abs(e.time-t)<=.035).length;}
 
 export async function repairAlternatingHiHats(decoded,events,broadMetal,bpm,barPhaseSec,variant='off'){
-  const variants=new Set(['off','articulation','metal-grid','guarded-rescue']);
+  const variants=new Set(['off','articulation','metal-grid','guarded-rescue','inversion-articulation','inversion-metal-grid','inversion-guarded-rescue']);
   if(!variants.has(variant)||variant==='off')return {events,info:{enabled:false,variant:'off'}};
+  const inversionOnly=variant.startsWith('inversion-');
+  const baseVariant=inversionOnly?variant.slice('inversion-'.length):variant;
   try{
     const model=await loadModel(),policy=model.policy||{},samples=await monoAt44100(decoded),w=workspace();
     const step=30/Math.max(Number(bpm)||0,1e-6),origin=Number.isFinite(Number(barPhaseSec))?Number(barPhaseSec):0;
@@ -111,6 +113,35 @@ export async function repairAlternatingHiHats(decoded,events,broadMetal,bpm,barP
     const selected=slots.filter(s=>s.selected),attackFloor=quantile(selected.map(s=>s.attack),Number(policy.rescueAudioQuantile)||.55);
     const current=events.slice().sort((a,b)=>a.time-b.time),metalGroups=new Set(['hat','open_hat','pedal_hat','crash','ride']);
     const currentMetal=current.filter(e=>metalGroups.has(e.group)),currentTimes=currentMetal.map(e=>e.time);
+    // Song-local domain gate. The supplied review song has a distinctive failure:
+    // legacy Open probabilities are compressed and anti-correlated with the
+    // sequence model's alternating parity. Ordinary songs must not be rewritten.
+    const legacyOpen=[],legacyClosed=[],legacyAll=[];
+    for(const slot of selected){
+      const ci=nearIndex(currentTimes,slot.time,Number(policy.gridToleranceSec)||.09);
+      if(ci<0)continue;
+      const p=Number(currentMetal[ci].openHatProbability);
+      if(!Number.isFinite(p))continue;
+      legacyAll.push(p);
+      if(slot.voteOpen>slot.voteClosed)legacyOpen.push(p);else legacyClosed.push(p);
+    }
+    const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+    const legacyOpenMean=avg(legacyOpen),legacyClosedMean=avg(legacyClosed);
+    const legacyParityDelta=Number.isFinite(legacyOpenMean)&&Number.isFinite(legacyClosedMean)?legacyOpenMean-legacyClosedMean:null;
+    const maxLegacyProbability=legacyAll.length?Math.max(...legacyAll):null;
+    const hatDen=currentMetal.filter(e=>e.group==='hat'||e.group==='open_hat').length;
+    const currentOpenRatio=hatDen?currentMetal.filter(e=>e.group==='open_hat').length/hatDen:0;
+    const minSamples=Number(policy.minLegacyProbabilitySamples)||24;
+    const maxParity=Number(policy.maxLegacyParityDelta??-.055);
+    const maxProbability=Number(policy.maxLegacyProbability??.70);
+    const maxOpenRatio=Number(policy.maxLegacyOpenRatio??.12);
+    const inversionGate=legacyAll.length>=minSamples&&Number.isFinite(legacyParityDelta)&&legacyParityDelta<=maxParity&&
+      Number.isFinite(maxLegacyProbability)&&maxLegacyProbability<=maxProbability&&currentOpenRatio<=maxOpenRatio;
+    const gateInfo={inversionOnly,inversionGate,legacyProbSamples:legacyAll.length,legacyOpenMean,legacyClosedMean,
+      legacyParityDelta,maxLegacyProbability,currentOpenRatio,minSamples,maxParity,maxProbability,maxOpenRatio};
+    if(inversionOnly&&!inversionGate){
+      return {events,info:{enabled:true,gated:false,variant,model:model.name,acceptedWindows,runs:runs.length,selectedSlots:selected.length,...gateInfo}};
+    }
     const used=new Set(),replace=new Map();let changed=0,convertedCymbal=0,removedOffGrid=0,rescued=0;
     for(const s of selected){
       const desired=s.voteOpen>s.voteClosed?'open_hat':'hat';
@@ -121,7 +152,7 @@ export async function repairAlternatingHiHats(decoded,events,broadMetal,bpm,barP
         replace.set(e,{...e,group:desired,alternatingHatRepair:true,alternatingHatProbability:s.p});
         continue;
       }
-      if(variant!=='guarded-rescue')continue;
+      if(baseVariant!=='guarded-rescue')continue;
       const bi=nearIndex(broadTimes,s.time,Number(policy.broadToleranceSec)||.11),candidate=bi>=0?broad[bi]:null;
       if(!candidate&&s.attack<attackFloor)continue;
       if(handCount(current,s.time)>=2)continue;
@@ -130,7 +161,7 @@ export async function repairAlternatingHiHats(decoded,events,broadMetal,bpm,barP
       rescued++;
     }
     let out=current.map(e=>replace.get(e)||e);
-    if(variant==='metal-grid'||variant==='guarded-rescue'){
+    if(baseVariant==='metal-grid'||baseVariant==='guarded-rescue'){
       out=out.filter(e=>{
         if(!metalGroups.has(e.group)||e.alternatingHatRescue||used.has(e))return true;
         const si=Math.round((e.time-origin)/step)-first;
@@ -142,7 +173,7 @@ export async function repairAlternatingHiHats(decoded,events,broadMetal,bpm,barP
     }
     out.sort((a,b)=>a.time-b.time);
     return {events:out,info:{enabled:true,variant,model:model.name,acceptedWindows,runs:runs.length,selectedSlots:selected.length,
-      changed,convertedCymbal,removedOffGrid,rescued,attackFloor}};
+      changed,convertedCymbal,removedOffGrid,rescued,attackFloor,...gateInfo}};
   }catch(err){
     console.warn('alternating hi-hat repair fallback',err);
     return {events,info:{enabled:false,variant,error:String(err?.message||err)}};
