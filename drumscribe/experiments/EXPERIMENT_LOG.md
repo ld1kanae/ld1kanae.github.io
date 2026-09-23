@@ -2,8 +2,8 @@
 
 このファイルは build_experiment_log.py で自動生成する。候補を手作業で省略しない。
 
-- 集録 result files: 130
-- 集録 candidates: 894
+- 集録 result files: 134
+- 集録 candidates: 898
 - 生の曲別データ: 各 results*.json
 - 標準詳細評価: detailed_metrics.py / detailed-history/
 - 再現用索引: validation-history.json
@@ -21,7 +21,7 @@
 
 |候補|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-|results-v2-browser.json:None:result|0.8160|0.9110|0.7400|0.9626|0.8909|0.8302|0.3152|0.7841|0.4560|0.2461|
+|results-v2-browser.json:None:result|0.8180|0.9110|0.7430|0.9626|0.9000|0.8312|0.3141|0.7841|0.4560|0.2461|
 |results-meter-v23.json:None:result|0.8150|0.9100|0.7390|0.9626|0.8858|0.8300|0.3155|0.7624|0.4560|0.2461|
 |results-iterative-hat-density-guard-v10.json:222:c222_r045|0.8138|0.8680|0.7659|0.9626|0.8858|0.8119|0.5670|0.7624|0.4560|0.3480|
 |results-iterative-hat-density-guard-v10.json:222:c222_r055|0.8138|0.8680|0.7659|0.9626|0.8858|0.8119|0.5670|0.7624|0.4560|0.3480|
@@ -39,7 +39,7 @@
 |Part|Candidate|F1|Precision|Recall|Mean-song F1|Worst-song F1|
 |---|---|---:|---:|---:|---:|---:|
 |kick|results-iterative-adtof.json:163:c163_recall|0.9633|0.9531|0.9738|0.9670|0.9395|
-|snare|results-v2-browser.json:None:result|0.8909|0.9165|0.8667|0.8638|0.6372|
+|snare|results-v2-browser.json:None:result|0.9000|0.9156|0.8850|0.8779|0.7081|
 |hat|results-iterative-browser-component-fusion.json:195:c195_ride|0.7795|0.7975|0.7623|0.7100|0.4876|
 |pedal_hat|results-iterative-pedal-component.json:64:c64_recall|0.2996|0.1964|0.6317|0.2306|0.0000|
 |tom|results-v2-browser.json:None:result|0.7841|0.8214|0.7500|0.7483|0.4828|
@@ -3619,6 +3619,20 @@
 
 詳細params・曲別データ参照: drumscribe/experiments/results-meter-v23.json / experiment-log.json
 
+### drumscribe/experiments/results-open-hat-context-rank-loo.json
+
+- implementation: -
+- script commit: -
+- result commit: 7ac696cf44735a25ea2e5ec941d3cc0706970c55
+
+#### Cycle None
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|guardedRankDiagnostic|-|-|-|-|-|-|-|-|-|-|-|-|-|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-open-hat-context-rank-loo.json / experiment-log.json
+
 ### drumscribe/experiments/results-open-hat-guarded-loo.json
 
 - implementation: -
@@ -3632,6 +3646,48 @@
 |baselineAllClosed|-|-|-|-|-|-|-|-|-|-|-|-|-|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-open-hat-guarded-loo.json / experiment-log.json
+
+### drumscribe/experiments/results-open-hat-hf-context-rank-best-v1.json
+
+- implementation: -
+- script commit: -
+- result commit: 0d13fc07db705d1a1b460cc4d03c4d8c74b81425
+
+#### Cycle None
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|guardedRankDiagnostic|-|-|-|-|-|-|-|-|-|-|-|-|-|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-open-hat-hf-context-rank-best-v1.json / experiment-log.json
+
+### drumscribe/experiments/results-open-hat-hf-context-rank-loo.json
+
+- implementation: -
+- script commit: -
+- result commit: e229999d827e9978be3bffb07e575e55c63d5f4a
+
+#### Cycle None
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|guardedRankDiagnostic|-|-|-|-|-|-|-|-|-|-|-|-|-|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-open-hat-hf-context-rank-loo.json / experiment-log.json
+
+### drumscribe/experiments/results-open-hat-hf-coverage.json
+
+- implementation: -
+- script commit: -
+- result commit: 0de3be65e5aac7c24e644b74e93ea4ae80a80bb2
+
+#### Cycle None
+
+|Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|result|winner|-|-|-|-|-|-|-|-|-|-|-|-|
+
+詳細params・曲別データ参照: drumscribe/experiments/results-open-hat-hf-coverage.json / experiment-log.json
 
 ### drumscribe/experiments/results-open-hat-loo.json
 
@@ -3680,7 +3736,7 @@
 
 - implementation: drumscribe/experiments/evaluate_v2.py
 - script commit: b37e36d46d60508ee0670f2daa1db4ac8c0c1a56
-- result commit: d525a7bdfb655d0a02e590ed345103e19d9c3a96
+- result commit: c8e4c1ec5b182edcc185fb14d5e81606abfcb7ea
 
 #### Cycle None
 
@@ -3694,13 +3750,13 @@
 
 - implementation: drumscribe/experiments/evaluate_v2.py
 - script commit: b37e36d46d60508ee0670f2daa1db4ac8c0c1a56
-- result commit: 51e8fd085df4ffdb6d349b3b1b6bc2b74a294f83
+- result commit: c8e4c1ec5b182edcc185fb14d5e81606abfcb7ea
 
 #### Cycle None
 
 |Candidate|状態|F1|P|R|Kick|Snare|Hat|Pedal HH|Tom|Crash|Ride|K→S|S→K|
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-|result|winner, part-leader|0.8160|0.9110|0.7400|0.9626|0.8909|0.8302|0.3152|0.7841|0.4560|0.2461|2|28|
+|result|winner, part-leader|0.8180|0.9110|0.7430|0.9626|0.9000|0.8312|0.3141|0.7841|0.4560|0.2461|3|28|
 
 詳細params・曲別データ参照: drumscribe/experiments/results-v2-browser.json / experiment-log.json
 

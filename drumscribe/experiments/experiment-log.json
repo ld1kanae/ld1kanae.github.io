@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated_from_head": "314b38da52ddae453d4346c2e10921be5710eeaa",
+  "generated_from_head": "0d13fc07db705d1a1b460cc4d03c4d8c74b81425",
   "evaluation_reference": {
     "songs": [
       "arcaround",
@@ -15,8 +15,8 @@
     "canonical_evaluator": "drumscribe/experiments/detailed_metrics.py",
     "same_class_tolerance_sec": 0.08
   },
-  "candidate_count": 894,
-  "result_file_count": 130,
+  "candidate_count": 898,
+  "result_file_count": 134,
   "current_overall_top20": [
     {
       "id": "results-v2-browser.json:None:result",
@@ -28,13 +28,13 @@
       "component_leader": true,
       "params": null,
       "summary": {
-        "tp": 7462,
-        "predicted": 8193,
+        "tp": 7492,
+        "predicted": 8225,
         "reference": 10086,
         "precision": 0.911,
-        "recall": 0.74,
-        "f1": 0.816,
-        "kick_to_snare": 2,
+        "recall": 0.743,
+        "f1": 0.818,
+        "kick_to_snare": 3,
         "snare_to_kick": 28,
         "by_group": {
           "kick": {
@@ -44,16 +44,16 @@
             "count_ratio": 1.02
           },
           "snare": {
-            "tp": 1274,
-            "predicted": 1390,
+            "tp": 1301,
+            "predicted": 1421,
             "reference": 1470,
-            "count_ratio": 0.946
+            "count_ratio": 0.967
           },
           "hat": {
-            "tp": 3117,
-            "predicted": 3407,
+            "tp": 3120,
+            "predicted": 3405,
             "reference": 4102,
-            "count_ratio": 0.831
+            "count_ratio": 0.83
           },
           "tom": {
             "tp": 69,
@@ -81,9 +81,9 @@
           },
           "pedal_hat": {
             "tp": 136,
-            "predicted": 187,
+            "predicted": 190,
             "reference": 676,
-            "count_ratio": 0.277
+            "count_ratio": 0.281
           }
         },
         "timing": {
@@ -99,16 +99,16 @@
       },
       "part_f1": {
         "kick": 0.9625707504108089,
-        "snare": 0.8909090909090909,
-        "hat": 0.8302037554934079,
-        "pedal_hat": 0.31517960602549244,
+        "snare": 0.9000345901072293,
+        "hat": 0.8312241907552951,
+        "pedal_hat": 0.3140877598152425,
         "tom": 0.7840909090909091,
         "crash": 0.45601436265709155,
         "ride": 0.24611708482676226,
         "other": 0.0
       },
       "song_metrics_ref": "drumscribe/experiments/results-v2-browser.json",
-      "result_commit": "51e8fd085df4ffdb6d349b3b1b6bc2b74a294f83",
+      "result_commit": "c8e4c1ec5b182edcc185fb14d5e81606abfcb7ea",
       "script": "drumscribe/experiments/evaluate_v2.py",
       "script_commit": "b37e36d46d60508ee0670f2daa1db4ac8c0c1a56"
     },
@@ -2774,14 +2774,14 @@
       "result_file": "drumscribe/experiments/results-v2-browser.json",
       "cycle": null,
       "name": "result",
-      "f1": 0.8909090909090909,
-      "precision": 0.9165467625899281,
-      "recall": 0.8666666666666667,
-      "count_ratio": 0.946,
-      "mean_song_f1": 0.863768,
-      "worst_song_f1": 0.637168,
+      "f1": 0.9000345901072293,
+      "precision": 0.9155524278676987,
+      "recall": 0.8850340136054422,
+      "count_ratio": 0.967,
+      "mean_song_f1": 0.877949,
+      "worst_song_f1": 0.708075,
       "song_f1": {
-        "arcaround": 0.6371681415929203,
+        "arcaround": 0.7080745341614907,
         "diamondvirgin": 0.9655172413793104,
         "kaiju": 0.975609756097561,
         "nanairo": 0.7574931880108992,
@@ -2789,7 +2789,7 @@
       },
       "params": null,
       "script": "drumscribe/experiments/evaluate_v2.py",
-      "result_commit": "51e8fd085df4ffdb6d349b3b1b6bc2b74a294f83",
+      "result_commit": "c8e4c1ec5b182edcc185fb14d5e81606abfcb7ea",
       "script_commit": "b37e36d46d60508ee0670f2daa1db4ac8c0c1a56"
     },
     "hat": {
@@ -2856,7 +2856,7 @@
       },
       "params": null,
       "script": "drumscribe/experiments/evaluate_v2.py",
-      "result_commit": "51e8fd085df4ffdb6d349b3b1b6bc2b74a294f83",
+      "result_commit": "c8e4c1ec5b182edcc185fb14d5e81606abfcb7ea",
       "script_commit": "b37e36d46d60508ee0670f2daa1db4ac8c0c1a56"
     },
     "crash": {
@@ -117541,6 +117541,49 @@
       "script_commit": null
     },
     {
+      "id": "results-open-hat-context-rank-loo.json:None:guardedRankDiagnostic",
+      "result_file": "drumscribe/experiments/results-open-hat-context-rank-loo.json",
+      "cycle": null,
+      "name": "guardedRankDiagnostic",
+      "winner": false,
+      "carried_close": false,
+      "component_leader": false,
+      "params": null,
+      "summary": {
+        "open": {
+          "tp": 434,
+          "predicted": 657,
+          "reference": 1179,
+          "precision": 0.6605783866057838,
+          "recall": 0.36810856658184904,
+          "f1": 0.47276688453159044
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2797,
+          "reference": 2923,
+          "precision": 0.8262424025741866,
+          "recall": 0.7906260691070818,
+          "f1": 0.808041958041958
+        },
+        "macroF1": 0.6404044212867742
+      },
+      "part_f1": {
+        "kick": null,
+        "snare": null,
+        "hat": null,
+        "pedal_hat": null,
+        "tom": null,
+        "crash": null,
+        "ride": null,
+        "other": null
+      },
+      "song_metrics_ref": "drumscribe/experiments/results-open-hat-context-rank-loo.json",
+      "result_commit": "7ac696cf44735a25ea2e5ec941d3cc0706970c55",
+      "script": null,
+      "script_commit": null
+    },
+    {
       "id": "results-open-hat-guarded-loo.json:None:baselineAllClosed",
       "result_file": "drumscribe/experiments/results-open-hat-guarded-loo.json",
       "cycle": null,
@@ -117562,6 +117605,126 @@
       },
       "song_metrics_ref": "drumscribe/experiments/results-open-hat-guarded-loo.json",
       "result_commit": "e3fed1dc78c36a582ff1c834fe176541925d1e9e",
+      "script": null,
+      "script_commit": null
+    },
+    {
+      "id": "results-open-hat-hf-context-rank-best-v1.json:None:guardedRankDiagnostic",
+      "result_file": "drumscribe/experiments/results-open-hat-hf-context-rank-best-v1.json",
+      "cycle": null,
+      "name": "guardedRankDiagnostic",
+      "winner": false,
+      "carried_close": false,
+      "component_leader": false,
+      "params": null,
+      "summary": {
+        "open": {
+          "tp": 425,
+          "predicted": 655,
+          "reference": 1179,
+          "precision": 0.648854961832061,
+          "recall": 0.3604749787955895,
+          "f1": 0.46346782988004365
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2797,
+          "reference": 2923,
+          "precision": 0.8262424025741866,
+          "recall": 0.7906260691070818,
+          "f1": 0.808041958041958
+        },
+        "macroF1": 0.6357548939610008
+      },
+      "part_f1": {
+        "kick": null,
+        "snare": null,
+        "hat": null,
+        "pedal_hat": null,
+        "tom": null,
+        "crash": null,
+        "ride": null,
+        "other": null
+      },
+      "song_metrics_ref": "drumscribe/experiments/results-open-hat-hf-context-rank-best-v1.json",
+      "result_commit": "0d13fc07db705d1a1b460cc4d03c4d8c74b81425",
+      "script": null,
+      "script_commit": null
+    },
+    {
+      "id": "results-open-hat-hf-context-rank-loo.json:None:guardedRankDiagnostic",
+      "result_file": "drumscribe/experiments/results-open-hat-hf-context-rank-loo.json",
+      "cycle": null,
+      "name": "guardedRankDiagnostic",
+      "winner": false,
+      "carried_close": false,
+      "component_leader": false,
+      "params": null,
+      "summary": {
+        "open": {
+          "tp": 428,
+          "predicted": 652,
+          "reference": 1179,
+          "precision": 0.656441717791411,
+          "recall": 0.363019508057676,
+          "f1": 0.4675040961223375
+        },
+        "closed": {
+          "tp": 2311,
+          "predicted": 2797,
+          "reference": 2923,
+          "precision": 0.8262424025741866,
+          "recall": 0.7906260691070818,
+          "f1": 0.808041958041958
+        },
+        "macroF1": 0.6377730270821478
+      },
+      "part_f1": {
+        "kick": null,
+        "snare": null,
+        "hat": null,
+        "pedal_hat": null,
+        "tom": null,
+        "crash": null,
+        "ride": null,
+        "other": null
+      },
+      "song_metrics_ref": "drumscribe/experiments/results-open-hat-hf-context-rank-loo.json",
+      "result_commit": "e229999d827e9978be3bffb07e575e55c63d5f4a",
+      "script": null,
+      "script_commit": null
+    },
+    {
+      "id": "results-open-hat-hf-coverage.json:None:result",
+      "result_file": "drumscribe/experiments/results-open-hat-hf-coverage.json",
+      "cycle": null,
+      "name": "result",
+      "winner": true,
+      "carried_close": false,
+      "component_leader": false,
+      "params": null,
+      "summary": {
+        "referenceOpen": 1179,
+        "existingHatMatched": 612,
+        "existingHatRecall": 0.5190839694656488,
+        "hfMatched": 644,
+        "hfRecall": 0.546225614927905,
+        "unionMatched": 1155,
+        "unionRecall": 0.9796437659033079,
+        "hfCandidateCount": 8424
+      },
+      "part_f1": {
+        "kick": null,
+        "snare": null,
+        "hat": null,
+        "pedal_hat": null,
+        "tom": null,
+        "crash": null,
+        "ride": null,
+        "other": null
+      },
+      "song_metrics_ref": "drumscribe/experiments/results-open-hat-hf-coverage.json",
+      "result_commit": "0de3be65e5aac7c24e644b74e93ea4ae80a80bb2",
       "script": null,
       "script_commit": null
     },
@@ -117677,21 +117840,21 @@
       "summary": {
         "closed": {
           "tp": 2357,
-          "predicted": 2671,
+          "predicted": 2667,
           "reference": 2923,
-          "precision": 0.8824410333208537,
+          "precision": 0.8837645294338208,
           "recall": 0.8063633253506671,
-          "f1": 0.842688594923132
+          "f1": 0.8432915921288014
         },
         "open": {
-          "tp": 569,
-          "predicted": 736,
+          "tp": 571,
+          "predicted": 738,
           "reference": 1179,
-          "precision": 0.7730978260869565,
-          "recall": 0.48261238337574214,
-          "f1": 0.5942558746736293
+          "precision": 0.7737127371273713,
+          "recall": 0.48430873621713316,
+          "f1": 0.5957224830464267
         },
-        "macroF1": 0.7184722347983806
+        "macroF1": 0.719507037587614
       },
       "part_f1": {
         "kick": null,
@@ -117704,7 +117867,7 @@
         "other": null
       },
       "song_metrics_ref": "drumscribe/experiments/results-v2-browser-open-hat.json",
-      "result_commit": "d525a7bdfb655d0a02e590ed345103e19d9c3a96",
+      "result_commit": "c8e4c1ec5b182edcc185fb14d5e81606abfcb7ea",
       "script": "drumscribe/experiments/evaluate_v2.py",
       "script_commit": "b37e36d46d60508ee0670f2daa1db4ac8c0c1a56"
     },
@@ -117718,13 +117881,13 @@
       "component_leader": true,
       "params": null,
       "summary": {
-        "tp": 7462,
-        "predicted": 8193,
+        "tp": 7492,
+        "predicted": 8225,
         "reference": 10086,
         "precision": 0.911,
-        "recall": 0.74,
-        "f1": 0.816,
-        "kick_to_snare": 2,
+        "recall": 0.743,
+        "f1": 0.818,
+        "kick_to_snare": 3,
         "snare_to_kick": 28,
         "by_group": {
           "kick": {
@@ -117734,16 +117897,16 @@
             "count_ratio": 1.02
           },
           "snare": {
-            "tp": 1274,
-            "predicted": 1390,
+            "tp": 1301,
+            "predicted": 1421,
             "reference": 1470,
-            "count_ratio": 0.946
+            "count_ratio": 0.967
           },
           "hat": {
-            "tp": 3117,
-            "predicted": 3407,
+            "tp": 3120,
+            "predicted": 3405,
             "reference": 4102,
-            "count_ratio": 0.831
+            "count_ratio": 0.83
           },
           "tom": {
             "tp": 69,
@@ -117771,9 +117934,9 @@
           },
           "pedal_hat": {
             "tp": 136,
-            "predicted": 187,
+            "predicted": 190,
             "reference": 676,
-            "count_ratio": 0.277
+            "count_ratio": 0.281
           }
         },
         "timing": {
@@ -117789,16 +117952,16 @@
       },
       "part_f1": {
         "kick": 0.9625707504108089,
-        "snare": 0.8909090909090909,
-        "hat": 0.8302037554934079,
-        "pedal_hat": 0.31517960602549244,
+        "snare": 0.9000345901072293,
+        "hat": 0.8312241907552951,
+        "pedal_hat": 0.3140877598152425,
         "tom": 0.7840909090909091,
         "crash": 0.45601436265709155,
         "ride": 0.24611708482676226,
         "other": 0.0
       },
       "song_metrics_ref": "drumscribe/experiments/results-v2-browser.json",
-      "result_commit": "51e8fd085df4ffdb6d349b3b1b6bc2b74a294f83",
+      "result_commit": "c8e4c1ec5b182edcc185fb14d5e81606abfcb7ea",
       "script": "drumscribe/experiments/evaluate_v2.py",
       "script_commit": "b37e36d46d60508ee0670f2daa1db4ac8c0c1a56"
     },
