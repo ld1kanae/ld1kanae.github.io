@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "experiment": "rhythm-prior-v24",
+  "date": "2026-09-23",
+  "sources": {
+    "lucerne_probability_table": "Senn et al. 2023, A predictive coding approach to modelling the perceived complexity of popular music drum patterns, Table 3",
+    "lucerne_library": "https://www.grooveresearch.ch/",
+    "open_music_theory": "https://viva.pressbooks.pub/openmusictheory/chapter/drumbeats/",
+    "magenta_gmd": "https://magenta.tensorflow.org/datasets/groove"
+  },
+  "prior": {
+    "kick": [
+      0.914,
+      0.033,
+      0.32,
+      0.192,
+      0.184,
+      0.063,
+      0.246,
+      0.162,
+      0.641,
+      0.065,
+      0.454,
+      0.206,
+      0.191,
+      0.133,
+      0.238,
+      0.108
+    ],
+    "snare": [
+      0.039,
+      0.102,
+      0.057,
+      0.04,
+      0.887,
+      0.084,
+      0.074,
+      0.187,
+      0.082,
+      0.209,
+      0.084,
+      0.056,
+      0.847,
+      0.085,
+      0.145,
+      0.187
+    ]
+  },
+  "five_song_reference_correlation_to_prior": {
+    "arcaround": {
+      "kick": 0.5902552459288961,
+      "snare": 0.9800551045795646
+    },
+    "diamondvirgin": {
+      "kick": 0.6400211379426601,
+      "snare": 0.11823447435819821
+    },
+    "kaiju": {
+      "kick": 0.8639859437427345,
+      "snare": 0.9729400132394804
+    },
+    "nanairo": {
+      "kick": 0.5770532640119551,
+      "snare": 0.8214417451826326
+    },
+    "ray": {
+      "kick": 0.5819527698200434,
+      "snare": 0.9669173636715341
+    },
+    "mean": {
+      "kick": 0.6506536722892579,
+      "snare": 0.771917740206282
+    }
+  },
+  "direct_reclassification_test": {
+    "description": "Existing generated kick/snare notes were relabeled only by metric-position prior while preserving near-simultaneous kick+snare pairs. This is a diagnostic, not the adopted algorithm.",
+    "tp_delta_ratio4": {
+      "arcaround": -99,
+      "diamondvirgin": -229,
+      "kaiju": -95,
+      "nanairo": -144,
+      "ray": -154,
+      "total": -721
+    },
+    "decision": "reject"
+  },
+  "downbeat_four_candidate_test": {
+    "description": "Using the current real-browser generated MIDI events, choose among four beat-phase offsets with the corpus prior alone.",
+    "prior_alone_correct": 4,
+    "total": 5,
+    "missed": "ray (beat 1 vs beat 3 symmetry)",
+    "current_acoustic_selector_correct": 5,
+    "gated_design_correct": 5,
+    "decision": "use prior only to break near-ties in low_fallback"
+  },
+  "reference_window_test": {
+    "description": "Exact downbeat offset selected from chart.mid using only the corpus prior; 4/4 bars only.",
+    "one_bar": {
+      "correct": 517,
+      "total": 742,
+      "accuracy": 0.6967654986522911
+    },
+    "eight_bar": {
+      "correct": 69,
+      "total": 89,
+      "accuracy": 0.7752808988764045
+    },
+    "sixteen_bar": {
+      "correct": 35,
+      "total": 44,
+      "accuracy": 0.7954545454545454
+    },
+    "interpretation": "Useful supporting evidence, but not sufficient alone because common grooves are often symmetric between beats 1 and 3."
+  }
+}
