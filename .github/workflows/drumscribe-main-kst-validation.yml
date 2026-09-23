@@ -1,0 +1,42 @@
+name: DrumScribe main KST browser validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/adtof.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/app.js"
+      - "drumscribe/index.html"
+      - "drumscribe/models/egmd-kst-reclassifier-v4.json"
+      - ".github/workflows/drumscribe-main-kst-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate current main MIDI in real Chromium
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Score current main MIDI
+        run: python drumscribe/experiments/compare_browser.py
