@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "date": "2026-09-24",
+  "purpose": "Tom pitch subdivision v71; audio-only prediction with chart.mid scoring-only",
+  "production": {
+    "method": "resonance-absolute-threshold-v3",
+    "thresholds_hz": [
+      110,
+      145,
+      210
+    ],
+    "output_notes": [
+      41,
+      45,
+      47,
+      50
+    ],
+    "commit": "f2efa583073de1044d7bb0b1355ee5d1bfa9dfc7",
+    "fresh_browser_run": 35916925487,
+    "matched_tom_hits": 70,
+    "exact_pitch_matches": 54,
+    "exact_pitch_accuracy": 0.7714285714285715,
+    "onset_group": {
+      "tp": 70,
+      "predicted": 85,
+      "reference": 92,
+      "count_ratio": 0.924
+    },
+    "confusion": {
+      "41->41": 31,
+      "41->45": 7,
+      "45->41": 5,
+      "45->45": 15,
+      "47->45": 2,
+      "47->47": 6,
+      "50->41": 2,
+      "50->50": 2
+    }
+  },
+  "history": {
+    "fixed45": {
+      "matches": 20,
+      "total": 70,
+      "accuracy": 0.2857142857142857
+    },
+    "song_relative_cluster_v1": {
+      "run": 35909848191,
+      "matches": 33,
+      "total": 70,
+      "accuracy": 0.4714285714285714
+    },
+    "absolute_190_v2": {
+      "run": 35916142085,
+      "matches": 50,
+      "total": 70,
+      "accuracy": 0.7142857142857143
+    },
+    "absolute_210_v3": {
+      "run": 35916925487,
+      "matches": 54,
+      "total": 70,
+      "accuracy": 0.7714285714285715
+    }
+  },
+  "detected_event_candidate_runs": {
+    "k3_mapping_run": 35915249181,
+    "absolute_mapping_run": 35915612787,
+    "high_boundary_sweep_run": 35916487786,
+    "k3_scores": {
+      "41_45_50": 0.463768115942029,
+      "41_45_47": 0.5217391304347826,
+      "41_47_50": 0.37681159420289856,
+      "45_47_50": 0.2028985507246377
+    },
+    "high_boundary_scores": {
+      "190": 0.7101449275362319,
+      "200": 0.7101449275362319,
+      "210": 0.7681159420289855,
+      "220": 0.7536231884057971
+    }
+  },
+  "isolated_reference_onset_reanalysis": {
+    "n": 92,
+    "previous_cluster_accuracy": 0.5652173913043478,
+    "absolute_190_accuracy": 0.6304347826086957,
+    "absolute_210_accuracy": 0.6521739130434783
+  },
+  "decision": "Keep resonance-absolute-threshold-v3 with 110/145/210 Hz boundaries. Do not change tom onset detection.",
+  "next_targets": [
+    "Test secondary acoustic descriptors only for low/high ambiguous cases while preserving v3 as baseline.",
+    "Verify whether an app-side arrangement-rescued tom bypasses assignTomPitches before changing that path."
+  ]
+}
