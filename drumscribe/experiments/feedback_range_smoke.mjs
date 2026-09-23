@@ -48,6 +48,20 @@ if(state.popoverHidden!==false) throw new Error('review popover did not open');
 if(!state.apiSelection || !(state.apiSelection.end>state.apiSelection.start)) throw new Error('review selection was not created');
 if(!state.range || state.range.includes('未選択')) throw new Error('selection label was not updated');
 if(String(state.hint||'').includes('拍')) throw new Error('review range is still beat-snapped');
+const nearestBeatDistance=value=>Math.min(...state.beatTimes.map(t=>Math.abs(t-value)));
+if(state.beatTimes.length>2 && nearestBeatDistance(state.apiSelection.start)<.002 && nearestBeatDistance(state.apiSelection.end)<.002){
+  throw new Error('both review edges still align to beat grid');
+}
+
+await page.click('#clearSelection');
+const clickX=box.x+box.width*.37;
+const rawClickTime=await page.evaluate(x=>window.DrumScribeTimeline.clientXToTime(x),clickX);
+const expectedBeat=await page.evaluate(t=>window.DrumScribeTimeline.snapTimeToBeat(t),rawClickTime);
+await page.mouse.click(clickX,y);
+await page.waitForTimeout(100);
+const snappedTime=await page.evaluate(()=>window.DrumScribeTimeline.getCurrentTime());
+console.log('SEEK_SNAP',JSON.stringify({rawClickTime,expectedBeat,snappedTime}));
+if(Math.abs(snappedTime-expectedBeat)>.003) throw new Error('manual timeline seek did not snap to beat');
 if(errors.length) throw new Error(errors.join(' | '));
 
 await browser.close();
