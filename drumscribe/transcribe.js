@@ -1,7 +1,8 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
-import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';\nimport {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
+import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';
+import {rescueRideOpenV57} from './hat-context-v57.js?v=20260924-production-v58';\nimport {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
@@ -1103,6 +1104,20 @@ export async function transcribe(decoded,report=()=>{},options={}){
   const hatSequence=await repairAlternatingHiHats(decoded,pruned,adtofBroadMetal,bpm,barInfo.phaseSec,options.hatSequenceVariant||'inversion-guarded-rescue');
   pruned=hatSequence.events;
   adtofInfo.hatSequence=hatSequence.info;
+
+  // v58 production: synchronized-corpus high-confidence Ride -> Open-HH rescue.
+  // Runtime uses audio + generated candidates only. It is intentionally gated:
+  // fewer than 24 Ride candidates => exact no-op; otherwise only p>=.99 moves.
+  // This stage changes metal articulation only and never creates/deletes/retimes
+  // kick, snare or tom events.
+  const hatContextVariant=options.hatContextVariant||'global-ride-rescue-v57';
+  if(hatContextVariant==='global-ride-rescue-v57'){
+    const hatContext=await rescueRideOpenV57(decoded,pruned,{threshold:.99,minRideCandidates:24});
+    pruned=hatContext.events;
+    adtofInfo.hatContextV57=hatContext.info;
+  }else{
+    adtofInfo.hatContextV57={enabled:false,variant:hatContextVariant};
+  }
 
   // v55: explicit Crash-vs-Hat-family competition.
   // This stage is deliberately after the existing two-hand allocation,
