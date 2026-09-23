@@ -246,7 +246,11 @@ def tier4(n):
     return 50
 
 def score_pred(y,p):
-    # Production target is four robust tom tiers. E-GMD 43 maps to low/floor 41\n    # and 48 maps to the mid/high-mid 47 tier.\n    y=np.asarray([tier4(int(x)) for x in y],int)\n    p=np.asarray([tier4(int(x)) for x in p],int)\n    conf=Counter((int(a),int(b)) for a,b in zip(y,p))
+    # Production target is four robust tom tiers. E-GMD 43 maps to low/floor 41
+    # and 48 maps to the mid/high-mid 47 tier.
+    y=np.asarray([tier4(int(x)) for x in y],int)
+    p=np.asarray([tier4(int(x)) for x in p],int)
+    conf=Counter((int(a),int(b)) for a,b in zip(y,p))
     exact=float(np.mean(y==p)) if len(y) else 0.
     tier=float(np.mean([tier4(a)==tier4(b) for a,b in zip(y,p)])) if len(y) else 0.
     by={}
