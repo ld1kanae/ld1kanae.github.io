@@ -1,5 +1,5 @@
 import {transcribe} from './transcribe.js?v=20260923-openhat-v42';
-import {analyzeSections,rescoreKstByArrangement,arrangementKstPolicyV39D} from './arrangement/index.js?v=20260923-arrangement-kst-v41';
+import {analyzeSections,rescoreKstByArrangement,arrangementKstPolicyCurrent} from './arrangement/index.js?v=20260923-arrangement-kst-v47';
 import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
 import {inferBars,parseBeatThis} from './meter.js';
@@ -121,7 +121,7 @@ $('analyze').addEventListener('click',async()=>{
           numerator,
           denominator,
           slotPrior,
-          policy:arrangementKstPolicyV39D
+          policy:arrangementKstPolicyCurrent
         });
         events=rescored.events;
         arrangementInfo={
