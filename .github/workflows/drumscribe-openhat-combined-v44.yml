@@ -28,7 +28,7 @@ jobs:
         with: {python-version: "3.12"}
       - name: Install dependencies
         run: |
-          pip install mido
+          pip install mido numpy
           npm install --no-save playwright
           npx playwright install --with-deps chromium
       - name: Serve repository
