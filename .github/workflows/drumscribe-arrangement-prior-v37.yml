@@ -1,0 +1,58 @@
+name: DrumScribe arrangement prior v37
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/arrangement/**"
+      - "drumscribe/experiments/analyze_arrangement_five.mjs"
+      - "drumscribe/experiments/evaluate_arrangement_prior.py"
+      - ".github/workflows/drumscribe-arrangement-prior-v37.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install experiment dependencies
+        run: pip install mido remotezip
+      - name: Extract offvocal structural families
+        run: node drumscribe/experiments/analyze_arrangement_five.mjs
+      - name: Evaluate structure priors and GMD general priors
+        run: python drumscribe/experiments/evaluate_arrangement_prior.py
+      - name: Commit reproducible results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-arrangement-structure-v37.json
+          git add drumscribe/experiments/results-arrangement-prior-v37.json
+          git add drumscribe/experiments/ARRANGEMENT_PRIOR_V37.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record arrangement prior v37 results"
+            git push
+          fi
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-arrangement-prior-v37
+          path: |
+            drumscribe/experiments/results-arrangement-structure-v37.json
+            drumscribe/experiments/results-arrangement-prior-v37.json
+            drumscribe/experiments/ARRANGEMENT_PRIOR_V37.md
+          retention-days: 14
