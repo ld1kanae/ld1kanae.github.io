@@ -1,0 +1,55 @@
+name: DrumScribe GMD triplet held-out validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/rhythm-grid.js"
+      - "drumscribe/midi.js"
+      - "drumscribe/app.js"
+      - "drumscribe/experiments/prepare_gmd_triplet_heldout.py"
+      - "drumscribe/experiments/browser_validate_gmd_triplet.mjs"
+      - "drumscribe/experiments/score_gmd_triplet_heldout.py"
+      - ".github/workflows/drumscribe-gmd-triplet-heldout.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install remotezip mido
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Prepare held-out GMD audio
+        run: python drumscribe/experiments/prepare_gmd_triplet_heldout.py
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Transcribe held-out audio in real Chromium
+        run: node drumscribe/experiments/browser_validate_gmd_triplet.mjs
+      - name: Score triplet branch
+        run: python drumscribe/experiments/score_gmd_triplet_heldout.py
+      - name: Upload result artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-gmd-triplet-heldout-v32
+          path: |
+            drumscribe/experiments/results-gmd-triplet-heldout-v32.json
+            drumscribe/experiments/gmd-triplet-heldout-v32/manifest.json
+            drumscribe/experiments/gmd-triplet-heldout-v32/generated/*.json
+            drumscribe/experiments/gmd-triplet-heldout-v32/generated/*.mid
+          retention-days: 14
