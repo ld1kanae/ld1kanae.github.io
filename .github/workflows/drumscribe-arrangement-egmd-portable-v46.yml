@@ -38,8 +38,16 @@ jobs:
             echo "No result changes"
           else
             git commit -m "drumscribe: record portable E-GMD residual v46 results"
-            git pull --rebase origin main
-            git push
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin main
+              if git push; then
+                break
+              fi
+              if [ "$attempt" = "4" ]; then
+                exit 1
+              fi
+              sleep 2
+            done
           fi
       - uses: actions/upload-artifact@v4
         with:
