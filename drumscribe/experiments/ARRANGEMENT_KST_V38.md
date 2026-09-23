@@ -14,29 +14,29 @@ GMD slot prior: 228 train files / 13550 4/4 bars.
 
 | segmentation | policy | KST F1 | delta | kick delta | snare delta | tom delta |
 |---|---|---:|---:|---:|---:|---:|
-| conservative | H1_strict_family | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| conservative | H2_family_consensus | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| conservative | H3_family_gmd | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| balanced | H1_strict_family | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| balanced | H2_family_consensus | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| balanced | H3_family_gmd | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| sensitive | H1_strict_family | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| sensitive | H2_family_consensus | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| sensitive | H3_family_gmd | 0.8581 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+| conservative | H1_strict_family | 0.9382 | 0.0005 | 0.0000 | 0.0015 | 0.0000 |
+| conservative | H2_family_consensus | 0.9377 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+| conservative | H3_family_gmd | 0.9382 | 0.0005 | 0.0000 | 0.0016 | 0.0000 |
+| balanced | H1_strict_family | 0.9384 | 0.0006 | 0.0000 | 0.0020 | 0.0000 |
+| balanced | H2_family_consensus | 0.9381 | 0.0004 | 0.0000 | 0.0012 | 0.0000 |
+| balanced | H3_family_gmd | 0.9384 | 0.0007 | 0.0000 | 0.0020 | 0.0000 |
+| sensitive | H1_strict_family | 0.9389 | 0.0011 | 0.0008 | 0.0016 | 0.0069 |
+| sensitive | H2_family_consensus | 0.9386 | 0.0009 | 0.0006 | 0.0012 | 0.0069 |
+| sensitive | H3_family_gmd | 0.9389 | 0.0011 | 0.0006 | 0.0020 | 0.0069 |
 
 ## Simple three-song comparison (diamondvirgin / nanairo / ray)
 
 | segmentation | policy | KST F1 | delta | kick delta | snare delta | tom delta |
 |---|---|---:|---:|---:|---:|---:|
-| conservative | H1_strict_family | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| conservative | H2_family_consensus | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| conservative | H3_family_gmd | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| balanced | H1_strict_family | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| balanced | H2_family_consensus | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| balanced | H3_family_gmd | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| sensitive | H1_strict_family | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| sensitive | H2_family_consensus | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| sensitive | H3_family_gmd | 0.8623 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+| conservative | H1_strict_family | 0.9464 | 0.0007 | 0.0000 | 0.0021 | 0.0000 |
+| conservative | H2_family_consensus | 0.9457 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+| conservative | H3_family_gmd | 0.9465 | 0.0008 | 0.0000 | 0.0022 | 0.0000 |
+| balanced | H1_strict_family | 0.9466 | 0.0010 | 0.0000 | 0.0027 | 0.0000 |
+| balanced | H2_family_consensus | 0.9463 | 0.0006 | 0.0000 | 0.0017 | 0.0000 |
+| balanced | H3_family_gmd | 0.9467 | 0.0010 | 0.0000 | 0.0028 | 0.0000 |
+| sensitive | H1_strict_family | 0.9466 | 0.0010 | 0.0003 | 0.0022 | 0.0000 |
+| sensitive | H2_family_consensus | 0.9465 | 0.0008 | 0.0003 | 0.0017 | 0.0000 |
+| sensitive | H3_family_gmd | 0.9466 | 0.0010 | 0.0000 | 0.0027 | 0.0000 |
 
 ## Guardrails
 
