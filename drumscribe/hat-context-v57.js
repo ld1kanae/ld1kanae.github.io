@@ -181,6 +181,10 @@ function robustZ01(values){
   const scale=Math.max(1e-6,1.4826*mad);
   return Float64Array.from(values,v=>Math.max(-8,Math.min(8,(Number(v)-med)/scale)));
 }
+function fusionLogitV61(p){
+  const q=Math.max(1e-6,Math.min(1-1e-6,Number(p)||0));
+  return Math.log(q/(1-q));
+}
 function fusionTreeProbability(tree,x){
   let node=0;
   while(tree.left[node]!==-1){
@@ -232,7 +236,7 @@ export async function rescoreHatArticulationFusionV61(decoded,events,options={})
       ctx_rank:contextRank[i],
       base_z:baseZ[i],
       ctx_z:contextZ[i],
-      logit_diff:logit(context[i])-logit(base[i]),
+      logit_diff:fusionLogitV61(context[i])-fusionLogitV61(base[i]),
       next_gap:Number.isFinite(nt)?Math.max(0,Math.min(1.5,nt-e.time)):1.5,
       score:Number(e.score)||0,
       confidence:Number(e.confidence)||0,
