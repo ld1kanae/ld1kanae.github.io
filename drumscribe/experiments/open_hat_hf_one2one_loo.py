@@ -31,6 +31,7 @@ from sklearn.ensemble import ExtraTreesClassifier
 ROOT=Path(".");EXP=ROOT/"drumscribe/experiments"
 SONGS=["arcaround","diamondvirgin","kaiju","nanairo","ray"]
 BASE_THRESHOLD=.575
+SELFCAL_CACHE={}
 THRESHOLDS=[.55,.62,.68,.74,.80,.85,.89,.92,.95,.97,.985,.995,1.01]
 
 def loadmod(name,path):
@@ -169,9 +170,13 @@ def score_selfcal(d,s,bm,th):
     hp=p1(bm,d[s]["X"]["timbre_norm"])
     bo=[t for t,p in zip(d[s]["hats"],hp) if p>=BASE_THRESHOLD]
     bc=[t for t,p in zip(d[s]["hats"],hp) if p<BASE_THRESHOLD]
-    sm,info=pseudo_selfcal(d,s,bm);h=d[s]["hf"]
-    if sm is None:rp=np.zeros(len(h["times"]))
-    else:rp=p1(sm,h["Xd"][:,:26])
+    h=d[s]["hf"];key=(id(bm),s)
+    if key not in SELFCAL_CACHE:
+        sm,anchor=pseudo_selfcal(d,s,bm)
+        rp=np.zeros(len(h["times"])) if sm is None else p1(sm,h["Xd"][:,:26])
+        SELFCAL_CACHE[key]=(rp,dict(anchor))
+    rp,anchor=SELFCAL_CACHE[key]
+    info=dict(anchor)
     rescue=[t for t in nms(h["times"],rp,th) if not near_times(bo,t,.060)]
     met=oh.articulation_metrics(sorted(bo+rescue),bc,d[s]["refs"])
     info.update({"baseOpen":len(bo),"rescue":len(rescue),"maxProb":float(np.max(rp)) if len(rp) else 0.,
