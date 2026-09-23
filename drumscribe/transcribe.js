@@ -1,7 +1,6 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
-import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';
 import {rescueRideOpenV57,rescoreHatArticulationFusionV61,rescoreHatSyncCandidateV66} from './hat-context-v57.js?v=20260924-sync-candidate-v66';
 import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
@@ -1100,13 +1099,10 @@ export async function transcribe(decoded,report=()=>{},options={}){
   pruned=openHat.events;
   adtofInfo.openHat=openHat.info;
 
-  // Review-derived alternating-eighth repair is research-only.
-  // Production default is OFF: a specific reviewed song must never define
-  // the general Open/Closed HH algorithm. The module remains callable only
-  // from explicit experiments.
-  const hatSequence=await repairAlternatingHiHats(decoded,pruned,adtofBroadMetal,bpm,barInfo.phaseSec,options.hatSequenceVariant||'off');
-  pruned=hatSequence.events;
-  adtofInfo.hatSequence=hatSequence.info;
+  // The review-trained alternating hi-hat repair was removed from the
+  // production path. It is retained only in experiments/archive for history.
+  // Production Open/Closed decisions must come from general acoustic models.
+  adtofInfo.hatSequence={enabled:false,variant:'removed-from-production'};
 
   // v58 production: synchronized-corpus high-confidence Ride -> Open-HH rescue.
   // Runtime uses audio + generated candidates only. It is intentionally gated:
