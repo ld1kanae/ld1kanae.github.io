@@ -4,12 +4,12 @@ Fresh Chromium validation of the reusable arrangement rescoring module. Generate
 
 | variant | KST F1 | delta | kick delta | snare delta | tom delta | all F1 delta | rescued | hand-grid delta | meter changes |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| V39_A_runtime | 0.938852 | 0.001118 | 0.000757 | 0.001520 | 0.006870 | 0.000581 | 9 | 0 | none |
-| V39_D_runtime | 0.938852 | 0.001118 | 0.000568 | 0.001899 | 0.006870 | 0.000581 | 9 | 0 | none |
-| V39_D_no_hand_guard | 0.938852 | 0.001118 | 0.000568 | 0.001899 | 0.006870 | 0.000581 | 9 | 0 | none |
+| V39_A_runtime | 0.938852 | 0.001118 | 0.000757 | 0.001520 | 0.006870 | 0.000588 | 9 | 0 | none |
+| V39_D_runtime | 0.938852 | 0.001118 | 0.000568 | 0.001899 | 0.006870 | 0.000588 | 9 | 0 | none |
+| V39_D_no_hand_guard | 0.938852 | 0.001118 | 0.000568 | 0.001899 | 0.006870 | 0.000588 | 9 | 0 | none |
 
 Baseline KST F1: 0.937734
-Baseline all-class F1: 0.818306
+Baseline all-class F1: 0.804107
 
 Guardrails:
 - chart.mid is scoring-only and is never loaded in the browser prediction stage.
