@@ -1,5 +1,41 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 Arrangement prior v37 — A/A' repetition evidence
+
+5曲の `offvocal.mp3` を `arrangement/` で構造解析し、`chart.mid` は解析後の評価にのみ使用。
+
+確定結果:
+- A/B/C はsemantic labelではなく構造family。再登場は A' / A''。
+- conservative segmentation:
+  - same-family K/S/T F1 0.6733
+  - cross-family K/S/T F1 0.4160
+  - repeat margin **+0.2573**
+- sensitive segmentation:
+  - same-family K/S/T F1 0.6781
+  - cross-family K/S/T F1 0.3898
+  - repeat margin **+0.2883**
+- balanced segmentationは K/S/T repeat margin **-0.0961** で、区切り/cluster精度が重要。
+- GMD train 230 files / 13,573 bars:
+  - adjacent-bar full-pattern F1 0.6664
+  - same-style cross-file first-bar F1 0.3713
+  - repetition margin **+0.2951**
+- GMDではCrashのbeat-1率はbeats 2–4平均の約3.14倍。
+- しかし5曲のoffvocal構造境界そのものではCrash/Cymbal liftは1未満。
+  - conservative boundary crash lift 0.5499
+  - balanced 0.8791
+  - sensitive 0.7551
+
+採否:
+- **採用候補**: A/A' same-family repetitionを低信頼K/S/T候補のrescoring証拠として使う。
+- **不採用**: 「offvocal構造境界だからCrashを追加する」規則。
+- ノートの強制コピーは行わない。必ず音響candidateが存在する場合だけrescoringする。
+
+詳細:
+- `experiments/results-arrangement-structure-v37.json`
+- `experiments/results-arrangement-prior-v37.json`
+- `experiments/ARRANGEMENT_PRIOR_V37.md`
+
+
 > **AI / 別チャット向けの最小コンテキスト。まずこのファイルだけ読む。**
 >
 > 内容確認日: 2026-09-23。**commit SHAを固定の正解とせず、毎回「1. 最初に現行を確定する手順」で `main` HEADから再判定する。**
