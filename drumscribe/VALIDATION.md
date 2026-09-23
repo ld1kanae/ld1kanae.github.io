@@ -2509,3 +2509,96 @@ E-GMD v4 external training candidate counts:
 詳細:
 - `experiments/ARRANGEMENT_EGMD_FUSION_V44.md`
 - `experiments/results-arrangement-egmd-fusion-v44.json`
+
+
+---
+
+## 2026-09-23: Arrangement + E-GMD K/S/T v44-v48 — residual Snare production採用
+
+目的:
+- E-GMD v4で大量学習した外部K/S/T acoustic probabilityを、現在のA/A' arrangement rescoringへ安全に追加できるか検証。
+- E-GMD v4は18,936低閾値candidate（Kick 4,422 / Snare 6,580 / Tom 7,934）から学習済み。DruMaster chartは外部モデル学習に使用しない。
+
+### v44 — 4方式比較
+
+- fixed v39D: K/S/T F1 0.938852、9 TP / 0 FP。
+- E-GMD acoustic-only: 0.933968。Snare/Tom悪化のため不採用。
+- arrangement + E-GMD mandatory gate: 0.938231。正しいfixed rescueを落とすため不採用。
+- Extra Trees fusion LOOCV: 0.938012。baselineより上だがfixed未満。
+
+E-GMD probabilityを既存A/A'救済の必須条件にしてはいけない。実際、fixed v39Dの正解Kick/SnareにはE-GMD threshold未満のものが複数存在した。
+
+### v45 — fixed後のresidual Snare
+
+fixed v39Dを凍結し、その後に残るSnare候補63件（recoverable positive 9）だけを追加モデル対象にした。
+
+| 方式 | K/S/T F1 | fixed比 | total TP/FP |
+|---|---:|---:|---:|
+| Logistic residual | 0.937865 | -0.000987 | 9 / 9 |
+| **Extra Trees residual** | **0.939100** | **+0.000248** | **11 / 0** |
+| interpretable LOOCV rule | 0.938866 | +0.000014 | 10 / 1 |
+
+Extra Trees held-out追加正解は arcaround 204.44s と ray 247.74s のSnare。
+
+### v46 — portable residual gate
+
+v45で観測した特徴をJSへ移植可能な3条件へ圧縮。
+
+R1:
+- E-GMD Snare probability >= 0.93
+- acoustic confidence >= 0.55
+- GMD Snare slot lift >= 1.65
+
+fixed v39Dにadditive-onlyで適用。
+
+結果:
+- K/S/T F1 **0.939224**
+- fixed比 **+0.000372**
+- Snare fixed比 **+0.001136**
+- total **12 TP / 0 FP**
+- residual Snare追加3音: arcaround 204.44s、ray 67.74s、ray 247.74s
+
+注意: R1ルール族はv45で同じ5曲を観察した後に仮定した。したがってこの数値はdevelopment-set内部検証であり、未知曲への独立generalizationを示さない。
+
+### v47 — fresh Chromium / normal MIDI export
+
+| 指標 | baseline | V39D | V46R1 |
+|---|---:|---:|---:|
+| K/S/T F1 | 0.937734 | 0.938852 | **0.939224** |
+| Kick F1 | 0.962571 | 0.963139 | **0.963139** |
+| Snare F1 | 0.900035 | 0.901934 | **0.903070** |
+| Tom F1 | 0.784091 | 0.790960 | **0.790960** |
+| All-class F1 | 0.818306 | 0.818886 | **0.819080** |
+
+Guardrail:
+- rescued 12
+- max grid residual ticks 0
+- hand-grid violations 0
+- meter changed songs none
+- two-hand guardなしvariantと同じノート結果。guardはproductionで維持。
+
+### v48 — actual production app path
+
+`index.html -> app.js` をfresh Chromiumで実際に操作し、5曲の検証データ選択、offvocal自動読込、採譜、MIDI downloadを実行。
+
+- production policy: `family-gmd-plus-egmd-residual-v46r1`
+- K/S/T F1 **0.939224**
+- all-class F1 **0.819080**
+- rescued 12
+- E-GMD residual Snare 3
+- grid residual 0
+- hand-grid violations 0
+- meter changes vs v47 none
+- exported MIDI TP/pred/refはv47 V46_R1_runtimeと完全一致。
+
+採用:
+- `arrangementKstPolicyCurrent` をV46R1へ更新。
+- E-GMD residualはSnare限定。Kick/Tomはfixed v39Dの判断をそのまま維持。
+- offvocal/伴奏未指定時はこの補助は動作せず、従来baselineを維持。
+
+詳細:
+- `experiments/results-arrangement-egmd-fusion-v44.json`
+- `experiments/results-arrangement-egmd-residual-v45.json`
+- `experiments/results-arrangement-egmd-portable-v46.json`
+- `experiments/results-arrangement-kst-runtime-v47.json`
+- `experiments/results-arrangement-app-v48.json`
