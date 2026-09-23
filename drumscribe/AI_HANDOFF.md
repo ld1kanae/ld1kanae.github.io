@@ -1156,3 +1156,29 @@ DrumSep contextual + rhythmic-grid residual:
 - MIDI preview visualization is four lanes, top to bottom: シンバル / ハイハット・ライド / スネア・タム / バスドラム.
 - Note colors follow the DruMaster performance-page palette where applicable: snare #ff3d73, cymbal #ffd45a, hi-hat #52dfcf, ride #63d66f, kick #aeb9c7; toms are unified to requested purple #d76bff.
 - Feedback range browser smoke test now verifies free-drag selection and beat-snapped click seeking, and the workflow uses concurrency cancellation so only the latest smoke run matters.
+
+
+---
+
+## 2026-09-23 Open/Closed Hi-Hat production v47
+
+production既定を `ride-open-decay-rescue` に更新。
+
+採用内容:
+- 5–18 kHz帯を中心とした局所減衰・tail persistenceをborderline 42/46判定に使用
+- GMD aggregate transition priorでopen→open runをrecall方向にのみ救済
+- Ride判定を重視しない要件に基づき、残存Ride候補をOpen HHへ丸める
+- A/A'による42/46 rescoringはv43で悪化したためproduction不採用
+- onset追加・削除は行わず、hat-family articulationのみ変更
+
+5曲fresh Chromium:
+- HH macro F1 0.719507 -> **0.745832** (+0.026325)
+- Closed F1 0.843292 -> **0.843895**
+- Open F1 0.595722 -> **0.647770**
+- collapsed hat/ride onset F1 0.812081 -> **0.817466**
+- Kick/Tom非退行、同一fresh run基準でK/S/Tへの悪影響なし
+
+注意:
+- strict Ride F1は0になる。これはRideをOpenへ丸める明示要件に沿った設計判断。
+- `OPENHAT_DEFAULT_VS_COMBINED_V46.md` のstrict metal macro guardrailは、Rideを保持する用途ではcombinedを採用しないという意味。現在の用途ではRide識別を優先しない。
+- 完全同期Diamond Virgin pairはopen→open教師468件を含む。保存場所は `experiments/reference-sync/README.md`。

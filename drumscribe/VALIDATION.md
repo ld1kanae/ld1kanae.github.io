@@ -2637,3 +2637,23 @@ C2追加TP:
 詳細:
 - `experiments/ARRANGEMENT_DOMAIN_CALIBRATION_V45.md`
 - `experiments/results-arrangement-domain-calibration-v45.json`
+
+
+---
+
+## 2026-09-23 Open/Closed Hi-Hat production v47
+
+採用variant: `ride-open-decay-rescue`
+
+| 指標 | baseline | adopted | delta |
+|---|---:|---:|---:|
+| HH macro F1 | 0.719507 | **0.745832** | **+0.026325** |
+| Closed HH F1 | 0.843292 | **0.843895** | **+0.000604** |
+| Open HH F1 | 0.595722 | **0.647770** | **+0.052047** |
+| collapsed HH/Ride onset F1 | 0.812081 | **0.817466** | **+0.005385** |
+
+- A/A' articulation rescoringはHH macroを悪化させたため不採用。
+- Ride識別を捨ててOpen HHへ丸める。strict Ride F1低下は仕様上許容。
+- onsetは増減せず、既存hat/ride onsetのarticulationのみ変更。
+- 詳細: `experiments/results-openhat-combined-v44.json`, `experiments/OPENHAT_DEFAULT_VS_COMBINED_V46.md`
+- 完全同期対照データ概要: `experiments/reference-sync/README.md`
