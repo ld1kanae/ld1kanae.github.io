@@ -145,6 +145,10 @@ export function rescoreKstByArrangement(baselineEvents,diagnostics,arrangement,o
         time,
         note:NOTE_OF[group],
         group,
+        ...(group==='tom'&&[41,45,47,50].includes(Number(candidate.tomNote))?{
+          diagnosticTomNote:Number(candidate.tomNote),
+          diagnosticTomPitchHz:Number(candidate.tomPitchHz)||0
+        }:{}),
         velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(Math.max(0,Number(candidate.score)||0))))),
         score:Number(candidate.score)||0,
         confidence,
@@ -246,7 +250,11 @@ export function rescoreKstByArrangement(baselineEvents,diagnostics,arrangement,o
         family:e.arrangementFamily,label:e.arrangementLabel,
         support:e.arrangementSupport,eligible:e.arrangementEligible,
         supportRate:e.arrangementSupportRate,slot:e.arrangementSlot,
-        gmdSlotLift:e.gmdSlotLift
+        gmdSlotLift:e.gmdSlotLift,
+        ...(e.group==='tom'&&Number.isFinite(Number(e.diagnosticTomNote))?{
+          diagnosticTomNote:Number(e.diagnosticTomNote),
+          diagnosticTomPitchHz:Number(e.diagnosticTomPitchHz)||0
+        }:{})
       }))
     }
   };
