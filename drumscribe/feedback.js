@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const $=id=>document.getElementById(id),canvas=$('timeline'),rangeSurface=$('rangeSurface');
+const $=id=>document.getElementById(id),canvas=$('timeline');
 const card=$('reviewCard'),popover=$('reviewPopover'),rangeOut=$('selectionRange'),rangeHint=$('selectionHint'),category=$('reviewCategory'),text=$('reviewText'),save=$('addReview'),list=$('reviewList'),status=$('reviewStatus'),prompt=$('aiPromptPreview'),undoButton=$('reviewUndo'),redoButton=$('reviewRedo');
 let api=null,selection=null,reviews=[],source={fileName:'',exampleId:'',duration:0},undoStack=[],redoStack=[],editingId=null,drag=null,playToken=0;
 const HISTORY_LIMIT=5;
@@ -22,7 +22,7 @@ function buildPrompt(){
     p.source.exampleId?'検証曲ID: '+p.source.exampleId:'',
     '長さ: '+Number(p.source.duration||0).toFixed(3)+' sec',
     '解析情報: '+JSON.stringify(p.analysis),'',
-    '以下は波形と生成MIDIを重ねて確認し、拍グリッドへスナップした時間範囲を指定して記録したレビューです。',
+    '以下は波形と生成MIDIを重ねて確認し、波形上で自由選択した時間範囲を指定して記録したレビューです。',
     '各範囲について原因を実装上まで追い、既存の kick / snare / tom 精度を不用意に退行させない形で修正してください。',
     '修正後は、該当範囲と既存検証データの両方で再確認し、変更点と検証結果を残してください。',''
   ].filter(Boolean);
@@ -34,9 +34,7 @@ function updateHistory(){undoButton.disabled=!undoStack.length;redoButton.disabl
 function mutate(fn){undoStack.push(clone(reviews));if(undoStack.length>HISTORY_LIMIT)undoStack.shift();fn();redoStack=[];persist();render()}
 function undo(){if(!undoStack.length)return;redoStack.push(clone(reviews));reviews=undoStack.pop();persist();closeEditor(false);render()}
 function redo(){if(!redoStack.length)return;undoStack.push(clone(reviews));if(undoStack.length>HISTORY_LIMIT)undoStack.shift();reviews=redoStack.pop();persist();closeEditor(false);render()}
-function snapRange(start,end){
-  const snapped=api?.snapRangeToBeats?.(start,end);
-  if(snapped&&Number.isFinite(snapped.start)&&Number.isFinite(snapped.end))return snapped;
+function rawRange(start,end){
   const d=api?.getDuration?.()||0,a=clamp(Number(start)||0,0,d),b=clamp(Number(end)||0,0,d);
   return {start:Math.min(a,b),end:Math.max(a,b),beats:null};
 }
@@ -51,9 +49,9 @@ function positionPopover(){
   popover.style.left=center+'px';
   popover.style.setProperty('--review-arrow-x',arrowX+'px');
 }
-function setSelection(start,end,focus=false,{open=true,snap=true}={}){
+function setSelection(start,end,focus=false,{open=true}={}){
   if(!api)return;
-  const next=snap?snapRange(start,end):{start:Math.min(start,end),end:Math.max(start,end),beats:null};
+  const next=rawRange(start,end);
   selection={start:next.start,end:next.end,beats:next.beats??null};
   api.setSelection(selection.start,selection.end);
   rangeOut.textContent=fmt(selection.start)+' – '+fmt(selection.end);
@@ -72,7 +70,7 @@ async function playRange(r=selection){
   const loop=()=>{if(token!==playToken)return;if(api.getCurrentTime()>=r.end-.005){api.pause();return}requestAnimationFrame(loop)};requestAnimationFrame(loop);
 }
 function openExisting(r){
-  editingId=r.id;setSelection(r.start,r.end,true,{open:true,snap:false});
+  editingId=r.id;setSelection(r.start,r.end,true,{open:true});
   selection.beats=r.beats??null;
   rangeHint.textContent=(selection.beats?selection.beats+'拍 / ':'')+(selection.end-selection.start).toFixed(3)+' sec';
   category.value=r.category;text.value=r.comment;save.textContent='変更を保存';requestAnimationFrame(()=>text.focus());
@@ -117,41 +115,41 @@ function downloadJson(){
   const blob=new Blob([JSON.stringify(payload(),null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(source.fileName||'drumscribe').replace(/\.[^.]+$/,'')+'-review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus('レビューJSONを書き出しました。');
 }
 function installTimeline(){
-  api=globalThis.DrumScribeTimeline;if(!api||!rangeSurface)return false;
+  api=globalThis.DrumScribeTimeline;if(!api)return false;
   const pointTime=e=>api.clientXToTime(e.clientX);
   const move=e=>{
     if(!drag||e.pointerId!==drag.id)return;
     if(e.cancelable)e.preventDefault();
-    drag.lastX=e.clientX;
     if(Math.abs(e.clientX-drag.x)>3)drag.moved=true;
-    if(drag.moved)setSelection(drag.start,pointTime(e),false,{open:false,snap:true});
+    if(drag.moved)setSelection(drag.start,pointTime(e),false,{open:false});
   };
   const finish=e=>{
     if(!drag||e.pointerId!==drag.id)return;
     if(e.cancelable)e.preventDefault();
     const d=drag;drag=null;
-    try{if(rangeSurface.hasPointerCapture?.(e.pointerId))rangeSurface.releasePointerCapture(e.pointerId)}catch{}
+    try{if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId)}catch{}
     if(d.moved){
       editingId=null;text.value='';category.value='採譜ミス';save.textContent='保存';
-      setSelection(d.start,pointTime(e),false,{open:true,snap:true});
-      setStatus('1拍単位にスナップしました。レビューを書いて保存してください。');
+      setSelection(d.start,pointTime(e),false,{open:true});
+      setStatus('選択範囲を設定しました。レビューを書いて保存してください。');
     }else{
-      closeEditor();api.seek(pointTime(e));
+      closeEditor();
+      if(api.seekSnapped)api.seekSnapped(pointTime(e),{bypass:e.altKey});
+      else api.seek(pointTime(e));
     }
   };
   const cancel=e=>{if(drag&&e.pointerId===drag.id){drag=null;api.clearSelection?.();}};
-  rangeSurface.addEventListener('pointerdown',e=>{
+  canvas.addEventListener('pointerdown',e=>{
     if(!api.getDuration()||e.isPrimary===false)return;
     if(e.pointerType==='mouse'&&e.button!==0)return;
     if(e.cancelable)e.preventDefault();
     playToken++;api.pause();closeEditor();
-    drag={id:e.pointerId,x:e.clientX,lastX:e.clientX,start:pointTime(e),moved:false};
-    rangeSurface.classList.add('selecting');
-    try{rangeSurface.setPointerCapture?.(e.pointerId)}catch{}
+    drag={id:e.pointerId,x:e.clientX,start:pointTime(e),moved:false};
+    try{canvas.setPointerCapture?.(e.pointerId)}catch{}
   },{passive:false});
   window.addEventListener('pointermove',move,{capture:true,passive:false});
-  window.addEventListener('pointerup',e=>{if(drag&&e.pointerId===drag.id)rangeSurface.classList.remove('selecting');finish(e)},{capture:true,passive:false});
-  window.addEventListener('pointercancel',e=>{rangeSurface.classList.remove('selecting');cancel(e)},{capture:true});
+  window.addEventListener('pointerup',finish,{capture:true,passive:false});
+  window.addEventListener('pointercancel',cancel,{capture:true});
   return true;
 }
 $('playSelection').addEventListener('click',()=>playRange());
@@ -172,7 +170,7 @@ addEventListener('keydown',e=>{
 addEventListener('drumscribe:file-selected',()=>{card.hidden=true;playToken++;closeEditor(false)});
 addEventListener('drumscribe:analysis-complete',e=>{
   source={fileName:e.detail.fileName||api?.getFileName?.()||'',exampleId:e.detail.exampleId||'',duration:Number(e.detail.duration)||api?.getDuration?.()||0};
-  card.hidden=false;closeEditor();load();setStatus('波形上をドラッグすると、範囲を1拍単位へスナップして入力吹き出しを表示します。');
+  card.hidden=false;closeEditor();load();setStatus('波形上をドラッグすると、そのままの時間範囲で入力吹き出しを表示します。');
 });
 if(!installTimeline()){addEventListener('drumscribe:timeline-ready',installTimeline,{once:true})}
 render();
