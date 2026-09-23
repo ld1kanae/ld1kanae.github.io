@@ -1,0 +1,42 @@
+name: DrumScribe GMD hi-hat sequence v2
+
+on:
+  push:
+    branches:
+      - drumscribe-v2-eval
+    paths:
+      - "drumscribe/experiments/build_gmd_hihat_sequence_patterns_v2.py"
+      - ".github/workflows/drumscribe-gmd-hihat-sequence-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install mido requests
+      - name: Build GMD sequence asset
+        run: python drumscribe/experiments/build_gmd_hihat_sequence_patterns_v2.py
+      - name: Commit derived asset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/models/gmd-kst/hihat-sequence-patterns-v2.json
+          git commit -m "Build GMD hi-hat sequence patterns v2 [skip ci]" || exit 0
+          for attempt in 1 2 3 4; do
+            git pull --rebase --autostash origin drumscribe-v2-eval
+            if git push origin HEAD:drumscribe-v2-eval; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
