@@ -1,4 +1,4 @@
-// rerun after transcribe syntax fix
+// rerun after remaining transcribe ternary syntax repair
 import {chromium} from 'playwright';
 import fs from 'node:fs/promises';
 
