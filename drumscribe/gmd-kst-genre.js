@@ -126,16 +126,17 @@ export function profileSectionEvents(events,{
   };
 }
 
-export function inferGenreMixture(knowledge,profile,{
+export function inferExpertMixture(knowledge,profile,{
+  family='genre',
   topK=4,
   temperature=.10,
   phaseWeight=.82,
   compositionWeight=.18,
   minHitsForFullConfidence=48,
 }={}){
-  const genres=knowledge?.aggregates?.genre||{};
+  const experts=knowledge?.aggregates?.[family]||{};
   const rows=[];
-  for(const [genre,agg] of Object.entries(genres)){
+  for(const [genre,agg] of Object.entries(experts)){
     const ref=aggregateVector(agg,profile.slotsPerBar||16);
     let phaseScore=0,phaseWeightSum=0;
     for(const g of GROUPS){
@@ -177,7 +178,15 @@ export function inferGenreMixture(knowledge,profile,{
     0,1
   );
 
-  return {weights,confidence,ranking:rows,top};
+  return {family,weights,confidence,ranking:rows,top};
+}
+
+export function inferGenreMixture(knowledge,profile,options={}){
+  return inferExpertMixture(knowledge,profile,{family:'genre',topK:4,...options});
+}
+
+export function inferStyleMixture(knowledge,profile,options={}){
+  return inferExpertMixture(knowledge,profile,{family:'style',topK:8,...options});
 }
 
 export function inferSectionGenreMixtures(knowledge,events,sectionAnalysis,timing,options={}){
@@ -213,6 +222,44 @@ export function inferSectionGenreMixtures(knowledge,events,sectionAnalysis,timin
     for(const s of arr){
       const share=clamp(.15+.35*(1-s.genreConfidence),.15,.45);
       s.genreWeights=blendMixtures(s.genreWeights,pooled,share);
+    }
+  }
+  return raw;
+}
+
+
+export function inferSectionStyleMixtures(knowledge,events,sectionAnalysis,timing,options={}){
+  const sections=sectionAnalysis?.sections||[];
+  const raw=sections.map(section=>{
+    const profile=profileSectionEvents(events,{
+      ...timing,
+      startSec:section.startSec,
+      endSec:section.endSec,
+      scoreFloor:options.scoreFloor||0,
+    });
+    const inferred=inferStyleMixture(knowledge,profile,options);
+    return {...section,profile,styleWeights:inferred.weights,styleConfidence:inferred.confidence,styleRanking:inferred.ranking};
+  });
+
+  // Repeated structural sections share a small amount of evidence. They are
+  // not forced identical because later choruses/verses may legitimately
+  // change drum style or density.
+  const byGroup=new Map();
+  for(const s of raw){
+    if(!s.group)continue;
+    const arr=byGroup.get(s.group)||[];arr.push(s);byGroup.set(s.group,arr);
+  }
+  for(const arr of byGroup.values()){
+    if(arr.length<2)continue;
+    const pooled={};let denom=0;
+    for(const s of arr){
+      const w=Math.max(.1,s.styleConfidence);denom+=w;
+      for(const [k,p] of Object.entries(s.styleWeights))pooled[k]=(pooled[k]||0)+w*p;
+    }
+    if(denom)for(const k of Object.keys(pooled))pooled[k]/=denom;
+    for(const s of arr){
+      const share=clamp(.15+.35*(1-s.styleConfidence),.15,.45);
+      s.styleWeights=blendMixtures(s.styleWeights,pooled,share);
     }
   }
   return raw;
