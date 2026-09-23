@@ -21,7 +21,7 @@ for(let length=2;length<=NFFT;length*=2){
   }
   TWIDDLES.push([length,cos,sin]);
 }
-let modelPromise=null,overlayModelPromise=null;
+let modelPromise=null,overlayModelPromise=null,gmdPriorPromise=null;
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 
 async function loadModel(){
@@ -37,6 +37,14 @@ async function loadOverlayModel(){
       .then(r=>{if(!r.ok)throw Error('重なりオープンハイハット分類モデルを読み込めません');return r.json();});
   }
   return overlayModelPromise;
+}
+
+async function loadGmdHatPrior(){
+  if(!gmdPriorPromise){
+    gmdPriorPromise=fetch(new URL('./models/gmd-hat-articulation-prior-v1.json',import.meta.url))
+      .then(r=>{if(!r.ok)throw Error('GMDハイハット遷移priorを読み込めません');return r.json();});
+  }
+  return gmdPriorPromise;
 }
 
 function workspace(){
@@ -185,6 +193,179 @@ function predict(model,x){
   }
   return sum/model.trees.length;
 }
+
+function sigmoid(x){return 1/(1+Math.exp(-x));}
+function logit(p){
+  const q=Math.max(1e-5,Math.min(1-1e-5,Number(p)||0));
+  return Math.log(q/(1-q));
+}
+function median(values){
+  if(!values.length)return null;
+  const a=values.slice().sort((x,y)=>x-y),m=a.length>>1;
+  return a.length&1?a[m]:(a[m-1]+a[m])/2;
+}
+function clamp(x,lo,hi){return Math.max(lo,Math.min(hi,x));}
+function hfAt(samples,t,w){
+  const m=frameMagnitude(samples,t,0,w);let s=0;
+  for(let i=0;i<BINS;i++)if(FREQ[i]>=5000&&FREQ[i]<=18000)s+=m[i];
+  return s+1e-9;
+}
+function contaminated(events,t,exclude=null){
+  for(const e of events){
+    if(e===exclude)continue;
+    if(!['snare','tom','crash','ride'].includes(e.group))continue;
+    if(Math.abs(e.time-t)<=.070)return true;
+  }
+  return false;
+}
+function acousticSequenceRescore(samples,hats,events,baseProb,threshold,w){
+  // Self-calibrated evidence for the user's two cases:
+  //   open -> open: the high-frequency tail remains across the next articulation.
+  //   open -> closed/pedal: the next articulation chokes the previous tail.
+  // No reference MIDI is read here. Only borderline 42/46 decisions can move.
+  const rows=hats.map((h,i)=>({event:h,index:i,p:baseProb[i],tail:null,cut:null}));
+  const allArt=events.filter(e=>e.group==='hat'||e.group==='pedal_hat')
+    .slice().sort((a,b)=>a.time-b.time);
+  const hatIndex=new Map(hats.map((h,i)=>[h,i]));
+  for(let ai=0;ai<allArt.length;ai++){
+    const e=allArt[ai],i=hatIndex.get(e);
+    if(i==null)continue;
+    const onset=hfAt(samples,e.time+.015,w);
+    const next=allArt[ai+1]||null;
+    let probe=e.time+.250;
+    if(next){
+      const gap=next.time-e.time;
+      if(gap>=.11&&gap<=.90)probe=next.time-.050;
+      else if(gap<.11)probe=e.time+Math.max(.045,.45*gap);
+    }
+    if(probe>e.time+.035&&!contaminated(events,probe,e)){
+      rows[i].tail=Math.log1p(hfAt(samples,probe,w)/onset);
+    }
+    const prev=allArt[ai-1]||null;
+    if(prev){
+      const pi=hatIndex.get(prev);
+      const prevTrustedOpen=pi!=null&&baseProb[pi]>=Math.max(.73,threshold+.12);
+      if(prevTrustedOpen&&e.time-prev.time>=.11&&e.time-prev.time<=.90){
+        const preT=e.time-.050,postT=e.time+.180;
+        if(!contaminated(events,preT,e)&&!contaminated(events,postT,e)){
+          const pre=hfAt(samples,preT,w),post=hfAt(samples,postT,w);
+          rows[i].cut=Math.log1p(post/pre);
+        }
+      }
+    }
+  }
+  const hi=Math.max(.73,threshold+.12),lo=Math.min(.40,threshold-.15);
+  const trustedOpen=rows.filter(r=>r.p>=hi),trustedClosed=rows.filter(r=>r.p<=lo);
+  const tailO=trustedOpen.map(r=>r.tail).filter(Number.isFinite);
+  const tailC=trustedClosed.map(r=>r.tail).filter(Number.isFinite);
+  const cutO=trustedOpen.map(r=>r.cut).filter(Number.isFinite);
+  const cutC=trustedClosed.map(r=>r.cut).filter(Number.isFinite);
+  const tO=median(tailO),tC=median(tailC),cO=median(cutO),cC=median(cutC);
+  const tailSep=Number.isFinite(tO)&&Number.isFinite(tC)?tO-tC:0;
+  const cutSep=Number.isFinite(cO)&&Number.isFinite(cC)?cO-cC:0;
+  const tailEnabled=tailO.length>=8&&tailC.length>=12&&Math.abs(tailSep)>=.08;
+  const cutEnabled=cutO.length>=5&&cutC.length>=5&&Math.abs(cutSep)>=.08;
+  const out=baseProb.slice();let changed=0,tailUsed=0,cutUsed=0;
+  for(const r of rows){
+    if(Math.abs(r.p-threshold)>.18)continue;
+    let shift=0;
+    if(tailEnabled&&Number.isFinite(r.tail)){
+      const mid=(tO+tC)/2;
+      shift+=.26*clamp((r.tail-mid)/(Math.abs(tailSep)+1e-6)*Math.sign(tailSep),-1.5,1.5);
+      tailUsed++;
+    }
+    if(cutEnabled&&Number.isFinite(r.cut)){
+      const mid=(cO+cC)/2;
+      shift+=.20*clamp((r.cut-mid)/(Math.abs(cutSep)+1e-6)*Math.sign(cutSep),-1.5,1.5);
+      cutUsed++;
+    }
+    if(Math.abs(shift)>1e-9){
+      const p=sigmoid(logit(r.p)+clamp(shift,-.55,.55));
+      if((p>=threshold)!==(r.p>=threshold))changed++;
+      out[r.index]=p;
+    }
+  }
+  return {probabilities:out,info:{
+    enabled:tailEnabled||cutEnabled,changed,tailEnabled,cutEnabled,tailUsed,cutUsed,
+    trustedOpen:trustedOpen.length,trustedClosed:trustedClosed.length,
+    tailOpenMedian:tO,tailClosedMedian:tC,cutOpenMedian:cO,cutClosedMedian:cC
+  }};
+}
+function slot16(time,bpm,barPhaseSec){
+  const beat=60/Math.max(1e-6,bpm),bar=4*beat;
+  let x=(time-barPhaseSec)%bar;if(x<0)x+=bar;
+  return ((Math.round(x/(beat/4))%16)+16)%16;
+}
+function genreMixture(prior,hats,events,bpm,barPhaseSec){
+  if(!Number.isFinite(barPhaseSec))return [];
+  const art=events.filter(e=>e.group==='hat'||e.group==='pedal_hat');
+  const obs=new Array(16).fill(0);
+  for(const e of art)obs[slot16(e.time,bpm,barPhaseSec)]++;
+  const os=Math.sqrt(obs.reduce((s,x)=>s+x*x,0))||1;
+  const rows=[];
+  for(const [key,g] of Object.entries(prior.groups||{})){
+    if(!key.startsWith('genre:')||Number(g.files||0)<15)continue;
+    const ref=(g.slot16||[]).map(x=>Number(x.articulationShare)||0);
+    if(ref.length!==16)continue;
+    const rs=Math.sqrt(ref.reduce((s,x)=>s+x*x,0))||1;
+    let dot=0;for(let i=0;i<16;i++)dot+=obs[i]*ref[i];
+    rows.push({key,similarity:dot/(os*rs),group:g});
+  }
+  rows.sort((a,b)=>b.similarity-a.similarity);
+  const top=rows.slice(0,3).filter(x=>x.similarity>=.62);
+  if(!top.length)return [];
+  const raw=top.map(x=>Math.pow(Math.max(.01,x.similarity),6)),sum=raw.reduce((a,b)=>a+b,0)||1;
+  return top.map((x,i)=>({...x,weight:raw[i]/sum}));
+}
+function gmdTransitionRescore(prior,hats,events,baseProb,bpm,barPhaseSec,threshold){
+  const mix=genreMixture(prior,hats,events,bpm,barPhaseSec);
+  if(!mix.length)return {probabilities:baseProb.slice(),info:{enabled:false,reason:'no-genre-mixture'}};
+  const beat=60/Math.max(1e-6,bpm);
+  const allArt=events.filter(e=>e.group==='hat'||e.group==='pedal_hat')
+    .slice().sort((a,b)=>a.time-b.time);
+  const hatIndex=new Map(hats.map((h,i)=>[h,i]));
+  const out=baseProb.slice();let used=0,changed=0,consensusRejected=0;
+  for(let ai=0;ai<allArt.length;ai++){
+    const cur=allArt[ai],ci=hatIndex.get(cur);
+    if(ci==null||Math.abs(baseProb[ci]-threshold)>.18)continue;
+    const prev=allArt[ai-1];if(!prev)continue;
+    let prevClass=null;
+    if(prev.group==='pedal_hat')prevClass='pedal';
+    else{
+      const pi=hatIndex.get(prev);
+      if(pi!=null&&baseProb[pi]>=Math.max(.73,threshold+.12))prevClass='open';
+      else if(pi!=null&&baseProb[pi]<=Math.min(.40,threshold-.15))prevClass='closed';
+    }
+    if(!prevClass)continue;
+    const delta=Math.max(0,Math.min(32,Math.round((cur.time-prev.time)/beat*4)));
+    const deltas=[];
+    for(const m of mix){
+      const slot=m.group.slot16?.[slot16(cur.time,bpm,barPhaseSec)];
+      const tr=m.group.transitions?.[`${prevClass}|d${delta}`];
+      const ps=Number(slot?.openProbability),pt=Number(tr?.openProbability);
+      const n=tr?.counts?Object.values(tr.counts).reduce((a,b)=>a+(Number(b)||0),0):0;
+      if(!Number.isFinite(ps)||!Number.isFinite(pt)||n<12)continue;
+      // Slot-only priors did not generalize in held-out GMD. Use only the
+      // transition's odds lift relative to that same genre/slot baseline.
+      deltas.push({weight:m.weight,delta:clamp(logit(pt)-logit(ps),-2.5,2.5)});
+    }
+    if(deltas.length<2)continue;
+    const pos=deltas.filter(x=>x.delta>0).length,neg=deltas.filter(x=>x.delta<0).length;
+    if(Math.max(pos,neg)<2){consensusRejected++;continue;}
+    let sw=0,sd=0;
+    for(const x of deltas){sw+=x.weight;sd+=x.weight*x.delta;}
+    const d=sd/(sw||1);
+    if(Math.abs(d)<.12)continue;
+    const p=sigmoid(logit(baseProb[ci])+.20*clamp(d,-2.25,2.25));
+    if((p>=threshold)!==(baseProb[ci]>=threshold))changed++;
+    out[ci]=p;used++;
+  }
+  return {probabilities:out,info:{
+    enabled:true,used,changed,consensusRejected,
+    genres:mix.map(x=>({genre:x.key.slice(6),similarity:x.similarity,weight:x.weight})),
+    transitionBlend:Number(prior.policy?.transitionBlend)||.6
+  }};
+}
 function nearTime(times,t,w){
   for(const u of times)if(Math.abs(u-t)<=w)return true;
   return false;
@@ -250,9 +431,10 @@ function repeatSupport(times,probs,bpm,policy){
   return out;
 }
 
-export async function promoteOpenHats(decoded,events,bpm,report=()=>{}){
+export async function promoteOpenHats(decoded,events,bpm,report=()=>{},context={}){
   const hats=events.filter(e=>e.group==='hat').slice().sort((a,b)=>a.time-b.time);
-  const baseInfo={mode:'open-hat-extra-trees-v2-gmd128+overlay-v1',candidates:hats.length,promoted:0,rescued:0,enabled:false};
+  const requestedVariant=['base','decay','gmd','combined'].includes(context?.variant)?context.variant:'base';
+  const baseInfo={mode:'open-hat-extra-trees-v2-gmd128+overlay-v1',variant:requestedVariant,candidates:hats.length,promoted:0,rescued:0,enabled:false};
   if(!hats.length)return {events,info:{...baseInfo,skipReason:'no-hat'}};
   try{
     const model=await loadModel();
@@ -270,12 +452,32 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{}){
       }
     }
     const stats=robustStats(raw),features=normalizeWithStats(raw,stats),openSet=new Set();
-    let probSum=0,maxProbability=0;
+    let probabilities=features.map(x=>predict(model,x));
+    const baseProbabilities=probabilities.slice();
+    let sequenceInfo={variant:requestedVariant,decay:{enabled:false},gmd:{enabled:false}};
+    if(requestedVariant==='decay'||requestedVariant==='combined'){
+      const seq=acousticSequenceRescore(samples,hats,events,probabilities,threshold,w);
+      probabilities=seq.probabilities;sequenceInfo.decay=seq.info;
+    }
+    if(requestedVariant==='gmd'||requestedVariant==='combined'){
+      try{
+        const prior=await loadGmdHatPrior();
+        const seq=gmdTransitionRescore(prior,hats,events,probabilities,bpm,Number(context?.barPhaseSec),threshold);
+        probabilities=seq.probabilities;sequenceInfo.gmd=seq.info;
+      }catch(gmdErr){
+        console.warn('GMD hi-hat prior fallback',gmdErr);
+        sequenceInfo.gmd={enabled:false,error:String(gmdErr?.message||gmdErr)};
+      }
+    }
+    let probSum=0,maxProbability=0,basePromoted=0;
     for(let i=0;i<hats.length;i++){
-      const p=predict(model,features[i]);probSum+=p;maxProbability=Math.max(maxProbability,p);
+      const p=probabilities[i];probSum+=p;maxProbability=Math.max(maxProbability,p);
+      if(baseProbabilities[i]>=threshold)basePromoted++;
       if(p>=threshold)openSet.add(hats[i]);
       if(i%48===0)await tick();
     }
+    sequenceInfo.basePromoted=basePromoted;
+    sequenceInfo.reclassified=openSet.size-basePromoted;
 
     let rescued=[],overlayInfo={enabled:false,rescued:0};
     try{
@@ -331,7 +533,7 @@ export async function promoteOpenHats(decoded,events,bpm,report=()=>{}){
     return {events:promoted,info:{
       ...baseInfo,enabled:true,promoted:openSet.size,rescued:rescued.length,threshold,
       closed:hats.length-openSet.size,modelTrees:model.trees.length,modelFeatures:model.featureCount,
-      meanProbability:hats.length?probSum/hats.length:0,maxProbability,overlay:overlayInfo
+      meanProbability:hats.length?probSum/hats.length:0,maxProbability,sequence:sequenceInfo,overlay:overlayInfo
     }};
   }catch(err){
     console.warn('open-hat classifier fallback',err);

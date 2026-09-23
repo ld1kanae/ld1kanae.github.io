@@ -1,0 +1,58 @@
+name: DrumScribe open-hat sequence v40
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "drumscribe/open-hat.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/app.js"
+      - "drumscribe/models/gmd-hat-articulation-prior-v1.json"
+      - "drumscribe/experiments/browser_validate_openhat_variants.mjs"
+      - "drumscribe/experiments/compare_openhat_variants.py"
+      - ".github/workflows/drumscribe-openhat-v40.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate four open-hat variants
+        run: node drumscribe/experiments/browser_validate_openhat_variants.mjs
+      - name: Score articulation and KST non-regression
+        run: python drumscribe/experiments/compare_openhat_variants.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-openhat-v40.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "drumscribe: record open-hat sequence v40 results"
+          git pull --rebase origin main
+          git push origin HEAD:main
