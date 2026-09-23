@@ -160,6 +160,8 @@
     "enabled": true,
     "fallback": false,
     "thresholdScale": 1.15,
+    "snareRescueScale": 0.86,
+    "snareRescueCandidates": 209,
     "backend": "onnxruntime-web/wasm",
     "frames": 25282,
     "coreFrames": 3000,
@@ -170,6 +172,18 @@
       "tom": 22,
       "hat": 722,
       "cymbal": 59
+    },
+    "structuralPriority": {
+      "mode": "layered-snare-rescue+kick-tom-veto-v1",
+      "snareRescueCandidates": 209,
+      "snareLayeredCandidates": 2,
+      "snareRescued": 0,
+      "snareMinActivation": 0.22,
+      "snareKickRatio": 0.55,
+      "snareRepeatBars": 3,
+      "tomKickRemoved": 0,
+      "tomStrongKeep": 1.45,
+      "tomRunWindowSec": 0.24
     },
     "hatFilter": {
       "mode": "collision-periodic-v2",
