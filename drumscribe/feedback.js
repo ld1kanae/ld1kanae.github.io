@@ -45,8 +45,11 @@ function positionPopover(){
   const stage=$('timelineStage'),view=api.getView?.();
   if(!stage||!view)return;
   const leftPx=(selection.start-view.start)*view.pxPerSec,rightPx=(selection.end-view.start)*view.pxPerSec;
-  const center=clamp((leftPx+rightPx)/2,18,stage.clientWidth-18);
+  const desired=(leftPx+rightPx)/2,half=Math.max(1,popover.offsetWidth/2);
+  const center=clamp(desired,half+8,Math.max(half+8,stage.clientWidth-half-8));
+  const arrowX=clamp(desired-(center-half),18,Math.max(18,popover.offsetWidth-18));
   popover.style.left=center+'px';
+  popover.style.setProperty('--review-arrow-x',arrowX+'px');
 }
 function setSelection(start,end,focus=false,{open=true,snap=true}={}){
   if(!api)return;
@@ -95,6 +98,7 @@ function render(){
   prompt.value=buildPrompt();updateHistory();globalThis.__drumscribeReviewPayload=payload();
 }
 function submitReview(){
+  const wasEditing=Boolean(editingId);
   const comment=text.value.trim();
   if(!selection||selection.end-selection.start<.005){setStatus('先に波形上でレビュー範囲を選択してください。',true);return}
   if(!comment){setStatus('レビュー内容を入力してください。',true);text.focus();return}
@@ -104,7 +108,7 @@ function submitReview(){
     else reviews.push(entry);
     reviews.sort((a,b)=>a.start-b.start||a.end-b.end);
   });
-  closeEditor();setStatus(editingId?'レビューを更新しました。':'レビューを保存しました。');
+  closeEditor();setStatus(wasEditing?'レビューを更新しました。':'レビューを保存しました。');
 }
 async function copyPrompt(){
   const value=buildPrompt();try{await navigator.clipboard.writeText(value);setStatus('AI修正依頼文をクリップボードへコピーしました。')}catch{prompt.focus();prompt.select();document.execCommand('copy');setStatus('AI修正依頼文をコピーしました。')}
