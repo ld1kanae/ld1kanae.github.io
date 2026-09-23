@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "gmd-triplet-heldout-v32",
+  "source": {
+    "dataset": "Groove MIDI Dataset v1.0.0",
+    "workflow_run": 35834772664,
+    "head_sha": "eff23fb1e087eac4f8f2afbb0c7e736f6d8376fe",
+    "artifact_id": 10739205616
+  },
+  "method": {
+    "population": "116 performances from the predefined validation/test splits with beat_type=beat",
+    "selected_cases": 24,
+    "triplet_position_evidence_cases": 12,
+    "strict_straight_controls": 12,
+    "metadata_explicit_triplet_cases": 1,
+    "reference_midi_selection_only": true,
+    "browser_prediction_inputs": "WAV only for auto; WAV plus metadata BPM for oracle_bpm",
+    "label_caveat": "Eleven positive cases were selected by a predeclared reference-MIDI timing-position rule and were not explicitly labeled shuffle/swing/triplet in metadata. They are timing-evidence labels, not unquestionable musical-style ground truth."
+  },
+  "production_rule": {
+    "triplet_floor": 0.72,
+    "margin_over_best_straight": 0.10
+  },
+  "results": {
+    "auto": {
+      "total": 24,
+      "accuracy_vs_reference_rule": 0.5833333333333334,
+      "triplet_detected": 2,
+      "triplet_cases": 12,
+      "triplet_recall": 0.16666666666666666,
+      "straight_correct": 12,
+      "straight_controls": 12,
+      "straight_accuracy": 1.0,
+      "max_generated_grid_residual_ticks": 0
+    },
+    "oracle_bpm": {
+      "total": 24,
+      "accuracy_vs_reference_rule": 0.5833333333333334,
+      "triplet_detected": 2,
+      "triplet_cases": 12,
+      "triplet_recall": 0.16666666666666666,
+      "straight_correct": 12,
+      "straight_controls": 12,
+      "straight_accuracy": 1.0,
+      "max_generated_grid_residual_ticks": 0
+    }
+  },
+  "detected_triplet_cases": [
+    {
+      "case_id": "test-drummer1-session1-239",
+      "style": "funk/purdieshuffle",
+      "selection_reason": "metadata_keyword",
+      "reference_bpm": 130.0,
+      "auto_subdivision": "1/16T",
+      "oracle_bpm_subdivision": "1/16T"
+    },
+    {
+      "case_id": "validation-drummer5-session2-15",
+      "style": "latin/venezuelan-joropo",
+      "selection_reason": "reference_midi_triplet_evidence",
+      "reference_bpm": 80.0,
+      "auto_subdivision": "1/16T",
+      "oracle_bpm_subdivision": "1/16T"
+    }
+  ],
+  "diagnostic_threshold_replay": {
+    "note": "Post-hoc replay on the same held-out set; not an independent generalization estimate and not adopted in production.",
+    "auto": {
+      "current_0.72_margin_0.10": {"triplet_detected": 2, "triplet_cases": 12, "straight_correct": 12, "straight_controls": 12},
+      "floor_0.55_margin_0.05": {"triplet_detected": 4, "triplet_cases": 12, "straight_correct": 11, "straight_controls": 12}
+    },
+    "oracle_bpm": {
+      "current_0.72_margin_0.10": {"triplet_detected": 2, "triplet_cases": 12, "straight_correct": 12, "straight_controls": 12},
+      "floor_0.55_margin_0.05": {"triplet_detected": 4, "triplet_cases": 12, "straight_correct": 12, "straight_controls": 12},
+      "floor_0.45_margin_0.08": {"triplet_detected": 5, "triplet_cases": 12, "straight_correct": 12, "straight_controls": 12}
+    }
+  },
+  "decision": "Keep the current production rule. The held-out result shows conservative behavior: no triplet false positives among the strict straight controls, but low sensitivity under the timing-evidence labeling rule. Lowering the threshold alone cannot recover most misses because many detected-event fit vectors favor straight. Future work should improve the event stream or use sequence/ranking evidence before changing the production threshold."
+}
