@@ -1,5 +1,9 @@
 name: DrumScribe main KST browser validation
 
+concurrency:
+  group: drumscribe-main-kst-validation
+  cancel-in-progress: true
+
 on:
   push:
     branches:
