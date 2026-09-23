@@ -7,7 +7,10 @@ on:
     paths:
       - "drumscribe/adtof.js"
       - "drumscribe/transcribe.js"
+      - "drumscribe/rhythm-grid.js"
+      - "drumscribe/midi.js"
       - "drumscribe/experiments/compare_open_hat_browser.py"
+      - "drumscribe/experiments/validate_grid_browser.py"
       - "drumscribe/models/open-hat-extra-trees-v2.json"
       - "drumscribe/models/open-hat-overlay-extra-trees-v1.json"
       - "drumscribe/open-hat.js"
@@ -46,6 +49,8 @@ jobs:
           sleep 2
       - name: Generate current main MIDI in real Chromium
         run: node drumscribe/experiments/browser_validate.mjs
+      - name: Validate score grid and tempo map
+        run: python drumscribe/experiments/validate_grid_browser.py
       - name: Score current main MIDI
         run: python drumscribe/experiments/compare_browser.py
       - name: Score open/closed hi-hat articulation
