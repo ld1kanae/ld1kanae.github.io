@@ -1,5 +1,43 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: Proof v34 — 2x BPM誤推定と小節位相をGMDで限定補正
+
+ユーザー提供のProof音源で、現行mainが **198.164 BPM** を選ぶ一方、同じ採譜内のkick/snare event-family推定は **99.125 BPM** を最上位としていた問題を再現。
+
+追加した補正:
+- initial/event-family比が1.90–2.10
+- event-family score >= 0.58
+- 2x側候補に対するscore margin >= 0.12
+
+の全条件を満たした場合だけ低いoctaveへ再推定する。Proofでは比1.99913、score 0.66037 vs 0.42309、margin 0.23728で発火し、約 **99.077 BPM** へ補正される。
+
+小節位相にはGMD train-onlyで学習した `models/gmd-kst/bar-phase-discriminative-v1.json` を追加。3方式をGMD train内部holdoutで比較し、logistic rotationを採用。ただし公式held-out performance accuracyは validation 54.1% / test 75.9% と一般用途には弱いため、**高信頼2x BPM補正が発火した場合だけ**使用する。
+
+Proofの保存済み99-BPM full-song eventsでは:
+- GMD phase **0.123011 s**
+- runner-up 1.088172 s
+- margin **0.77551**
+- coverage **88.57%**
+- runtime gate通過
+
+同WAVの先行full-browser v34 prototypeでは BPM 99.076668 / bar phase 0.127742 s / `gmd-kst-gated` / 1/16+1/32 / tempo 98.710–100.389 BPM。
+
+instrumentalの強い構造変化10点について、nearest barline distance中央値は旧phase 1.039 sで **895.9 ms**、GMD phase 0.123 sで **366.9 ms**。instrumentalは新候補を補強するが、section novelty単独では位相を一意に決めないため補助証拠に限定する。
+
+5曲fresh Chromium regression run `35846141342`:
+- arcaround 132.002953
+- diamondvirgin 135.075370
+- kaiju 180.006816
+- nanairo 125.006439
+- ray 131.999934
+- 新GMD phase補正の発火: **0/5**
+- Precision 0.911 / Recall 0.743 / F1 **0.818**
+- grid failures 0 / max grid residual 0.0 beat
+- note countsもbaselineから変化なし
+
+詳細: [PROOF_V34.md](experiments/PROOF_V34.md)  
+機械可読: [results-proof-v34.json](experiments/results-proof-v34.json)
+
 ## 2026-09-23: 5曲を現行mainでfresh Chromium再採譜し、grid/tempoを直接検証（v31）
 
 v30は既存browser生成イベントを現行grid/tempo層へ再投入した隔離試験だった。今回は `DruMaster/songs/{arcaround,diamondvirgin,kaiju,nanairo,ray}/drums.mp3` を、**現行mainをcheckoutしたGitHub Actions上の実Playwright Chromiumで最初から再採譜**し、download MIDIを直接パースした。
