@@ -1,5 +1,36 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 Open Hat / Ride strict check v46 — all-Ride→Open案は不採用
+
+Open F1が大きく伸びた `ride-open-decay-rescue` を、Closed/OpenだけでなくRideも含めfresh browser再評価。
+
+Default `decay-rescue`:
+- Closed F1 0.843895
+- Open F1 0.598647
+- Ride F1 0.246117
+- Hat macro 0.721271
+- metal macro (Closed/Open/Ride) 0.562886
+- collapsed Hat/Ride onset F1 0.812081
+
+`ride-open-decay-rescue`:
+- Closed F1 0.843895
+- Open F1 0.647770 (+0.049123)
+- **Ride F1 0.000000 (-0.246117)**
+- Hat macro 0.745832 (+0.024561)
+- **metal macro 0.497222 (-0.065665)**
+- collapsed onset F1 0.817466 (+0.005385)
+- K/S/T delta 0 / 0 / 0
+
+結論:
+- Open改善のかなりの部分は既存RideをOpenへ丸めたことによる。
+- strict metal精度を悪化させるため**production不採用**。
+- defaultは引き続き `decay-rescue`。
+- 次実験v47ではRideのopen-hat acoustic probabilityが高い場合だけOpenへ変更し、その他はRideのまま保持するselective閾値 .70/.80/.90 を比較する。
+
+詳細:
+- `experiments/OPENHAT_DEFAULT_VS_COMBINED_V46.md`
+- `experiments/results-openhat-default-vs-combined-v46.json`
+
 ## 2026-09-23 E-GMD song-local domain calibration v45 — research candidate
 
 v44で確認したE-GMD domain shiftを、曲内候補分布だけでreference-free calibrationできるか検証。
