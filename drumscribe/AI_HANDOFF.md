@@ -704,13 +704,35 @@ strict `forest_context`:
 => baselineよりstrict LOOで小幅改善。retainedStrict=`forest_context`。
 現時点でmain未統合のOpen HH最新best研究候補。
 
-### snapshot時点で実行中
+### grid residual追加の結果
 
-1. HF contextual + rhythmic-grid residual
-   - run `35836237602`
-   - head `a45f3820f33872ab71fb36172877a5c0181e4c1b`
-2. DrumSep contextual + rhythmic-grid residual
-   - run `35836222414`
+HF contextual + rhythmic-grid residual:
+- run `35836237602`
+- completed / success
+- result commit `e229999d827e9978be3bffb07e575e55c63d5f4a`
+- retainedStrict=`none`
 
-次チャットはまずこの2 runを確認し、Open F1 **0.472192** を超えるかを見る。
-採用する場合はstrict LOOだけでなく、grouped hat / K/S/T non-regression / real Chromiumを必ず確認する。
+baseline Open F1 **0.467504** に対し:
+- forest_context **0.436641**
+- linear_context **0.421208**
+- forest_repeat_rank **0.431807**
+
+すべて悪化。**不採用**。
+
+悪化runで旧bestを失わないよう、non-grid HF contextual bestを
+`experiments/results-open-hat-hf-context-rank-best-v1.json`
+へ保存した。
+保存commit: `0d13fc07db705d1a1b460cc4d03c4d8c74b81425`
+
+完了済み研究bestは引き続き:
+- Open F1 **0.472192**
+- P **0.661069**
+- R **0.367260**
+- TP / Pred / Ref **433 / 655 / 1179**
+
+DrumSep contextual + rhythmic-grid residual:
+- run `35836222414`
+- この更新時点ではin progress
+
+次チャットはまずrun `35836222414` を確認し、0.472192を超えない限り旧bestを維持する。
+採用時はstrict LOOだけでなく grouped hat / K/S/T non-regression / real Chromiumを必ず確認する。
