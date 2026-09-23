@@ -922,11 +922,24 @@ export async function transcribe(decoded,report=()=>{},options={}){
 
   // Crash experiments are deliberately post-gated after the existing two-hand
   // selection, so changing crash precision cannot change kick/snare/tom retention.
-  const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
+  const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto','hat-accent-080','hat-accent-100','hat-accent-120'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
   const crashConfidenceThreshold=({'confidence-115':1.15,'confidence-125':1.25,'confidence-135':1.35,'confidence-gated':1.45}[cymbalVariant]??1.45);
   const structuralHatTimes=structural
     .filter(e=>e.group==='hat'||e.group==='pedal_hat')
     .map(e=>e.time).sort((a,b)=>a-b);
+  function localHatAccent(time,frame){
+    const beat=60/Math.max(1e-6,bpm),radius=2*beat,vals=[];
+    for(const t of structuralHatTimes){
+      if(Math.abs(t-time)<=.060||Math.abs(t-time)>radius)continue;
+      const f=Math.max(0,Math.min(frames-1,Math.round(t*RATE/HOP)));
+      vals.push((Number(band[2]?.[f])||0)+(Number(band[3]?.[f])||0));
+    }
+    if(vals.length<2)return Infinity;
+    vals.sort((a,b)=>a-b);
+    const m=vals.length>>1,med=vals.length&1?vals[m]:(vals[m-1]+vals[m])/2;
+    const cur=(Number(band[2]?.[frame])||0)+(Number(band[3]?.[frame])||0);
+    return cur/(med+1e-6);
+  }
 
   const final=[...structural];
   if(adtofInfo.enabled&&adtofCymbal.length){
@@ -938,6 +951,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       const crashSupport=rawCrashEvidence.some(t=>Math.abs(t-e.time)<=.07);
       const rideSupport=rawRideEvidence.some(t=>Math.abs(t-e.time)<=.07);
       const hatSupport=structuralHatTimes.some(t=>Math.abs(t-e.time)<=.060);
+      const hatAccent=localHatAccent(e.time,e.frame);
       let group=null;
       // Winner of the corrected audio-time search:
       // head <= .30 beat => crash; otherwise require complete periodic
@@ -958,7 +972,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
           bandLow:Number(band[0]?.[e.frame])||0,
           bandMid:Number(band[1]?.[e.frame])||0,
           bandBody:Number(band[2]?.[e.frame])||0,
-          bandHigh:Number(band[3]?.[e.frame])||0
+          bandHigh:Number(band[3]?.[e.frame])||0,
+          localHatAccent:hatAccent
         }
       });
     }
@@ -1019,7 +1034,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
     .map(e=>({time:e.time,frame:e.frame,...e.cymbalEvidence}));
   const crashPostGate={
     variant:cymbalVariant,evaluated:0,removed:0,rawSupported:0,
-    confidenceSupported:0,hatVetoed:0,confidenceThreshold:crashConfidenceThreshold
+    confidenceSupported:0,hatVetoed:0,accentVetoed:0,confidenceThreshold:crashConfidenceThreshold,
+    accentThreshold:({'hat-accent-080':.80,'hat-accent-100':1.00,'hat-accent-120':1.20}[cymbalVariant]??null)
   };
   if(cymbalVariant!=='legacy'){
     pruned=pruned.filter(e=>{
@@ -1037,6 +1053,10 @@ export async function transcribe(decoded,report=()=>{},options={}){
       }else if(cymbalVariant==='hat-veto'){
         keep=ev.crashSupport||(ev.baseConfidence>=crashConfidenceThreshold&&!ev.hatSupport);
         if(!keep&&ev.hatSupport)crashPostGate.hatVetoed++;
+      }else if(cymbalVariant.startsWith('hat-accent-')){
+        const th=Number(crashPostGate.accentThreshold);
+        keep=ev.crashSupport||!ev.hatSupport||!Number.isFinite(ev.localHatAccent)||ev.localHatAccent>=th;
+        if(!keep)crashPostGate.accentVetoed++;
       }
       if(!keep)crashPostGate.removed++;
       return keep;
