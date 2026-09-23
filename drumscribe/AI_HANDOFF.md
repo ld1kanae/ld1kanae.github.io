@@ -1,5 +1,13 @@
 # DrumScribe AI Handoff
 
+## CURRENT AUTHORITATIVE STATUS — Per-audio threshold profile memory (2026-09-24)
+
+採譜感度倍率はブラウザlocalStorage `drumscribe-threshold-profiles-v1` に音源ごとに自動保存する。識別キーはUnicode NFC + trim + lowercaseした**ファイル名**。同じ名前の音源を再度選択すると前回値を自動復元する。
+
+保存内容: threshold values、元ファイル名/size、updatedAt、最後にその設定で採譜した total notes / BPM / kick / snare / closed/open HH / crash / ride件数。値変更・1.0リセット・採譜完了時に更新。「この音源の記録を削除」で当該プロファイルのみ消去できる。新しい別ファイルを選択した際はいったん全倍率を1.0へ戻してから、そのファイル名に保存済みの値だけを適用する。rideContextOpenは内部aliasなので保存JSONには持たず、復元後にrideOpenから再生成する。
+
+GitHub Pagesは静的配信のため、一般ユーザー操作からrepoへ直接書き戻す方式は採用していない。ブラウザ/端末を跨ぐ共有が必要になった場合はJSON export/importまたは認証付きbackendを追加する。
+
 ## CURRENT AUTHORITATIVE STATUS — Threshold UI wording v4 (2026-09-24)
 
 閾値倍率UIは、単なる内部名ではなく **0側/2側で結果がどう変わるか** を各項目に明記する。
