@@ -688,7 +688,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const snareAfterBase=[...snareEvents,...rescued];
     const egmdRescued=[];
     const egmdDiag={aboveThreshold:0,notExisting:0,nearKick:0,acoustic:0,repeat:0};
-    const egmdThreshold=Math.max(egmdSnareSupport[0]?.modelThreshold||1,.50);
+    const egmdThreshold=Math.max(egmdSnareSupport[0]?.modelThreshold||1,.67);
     egmdDiag.aboveThreshold=egmdSnareSupport.filter(e=>(e.probability||0)>=egmdThreshold).length;
     if(adaptiveSnareRescue){
       for(const e of egmdSnareSupport){
@@ -731,7 +731,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomKickRemoved++;return false;
     });
     adtofInfo.structuralPriority={
-      mode:'layered-snare-rescue+egmd-v5-t050+kick-tom-veto-v3',
+      mode:'layered-snare-rescue+egmd-v5-t067+kick-tom-veto-v3',
       snareRescueCandidates:adtofSnareRescue.length,
       rescueDensity,
       snareKickDensity,
