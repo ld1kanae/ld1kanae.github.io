@@ -51,3 +51,9 @@ body[data-review-mode="1"] #timeline{cursor:ew-resize;touch-action:none;user-sel
 .review-log-block:hover,.review-log-block:focus-visible{outline:none;border-color:#7a66a4;background:#101f31;transform:translateY(-1px)}
 .review-panel .review-history{margin-top:0}
 @media(max-width:680px){.review-popover{top:7px;width:calc(100% - 14px);padding:10px}.review-popover label{grid-template-columns:1fr;gap:3px}.review-popover textarea{min-height:56px}.review-popover-actions{flex-wrap:wrap}.review-popover-actions button{flex:1}}
+
+/* Range review v5: dedicated interaction surface over the waveform. */
+.timeline-range-surface{position:absolute;inset:0;z-index:4;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;background:transparent}
+.timeline-range-surface>span{position:absolute;right:10px;bottom:8px;padding:3px 7px;border-radius:999px;background:rgba(7,19,32,.76);border:1px solid rgba(101,215,227,.38);color:#9fd8df;font-size:9px;letter-spacing:.03em;pointer-events:none}
+.timeline-range-surface.selecting{cursor:col-resize}
+.review-popover{z-index:12}
