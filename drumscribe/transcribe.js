@@ -1,4 +1,4 @@
-import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v4';
+import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v2';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
@@ -631,16 +631,18 @@ export async function transcribe(decoded,report=()=>{},options={}){
   let adtofCymbal=[];
   let adtofSnareRescue=[];
   let egmdSnareSupport=[];
+  let diagnosticKstCandidates=null;
   let adtofInfo={enabled:false,fallback:true};
   try{
     const ad=await transcribeAdtof(decoded,(message,p)=>{
       const mapped=92+Math.max(0,Math.min(1,(p-58)/42))*6;
       report(message,mapped);
-    },{thresholdScale:1.15});
+    },{thresholdScale:1.15,diagnosticKst:options.diagnosticKst===true});
     const replacement=ad.events.filter(e=>e.group!=='cymbal');
     adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
     adtofSnareRescue=ad.snareRescue||[];
     egmdSnareSupport=ad.egmdSnareSupport||[];
+    diagnosticKstCandidates=ad.diagnosticKstCandidates||null;
     if(replacement.length){
       structural=replacement;
       adtofInfo={
@@ -1012,6 +1014,24 @@ export async function transcribe(decoded,report=()=>{},options={}){
     barPhaseSec:barInfo.phaseSec,
     barPhaseInfo:barInfo,
     adtofInfo,
+    diagnostics:options.diagnosticKst===true?{
+      kstCandidates:diagnosticKstCandidates,
+      finalKst:pruned.filter(e=>e.group==='kick'||e.group==='snare'||e.group==='tom').map(e=>({
+        time:e.time,
+        group:e.group,
+        score:Number(e.score)||0,
+        confidence:Number(e.confidence)||0,
+        rescuedSnare:Boolean(e.rescuedSnare),
+        egmdRescued:Boolean(e.egmdRescued)
+      })),
+      egmdSnareSupport:egmdSnareSupport.map(e=>({
+        time:e.time,
+        probability:Number(e.probability)||0,
+        modelThreshold:Number(e.modelThreshold)||1,
+        score:Number(e.score)||0,
+        kickActivation:Number(e.kickActivation)||0
+      }))
+    }:undefined,
     numerator:4,
     denominator:4
   };
