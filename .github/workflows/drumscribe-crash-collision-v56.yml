@@ -1,0 +1,50 @@
+name: DrumScribe crash collision hires v56
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/experiments/browser_crash_collision_v56.mjs"
+      - "drumscribe/experiments/analyze_crash_collision_v56.py"
+      - "drumscribe/experiments/proof-review2-crash-features-v56.json"
+      - ".github/workflows/drumscribe-crash-collision-v56.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate collision diagnostics
+        run: node drumscribe/experiments/browser_crash_collision_v56.mjs
+      - name: Analyze 44k collision features
+        run: python drumscribe/experiments/analyze_crash_collision_v56.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-crash-collision-v56.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "drumscribe: record crash collision hires v56"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 2
+          done
+          exit 1
