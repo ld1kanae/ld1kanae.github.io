@@ -32,10 +32,17 @@ assert(result.sections.length>=1);
 for(const section of result.sections){
   assert(section.endSec>=section.startSec);
   assert(typeof section.group==='string'&&section.group.length>0);
+  assert(typeof section.label==='string'&&section.label.length>0);
+  assert(Number.isInteger(section.occurrence)&&section.occurrence>=1);
 }
+assert.deepEqual(result.sections.map(s=>s.group),['A','B','A','B']);
+assert.deepEqual(result.sections.map(s=>s.label),['A','B',"A'","B'"]);
+assert.deepEqual(result.sections.map(s=>s.occurrence),[1,1,2,2]);
 console.log(JSON.stringify({
   method:result.method,
   boundaries:result.boundaries,
   groups:result.sections.map(s=>s.group),
+  labels:result.sections.map(s=>s.label),
+  occurrences:result.sections.map(s=>s.occurrence),
   featureSchema:result.featureSchema,
 }));
