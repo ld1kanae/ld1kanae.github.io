@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "date": "2026-09-23",
+  "experiment": "diamondvirgin synchronized open-hat acoustic teacher v47",
+  "source": {
+    "wav": "ダイヤモンドヴァージン_tempo-mapped_sync.wav",
+    "midi": "ダイヤモンドヴァージン_tempo-mapped_sync.mid",
+    "wavBytes": 46722668,
+    "midiBytes": 29853,
+    "wavSha256": "1afb2d93354d33f14fdf47ead02b771d84d0bd59d98053f04461771f48596443",
+    "midiSha256": "44a4d08e43b2fdae95caed0b6c1f0389f7015abc06c2da048ac5c38f1fb05644",
+    "alignment": "user-provided exact synchronized pair"
+  },
+  "audio": {
+    "sampleRate": 44100,
+    "channels": 2,
+    "durationSec": 264.86356009070295
+  },
+  "midi": {
+    "ppq": 480,
+    "tracks": 18,
+    "tempoEvents": 528,
+    "noteCounts": {
+      "36": 740,
+      "38": 608,
+      "41": 22,
+      "42": 253,
+      "44": 4,
+      "45": 21,
+      "46": 502,
+      "47": 6,
+      "49": 36,
+      "50": 8,
+      "53": 155,
+      "55": 2,
+      "57": 32
+    }
+  },
+  "openTransitions": {
+    "openEvents": 502,
+    "nextHatArticulation": {
+      "42": 29,
+      "44": 4,
+      "46": 468
+    },
+    "openToOpenShare": 0.9341317365269461,
+    "medianGapSec": 0.22210300000000416
+  },
+  "highBandDecay": {
+    "bandHz": [5000, 18000],
+    "feature": "log1p band RMS ratio to 0-25ms onset",
+    "medianByNote": {
+      "42": {
+        "tail25_60": 0.3122996668160576,
+        "tail60_120": 0.12007333579106164,
+        "tail120_180": 0.04848378158250619,
+        "tail180_230": 0.09711464104107945
+      },
+      "44": {
+        "tail25_60": 0.551342969903245,
+        "tail60_120": 0.383118674151068,
+        "tail120_180": 0.43209511922835747,
+        "tail180_230": 0.3084604305931569
+      },
+      "46": {
+        "tail25_60": 0.5486436622553355,
+        "tail60_120": 0.44194107908761693,
+        "tail120_180": 0.37261766734710416,
+        "tail180_230": 0.3274543022486644
+      }
+    }
+  },
+  "blockedTimeCv42vs46": {
+    "folds": 5,
+    "precisionOpen": 0.9667318982387475,
+    "recallOpen": 0.9840637450199203,
+    "f1Open": 0.9753208292201382,
+    "confusionMatrix": {
+      "tn": 236,
+      "fp": 17,
+      "fn": 8,
+      "tp": 494
+    }
+  },
+  "openPersistenceCv": {
+    "task": "given current GM46, predict whether next hat is GM46 vs choke GM42/44",
+    "folds": 5,
+    "examples": 492,
+    "nextOpen": 461,
+    "nextChoke": 31,
+    "precisionNextOpen": 0.991304347826087,
+    "recallNextOpen": 0.9891540130151844,
+    "f1NextOpen": 0.990228013029316,
+    "precisionChoke": 0.84375,
+    "recallChoke": 0.8709677419354839,
+    "f1Choke": 0.8571428571428571,
+    "rocAucNextOpen": 0.8953887061787138,
+    "confusionMatrix": {
+      "tnChoke": 27,
+      "fpOpen": 4,
+      "fnOpen": 5,
+      "tpOpen": 456
+    },
+    "features": [
+      "pre_next_tail_vs_onset",
+      "next_post40_80_vs_hit",
+      "next_post100_160_vs_hit",
+      "next_post170_230_vs_hit",
+      "gap_to_next_sec"
+    ]
+  },
+  "designDecision": [
+    "Use local high-band decay as strong 42/46 acoustic evidence.",
+    "Use persistence/choke evidence only for borderline articulation decisions.",
+    "This pair directly supplies repeated open->open teacher examples missing from the synchronized nanairo pair.",
+    "Do not infer new onset times from this teacher; use it only for articulation and sequence validation."
+  ]
+}
