@@ -3,6 +3,23 @@ import { chromium } from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--autoplay-policy=no-user-gesture-required']});
 const page=await browser.newPage({viewport:{width:1280,height:900}});
 const errors=[];
+await page.addInitScript(()=>{
+  class FakeSpeechRecognition {
+    constructor(){this.lang='';this.continuous=false;this.interimResults=false;this.maxAlternatives=1;this.onstart=null;this.onresult=null;this.onerror=null;this.onend=null;}
+    start(){
+      this.onstart?.();
+      setTimeout(()=>{
+        const result=[{transcript:'スネアのタイミングを確認してください'}];
+        result.isFinal=true;
+        this.onresult?.({resultIndex:0,results:[result]});
+      },20);
+    }
+    stop(){this.onend?.();}
+    abort(){this.onend?.();}
+  }
+  window.SpeechRecognition=FakeSpeechRecognition;
+  window.webkitSpeechRecognition=FakeSpeechRecognition;
+});
 page.on('console',msg=>{ if(msg.type()==='error') errors.push('console: '+msg.text()); });
 page.on('pageerror',err=>errors.push('pageerror: '+String(err)));
 
@@ -52,6 +69,19 @@ const nearestBeatDistance=value=>Math.min(...state.beatTimes.map(t=>Math.abs(t-v
 if(state.beatTimes.length>2 && nearestBeatDistance(state.apiSelection.start)<.002 && nearestBeatDistance(state.apiSelection.end)<.002){
   throw new Error('both review edges still align to beat grid');
 }
+
+const voiceButton=page.locator('#reviewVoice');
+if(await voiceButton.isDisabled()) throw new Error('voice input button unexpectedly disabled');
+await voiceButton.click();
+await page.waitForFunction(()=>document.querySelector('#reviewText')?.value.includes('スネアのタイミングを確認してください'),{},{timeout:3000});
+const voiceState=await page.evaluate(()=>({
+  value:document.querySelector('#reviewText')?.value,
+  pressed:document.querySelector('#reviewVoice')?.getAttribute('aria-pressed'),
+  label:document.querySelector('#reviewVoice')?.textContent
+}));
+console.log('VOICE_STATE',JSON.stringify(voiceState));
+if(!voiceState.value?.includes('スネアのタイミングを確認してください')) throw new Error('voice transcript was not appended');
+await voiceButton.click();
 
 await page.click('#clearSelection');
 await canvas.scrollIntoViewIfNeeded();
