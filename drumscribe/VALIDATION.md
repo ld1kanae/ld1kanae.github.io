@@ -2602,3 +2602,38 @@ Guardrail:
 - `experiments/results-arrangement-egmd-portable-v46.json`
 - `experiments/results-arrangement-kst-runtime-v47.json`
 - `experiments/results-arrangement-app-v48.json`
+
+
+---
+
+## 2026-09-23: E-GMD song-local domain calibration v45
+
+目的:
+- v44でE-GMD raw probabilityのdomain shiftが確認されたため、絶対thresholdではなく曲内分布で補正する。
+- fixed v39Dの採用済み救済は保持し、calibrationは追加候補にだけ使用。
+
+比較:
+1. C1 song/group probability percentile extreme
+2. C2 logit(E-GMD p)のsong/group median/MAD robust-z extreme
+3. C3 E-GMD rank + acoustic confidence rank + GMD slot rank + A/A' support + family quality のsoft score（thresholdは4曲train / 1曲held-out）
+
+| variant | K/S/T F1 | delta | added TP/FP |
+|---|---:|---:|---:|
+| fixed v39D | 0.938852 | +0.001118 | 9 / 0 |
+| C1 rank extreme | 0.938852 | +0.001118 | 9 / 0 |
+| **C2 robust extreme** | **0.938976** | **+0.001242** | **10 / 0** |
+| C3 soft LOOCV | 0.938852 | +0.001118 | 9 / 0 |
+
+C2追加TP:
+- diamondvirgin Kick 219.05s
+- raw E-GMD p=.9125, confidence=2.0190, GMD slot lift=2.5040
+- same-family support=0
+
+注意:
+- C2はreference-free song-local calibrationだが、今回の固定閾値自体の未知曲一般化は未確認。
+- C3のsong-held-out threshold selectionでは追加候補は0だった。
+- したがってv45はresearch candidate。production fixed v39Dは維持。
+
+詳細:
+- `experiments/ARRANGEMENT_DOMAIN_CALIBRATION_V45.md`
+- `experiments/results-arrangement-domain-calibration-v45.json`
