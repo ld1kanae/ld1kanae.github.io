@@ -40,13 +40,21 @@ function averageVectors(rows,start,end){
   return out;
 }
 
-function monoFromAudioBuffer(buffer){
-  const n=buffer.length,channels=buffer.numberOfChannels||1,out=new Float32Array(n);
-  for(let c=0;c<channels;c++){
-    const data=buffer.getChannelData(c);
-    for(let i=0;i<n;i++)out[i]+=data[i]/channels;
+function monoFromAudioBuffer(buffer,targetSampleRate=8000){
+  const sourceRate=buffer.sampleRate;
+  const rate=Math.max(2000,Math.min(sourceRate,Number(targetSampleRate)||8000));
+  const channels=buffer.numberOfChannels||1;
+  const n=Math.max(1,Math.ceil(buffer.duration*rate));
+  const out=new Float32Array(n);
+  const src=Array.from({length:channels},(_,c)=>buffer.getChannelData(c));
+  for(let i=0;i<n;i++){
+    const p=i*sourceRate/rate;
+    const j=Math.min(buffer.length-2,Math.max(0,Math.floor(p))),f=p-j;
+    let v=0;
+    for(const data of src)v+=(data[j]*(1-f)+data[j+1]*f)/channels;
+    out[i]=v;
   }
-  return out;
+  return {samples:out,sampleRate:rate};
 }
 
 function frameDescriptor(samples,start,end,sampleRate){
@@ -199,9 +207,14 @@ function assignStructuralGroups(sections){
 
 export function analyzeSections(input,options={}){
   const isBuffer=input&&typeof input.getChannelData==="function";
-  const sampleRate=isBuffer?input.sampleRate:Number(options.sampleRate);
+  let sampleRate,samples;
+  if(isBuffer){
+    const mono=monoFromAudioBuffer(input,options.analysisSampleRate||8000);
+    samples=mono.samples;sampleRate=mono.sampleRate;
+  }else{
+    sampleRate=Number(options.sampleRate);samples=input;
+  }
   if(!Number.isFinite(sampleRate)||sampleRate<=0)throw new Error("sampleRate is required");
-  const samples=isBuffer?monoFromAudioBuffer(input):input;
   if(!samples?.length)return {duration:0,boundaries:[0],sections:[],novelty:[]};
 
   const duration=samples.length/sampleRate;
