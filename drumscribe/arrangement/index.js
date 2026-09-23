@@ -9,3 +9,8 @@ export {
   rescoreKstByArrangement,
   arrangementKstPolicyV39D,
 } from './kst-rescore.js';
+
+export {
+  rescoreHatArticulationByArrangement,
+  arrangementHatPolicyV1,
+} from './hat-rescore.js';
