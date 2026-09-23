@@ -224,16 +224,36 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   // ±3% is deliberately conservative; future rubato-specific work can widen it.
   localBpms=localBpms.map(x=>clamp(x,bpm*.97,bpm*1.03));
 
-  // Reintegrate the smoothed tempo sequence so score ticks map to a continuous
-  // playback timeline anchored at MIDI tick 0.
+  // MIDI tempo changes are emitted no more often than once per measure.
+  // Preserve the total duration of each measure by replacing its beat-level
+  // BPMs with one duration-equivalent BPM. This keeps bar boundaries locked
+  // while avoiding a new tempo event on every beat.
+  const beatsPerBar=Math.max(1,numerator);
+  const tempoBars=[];
+  const playbackBpms=Array(localBpms.length).fill(bpm);
+  for(let start=0;start<localBpms.length;start+=beatsPerBar){
+    const end=Math.min(localBpms.length,start+beatsPerBar);
+    let durationSec=0,quarterBeats=0;
+    for(let b=start;b<end;b++){
+      durationSec+=60/localBpms[b]*4/denominator;
+      quarterBeats+=4/denominator;
+    }
+    const equivalent=durationSec>0?60*quarterBeats/durationSec:bpm;
+    const barBpm=clamp(equivalent,bpm*.97,bpm*1.03);
+    tempoBars.push({startBeat:start,endBeat:end,bpm:barBpm});
+    for(let b=start;b<end;b++)playbackBpms[b]=barBpm;
+  }
+
+  // Reintegrate the bar-level tempo sequence so score ticks map to the same
+  // continuous timeline used by exported MIDI and preview playback.
   const beatTimes=[0];
-  for(const x of localBpms)beatTimes.push(beatTimes[beatTimes.length-1]+60/x*4/denominator);
+  for(const x of playbackBpms)beatTimes.push(beatTimes[beatTimes.length-1]+60/x*4/denominator);
 
   const timeForScore=q=>{
-    if(q<=0)return q*60/(localBpms[0]||bpm)*4/denominator;
+    if(q<=0)return q*60/(playbackBpms[0]||bpm)*4/denominator;
     const i=Math.floor(q),f=q-i;
     if(i>=beatTimes.length-1){
-      const tail=localBpms[localBpms.length-1]||bpm;
+      const tail=playbackBpms[playbackBpms.length-1]||bpm;
       return beatTimes[beatTimes.length-1]+(q-(beatTimes.length-1))*60/tail*4/denominator;
     }
     return beatTimes[i]+f*(beatTimes[i+1]-beatTimes[i]);
@@ -252,13 +272,10 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
   const tempoMap=[];
   let previousUs=null;
   const ticksPerBeat=ppq*4/denominator;
-  for(let b=0;b<localBpms.length;b++){
-    const local=localBpms[b];
-    const us=Math.round(60000000/local);
-    // Emit at denominator-beat resolution; reference charts commonly encode
-    // small tempo variation independently of note ticks.
+  for(const bar of tempoBars){
+    const us=Math.round(60000000/bar.bpm);
     if(previousUs===null||us!==previousUs){
-      tempoMap.push({tick:Math.round(b*ticksPerBeat),bpm:local,us});
+      tempoMap.push({tick:Math.round(bar.startBeat*ticksPerBeat),bpm:bar.bpm,us});
       previousUs=us;
     }
   }
@@ -277,9 +294,11 @@ export function buildRhythmGrid(events,bpm=120,timing={}){
       fit:grid.fit,
       phaseConcentration:meanConcentration,
       tempoEvents:tempoMap.length,
-      tempoMin:Math.min(...localBpms),
-      tempoMax:Math.max(...localBpms),
-      tempoMean:mean(localBpms),
+      tempoResolution:'bar',
+      tempoBeatsPerMeasure:beatsPerBar,
+      tempoMin:Math.min(...tempoBars.map(x=>x.bpm)),
+      tempoMax:Math.max(...tempoBars.map(x=>x.bpm)),
+      tempoMean:mean(playbackBpms),
       straight16Share:straight16Count/Math.max(1,usable.length),
       straight32OnlyShare:straight32OnlyCount/Math.max(1,usable.length)
     }
