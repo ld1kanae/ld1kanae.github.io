@@ -31,3 +31,23 @@
 .review-status{min-height:20px;color:var(--muted);font-size:11px}.review-status.error{color:#ffb1a9}
 body[data-review-mode="1"] #timeline{cursor:ew-resize}
 @media(max-width:680px){.header-links{gap:9px}.timeline-view-controls{grid-template-columns:1fr}.timeline-view-controls label{grid-template-columns:52px minmax(0,1fr) 64px}.timeline-view-controls button{width:100%}.review-form{grid-template-columns:1fr}.review-form .review-add{grid-column:auto;width:100%}.review-item-actions{width:100%;margin-left:0}}
+
+
+/* Range review v2: beat-snapped popover editor + chronological review log. */
+.timeline-stage{position:relative}
+.review-popover[hidden]{display:none}
+.review-popover{position:absolute;z-index:12;top:10px;left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 24px));padding:12px;border:1px solid #8c75bd;border-radius:12px;background:rgba(14,24,39,.97);box-shadow:0 14px 35px rgba(0,0,0,.42);backdrop-filter:blur(8px)}
+.review-popover:after{content:"";position:absolute;left:50%;bottom:-9px;width:16px;height:16px;transform:translateX(-50%) rotate(45deg);background:#101c2d;border-right:1px solid #8c75bd;border-bottom:1px solid #8c75bd}
+.review-popover-range{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.review-popover-range strong{font:800 11px/1 ui-monospace,SFMono-Regular,Consolas,monospace;color:#e2d5ff}
+.review-popover-range span{font-size:10px;color:var(--muted)}
+.review-popover label{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;align-items:start;margin-top:7px;color:var(--muted);font-size:10px}
+.review-popover select,.review-popover textarea{width:100%;border:1px solid #385166;border-radius:7px;background:#0b1726;color:var(--text);padding:7px}
+.review-popover textarea{min-height:64px;resize:vertical}
+.review-popover-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:9px}
+.review-popover-actions button{border:1px solid #3d7186;border-radius:7px;background:#17354a;color:#e7f7ff;padding:6px 10px;font-weight:700;font-size:11px}
+.review-popover-actions .primary{margin-left:0;min-width:86px;background:var(--cyan);border-color:var(--cyan);color:#071b27}
+.review-log-block{cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+.review-log-block:hover,.review-log-block:focus-visible{outline:none;border-color:#7a66a4;background:#101f31;transform:translateY(-1px)}
+.review-panel .review-history{margin-top:0}
+@media(max-width:680px){.review-popover{top:7px;width:calc(100% - 14px);padding:10px}.review-popover label{grid-template-columns:1fr;gap:3px}.review-popover textarea{min-height:56px}.review-popover-actions{flex-wrap:wrap}.review-popover-actions button{flex:1}}
