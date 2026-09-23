@@ -90,7 +90,7 @@ export async function rescueRideOpenV57(decoded,events,options={}){
     scored++;
     if(p<threshold)return {...e,hatContextProbability:p};
     changed++;
-    return {...e,group:'open_hat',hatContextProbability:p,hatContextRideRescue:true};
+    return {...e,group:'open_hat',note:46,hatContextProbability:p,hatContextRideRescue:true};
   });
   return {events:out,info:{...info,enabled:true,scored,changed}};
 }
