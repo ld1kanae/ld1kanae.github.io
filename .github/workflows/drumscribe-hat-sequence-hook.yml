@@ -1,0 +1,53 @@
+name: DrumScribe hat sequence experiment hook
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/drumscribe-hat-sequence-hook.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Add guarded experiment hook
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('drumscribe/transcribe.js')
+          s=p.read_text()
+          def once(old,new):
+              global s
+              if old not in s:
+                  raise SystemExit('replacement not found:\n'+old)
+              s=s.replace(old,new,1)
+          once("import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';",
+               "import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';\nimport {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';")
+          once("  let adtofCymbal=[];\n  let adtofSnareRescue=[];",
+               "  let adtofCymbal=[];\n  let adtofBroadMetal=[];\n  let adtofSnareRescue=[];")
+          once("    const replacement=ad.events.filter(e=>e.group!=='cymbal');\n    adtofCymbal=ad.events.filter(e=>e.group==='cymbal');",
+               "    const replacement=ad.events.filter(e=>e.group!=='cymbal');\n    adtofBroadMetal=ad.events.filter(e=>e.group==='hat'||e.group==='cymbal');\n    adtofCymbal=ad.events.filter(e=>e.group==='cymbal');")
+          once("  pruned=openHat.events;\n  adtofInfo.openHat=openHat.info;\n\n  const noteOf=",
+               "  pruned=openHat.events;\n  adtofInfo.openHat=openHat.info;\n\n  // Review-trained alternating-eighth repair is experiment-gated. It may\n  // alter metal articulation/onsets only; kick/snare/tom are never changed.\n  const hatSequence=await repairAlternatingHiHats(decoded,pruned,adtofBroadMetal,bpm,barInfo.phaseSec,options.hatSequenceVariant||'off');\n  pruned=hatSequence.events;\n  adtofInfo.hatSequence=hatSequence.info;\n\n  const noteOf=")
+          p.write_text(s)
+          Path('.github/workflows/drumscribe-hat-sequence-hook.yml').unlink()
+          PY
+      - name: Static checks
+        run: |
+          node --check drumscribe/hat-sequence.js
+          node --check drumscribe/transcribe.js
+          grep -q "hatSequenceVariant||'off'" drumscribe/transcribe.js
+      - name: Commit hook
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "drumscribe: add guarded alternating hi-hat experiment hook"
+          git pull --rebase origin main
+          git push origin HEAD:main
