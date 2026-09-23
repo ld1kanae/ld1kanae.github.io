@@ -1,4 +1,4 @@
-import {buildRhythmGrid,GRID_PPQ as PPQ} from './rhythm-grid.js?v=20260923-grid-v28';
+import {buildRhythmGrid,GRID_PPQ as PPQ} from './rhythm-grid.js?v=20260923-grid-v29';
 
 // Standard MIDI file type 0: channel 10 percussion, PPQ 480.
 // Preview events stay on the audio timeline. Export uses score-grid ticks plus
