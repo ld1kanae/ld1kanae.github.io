@@ -1486,3 +1486,72 @@ BPM/bar推定は従来browser validationと同一:
 ただしこのreal-browser 5曲値 **0.815346** は、Cycles 225–227でproduction hyperparameterをLOO選定した後、最終配布モデルを5曲全体で再学習した重みを同じ5曲に適用した値であり、未知曲への独立推定値ではない。未知曲相当のheld-out指標としては、固定production ruleのLOO値 **overall F1 0.812767 / hat F1 0.809379** を引き続き採用する。
 
 今回の一周では新しいアルゴリズム系列へ進まず、c225–227で既に選抜済みのproduction候補を実browserで成立させるところまでで停止する。
+
+## 2026-09-23: kick / snare / tom 優先のproduction補正
+
+ユーザー判断により、金物より **バスドラム・スネア・タムの採譜を優先**する。既存production browser（44.1 kHz hat filter統合後）を基準に、kick/snare/tomを個別に確認してから限定的な後処理を追加した。参照 `chart.mid` は予測生成には使用せず、仮説の失敗分析と生成後の採点だけに使用した。
+
+### 変更前の実browser基準
+
+|Part|TP / Pred / Ref|Precision|Recall|F1|
+|---|---:|---:|---:|---:|
+|kick|2636 / 2765 / 2712|0.953345|0.971976|0.962571|
+|snare|1261 / 1377 / 1470|0.915759|0.857823|0.885845|
+|tom|69 / 89 / 92|0.775281|0.750000|0.762431|
+
+曲別では `arcaround` のsnareが 131 / 147 / 292 と再現率不足、tomが 7 / 22 / 12 と過検出だった。一方 kaiju のtomは 22 / 22 / 23 で良好だったため、全曲共通のtom閾値強化は避けた。
+
+参照MIDIの同一tick共起を確認すると、kick+tomは5曲合計4回（arcaround 1、diamondvirgin 3、kaiju/nanairo/ray 0）なのに対し、kick+snareは arcaround 172、diamondvirgin 13、kaiju 3、nanairo 103、ray 133 回あった。したがって kick と tom の衝突は誤認抑制材料として使いやすいが、kick と snare を相互排他にするのは不適切と判断した。
+
+### 仮説A: kick bleedによる弱いtomだけを除去
+
+ADTOFのtomがkickから30 ms以内にあり、tom run（45–240 ms内の別tom）にも属さず、tom confidence < 1.45 の場合だけ除去する。強いtomと連続tomは残す。
+
+実Chromium 5曲再生成後:
+
+- kick: 変更なし
+- snare: 変更なし
+- tom: **69 / 84 / 92**
+- tom precision: **0.821429**
+- tom recall: **0.750000**
+- tom F1: **0.784091**
+- arcaround tom: 7 / 22 / 12 → **7 / 17 / 12**
+
+5件のfalse positiveを除去し、true positiveは失わなかったため採用。
+
+### 仮説B: 同時kickに埋もれたsnareを低閾値ADTOFから限定救済
+
+通常snare閾値は維持したまま、ADTOF内部から低閾値snare候補を別ストリームとして取得する。直接出力はせず、以下をすべて満たす場合だけ追加する。
+
+- low-threshold snare scale: **0.50**
+- 既存snareから35 ms以内に無い
+- kickから40 ms以内
+- song-level rescue density = low candidates / base snares >= **1.24**
+- song-level snare/kick count ratio <= **0.30**
+- activation >= **0.12**
+- activation >= **0.25 × 同時kick activation**
+- 同じ16分位置の低閾値候補が近傍±8小節内に **2件以上**ある
+
+このsong-level gateは現5曲では arcaround のみ発火した（rescue density 1.2721、snare/kick 0.2504）。他4曲は変更しなかった。
+
+周回結果:
+
+|Round|変更|arcaround snare TP / Pred / Ref|5曲snare F1|判断|
+|---|---|---:|---:|---|
+|1|rescue scale 0.86、保守条件|131 / 147 / 292|0.885845|候補不足、追加0|
+|2|rescue scale 0.50、density gate 1.40|131 / 147 / 292|0.885845|候補187件まで増えたがgate不発|
+|3|density gate 1.24、同位置反復3件|139 / 155 / 292|0.888967|追加8件が8件ともTP|
+|4|同位置反復2件|**143 / 159 / 292**|**0.890521**|追加12件が12件ともTP、採用|
+
+最終5曲snareは **1273 / 1389 / 1470**、precision **0.916487**、recall **0.865986**、F1 **0.890521**。kickは **F1 0.962571のまま不変**、tomは **F1 0.784091**を維持した。
+
+現行hat等も含む最終実browser全体は **TP 7461 / Pred 8192 / Ref 10086、precision 0.910767、recall 0.739738、F1 0.816391**。今回の採用判断はoverallだけでなく、最優先のkick/snare/tomが悪化していないことを条件にした。
+
+### production反映
+
+- `drumscribe/adtof.js`: 低閾値snare候補ストリームを追加。通常イベントには直接混ぜない。
+- `drumscribe/transcribe.js`: song-adaptive layered snare rescue と weak isolated kick/tom veto を追加。
+- 検証ブランチでreal Chromium 5曲生成・比較を完走後、`main` へ反映した。
+
+この5曲を見ながらルールを選定しているため、未知曲で同じ改善幅を保証しない。特にsnare rescueのsong-level gateは未知曲での誤発火を今後追加曲で検証する必要がある。
+
