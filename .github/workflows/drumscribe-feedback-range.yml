@@ -42,5 +42,5 @@ jobs:
           exit 1
       - name: Verify waveform range selection
         env:
-          DRUMSCRIBE_FEEDBACK_URL: "http://127.0.0.1:8000/drumscribe/feedback.html?ci=\${{ github.sha }}"
+          DRUMSCRIBE_FEEDBACK_URL: "http://127.0.0.1:8000/drumscribe/feedback.html?ci=${{ github.sha }}"
         run: node drumscribe/experiments/feedback_range_smoke.mjs
