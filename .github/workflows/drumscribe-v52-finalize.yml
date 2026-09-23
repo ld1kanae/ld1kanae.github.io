@@ -1,5 +1,6 @@
 name: DrumScribe v52 finalize
 
+# trigger: 2
 on:
   push:
     branches: [main]
@@ -18,29 +19,23 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          handoff=Path('drumscribe/AI_HANDOFF.md');h=handoff.read_text()
+          hp=Path('drumscribe/AI_HANDOFF.md');h=hp.read_text()
           title='## 2026-09-23 Alternating Hi-Hat v52 — production採用済み'
-          summary='''## 2026-09-23 Alternating Hi-Hat v52 — production採用済み
+          block='''## 2026-09-23 Alternating Hi-Hat v52 — production採用済み
 
-- 対象: uploaded `君は詩人になった [drums].wav` の10レビュー区間。
-- 原因: Open確率圧縮（max 0.6565 / Open比5.24% / trusted-open 0）と、交互列でlegacy確率が逆転（Open位置0.3827、Closed位置0.4816）。一部はHH事前削除、Crash誤分類、余分な16分metalも含む。
-- 実装: `models/alternating-hi-hat-review-v1.json` + `hat-sequence.js`。
-- default: `inversion-guarded-rescue`。
-- 3–21 kHzのpre-hit / tail / next-hit前後から減衰・chokeを判定。強い8分交互列だけ42/46再判定、in-run Crash/Ride→HH、off-grid metal削除、broad metal/high-band証拠 + 二手guard付き欠落救済。
-- identity-independent gate: sample数、negative parity correlation、max Open p、current Open ratio。曲名・file名・絶対時刻を使わない。
-- target exact 42/46 F1: 0.357143 -> **0.877193**。precision 0.941781 / recall 0.820896。onset F1 0.880383。
-- target K/S/T counts 418 / 260 / 18、変更なし。完全復元ではなくReview 4は125中87 exact、Review 10は53中45 exact。
-- v50 ungatedは5曲467音を書き換えHH macro F1 0.723090→0.630352以下へ悪化したため不採用。
-- v51 gateは既存5曲0/5発火。
-- v52 fresh defaultは既存5曲でprevious baselineとevent-list完全一致。K/S/T・metal deltaは全て0。
+- `君は詩人になった [drums].wav` の10レビューから、減衰・次打直前・次打後chokeを含む4band sequence modelを追加。
+- 原因はOpen確率圧縮と交互パリティ反転。一部はmissing onset / Crash誤分類 / off-grid metalも混在。
+- runtime: `models/alternating-hi-hat-review-v1.json`, `hat-sequence.js`, default `inversion-guarded-rescue`。
+- 曲名・file名・絶対時刻は使わず、negative parity correlation + max Open probability + Open ratioでsong-local gate。
+- target exact 42/46 F1 0.357143 -> **0.877193**、onset F1 0.755102 -> **0.880383**。K/S/T count 418/260/18は不変。
+- ungated v50は既存5曲を悪化させ不採用。v51/v52では既存5曲0/5発火、event-list完全一致、全part delta 0。
 - 詳細: `experiments/KIMIHASHIJIN_HAT_REVIEW_V52.md`, `HAT_SEQUENCE_REVIEW_V50.md`, `HAT_SEQUENCE_REVIEW_V51.md`, `HAT_SEQUENCE_RUNTIME_V52.md`。
 
 '''
           if title not in h:
               marker='# DrumScribe AI Handoff\n\n'
-              handoff.write_text(h.replace(marker,marker+summary,1) if marker in h else summary+h)
-
-          validation=Path('drumscribe/VALIDATION.md');v=validation.read_text()
+              hp.write_text(h.replace(marker,marker+block,1) if marker in h else block+h)
+          vp=Path('drumscribe/VALIDATION.md');v=vp.read_text()
           vtitle='## 2026-09-23: Alternating Hi-Hat v50-v52 — 君は詩人 review修正'
           section='''
 
@@ -48,31 +43,20 @@ jobs:
 
 ## 2026-09-23: Alternating Hi-Hat v50-v52 — 君は詩人 review修正
 
-- source SHA-256: `2a27998b8c38f0a80bfacc6605ba8a2e9674a6739cb4f3e96b03cac30993bda0`
-- duration 181.79104166666667 sec
+- source SHA-256 `2a27998b8c38f0a80bfacc6605ba8a2e9674a6739cb4f3e96b03cac30993bda0`
 - fresh BPM 134.00772874831776 / bar phase 0.012158813638728061 sec
-- gold chartなし。期待slotはユーザーの10レビューと8分gridから評価用に解釈し、runtimeへ絶対時刻を埋め込まない。
-
-原因:
-- legacy Open max 0.656499 / ratio 0.052419 / trusted-open 0。
-- sequence Open位置 p 0.382673、Closed位置 p 0.481576、delta -0.098903。
-- articulationだけでなくmissing onset / Crash誤分類 / off-grid metalを含む。
-
-| Variant | exact 42/46 F1 | precision | recall | onset F1 |
-|---|---:|---:|---:|---:|
-| off | 0.357143 | 0.415020 | 0.313433 | 0.755102 |
-| inversion-articulation | 0.751701 | 0.873518 | 0.659701 | 0.755102 |
-| inversion-metal-grid | 0.779541 | 0.952586 | 0.659701 | 0.783069 |
-| **inversion-guarded-rescue** | **0.877193** | **0.941781** | **0.820896** | **0.880383** |
-
-v50 ungatedは5曲HH macro 0.723090から0.630352 / 0.615958 / 0.615707へ悪化し不採用。
-v51 gate条件: samples>=24, parity delta<=-0.055, max legacy p<=0.70, Open ratio<=0.12。既存5曲0/5発火。
-v52 default fresh: existing 5 songs event equality true; kick/snare/tom/closed/open/ride/pedal/crash deltaすべて0。chart.midは生成後scoringだけ。
+- gold chartなし。期待slotはユーザーreviewと8分gridから評価用に解釈し、runtimeへ絶対時刻を埋め込まない。
+- root cause: legacy Open max 0.656499 / ratio 0.052419 / trusted-open 0 / parity delta -0.098903。
+- 3仮説 exact F1: articulation 0.751701 / metal-grid 0.779541 / guarded-rescue **0.877193**（baseline 0.357143）。
+- v50 ungatedは5曲HH macro 0.723090から0.630352以下へ悪化し不採用。
+- v51 gate: samples>=24, parity delta<=-0.055, max p<=0.70, Open ratio<=0.12。既存5曲0/5発火。
+- v52 default fresh: existing 5 songs event equality true; K/S/T・closed/open/ride/pedal/crash delta全て0。chart.midは生成後scoringだけ。
+- 詳細は `experiments/KIMIHASHIJIN_HAT_REVIEW_V52.md` と `experiments/HAT_SEQUENCE_RUNTIME_V52.md`。
 '''
-          if vtitle not in v: validation.write_text(v+section)
+          if vtitle not in v: vp.write_text(v+section)
           for name in ['drumscribe-runtime-bundle.yml','drumscribe-hat-sequence-docs-v52.yml','drumscribe-v52-finalize.yml']:
               p=Path('.github/workflows')/name
-              if p.exists():p.unlink()
+              if p.exists(): p.unlink()
           PY
       - name: Commit final state
         run: |
