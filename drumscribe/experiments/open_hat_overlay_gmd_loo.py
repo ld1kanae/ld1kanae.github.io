@@ -170,7 +170,10 @@ def train_overlay(d,songs,gX,gY,fam,seed):
         "localRows":len(ly),"localPositive":int(ly.sum()),"gmdRows":len(gy),"gmdPositive":int(gy.sum())}
 
 def train_base(d,songs,hatX,hatY):
-    return ext.train_model(d,songs,(hatX,hatY))
+    X=np.concatenate([*(d[s]["X"]["timbre_norm"] for s in songs),hatX])
+    y=np.concatenate([*((d[s]["y"]==1).astype(np.int8) for s in songs),hatY])
+    return ExtraTreesClassifier(n_estimators=320,max_depth=13,min_samples_leaf=4,
+      class_weight="balanced",random_state=560,n_jobs=-1).fit(X,y)
 
 def probs(model,X):
     if not len(X):return np.zeros(0)
