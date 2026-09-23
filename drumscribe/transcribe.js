@@ -304,6 +304,27 @@ function meanTop(values,fraction=.2){
   let s=0;for(let i=a.length-n;i<a.length;i++)s+=a[i];
   return s/n;
 }
+// Metric-position priors from Senn et al. (2023), Table 3:
+ // 211 Western popular-music drum patterns from the Lucerne Groove Research Library.
+ // They are deliberately used only as a weak downbeat tie-breaker; they never
+ // relabel detected kick/snare events because four-on-the-floor, syncopation,
+ // half-time and other idioms make such hard relabeling unsafe.
+const POPULAR_RHYTHM_PRIOR={
+  kick:[.914,.033,.320,.192,.184,.063,.246,.162,.641,.065,.454,.206,.191,.133,.238,.108],
+  snare:[.039,.102,.057,.040,.887,.084,.074,.187,.082,.209,.084,.056,.847,.085,.145,.187]
+};
+function popularRhythmPriorScore(events,bpm,phase){
+  const beat=60/bpm,bar=4*beat;
+  let sum=0,n=0;
+  for(const e of events){
+    const prior=POPULAR_RHYTHM_PRIOR[e.group];
+    if(!prior)continue;
+    const rel=((e.time-phase)%bar+bar)%bar;
+    const slot=Math.round(rel/beat*4)%16;
+    sum+=prior[slot];n++;
+  }
+  return n?sum/n:0;
+}
 function barGridCandidateFeatures(events,sim,band,bpm,beatPhase){
   const beat=60/bpm,bar=4*beat,anchors=crashAnchors(events,sim);
   const kicks=events.filter(e=>e.group==='kick'),snares=events.filter(e=>e.group==='snare');
@@ -339,7 +360,8 @@ function barGridCandidateFeatures(events,sim,band,bpm,beatPhase){
       lowTop:meanTop(lowVals,.2),
       midMean:midVals.reduce((a,b)=>a+b,0)/Math.max(1,midVals.length),
       highMean:highVals.reduce((a,b)=>a+b,0)/Math.max(1,highVals.length),
-      highTop:meanTop(highVals,.2)
+      highTop:meanTop(highVals,.2),
+      rhythmPrior:popularRhythmPriorScore(events,bpm,phase)
     });
   }
   return rows;
@@ -386,9 +408,20 @@ function estimateHybridBarPhase(events,sim,bpm,beatPhase,band){
     source='backbeat_kick';
     refineMode='roles';
   }else{
+    // Low-frequency evidence is the primary fallback. When several offsets are
+    // effectively tied (within 1.5%), use the corpus-derived kick/snare metric
+    // profile only as a tie-breaker. This preserves unusual grooves when the
+    // acoustic evidence is decisive and avoids forcing every song into a rock beat.
+    const bestLow=Math.max(...rows.map(r=>r.lowMean));
+    const tolerance=Math.max(.01,Math.abs(bestLow)*.015);
     pool=rows.slice();
     for(const r of pool)r.selectionScore=r.lowMean;
-    pool.sort((a,b)=>b.selectionScore-a.selectionScore);
+    pool.sort((a,b)=>{
+      const aNear=bestLow-a.lowMean<=tolerance,bNear=bestLow-b.lowMean<=tolerance;
+      if(aNear!==bNear)return aNear?-1:1;
+      if(aNear&&Math.abs(b.rhythmPrior-a.rhythmPrior)>1e-9)return b.rhythmPrior-a.rhythmPrior;
+      return b.lowMean-a.lowMean;
+    });
     source='low_fallback';
     refineMode='legacy';
   }
