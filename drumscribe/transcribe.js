@@ -922,7 +922,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
 
   // Crash experiments are deliberately post-gated after the existing two-hand
   // selection, so changing crash precision cannot change kick/snare/tom retention.
-  const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto','hat-accent-080','hat-accent-100','hat-accent-120'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
+  const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto','hat-accent-080','hat-accent-100','hat-accent-120','competition-open-state','competition-template','competition-hybrid'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
   const crashConfidenceThreshold=({'confidence-115':1.15,'confidence-125':1.25,'confidence-135':1.35,'confidence-gated':1.45}[cymbalVariant]??1.45);
   const structuralHatTimes=structural
     .filter(e=>e.group==='hat'||e.group==='pedal_hat')
@@ -1037,7 +1037,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
     confidenceSupported:0,hatVetoed:0,accentVetoed:0,confidenceThreshold:crashConfidenceThreshold,
     accentThreshold:({'hat-accent-080':.80,'hat-accent-100':1.00,'hat-accent-120':1.20}[cymbalVariant]??null)
   };
-  if(cymbalVariant!=='legacy'){
+  const postGateVariants=new Set(['raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto','hat-accent-080','hat-accent-100','hat-accent-120']);
+  if(postGateVariants.has(cymbalVariant)){
     pruned=pruned.filter(e=>{
       if(e.group!=='crash'||!e.cymbalEvidence)return true;
       const ev=e.cymbalEvidence;
@@ -1087,6 +1088,81 @@ export async function transcribe(decoded,report=()=>{},options={}){
   const hatSequence=await repairAlternatingHiHats(decoded,pruned,adtofBroadMetal,bpm,barInfo.phaseSec,options.hatSequenceVariant||'inversion-guarded-rescue');
   pruned=hatSequence.events;
   adtofInfo.hatSequence=hatSequence.info;
+
+  // v55: explicit Crash-vs-Hat-family competition.
+  // This stage is deliberately after the existing two-hand allocation,
+  // high-resolution hat filter, articulation classifier and sequence repair.
+  // Therefore a competition decision can remove only a crash; it cannot
+  // resurrect, delete or retime kick/snare/tom events.
+  const competitionVariants=new Set(['competition-open-state','competition-template','competition-hybrid']);
+  const crashCompetition={
+    enabled:competitionVariants.has(cymbalVariant),
+    variant:cymbalVariant,
+    windowSec:.075,
+    collisions:0,removed:0,kept:0,rawSupported:0,
+    openStateWins:0,templateWins:0,hybridWins:0,
+    decisions:[]
+  };
+  if(crashCompetition.enabled){
+    const finalHats=pruned
+      .filter(e=>e.group==='hat'||e.group==='open_hat')
+      .slice().sort((a,b)=>a.time-b.time);
+    const nearestHat=(time)=>{
+      let best=null,dist=Infinity;
+      for(const h of finalHats){
+        const d=Math.abs(h.time-time);
+        if(d<dist){dist=d;best=h;}
+        if(h.time>time+.075)break;
+      }
+      return dist<=.075?{hat:best,dist}:null;
+    };
+    pruned=pruned.filter(e=>{
+      if(e.group!=='crash'||!e.cymbalEvidence)return true;
+      const hit=nearestHat(e.time);
+      if(!hit)return true;
+      crashCompetition.collisions++;
+      const ev=e.cymbalEvidence,h=hit.hat;
+      const openProbRaw=Number(h.openHatProbability);
+      const alternatingProb=Number(h.alternatingHatProbability);
+      const openProb=Number.isFinite(openProbRaw)?openProbRaw:
+        (Number.isFinite(alternatingProb)?alternatingProb:(h.group==='open_hat'?.60:.20));
+      const crashSim=Number(ev.crashSimilarity)||0;
+      const hatSim=Number(ev.hatSimilarity)||0;
+      const margin=crashSim-hatSim;
+      const conf=Number(ev.baseConfidence)||0;
+      const raw=Boolean(ev.crashSupport);
+      if(raw)crashCompetition.rawSupported++;
+      const strongOpen=h.group==='open_hat'||openProb>=.58;
+      let keep=true,reason='keep';
+      if(cymbalVariant==='competition-open-state'){
+        // Open state is allowed to win only when the crash lacks independent
+        // raw support and lacks both a strong template margin and activation.
+        keep=raw||!strongOpen||(conf>=1.55&&margin>=.035);
+        if(!keep){reason='open-state';crashCompetition.openStateWins++;}
+      }else if(cymbalVariant==='competition-template'){
+        // Direct class competition. Bar-head position is intentionally absent:
+        // it may create a candidate but cannot decide the winner.
+        keep=raw||margin>=.015||(conf>=1.70&&margin>=-.020);
+        if(!keep){reason='hat-template';crashCompetition.templateWins++;}
+      }else if(cymbalVariant==='competition-hybrid'){
+        // Conservative union: strong open state raises the evidence required
+        // for Crash, while a closed hat still competes by timbre.
+        const requiredMargin=strongOpen?.045:.005;
+        const requiredConfidence=strongOpen?1.45:1.25;
+        keep=raw||(conf>=requiredConfidence&&margin>=requiredMargin)||(conf>=1.85&&margin>=-.015);
+        if(!keep){reason=strongOpen?'hybrid-open':'hybrid-template';crashCompetition.hybridWins++;}
+      }
+      if(keep)crashCompetition.kept++;else crashCompetition.removed++;
+      crashCompetition.decisions.push({
+        time:e.time,hatTime:h.time,hatDistanceSec:hit.dist,hatGroup:h.group,
+        openProbability:openProb,crashSimilarity:crashSim,hatSimilarity:hatSim,
+        templateMargin:margin,baseConfidence:conf,rawCrashSupport:raw,
+        keep,reason
+      });
+      return keep;
+    });
+  }
+  adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashCompetition};
 
   const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:44,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
