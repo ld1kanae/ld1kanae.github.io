@@ -7,6 +7,7 @@ on:
     paths:
       - "drumscribe/adtof.js"
       - "drumscribe/transcribe.js"
+      - "drumscribe/tom-pitch.js"
       - "drumscribe/gmd-bar-phase.js"
       - "drumscribe/models/gmd-kst/bar-phase-discriminative-v1.json"
       - "drumscribe/rhythm-grid.js"
@@ -22,6 +23,7 @@ on:
       - "drumscribe/models/egmd-kst-reclassifier-v4.json"
       - "drumscribe/experiments/browser_validate.mjs"
       - "drumscribe/experiments/compare_browser.py"
+      - "drumscribe/experiments/compare_tom_pitch_browser.py"
       - "drumscribe/experiments/evaluate_v2.py"
       - ".github/workflows/drumscribe-main-kst-validation.yml"
   workflow_dispatch:
@@ -55,5 +57,7 @@ jobs:
         run: python drumscribe/experiments/validate_grid_browser.py
       - name: Score current main MIDI
         run: python drumscribe/experiments/compare_browser.py
+      - name: Score tom pitch subdivision
+        run: python drumscribe/experiments/compare_tom_pitch_browser.py
       - name: Score open/closed hi-hat articulation
         run: python drumscribe/experiments/compare_open_hat_browser.py
