@@ -6,6 +6,37 @@
 >
 > 詳細な試行錯誤は `VALIDATION.md` にあるが、最初から全文を読まないこと。必要な節だけ参照する。
 
+## 2026-09-23 Proof v34 — tempo octave / GMD bar phase
+
+Proof WAVで現行mainの198.164 BPM倍取りを再現。内部event-familyは99.125 BPMを最上位にしていたため、**高信頼な2x tempo octave errorだけを補正するgate**を追加。
+
+Proof:
+- initial 198.163894
+- event-family 99.125
+- ratio 1.99913
+- family score .66037 vs 2x candidate .42309
+- margin .23728
+- corrected BPM ≈ 99.076668
+
+GMD train-onlyから `models/gmd-kst/bar-phase-discriminative-v1.json` を学習。単独精度は十分高くないため、`audio-event-octave-corrected` の場合だけbar phase補助として使用する。
+
+Proof full-song event replay:
+- phase .123011 s
+- runner 1.088172 s
+- margin .77551
+- coverage .8857
+- gate pass
+
+instrumental section noveltyも旧1.039 s位相より新.123 s位相を支持するが、単独決定には使わない。
+
+5曲fresh Chromium run `35846141342`:
+- F1 .818 / P .911 / R .743
+- grid residual 0
+- note counts baselineと同一
+- 新GMD bar-phase発火 0/5
+
+詳細: `AI_HANDOFF_GRID_V34.md`, `experiments/PROOF_V34.md`, `experiments/results-proof-v34.json`
+
 ## 0. 目的と優先順位
 
 DrumScribe は、**ドラム単独音源**（WAV / MP3 等）をブラウザ内で解析し、GM percussion channel 10 の MIDI を作る試作。
