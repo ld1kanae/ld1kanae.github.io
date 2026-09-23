@@ -160,10 +160,14 @@ def context_features(d,s,c):
         for g in ("kick","snare","hat","crash","ride"):
             z=nearest_sorted(by[g],t)
             flags.extend([1. if z<=.035 else 0.,1. if z<=.070 else 0.])
+        def griderr(step):
+            q=round(barpos/step)*step
+            return min(abs(barpos-q)/(step/2),1.)
         rows.append([
           np.sin(2*np.pi*barpos),np.cos(2*np.pi*barpos),
           np.sin(4*np.pi*barpos),np.cos(4*np.pi*barpos),
           np.sin(8*np.pi*barpos),np.cos(8*np.pi*barpos),
+          griderr(.5),griderr(.25),griderr(.125),
           min(prev/beat,4.),min(nxt/beat,4.),
           min(dens25,12)/12.,min(dens50,24)/24.,
           *dists,*flags,*rep[i].tolist(),
