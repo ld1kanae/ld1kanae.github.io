@@ -7,12 +7,13 @@ const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],openHatVoices=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
 let exampleId='';
 let reviewSelection=null;
+let reviewBeatTimes=[];
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,44,45,46,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
-function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();tell(`${f.name} を選択しました。`);dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name}}));}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;reviewBeatTimes=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();tell(`${f.name} を選択しました。`);dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name}}));}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 const drop=$('drop');
 for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
@@ -62,6 +63,20 @@ $('analyze').addEventListener('click',async()=>{
     }
     const rhythmGrid=buildRhythmGrid(events,detectedBpm,{barPhaseSec,numerator,denominator,bars:meter.bars});
     const exportOffsetSec=rhythmGrid.exportOffsetSec,exportBarPad=rhythmGrid.barPad;
+    reviewBeatTimes=[];
+    if(typeof rhythmGrid.timeForScore==='function'){
+      const approxBeats=Math.ceil((decoded.duration+Math.abs(exportOffsetSec)+barSec*2)/Math.max(.01,beatSec));
+      for(let q=-numerator*2;q<=approxBeats;q++){
+        const t=rhythmGrid.timeForScore(q)-exportOffsetSec;
+        if(Number.isFinite(t)&&t>=-.001&&t<=decoded.duration+.001)reviewBeatTimes.push(Math.max(0,Math.min(decoded.duration,t)));
+      }
+      reviewBeatTimes=[...new Set(reviewBeatTimes.map(t=>Number(t.toFixed(6))))].sort((a,b)=>a-b);
+    }
+    if(reviewBeatTimes.length<2){
+      const first=Number.isFinite(barPhaseSec)?barPhaseSec:0;
+      for(let t=first;t<=decoded.duration+.001;t+=beatSec)if(t>=0)reviewBeatTimes.push(Math.min(decoded.duration,t));
+      if(reviewBeatTimes[0]>0)reviewBeatTimes.unshift(0);
+    }
     const ticksPerBeat=GRID_PPQ*4/denominator;
     midiEvents=events.map((e,i)=>{
       const tick=Number(rhythmGrid.eventTicks?.[i])||0;
@@ -243,6 +258,31 @@ globalThis.DrumScribeTimeline={
   clearSelection:()=>{reviewSelection=null;draw();},
   getSelection:()=>reviewSelection?{...reviewSelection}:null,
   getAnalysis:()=>globalThis.__drumscribeResult||null,
+  getBeatTimes:()=>reviewBeatTimes.slice(),
+  snapRangeToBeats:(start,end)=>{
+    const beats=reviewBeatTimes;
+    const d=decoded?.duration||0;
+    if(beats.length<2||!d){
+      const a=Math.max(0,Math.min(d,Number(start)||0)),b=Math.max(0,Math.min(d,Number(end)||0));
+      return {start:Math.min(a,b),end:Math.max(a,b),beats:null};
+    }
+    const nearestIndex=time=>{
+      let lo=0,hi=beats.length-1;
+      while(lo<hi){const mid=(lo+hi)>>1;if(beats[mid]<time)lo=mid+1;else hi=mid;}
+      if(lo<=0)return 0;
+      if(lo>=beats.length)return beats.length-1;
+      return Math.abs(beats[lo]-time)<Math.abs(beats[lo-1]-time)?lo:lo-1;
+    };
+    const rawA=Math.max(0,Math.min(d,Number(start)||0)),rawB=Math.max(0,Math.min(d,Number(end)||0));
+    const forward=rawB>=rawA;
+    let ia=nearestIndex(rawA),ib=nearestIndex(rawB);
+    if(ia===ib){
+      if(forward){if(ib<beats.length-1)ib++;else if(ia>0)ia--;}
+      else{if(ib>0)ib--;else if(ia<beats.length-1)ia++;}
+    }
+    const left=Math.min(ia,ib),right=Math.max(ia,ib);
+    return {start:beats[left],end:beats[right],beats:Math.max(1,right-left),startBeat:left,endBeat:right};
+  },
   focusRange:(start,end)=>{timelineView.focusRange(start,end);draw();}
 };
 dispatchEvent(new Event('drumscribe:timeline-ready'));
