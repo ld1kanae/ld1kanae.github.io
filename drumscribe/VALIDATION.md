@@ -1625,3 +1625,293 @@ GMD/E-GMDは **snareの第二判定・候補順位付けには有望**だが、�
 
 次の有力案は、E-GMD 90GB全体を扱うのではなく、kit-held-outの小規模音声subsetでADTOFのkick/snare/tom誤分類を直接学習し、現在の低信頼候補だけを再分類する軽量モデルを作ること。
 
+
+
+## 2026-09-23 — Open / Closed Hi-Hat articulation learning + GMD augmentation
+
+現行browserでは hi-hat の打点検出自体は改善していたが、最終MIDIマッピングが `hat:42` 固定で、**MIDI 46 (Open Hi-Hat) が1発も出ない**状態だった。ここでは既存のhat onset detectorを変更せず、検出済みhatだけを **42 Closed / 46 Open** に後段再分類する方針で検証した。
+
+### 教師データと基礎確認
+
+DruMaster `assets/drums` には直接:
+- `42.wav`: Closed Hi-Hat
+- `44.wav`: Pedal Hi-Hat
+- `46.wav`: Open Hi-Hat
+
+が存在する。42/46 sampleの減衰を実測すると、先頭25 msに対し:
+- 42.wav: 60–120 ms **-18.21 dB**, 120–220 ms **-41.19 dB**
+- 46.wav: 60–120 ms **-3.70 dB**, 120–220 ms **-4.80 dB**
+
+で、open/closed判定に使える明確な sustain / decay 差がある。
+
+5曲 `chart.mid` の正解数:
+- Closed 42: **2923**
+- Open 46: **1179**
+- Pedal 44: **676**
+
+Open 46 曲別:
+- arcaround 93
+- diamondvirgin 502
+- kaiju 22
+- nanairo 240
+- ray 322
+
+一方、旧browser生成MIDIは5曲すべて 46=0。
+
+既存browserのhat候補時刻が参照Open 46から80 ms以内に存在する上限確認:
+- arcaround **29 / 93**
+- diamondvirgin **41 / 502**
+- kaiju **16 / 22**
+- nanairo **239 / 240**
+- ray **285 / 322**
+
+したがって nanairo / ray は主にarticulation分類問題だが、diamondvirginはopen hit自体がhat候補として残っていない割合が大きく、**open/closed分類器だけでは解けない別のonset/class-routing問題**が残る。
+
+### Open/Closed 分類仮説 — 最低3系統
+
+既存hat候補の時刻・件数を固定して、held-out songの `chart.mid` を学習に使わないLOOで比較した。
+
+1. **decay logistic**  
+   25–650 msのRMS減衰のみ。openの長いsustainを直接利用。
+2. **timbre ExtraTrees**  
+   decay + 1–22 kHz帯域比 + centroid / flatness / rolloff + assets 42/46 similarity + 80/180/350 ms高域持続。
+3. **context ExtraTrees**  
+   2にhat IOI / beat位置 / kick/snare近接等のbrowser-native文脈を追加。
+
+Cycle 1の単純LOOでは decay logistic がaggregateで最良だったが、arcaround / kaijuでclosed→open誤分類が多くproduction不採用。
+
+次に:
+- open matched candidateだけpositive
+- closed matched candidateに加え、**参照42/46に対応しない予測hatもnegative**
+- 不確実なら42へ倒す
+
+というpromotion型へ変更した。
+
+### 曲内 robust normalization
+
+キット・録音・mix差を抑えるため、各曲のhat候補だけから featureごとの median / IQR を計算し、held-out曲自身のラベルを使わずrobust normalizationした。
+
+`norm_timbre` LOO:
+- Open: TP491 / Pred844 / Ref1179
+- P **0.581754**
+- R **0.416455**
+- F1 **0.485418**
+- Closed F1 **0.795115**
+- macro F1 **0.640266**
+
+ただしfoldごとのthreshold選択を許しているのでproduction estimateには使わない。
+
+### production向け固定threshold
+
+未知曲で曲別最適thresholdを選べないため、全held曲で同一thresholdを使用。
+
+songs-only固定threshold:
+- 0.45: Open F1 **0.483538**, P 0.574766
+- **0.55**: Open P **0.674868**, R **0.325700**, F1 **0.439359** / Closed F1 **0.808540**
+- 0.65: Open P 0.722222, R 0.176421, F1 0.283572
+- 0.75: Open P 0.747475, R 0.062765, F1 0.115806
+
+誤openを増やしすぎないproduction候補として0.55を土台にした。
+
+### Magenta GMD / E-GMD augmentation
+
+外部教師として Google/Magenta Groove MIDI Dataset (GMD) / Expanded GMD (E-GMD) を追加検証した。
+
+重要なラベル:
+- Closed: MIDI **22 / 42**
+- Open: MIDI **26 / 46**
+- Pedal: MIDI **44**（今回はopen/closed教師から除外）
+
+従来のGMD系metal実験は42/46中心で、GMDに多いEdge articulationの22/26をopen/closed教師として十分利用していなかったため、今回は22/26も明示的に統合した。
+
+E-GMDは90 GB全体をDLせず、RemoteZip / HTTP Rangeで必要な短いWAVだけ取得する再現可能なworkflowにした。E-GMD kitごとのMIDIでは一部kitでopen articulation mappingが変わるケースが確認されたため、**教師ラベルは元GMD canonical MIDI、音声のみE-GMD各kit**に統一した。
+
+使用したE-GMDの代表6 kit:
+- 60s Rock
+- Bigga Bop (Jazz)
+- Deep Daft
+- JingleStacks (2nd Hi-Hat)
+- Second Line
+- West Coast (FUNK)
+
+外部例は必ずopen/closed同数へbalanceした。
+
+#### External dose sweep
+
+songs-only (.55):
+- Open P **0.674868** / R **0.325700** / F1 **0.439359**
+- Closed F1 **0.808540**
+- macro **0.623950**
+
+GMD 32/class:
+- Open F1 **0.449501**
+- macro **0.627063**
+
+GMD 64/class:
+- Open F1 **0.460054**
+- macro **0.630452**
+
+GMD 128/class:
+- Open P **0.628407** / R **0.371501** / F1 **0.466951**
+- Closed F1 **0.802414**
+- macro **0.634683**
+
+GMD full selected pool (169/class):
+- Open F1 **0.465141**
+- macro **0.634169**
+
+E-GMD direct 402/class:
+- Open F1 **0.314070**
+- macro **0.558252**
+
+GMD + E-GMD:
+- Open F1 **0.401853**
+- macro **0.605112**
+
+**E-GMD直接混合は不採用。** 多kit化そのものはdomain augmentationとして合理的だが、この小規模DruMaster classifierに直接大量追加するとdomain shiftが勝った。
+
+GMDは量を増やすほどopen recall/F1が伸びたが、0.55固定ではprecision低下がguardを超えたため、GMD128/classだけthreshold再校正した。
+
+### GMD128 threshold calibration
+
+同一GMD128/class候補で固定threshold:
+- 0.55: Open P 0.628407 / R 0.371501 / F1 0.466951 / macro 0.634683
+- **0.575: Open P 0.662771 / R 0.336726 / F1 0.446569 / Closed F1 0.806491 / macro 0.626530**
+- 0.60: Open P 0.700197 / R 0.301103 / F1 0.421115
+- 0.625: Open P 0.714953 / R 0.259542 / F1 0.380834
+- 0.65: Open P 0.741279 / R 0.216285 / F1 0.334865
+
+production guard:
+- open precision drop <= 0.02
+- closed F1 drop <= 0.01
+- macro F1 must improve
+
+を満たした **0.575** をretained候補にした。
+
+songs-only .55 → GMD128 .575:
+- Open TP **384 → 397**
+- predicted **569 → 599**
+- precision **0.674868 → 0.662771**
+- recall **0.325700 → 0.336726**
+- F1 **0.439359 → 0.446569**
+- Closed F1 **0.808540 → 0.806491**
+- macro **0.623950 → 0.626530**
+
+改善幅は大きくないが、設定したprecision guard内でopen recall/F1を改善したため、**open/closed部品としてGMD128 + threshold 0.575を採用**。
+
+注意: threshold 0.575自体もこの5曲をdevelopment setとして選定しているため、未知曲への完全独立testではない。追加曲でpost-selection検証が必要。
+
+### browser deployment model v2
+
+`models/open-hat-extra-trees-v2.json`:
+- ExtraTrees **320 trees**
+- 26 features
+- train-all DruMaster 5曲 + GMD **128 open / 128 closed**
+- probability threshold **0.575**
+- file size 約 **3.79 MB**
+- serialization max abs error **1.998e-15**
+
+特徴:
+- 25–650 ms amplitude decay
+- 1–3 / 3–6 / 6–9 / 9–13 / 13–18 / 18–22 kHz
+- spectral centroid / flatness / rolloff
+- assets 42/46 template similarity
+- 80 / 180 / 350 ms high-frequency persistence
+- 曲内median/IQR robust normalization
+
+browser処理順:
+1. 既存のhi-hat onset / false-positive filter
+2. 残った `hat` だけopen-hat modelで評価
+3. P(open) >= 0.575 のみ `open_hat` へpromotion
+4. MIDI 42 → 46へ再label
+5. 不確実なものは42のまま
+
+**時刻追加・削除はしない。kick/snare/tom/crash/rideにも触れない。**
+
+### real Chromium 5曲結果
+
+実browserで `drums.mp3 -> MIDI -> MIDI再読込 -> chart.mid照合` を完走。
+
+Open:
+- TP **569**
+- predicted **736**
+- reference **1179**
+- precision **0.773098**
+- recall **0.482612**
+- F1 **0.594256**
+
+Closed:
+- TP **2357**
+- predicted **2671**
+- reference **2923**
+- precision **0.882441**
+- recall **0.806363**
+- F1 **0.842689**
+
+42/46 macro F1 **0.718472**。
+
+曲別Open:
+- arcaround: 21 / 22 / 93, P **0.9545**, R **0.2258**, F1 **0.3652**
+- diamondvirgin: 33 / 35 / 502, P **0.9429**, R **0.0657**, F1 **0.1229**
+- kaiju: 11 / 11 / 22, P **1.000**, R **0.500**, F1 **0.6667**
+- nanairo: 239 / 263 / 240, P **0.9087**, R **0.9958**, F1 **0.9503**
+- ray: 265 / 405 / 322, P **0.6543**, R **0.8230**, F1 **0.7290**
+
+real-browser値はtrain-allモデルを同じ5曲へ戻したin-development値であり、未知曲性能としては使用しない。未知曲相当の比較には上記LOOの **Open F1 0.446569** を優先する。
+
+従来のhat group評価は42+46を同一groupとしているため、articulation relabelによって打点精度は原理上変わらない。実browser全体:
+- TP **7461**
+- Pred **8192**
+- Ref **10086**
+- P **0.911**
+- R **0.740**
+- F1 **0.816**
+- kick→snare **2**
+- snare→kick **28**
+
+kick/snare/tom等の既存結果を維持したままopen/closed情報だけ追加できた。
+
+### 残課題
+
+1. **diamondvirgin**
+   - reference open 502に対し、現行hat候補自体がopen位置へほとんど残っていない。
+   - articulation classifierではなく、open onsetがsnare/ride/otherへ流れる前段を別途解析する必要がある。
+2. **unknown-song validation**
+   - GMD128量、0.575 thresholdは5曲developmentで選定。
+   - 追加のDruMaster曲または別のdrum-only stemでpost-selection testを行う。
+3. **E-GMD**
+   - 直接大量混合は悪化した。
+   - 将来は直接教師として混ぜるのではなく、teacher / representation / kit-invariance regularizationとして使う余地がある。
+4. **partial-open**
+   - GMD CC4にはpedal position情報がある。
+   - 現状は42/46二値を優先し、semi-open連続値化は後回し。
+
+生成物:
+- `experiments/open_hat_loo.py`
+- `experiments/open_hat_promotion_loo.py`
+- `experiments/open_hat_songnorm_loo.py`
+- `experiments/open_hat_guarded_loo.py`
+- `experiments/open_hat_fixed_loo.py`
+- `experiments/external_hat_augmentation.py`
+- `experiments/gmd_open_hat_thresholds.py`
+- `experiments/export_open_hat_forest_v2.py`
+- `experiments/results-open-hat-gmd128-thresholds.json`
+- `experiments/results-open-hat-external-augmentation.json`
+- `experiments/results-open-hat-model-export-v2.json`
+- `experiments/results-v2-browser-open-hat.json`
+- `models/open-hat-extra-trees-v2.json`
+- `open-hat.js`
+
+### 引継ぎ
+
+現時点のopen/closed production候補は:
+- onset detector: **変更なし**
+- base hi-hat false-positive filter: **既存44.1 kHz hat filter維持**
+- articulation model: **open-hat-extra-trees-v2**
+- external augmentation: **GMD 128 open + 128 closed**
+- fixed probability threshold: **0.575**
+- default: **Closed 42**
+- promotion: **high-confidenceのみOpen 46**
+- real browser 46出力・sample preview・MIDI export確認済み
+
+次の優先作業は、diamondvirginのOpen候補消失経路を `chart.mid` で予測後に診断し、**classifierを緩めるのではなく前段candidate routingを改善**すること。
