@@ -45,6 +45,10 @@ jobs:
         run: |
           python drumscribe/experiments/gmd-kst/evaluate_gmd_kst_genre.py
           test -s drumscribe/experiments/gmd-kst/results-gmd-genre-heldout-v1.json
+      - name: Evaluate held-out GMD continuation priors
+        run: |
+          python drumscribe/experiments/gmd-kst/evaluate_gmd_kst_prior_heldout.py
+          test -s drumscribe/experiments/gmd-kst/results-gmd-prior-heldout-v1.json
       - name: Test section and prior modules
         run: |
           node --check drumscribe/section-analysis.js
@@ -68,7 +72,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add drumscribe/models/gmd-kst/knowledge-v1.json \
                   drumscribe/models/gmd-kst/heldout-manifest-v1.json \
-                  drumscribe/models/gmd-kst/manifest-v1.json
+                  drumscribe/models/gmd-kst/manifest-v1.json \
+                  drumscribe/experiments/gmd-kst/results-gmd-genre-heldout-v1.json
+            drumscribe/experiments/gmd-kst/results-gmd-prior-heldout-v1.json \
+                  drumscribe/experiments/gmd-kst/results-gmd-prior-heldout-v1.json \
+                  drumscribe/experiments/gmd-kst/results-offvocal-sections-v1.json
           if git diff --cached --quiet; then
             echo "Knowledge files unchanged."
           else
