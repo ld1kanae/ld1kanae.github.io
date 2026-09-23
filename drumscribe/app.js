@@ -2,15 +2,17 @@ import {transcribe} from './transcribe.js?v=20260923-proof-v34';
 import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
 import {inferBars,parseBeatThis} from './meter.js';
+import {createTimelineViewport} from './timeline-view.js?v=20260923-review-v1';
 const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],openHatVoices=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
 let exampleId='';
+let reviewSelection=null;
 const tracks={audio:{volume:1,solo:false,mute:false,gain:null},midi:{volume:1,solo:false,mute:false,gain:null}};
 const samplePath='../DruMaster/assets/drums/';
 const groupNotes=[36,38,42,44,45,46,49,51];
 function tell(message,error=false){status.textContent=message;status.classList.toggle('error',error);}
 function fmt(t){t=Math.max(0,Math.floor(t||0));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
-function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';tell(`${f.name} を選択しました。`);}
+function select(f){if(!f)return;pause();if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=null;file=f;exampleId='';decoded=null;events=[];midiEvents=[];reviewSelection=null;$('result').hidden=true;$('fileName').textContent=f.name;$('analyze').disabled=false;$('example').value='';timelineView?.reset();tell(`${f.name} を選択しました。`);dispatchEvent(new CustomEvent('drumscribe:file-selected',{detail:{fileName:f.name}}));}
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 const drop=$('drop');
 for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
@@ -89,7 +91,12 @@ $('analyze').addEventListener('click',async()=>{
       meterInfo:{variableMeterEnabled:meter.variableMeterEnabled,externalDownbeats:meter.externalDownbeats,threeFourBars:meter.bars.filter(b=>b.numerator===3).length}
     };
     tell(`${events.length} ノートを推定しました。基準BPM ${detectedBpm.toFixed(3)}。${gridInfo.subdivision||'格子未判定'}へ量子化し、${gridInfo.tempoEvents||1}個のテンポ点で音源の揺れを保持しました。プレビューも書き出しMIDIと同じ時刻です。${meter.variableMeterEnabled?`推定3/4小節 ${meter.bars.filter(b=>b.numerator===3).length}。`:''}`);
+    reviewSelection=null;
+    timelineView.resetFit();
     draw();updateClock();loadingSamples=loadSamples();
+    dispatchEvent(new CustomEvent('drumscribe:analysis-complete',{detail:{
+      fileName:file?.name||'',exampleId,duration:decoded.duration,result:globalThis.__drumscribeResult
+    }}));
   }catch(err){console.error(err);tell(`採譜できませんでした: ${err.message}`,true);}
   finally{$('analyze').disabled=false;$('progress').hidden=true;}
 });
@@ -144,7 +151,7 @@ async function play(){
   },25);
   $('play').textContent='❚❚ 一時停止';requestAnimationFrame(tick);
 }
-function tick(){if(!playing)return;updateClock();draw();requestAnimationFrame(tick);}
+function tick(){if(!playing)return;timelineView.ensureVisible(now());updateClock();draw();requestAnimationFrame(tick);}
 function updateClock(){if(!decoded)return;const n=now();$('clock').textContent=`${fmt(n)} / ${fmt(decoded.duration)}`;$('seek').value=Math.round(n/decoded.duration*1000);}
 $('play').addEventListener('click',()=>void play());$('stop').addEventListener('click',()=>{pause();position=0;draw();updateClock();});
 $('seek').addEventListener('input',e=>seek(Number(e.target.value)/1000*(decoded?.duration||0)));
@@ -154,20 +161,88 @@ for(const el of document.querySelectorAll('.track')){
   slider.addEventListener('input',()=>{t.volume=Number(slider.value)/100;el.querySelector('output').textContent=`${slider.value}%`;gainUpdate();});
   for(const kind of ['solo','mute'])el.querySelector(`.${kind}`).addEventListener('click',e=>{t[kind]=!t[kind];e.currentTarget.setAttribute('aria-pressed',String(t[kind]));gainUpdate();});
 }
-const canvas=$('timeline');canvas.addEventListener('click',e=>{if(!decoded)return;seek((e.clientX-canvas.getBoundingClientRect().left)/canvas.clientWidth*decoded.duration);});
-new ResizeObserver(()=>draw()).observe(canvas);
-function draw(){
-  const bounds=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(1,Math.round(bounds.width*dpr)),h=Math.round(180*dpr);
-  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
-  const c=canvas.getContext('2d');c.fillStyle='#081625';c.fillRect(0,0,w,h);if(!decoded)return;
-  c.strokeStyle='#1d3446';c.lineWidth=dpr;
-  for(let i=0;i<=10;i++){const x=i*w/10;c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
-  const data=decoded.getChannelData(0),step=Math.max(1,Math.floor(data.length/w));c.strokeStyle='#58cfdb';c.globalAlpha=.85;c.beginPath();
-  for(let x=0;x<w;x++){let peak=0;for(let j=x*step;j<Math.min(data.length,(x+1)*step);j+=Math.max(1,Math.floor(step/30)))peak=Math.max(peak,Math.abs(data[j]));
-    c.moveTo(x,h*.32-peak*h*.27);c.lineTo(x,h*.32+peak*h*.27);
-  }c.stroke();c.globalAlpha=1;
-  c.fillStyle='#203144';c.fillRect(0,h*.64,w,h*.36);
-  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',open_hat:'#d5baff',pedal_hat:'#a98be2',tom:'#e8ca83',crash:'#8dd3a0',ride:'#78b7a1'},offset=Number($('offset').value||0)/1000;
-  for(const e of midiEvents){const x=(e.time+offset)/decoded.duration*w;if(x<0||x>w)continue;const lane={kick:0,snare:1,hat:2,open_hat:2,pedal_hat:2,tom:3,crash:4,ride:4}[e.group];c.fillStyle=colors[e.group];c.fillRect(x,h*(.655+lane*.058),Math.max(1.5*dpr,w/1500),4*dpr);}
-  const cursor=now()/decoded.duration*w;c.fillStyle='#eaf7fc';c.fillRect(cursor,0,2*dpr,h);
+
+const canvas=$('timeline');
+const timelineView=createTimelineViewport({
+  canvas,
+  zoom:$('zoom'),
+  scroll:$('timelineScroll'),
+  zoomOut:$('zoomOut'),
+  scrollOut:$('scrollOut'),
+  fitButton:$('fitTimeline'),
+  getDuration:()=>decoded?.duration||0,
+  onChange:()=>draw()
+});
+canvas.addEventListener('click',e=>{
+  if(!decoded||document.body.dataset.reviewMode==='1')return;
+  const r=canvas.getBoundingClientRect();
+  seek(timelineView.xToTime(e.clientX-r.left));
+});
+new ResizeObserver(()=>{timelineView.clamp();draw()}).observe(canvas);
+
+function timelineStep(px){
+  if(px>=1800)return {minor:.01,major:.1};
+  if(px>=700)return {minor:.05,major:.5};
+  if(px>=250)return {minor:.1,major:1};
+  if(px>=80)return {minor:.5,major:5};
+  if(px>=20)return {minor:1,major:10};
+  return {minor:5,major:30};
 }
+function draw(){
+  const bounds=canvas.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),cw=Math.max(1,bounds.width),ch=180,w=Math.max(1,Math.round(cw*dpr)),h=Math.round(ch*dpr);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+  const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,cw,ch);c.fillStyle='#081625';c.fillRect(0,0,cw,ch);if(!decoded)return;
+  const metrics=timelineView.metrics(),viewEnd=metrics.start+metrics.visible;
+  const stepInfo=timelineStep(metrics.pxPerSec),minor=stepInfo.minor,major=stepInfo.major;
+  const first=Math.floor(metrics.start/minor)*minor;
+  c.lineWidth=1;c.font='10px ui-monospace,SFMono-Regular,Consolas,monospace';
+  for(let t=first;t<=viewEnd+minor;t+=minor){
+    const x=timelineView.timeToX(t),majorLine=Math.abs(t/major-Math.round(t/major))<1e-6;
+    c.strokeStyle=majorLine?'rgba(92,126,149,.34)':'rgba(92,126,149,.13)';
+    c.beginPath();c.moveTo(x,0);c.lineTo(x,ch);c.stroke();
+    if(majorLine&&x>=0&&x<=cw){
+      c.fillStyle='#7893a7';
+      const label=t<60?(t.toFixed(t<10&&major<1?1:0)+'s'):(Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0'));
+      c.fillText(label,x+4,13);
+    }
+  }
+  const data=decoded.getChannelData(0),sr=decoded.sampleRate,pps=Math.max(.01,metrics.pxPerSec),samplesPerPixel=Math.max(1,Math.floor(sr/pps));
+  c.strokeStyle='#58cfdb';c.globalAlpha=.88;c.beginPath();
+  for(let x=0;x<cw;x++){
+    const time=timelineView.xToTime(x);if(time<0||time>decoded.duration)continue;
+    const center=Math.floor(time*sr),half=Math.max(1,samplesPerPixel>>1),start=Math.max(0,center-half),end=Math.min(data.length,center+half),sampleStep=Math.max(1,Math.floor((end-start)/30));
+    let peak=0;for(let j=start;j<end;j+=sampleStep)peak=Math.max(peak,Math.abs(data[j]));
+    c.moveTo(x,ch*.32-peak*ch*.27);c.lineTo(x,ch*.32+peak*ch*.27);
+  }
+  c.stroke();c.globalAlpha=1;
+  c.fillStyle='#203144';c.fillRect(0,ch*.64,cw,ch*.36);
+  const colors={kick:'#62d9e2',snare:'#fd9b8e',hat:'#c4a2ff',open_hat:'#d5baff',pedal_hat:'#a98be2',tom:'#e8ca83',crash:'#8dd3a0',ride:'#78b7a1'},offset=Number($('offset').value||0)/1000;
+  for(const e of midiEvents){
+    const time=e.time+offset;if(time<metrics.start-.02||time>viewEnd+.02)continue;
+    const x=timelineView.timeToX(time),lane={kick:0,snare:1,hat:2,open_hat:2,pedal_hat:2,tom:3,crash:4,ride:4}[e.group];
+    c.fillStyle=colors[e.group]||'#b7c8d7';c.fillRect(x,ch*(.655+lane*.058),Math.max(2,metrics.pxPerSec*.01),4);
+  }
+  if(reviewSelection){
+    const a=timelineView.timeToX(reviewSelection.start),b=timelineView.timeToX(reviewSelection.end),left=Math.max(0,Math.min(a,b)),right=Math.min(cw,Math.max(a,b));
+    if(right>left){c.fillStyle='rgba(188,152,255,.18)';c.fillRect(left,0,right-left,ch);c.strokeStyle='rgba(213,186,255,.95)';c.lineWidth=1.5;c.strokeRect(left+.5,.5,Math.max(0,right-left-1),ch-1);}
+  }
+  const cursor=timelineView.timeToX(now());if(cursor>=0&&cursor<=cw){c.fillStyle='#eaf7fc';c.fillRect(cursor,0,2,ch);}
+}
+globalThis.DrumScribeTimeline={
+  seek,
+  play:()=>play(),
+  pause,
+  stop:()=>{pause();position=0;draw();updateClock();},
+  getCurrentTime:()=>decoded?now():0,
+  getDuration:()=>decoded?.duration||0,
+  getFileName:()=>file?.name||'',
+  getExampleId:()=>exampleId,
+  getView:()=>timelineView.metrics(),
+  clientXToTime:clientX=>{const r=canvas.getBoundingClientRect();return Math.max(0,Math.min(decoded?.duration||0,timelineView.xToTime(clientX-r.left)));},
+  setSelection:(start,end)=>{if(!decoded)return;const a=Math.max(0,Math.min(decoded.duration,Number(start)||0)),b=Math.max(0,Math.min(decoded.duration,Number(end)||0));reviewSelection={start:Math.min(a,b),end:Math.max(a,b)};draw();},
+  clearSelection:()=>{reviewSelection=null;draw();},
+  getSelection:()=>reviewSelection?{...reviewSelection}:null,
+  getAnalysis:()=>globalThis.__drumscribeResult||null,
+  focusRange:(start,end)=>{timelineView.focusRange(start,end);draw();}
+};
+dispatchEvent(new Event('drumscribe:timeline-ready'));
