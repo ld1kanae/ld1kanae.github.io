@@ -1,0 +1,33 @@
+name: DrumScribe five-song reference bundle temp
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/drumscribe-reference-bundle-temp.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-five-song-references
+          path: |
+            DruMaster/songs/arcaround/chart.mid
+            DruMaster/songs/arcaround/song.json
+            DruMaster/songs/diamondvirgin/chart.mid
+            DruMaster/songs/diamondvirgin/song.json
+            DruMaster/songs/kaiju/chart.mid
+            DruMaster/songs/kaiju/song.json
+            DruMaster/songs/nanairo/chart.mid
+            DruMaster/songs/nanairo/song.json
+            DruMaster/songs/ray/chart.mid
+            DruMaster/songs/ray/song.json
+          retention-days: 1
