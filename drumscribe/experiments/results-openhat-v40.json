@@ -1038,23 +1038,23 @@
         "tomF1": 0.0
       }
     },
-    "gmd": {
+    "gmd-rescue": {
       "summary": {
         "closed": {
-          "tp": 2361,
-          "predicted": 2676,
+          "tp": 2357,
+          "predicted": 2665,
           "reference": 2923,
-          "precision": 0.8822869955156951,
-          "recall": 0.8077317824153267,
-          "f1": 0.8433648865868905
+          "precision": 0.8844277673545966,
+          "recall": 0.8063633253506671,
+          "f1": 0.8435934144595562
         },
         "open": {
-          "tp": 567,
-          "predicted": 729,
+          "tp": 573,
+          "predicted": 740,
           "reference": 1179,
-          "precision": 0.7777777777777778,
-          "recall": 0.48091603053435117,
-          "f1": 0.5943396226415094
+          "precision": 0.7743243243243243,
+          "recall": 0.4860050890585242,
+          "f1": 0.597186034392913
         },
         "kick": {
           "tp": 2639,
@@ -1080,26 +1080,26 @@
           "recall": 0.7608695652173914,
           "f1": 0.7909604519774012
         },
-        "macroHatF1": 0.7188522546142
+        "macroHatF1": 0.7203897244262345
       },
       "songs": [
         {
           "song": "arcaround",
           "closed": {
             "tp": 116,
-            "predicted": 250,
+            "predicted": 249,
             "reference": 200,
-            "precision": 0.464,
+            "precision": 0.46586345381526106,
             "recall": 0.58,
-            "f1": 0.5155555555555555
+            "f1": 0.5167037861915368
           },
           "open": {
-            "tp": 21,
-            "predicted": 22,
+            "tp": 22,
+            "predicted": 23,
             "reference": 93,
-            "precision": 0.9545454545454546,
-            "recall": 0.22580645161290322,
-            "f1": 0.3652173913043478
+            "precision": 0.9565217391304348,
+            "recall": 0.23655913978494625,
+            "f1": 0.3793103448275862
           },
           "kick": {
             "tp": 558,
@@ -1127,45 +1127,34 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "gmd",
+            "variant": "gmd-rescue",
             "candidates": 272,
-            "promoted": 22,
+            "promoted": 23,
             "rescued": 0,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 250,
+            "closed": 249,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.2650460947206326,
+            "meanProbability": 0.2670332704966281,
             "maxProbability": 0.7624211329389078,
             "sequence": {
-              "variant": "gmd",
+              "variant": "gmd-rescue",
               "decay": {
                 "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
                 "enabled": true,
-                "used": 27,
-                "changed": 0,
-                "consensusRejected": 1,
-                "genres": [
-                  {
-                    "genre": "country",
-                    "similarity": 0.9941376804941211,
-                    "weight": 0.38450519700740976
-                  },
-                  {
-                    "genre": "neworleans",
-                    "similarity": 0.9821729472160152,
-                    "weight": 0.35756154973730925
-                  },
-                  {
-                    "genre": "punk",
-                    "similarity": 0.9301380025368113,
-                    "weight": 0.257933253255281
-                  }
-                ],
-                "transitionBlend": 0.6
+                "eligible": 1,
+                "used": 1,
+                "changed": 1,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
               },
               "gmdRescue": {
                 "enabled": false
@@ -1174,7 +1163,7 @@
                 "enabled": false
               },
               "basePromoted": 22,
-              "reclassified": 0
+              "reclassified": 1
             },
             "overlay": {
               "enabled": true,
@@ -1194,20 +1183,20 @@
         {
           "song": "diamondvirgin",
           "closed": {
-            "tp": 203,
-            "predicted": 221,
+            "tp": 202,
+            "predicted": 217,
             "reference": 253,
-            "precision": 0.918552036199095,
-            "recall": 0.8023715415019763,
-            "f1": 0.8565400843881856
+            "precision": 0.9308755760368663,
+            "recall": 0.7984189723320159,
+            "f1": 0.8595744680851064
           },
           "open": {
-            "tp": 33,
-            "predicted": 34,
+            "tp": 36,
+            "predicted": 38,
             "reference": 502,
-            "precision": 0.9705882352941176,
-            "recall": 0.06573705179282868,
-            "f1": 0.12313432835820895
+            "precision": 0.9473684210526315,
+            "recall": 0.07171314741035857,
+            "f1": 0.13333333333333333
           },
           "kick": {
             "tp": 688,
@@ -1235,45 +1224,34 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "gmd",
+            "variant": "gmd-rescue",
             "candidates": 253,
-            "promoted": 32,
+            "promoted": 36,
             "rescued": 2,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 221,
+            "closed": 217,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.28987288685672613,
-            "maxProbability": 0.7589448924562723,
+            "meanProbability": 0.2972985490634896,
+            "maxProbability": 0.7445808248558129,
             "sequence": {
-              "variant": "gmd",
+              "variant": "gmd-rescue",
               "decay": {
                 "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
                 "enabled": true,
-                "used": 41,
-                "changed": 3,
-                "consensusRejected": 1,
-                "genres": [
-                  {
-                    "genre": "punk",
-                    "similarity": 0.9856948795824232,
-                    "weight": 0.3600249984038955
-                  },
-                  {
-                    "genre": "afrocuban",
-                    "similarity": 0.9674409532051977,
-                    "weight": 0.321828470046499
-                  },
-                  {
-                    "genre": "soul",
-                    "similarity": 0.965587399593089,
-                    "weight": 0.3181465315496056
-                  }
-                ],
-                "transitionBlend": 0.6
+                "eligible": 1,
+                "used": 1,
+                "changed": 1,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
               },
               "gmdRescue": {
                 "enabled": false
@@ -1282,7 +1260,7 @@
                 "enabled": false
               },
               "basePromoted": 35,
-              "reclassified": -3
+              "reclassified": 1
             },
             "overlay": {
               "enabled": true,
@@ -1303,19 +1281,19 @@
           "song": "kaiju",
           "closed": {
             "tp": 521,
-            "predicted": 575,
+            "predicted": 574,
             "reference": 572,
-            "precision": 0.9060869565217391,
+            "precision": 0.9076655052264808,
             "recall": 0.9108391608391608,
-            "f1": 0.9084568439407149
+            "f1": 0.9092495636998255
           },
           "open": {
-            "tp": 10,
-            "predicted": 10,
+            "tp": 11,
+            "predicted": 11,
             "reference": 22,
             "precision": 1.0,
-            "recall": 0.45454545454545453,
-            "f1": 0.625
+            "recall": 0.5,
+            "f1": 0.6666666666666666
           },
           "kick": {
             "tp": 387,
@@ -1343,45 +1321,34 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "gmd",
+            "variant": "gmd-rescue",
             "candidates": 585,
-            "promoted": 10,
+            "promoted": 11,
             "rescued": 0,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 575,
+            "closed": 574,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.1682189829804839,
-            "maxProbability": 0.6992194168415807,
+            "meanProbability": 0.16896704496976986,
+            "maxProbability": 0.7047577818472184,
             "sequence": {
-              "variant": "gmd",
+              "variant": "gmd-rescue",
               "decay": {
                 "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
                 "enabled": true,
-                "used": 16,
-                "changed": 1,
-                "consensusRejected": 0,
-                "genres": [
-                  {
-                    "genre": "punk",
-                    "similarity": 0.9957542134451957,
-                    "weight": 0.3559017989126599
-                  },
-                  {
-                    "genre": "latin",
-                    "similarity": 0.97933002587153,
-                    "weight": 0.3221007133335183
-                  },
-                  {
-                    "genre": "afrocuban",
-                    "similarity": 0.9792777102411132,
-                    "weight": 0.32199748775382186
-                  }
-                ],
-                "transitionBlend": 0.6
+                "eligible": 0,
+                "used": 0,
+                "changed": 0,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
               },
               "gmdRescue": {
                 "enabled": false
@@ -1390,7 +1357,7 @@
                 "enabled": false
               },
               "basePromoted": 11,
-              "reclassified": -1
+              "reclassified": 0
             },
             "overlay": {
               "enabled": true,
@@ -1410,20 +1377,20 @@
         {
           "song": "nanairo",
           "closed": {
-            "tp": 690,
-            "predicted": 747,
+            "tp": 688,
+            "predicted": 744,
             "reference": 823,
-            "precision": 0.9236947791164659,
-            "recall": 0.8383961117861483,
-            "f1": 0.8789808917197452
+            "precision": 0.9247311827956989,
+            "recall": 0.8359659781287971,
+            "f1": 0.8781110402042118
           },
           "open": {
             "tp": 239,
-            "predicted": 260,
+            "predicted": 263,
             "reference": 240,
-            "precision": 0.9192307692307692,
+            "precision": 0.908745247148289,
             "recall": 0.9958333333333333,
-            "f1": 0.956
+            "f1": 0.9502982107355865
           },
           "kick": {
             "tp": 486,
@@ -1451,45 +1418,34 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "gmd",
+            "variant": "gmd-rescue",
             "candidates": 1007,
-            "promoted": 260,
+            "promoted": 263,
             "rescued": 0,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 747,
+            "closed": 744,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.3164757251832391,
+            "meanProbability": 0.31854490080576797,
             "maxProbability": 0.9498351538287506,
             "sequence": {
-              "variant": "gmd",
+              "variant": "gmd-rescue",
               "decay": {
                 "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
                 "enabled": true,
-                "used": 49,
-                "changed": 3,
-                "consensusRejected": 12,
-                "genres": [
-                  {
-                    "genre": "hiphop",
-                    "similarity": 0.962827385141725,
-                    "weight": 0.35819976261887904
-                  },
-                  {
-                    "genre": "reggae",
-                    "similarity": 0.9482404350747755,
-                    "weight": 0.32684775978564784
-                  },
-                  {
-                    "genre": "neworleans",
-                    "similarity": 0.9423995210675853,
-                    "weight": 0.31495247759547307
-                  }
-                ],
-                "transitionBlend": 0.6
+                "eligible": 0,
+                "used": 0,
+                "changed": 0,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
               },
               "gmdRescue": {
                 "enabled": false
@@ -1498,7 +1454,7 @@
                 "enabled": false
               },
               "basePromoted": 263,
-              "reclassified": -3
+              "reclassified": 0
             },
             "overlay": {
               "enabled": true,
@@ -1518,20 +1474,20 @@
         {
           "song": "ray",
           "closed": {
-            "tp": 831,
-            "predicted": 883,
+            "tp": 830,
+            "predicted": 881,
             "reference": 1075,
-            "precision": 0.9411098527746319,
-            "recall": 0.7730232558139535,
-            "f1": 0.8488253319713994
+            "precision": 0.94211123723042,
+            "recall": 0.772093023255814,
+            "f1": 0.8486707566462167
           },
           "open": {
-            "tp": 264,
-            "predicted": 403,
+            "tp": 265,
+            "predicted": 405,
             "reference": 322,
-            "precision": 0.6550868486352357,
-            "recall": 0.8198757763975155,
-            "f1": 0.7282758620689656
+            "precision": 0.654320987654321,
+            "recall": 0.8229813664596274,
+            "f1": 0.7290233837689133
           },
           "kick": {
             "tp": 520,
@@ -1559,45 +1515,34 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "gmd",
+            "variant": "gmd-rescue",
             "candidates": 1286,
-            "promoted": 403,
+            "promoted": 405,
             "rescued": 0,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 883,
+            "closed": 881,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.32248639989754024,
+            "meanProbability": 0.3239282890738748,
             "maxProbability": 0.9229658076454778,
             "sequence": {
-              "variant": "gmd",
+              "variant": "gmd-rescue",
               "decay": {
                 "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
                 "enabled": true,
-                "used": 51,
-                "changed": 2,
-                "consensusRejected": 0,
-                "genres": [
-                  {
-                    "genre": "hiphop",
-                    "similarity": 0.9211666558276802,
-                    "weight": 0.38529137130648966
-                  },
-                  {
-                    "genre": "reggae",
-                    "similarity": 0.8888013742425097,
-                    "weight": 0.3108768144258495
-                  },
-                  {
-                    "genre": "afrocuban",
-                    "similarity": 0.8854122706035572,
-                    "weight": 0.3038318142676607
-                  }
-                ],
-                "transitionBlend": 0.6
+                "eligible": 0,
+                "used": 0,
+                "changed": 0,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
               },
               "gmdRescue": {
                 "enabled": false
@@ -1606,7 +1551,7 @@
                 "enabled": false
               },
               "basePromoted": 405,
-              "reclassified": -2
+              "reclassified": 0
             },
             "overlay": {
               "enabled": true,
@@ -1625,31 +1570,31 @@
         }
       ],
       "deltaVsBase": {
-        "macroHatF1": -0.0006547829734140365,
-        "closedF1": 7.329445808901269e-05,
-        "openF1": -0.0013828604049173077,
+        "macroHatF1": 0.0008826868386204723,
+        "closedF1": 0.00030182233075470855,
+        "openF1": 0.001463551346486236,
         "kickF1": 0.0,
         "snareF1": 0.0,
         "tomF1": 0.0
       }
     },
-    "combined": {
+    "decay-rescue": {
       "summary": {
         "closed": {
-          "tp": 2361,
-          "predicted": 2676,
+          "tp": 2357,
+          "predicted": 2663,
           "reference": 2923,
-          "precision": 0.8822869955156951,
-          "recall": 0.8077317824153267,
-          "f1": 0.8433648865868905
+          "precision": 0.8850920015020654,
+          "recall": 0.8063633253506671,
+          "f1": 0.8438954529180093
         },
         "open": {
-          "tp": 566,
-          "predicted": 729,
+          "tp": 575,
+          "predicted": 742,
           "reference": 1179,
-          "precision": 0.7764060356652949,
-          "recall": 0.48006785411365566,
-          "f1": 0.5932914046121593
+          "precision": 0.7749326145552561,
+          "recall": 0.48770144189991516,
+          "f1": 0.5986465382613222
         },
         "kick": {
           "tp": 2639,
@@ -1675,7 +1620,572 @@
           "recall": 0.7608695652173914,
           "f1": 0.7909604519774012
         },
-        "macroHatF1": 0.718328145599525
+        "macroHatF1": 0.7212709955896657
+      },
+      "songs": [
+        {
+          "song": "arcaround",
+          "closed": {
+            "tp": 116,
+            "predicted": 249,
+            "reference": 200,
+            "precision": 0.46586345381526106,
+            "recall": 0.58,
+            "f1": 0.5167037861915368
+          },
+          "open": {
+            "tp": 22,
+            "predicted": 23,
+            "reference": 93,
+            "precision": 0.9565217391304348,
+            "recall": 0.23655913978494625,
+            "f1": 0.3793103448275862
+          },
+          "kick": {
+            "tp": 558,
+            "predicted": 590,
+            "reference": 576,
+            "precision": 0.9457627118644067,
+            "recall": 0.96875,
+            "f1": 0.9571183533447685
+          },
+          "snare": {
+            "tp": 171,
+            "predicted": 191,
+            "reference": 292,
+            "precision": 0.8952879581151832,
+            "recall": 0.5856164383561644,
+            "f1": 0.7080745341614907
+          },
+          "tom": {
+            "tp": 8,
+            "predicted": 18,
+            "reference": 12,
+            "precision": 0.4444444444444444,
+            "recall": 0.6666666666666666,
+            "f1": 0.5333333333333333
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "decay-rescue",
+            "candidates": 272,
+            "promoted": 23,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 249,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.2670332704966281,
+            "maxProbability": 0.7624211329389078,
+            "sequence": {
+              "variant": "decay-rescue",
+              "decay": {
+                "enabled": false,
+                "changed": 0,
+                "tailEnabled": false,
+                "cutEnabled": false,
+                "tailUsed": 0,
+                "cutUsed": 0,
+                "trustedOpen": 1,
+                "trustedClosed": 196,
+                "tailOpenMedian": 0.42930498791131766,
+                "tailClosedMedian": 0.3341628832978292,
+                "cutOpenMedian": null,
+                "cutClosedMedian": null
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": true,
+                "eligible": 1,
+                "used": 1,
+                "changed": 1,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
+              },
+              "basePromoted": 22,
+              "reclassified": 1
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 607,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7366163924060422,
+              "maxRepeatScore": 0.6128324810755131,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "diamondvirgin",
+          "closed": {
+            "tp": 202,
+            "predicted": 217,
+            "reference": 253,
+            "precision": 0.9308755760368663,
+            "recall": 0.7984189723320159,
+            "f1": 0.8595744680851064
+          },
+          "open": {
+            "tp": 36,
+            "predicted": 38,
+            "reference": 502,
+            "precision": 0.9473684210526315,
+            "recall": 0.07171314741035857,
+            "f1": 0.13333333333333333
+          },
+          "kick": {
+            "tp": 688,
+            "predicted": 715,
+            "reference": 740,
+            "precision": 0.9622377622377623,
+            "recall": 0.9297297297297298,
+            "f1": 0.9457044673539519
+          },
+          "snare": {
+            "tp": 588,
+            "predicted": 610,
+            "reference": 608,
+            "precision": 0.9639344262295082,
+            "recall": 0.9671052631578947,
+            "f1": 0.9655172413793104
+          },
+          "tom": {
+            "tp": 40,
+            "predicted": 45,
+            "reference": 57,
+            "precision": 0.8888888888888888,
+            "recall": 0.7017543859649122,
+            "f1": 0.7843137254901961
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "decay-rescue",
+            "candidates": 253,
+            "promoted": 36,
+            "rescued": 2,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 217,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.2972985490634896,
+            "maxProbability": 0.7445808248558129,
+            "sequence": {
+              "variant": "decay-rescue",
+              "decay": {
+                "enabled": false,
+                "changed": 0,
+                "tailEnabled": false,
+                "cutEnabled": false,
+                "tailUsed": 0,
+                "cutUsed": 0,
+                "trustedOpen": 3,
+                "trustedClosed": 187,
+                "tailOpenMedian": 0.5795576906797386,
+                "tailClosedMedian": 0.2803043238445747,
+                "cutOpenMedian": null,
+                "cutClosedMedian": null
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": true,
+                "eligible": 1,
+                "used": 1,
+                "changed": 1,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
+              },
+              "basePromoted": 35,
+              "reclassified": 1
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": true,
+              "candidates": 1172,
+              "rescued": 2,
+              "physicalSkipped": 45,
+              "maxProbability": 0.9151156447588773,
+              "maxRepeatScore": 0.9051557710059615,
+              "scoreThreshold": 0.8575637179507616,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "kaiju",
+          "closed": {
+            "tp": 521,
+            "predicted": 574,
+            "reference": 572,
+            "precision": 0.9076655052264808,
+            "recall": 0.9108391608391608,
+            "f1": 0.9092495636998255
+          },
+          "open": {
+            "tp": 11,
+            "predicted": 11,
+            "reference": 22,
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666
+          },
+          "kick": {
+            "tp": 387,
+            "predicted": 390,
+            "reference": 390,
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1": 0.9923076923076923
+          },
+          "snare": {
+            "tp": 200,
+            "predicted": 205,
+            "reference": 205,
+            "precision": 0.975609756097561,
+            "recall": 0.975609756097561,
+            "f1": 0.975609756097561
+          },
+          "tom": {
+            "tp": 22,
+            "predicted": 22,
+            "reference": 23,
+            "precision": 1.0,
+            "recall": 0.9565217391304348,
+            "f1": 0.9777777777777777
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "decay-rescue",
+            "candidates": 585,
+            "promoted": 11,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 574,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.16896704496976986,
+            "maxProbability": 0.7047577818472184,
+            "sequence": {
+              "variant": "decay-rescue",
+              "decay": {
+                "enabled": false,
+                "changed": 0,
+                "tailEnabled": false,
+                "cutEnabled": false,
+                "tailUsed": 0,
+                "cutUsed": 0,
+                "trustedOpen": 0,
+                "trustedClosed": 560,
+                "tailOpenMedian": null,
+                "tailClosedMedian": 0.037722781894319345,
+                "cutOpenMedian": null,
+                "cutClosedMedian": null
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": true,
+                "eligible": 0,
+                "used": 0,
+                "changed": 0,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
+              },
+              "basePromoted": 11,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 260,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7334829986594743,
+              "maxRepeatScore": 0.6564306745630188,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "nanairo",
+          "closed": {
+            "tp": 688,
+            "predicted": 744,
+            "reference": 823,
+            "precision": 0.9247311827956989,
+            "recall": 0.8359659781287971,
+            "f1": 0.8781110402042118
+          },
+          "open": {
+            "tp": 239,
+            "predicted": 263,
+            "reference": 240,
+            "precision": 0.908745247148289,
+            "recall": 0.9958333333333333,
+            "f1": 0.9502982107355865
+          },
+          "kick": {
+            "tp": 486,
+            "predicted": 486,
+            "reference": 486,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "snare": {
+            "tp": 144,
+            "predicted": 217,
+            "reference": 155,
+            "precision": 0.663594470046083,
+            "recall": 0.9290322580645162,
+            "f1": 0.7741935483870968
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "decay-rescue",
+            "candidates": 1007,
+            "promoted": 263,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 744,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.3160369508483727,
+            "maxProbability": 0.9498351538287506,
+            "sequence": {
+              "variant": "decay-rescue",
+              "decay": {
+                "enabled": true,
+                "changed": 0,
+                "tailEnabled": true,
+                "cutEnabled": false,
+                "tailUsed": 56,
+                "cutUsed": 0,
+                "trustedOpen": 249,
+                "trustedClosed": 695,
+                "tailOpenMedian": 0.3393203116853364,
+                "tailClosedMedian": 0.1333525629921664,
+                "cutOpenMedian": 0.8206063833804751,
+                "cutClosedMedian": 0.5423783846610191
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": true,
+                "eligible": 0,
+                "used": 0,
+                "changed": 0,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
+              },
+              "basePromoted": 263,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 318,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.4804905128346508,
+              "maxRepeatScore": 0.35675522251174563,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "ray",
+          "closed": {
+            "tp": 830,
+            "predicted": 879,
+            "reference": 1075,
+            "precision": 0.944254835039818,
+            "recall": 0.772093023255814,
+            "f1": 0.849539406345957
+          },
+          "open": {
+            "tp": 267,
+            "predicted": 407,
+            "reference": 322,
+            "precision": 0.6560196560196561,
+            "recall": 0.8291925465838509,
+            "f1": 0.7325102880658436
+          },
+          "kick": {
+            "tp": 520,
+            "predicted": 587,
+            "reference": 520,
+            "precision": 0.8858603066439523,
+            "recall": 1.0,
+            "f1": 0.9394760614272809
+          },
+          "snare": {
+            "tp": 203,
+            "predicted": 203,
+            "reference": 210,
+            "precision": 1.0,
+            "recall": 0.9666666666666667,
+            "f1": 0.9830508474576272
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "decay-rescue",
+            "candidates": 1286,
+            "promoted": 407,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 879,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.3251833748694645,
+            "maxProbability": 0.9229658076454778,
+            "sequence": {
+              "variant": "decay-rescue",
+              "decay": {
+                "enabled": true,
+                "changed": 4,
+                "tailEnabled": true,
+                "cutEnabled": false,
+                "tailUsed": 47,
+                "cutUsed": 0,
+                "trustedOpen": 387,
+                "trustedClosed": 871,
+                "tailOpenMedian": 0.09965196990191609,
+                "tailClosedMedian": 0.20489805713443457,
+                "cutOpenMedian": 0.39521785543175464,
+                "cutClosedMedian": 0.709280749078965
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": true,
+                "eligible": 0,
+                "used": 0,
+                "changed": 0,
+                "mode": "aggregate-positive-open-run"
+              },
+              "ride": {
+                "enabled": false
+              },
+              "basePromoted": 405,
+              "reclassified": 2
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 328,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7951525091839008,
+              "maxRepeatScore": 0.6909142764430711,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        }
+      ],
+      "deltaVsBase": {
+        "macroHatF1": 0.0017639580020516465,
+        "closedF1": 0.0006038607892078218,
+        "openF1": 0.0029240552148954713,
+        "kickF1": 0.0,
+        "snareF1": 0.0,
+        "tomF1": 0.0
+      }
+    },
+    "ride-open": {
+      "summary": {
+        "closed": {
+          "tp": 2357,
+          "predicted": 2667,
+          "reference": 2923,
+          "precision": 0.8837645294338208,
+          "recall": 0.8063633253506671,
+          "f1": 0.8432915921288014
+        },
+        "open": {
+          "tp": 693,
+          "predicted": 969,
+          "reference": 1179,
+          "precision": 0.7151702786377709,
+          "recall": 0.5877862595419847,
+          "f1": 0.6452513966480447
+        },
+        "kick": {
+          "tp": 2639,
+          "predicted": 2768,
+          "reference": 2712,
+          "precision": 0.9533959537572254,
+          "recall": 0.9730825958702065,
+          "f1": 0.9631386861313869
+        },
+        "snare": {
+          "tp": 1306,
+          "predicted": 1426,
+          "reference": 1470,
+          "precision": 0.9158485273492286,
+          "recall": 0.8884353741496599,
+          "f1": 0.9019337016574586
+        },
+        "tom": {
+          "tp": 70,
+          "predicted": 85,
+          "reference": 92,
+          "precision": 0.8235294117647058,
+          "recall": 0.7608695652173914,
+          "f1": 0.7909604519774012
+        },
+        "macroHatF1": 0.744271494388423
       },
       "songs": [
         {
@@ -1687,6 +2197,516 @@
             "precision": 0.464,
             "recall": 0.58,
             "f1": 0.5155555555555555
+          },
+          "open": {
+            "tp": 21,
+            "predicted": 23,
+            "reference": 93,
+            "precision": 0.9130434782608695,
+            "recall": 0.22580645161290322,
+            "f1": 0.3620689655172414
+          },
+          "kick": {
+            "tp": 558,
+            "predicted": 590,
+            "reference": 576,
+            "precision": 0.9457627118644067,
+            "recall": 0.96875,
+            "f1": 0.9571183533447685
+          },
+          "snare": {
+            "tp": 171,
+            "predicted": 191,
+            "reference": 292,
+            "precision": 0.8952879581151832,
+            "recall": 0.5856164383561644,
+            "f1": 0.7080745341614907
+          },
+          "tom": {
+            "tp": 8,
+            "predicted": 18,
+            "reference": 12,
+            "precision": 0.4444444444444444,
+            "recall": 0.6666666666666666,
+            "f1": 0.5333333333333333
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-open",
+            "candidates": 272,
+            "promoted": 22,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 250,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.26680141985809014,
+            "maxProbability": 0.7624211329389078,
+            "sequence": {
+              "variant": "ride-open",
+              "decay": {
+                "enabled": false
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "all-to-open",
+                "candidates": 1,
+                "open": 1,
+                "closed": 0
+              },
+              "basePromoted": 22,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 606,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7366163924060422,
+              "maxRepeatScore": 0.6128324810755131,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "diamondvirgin",
+          "closed": {
+            "tp": 202,
+            "predicted": 218,
+            "reference": 253,
+            "precision": 0.926605504587156,
+            "recall": 0.7984189723320159,
+            "f1": 0.8577494692144374
+          },
+          "open": {
+            "tp": 157,
+            "predicted": 266,
+            "reference": 502,
+            "precision": 0.5902255639097744,
+            "recall": 0.31274900398406374,
+            "f1": 0.4088541666666667
+          },
+          "kick": {
+            "tp": 688,
+            "predicted": 715,
+            "reference": 740,
+            "precision": 0.9622377622377623,
+            "recall": 0.9297297297297298,
+            "f1": 0.9457044673539519
+          },
+          "snare": {
+            "tp": 588,
+            "predicted": 610,
+            "reference": 608,
+            "precision": 0.9639344262295082,
+            "recall": 0.9671052631578947,
+            "f1": 0.9655172413793104
+          },
+          "tom": {
+            "tp": 40,
+            "predicted": 45,
+            "reference": 57,
+            "precision": 0.8888888888888888,
+            "recall": 0.7017543859649122,
+            "f1": 0.7843137254901961
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-open",
+            "candidates": 253,
+            "promoted": 35,
+            "rescued": 40,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 218,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.29707990726925587,
+            "maxProbability": 0.7445808248558129,
+            "sequence": {
+              "variant": "ride-open",
+              "decay": {
+                "enabled": false
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "all-to-open",
+                "candidates": 191,
+                "open": 191,
+                "closed": 0
+              },
+              "basePromoted": 35,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": true,
+              "candidates": 981,
+              "rescued": 40,
+              "physicalSkipped": 0,
+              "maxProbability": 0.8710680360317008,
+              "maxRepeatScore": 0.8607352143138869,
+              "scoreThreshold": 0.8227064925705063,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "kaiju",
+          "closed": {
+            "tp": 521,
+            "predicted": 574,
+            "reference": 572,
+            "precision": 0.9076655052264808,
+            "recall": 0.9108391608391608,
+            "f1": 0.9092495636998255
+          },
+          "open": {
+            "tp": 11,
+            "predicted": 11,
+            "reference": 22,
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666
+          },
+          "kick": {
+            "tp": 387,
+            "predicted": 390,
+            "reference": 390,
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1": 0.9923076923076923
+          },
+          "snare": {
+            "tp": 200,
+            "predicted": 205,
+            "reference": 205,
+            "precision": 0.975609756097561,
+            "recall": 0.975609756097561,
+            "f1": 0.975609756097561
+          },
+          "tom": {
+            "tp": 22,
+            "predicted": 22,
+            "reference": 23,
+            "precision": 1.0,
+            "recall": 0.9565217391304348,
+            "f1": 0.9777777777777777
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-open",
+            "candidates": 585,
+            "promoted": 11,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 574,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.16896704496976986,
+            "maxProbability": 0.7047577818472184,
+            "sequence": {
+              "variant": "ride-open",
+              "decay": {
+                "enabled": false
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "all-to-open",
+                "candidates": 0,
+                "open": 0,
+                "closed": 0
+              },
+              "basePromoted": 11,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 260,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7334829986594743,
+              "maxRepeatScore": 0.6564306745630188,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "nanairo",
+          "closed": {
+            "tp": 688,
+            "predicted": 744,
+            "reference": 823,
+            "precision": 0.9247311827956989,
+            "recall": 0.8359659781287971,
+            "f1": 0.8781110402042118
+          },
+          "open": {
+            "tp": 239,
+            "predicted": 263,
+            "reference": 240,
+            "precision": 0.908745247148289,
+            "recall": 0.9958333333333333,
+            "f1": 0.9502982107355865
+          },
+          "kick": {
+            "tp": 486,
+            "predicted": 486,
+            "reference": 486,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "snare": {
+            "tp": 144,
+            "predicted": 217,
+            "reference": 155,
+            "precision": 0.663594470046083,
+            "recall": 0.9290322580645162,
+            "f1": 0.7741935483870968
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-open",
+            "candidates": 1007,
+            "promoted": 263,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 744,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.31854490080576797,
+            "maxProbability": 0.9498351538287506,
+            "sequence": {
+              "variant": "ride-open",
+              "decay": {
+                "enabled": false
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "all-to-open",
+                "candidates": 0,
+                "open": 0,
+                "closed": 0
+              },
+              "basePromoted": 263,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 318,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.4804905128346508,
+              "maxRepeatScore": 0.35675522251174563,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "ray",
+          "closed": {
+            "tp": 830,
+            "predicted": 881,
+            "reference": 1075,
+            "precision": 0.94211123723042,
+            "recall": 0.772093023255814,
+            "f1": 0.8486707566462167
+          },
+          "open": {
+            "tp": 265,
+            "predicted": 406,
+            "reference": 322,
+            "precision": 0.6527093596059114,
+            "recall": 0.8229813664596274,
+            "f1": 0.728021978021978
+          },
+          "kick": {
+            "tp": 520,
+            "predicted": 587,
+            "reference": 520,
+            "precision": 0.8858603066439523,
+            "recall": 1.0,
+            "f1": 0.9394760614272809
+          },
+          "snare": {
+            "tp": 203,
+            "predicted": 203,
+            "reference": 210,
+            "precision": 1.0,
+            "recall": 0.9666666666666667,
+            "f1": 0.9830508474576272
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-open",
+            "candidates": 1286,
+            "promoted": 405,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 881,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.3239282890738748,
+            "maxProbability": 0.9229658076454778,
+            "sequence": {
+              "variant": "ride-open",
+              "decay": {
+                "enabled": false
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "all-to-open",
+                "candidates": 1,
+                "open": 1,
+                "closed": 0
+              },
+              "basePromoted": 405,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 327,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7951525091839008,
+              "maxRepeatScore": 0.6909142764430711,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        }
+      ],
+      "deltaVsBase": {
+        "macroHatF1": 0.024764456800808965,
+        "closedF1": 0.0,
+        "openF1": 0.04952891360161793,
+        "kickF1": 0.0,
+        "snareF1": 0.0,
+        "tomF1": 0.0
+      }
+    },
+    "ride-acoustic": {
+      "summary": {
+        "closed": {
+          "tp": 2359,
+          "predicted": 2839,
+          "reference": 2923,
+          "precision": 0.8309263825290595,
+          "recall": 0.8070475538829969,
+          "f1": 0.8188129121832697
+        },
+        "open": {
+          "tp": 623,
+          "predicted": 797,
+          "reference": 1179,
+          "precision": 0.7816813048933501,
+          "recall": 0.5284139100932994,
+          "f1": 0.6305668016194332
+        },
+        "kick": {
+          "tp": 2639,
+          "predicted": 2768,
+          "reference": 2712,
+          "precision": 0.9533959537572254,
+          "recall": 0.9730825958702065,
+          "f1": 0.9631386861313869
+        },
+        "snare": {
+          "tp": 1306,
+          "predicted": 1426,
+          "reference": 1470,
+          "precision": 0.9158485273492286,
+          "recall": 0.8884353741496599,
+          "f1": 0.9019337016574586
+        },
+        "tom": {
+          "tp": 70,
+          "predicted": 85,
+          "reference": 92,
+          "precision": 0.8235294117647058,
+          "recall": 0.7608695652173914,
+          "f1": 0.7909604519774012
+        },
+        "macroHatF1": 0.7246898569013515
+      },
+      "songs": [
+        {
+          "song": "arcaround",
+          "closed": {
+            "tp": 116,
+            "predicted": 251,
+            "reference": 200,
+            "precision": 0.46215139442231074,
+            "recall": 0.58,
+            "f1": 0.5144124168514412
           },
           "open": {
             "tp": 21,
@@ -1722,7 +2742,7 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "combined",
+            "variant": "ride-acoustic",
             "candidates": 272,
             "promoted": 22,
             "rescued": 0,
@@ -1731,47 +2751,26 @@
             "closed": 250,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.2650460947206326,
+            "meanProbability": 0.26680141985809014,
             "maxProbability": 0.7624211329389078,
             "sequence": {
-              "variant": "combined",
+              "variant": "ride-acoustic",
               "decay": {
-                "enabled": false,
-                "changed": 0,
-                "tailEnabled": false,
-                "cutEnabled": false,
-                "tailUsed": 0,
-                "cutUsed": 0,
-                "trustedOpen": 1,
-                "trustedClosed": 196,
-                "tailOpenMedian": 0.42930498791131766,
-                "tailClosedMedian": 0.3341628832978292,
-                "cutOpenMedian": null,
-                "cutClosedMedian": null
+                "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
                 "enabled": true,
-                "used": 27,
-                "changed": 0,
-                "consensusRejected": 1,
-                "genres": [
-                  {
-                    "genre": "country",
-                    "similarity": 0.9941376804941211,
-                    "weight": 0.38450519700740976
-                  },
-                  {
-                    "genre": "neworleans",
-                    "similarity": 0.9821729472160152,
-                    "weight": 0.35756154973730925
-                  },
-                  {
-                    "genre": "punk",
-                    "similarity": 0.9301380025368113,
-                    "weight": 0.257933253255281
-                  }
-                ],
-                "transitionBlend": 0.6
+                "mode": "acoustic-42-46",
+                "candidates": 1,
+                "open": 0,
+                "closed": 1,
+                "meanProbability": 0.1265776699113551
               },
               "gmdRescue": {
                 "enabled": false
@@ -1785,7 +2784,7 @@
             "overlay": {
               "enabled": true,
               "gate": false,
-              "candidates": 607,
+              "candidates": 606,
               "rescued": 0,
               "physicalSkipped": 0,
               "maxProbability": 0.7366163924060422,
@@ -1800,20 +2799,20 @@
         {
           "song": "diamondvirgin",
           "closed": {
-            "tp": 203,
-            "predicted": 221,
+            "tp": 204,
+            "predicted": 388,
             "reference": 253,
-            "precision": 0.918552036199095,
-            "recall": 0.8023715415019763,
-            "f1": 0.8565400843881856
+            "precision": 0.5257731958762887,
+            "recall": 0.8063241106719368,
+            "f1": 0.6365054602184087
           },
           "open": {
-            "tp": 33,
-            "predicted": 34,
+            "tp": 87,
+            "predicted": 96,
             "reference": 502,
-            "precision": 0.9705882352941176,
-            "recall": 0.06573705179282868,
-            "f1": 0.12313432835820895
+            "precision": 0.90625,
+            "recall": 0.17330677290836655,
+            "f1": 0.2909698996655518
           },
           "kick": {
             "tp": 688,
@@ -1841,56 +2840,35 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "combined",
+            "variant": "ride-acoustic",
             "candidates": 253,
-            "promoted": 32,
-            "rescued": 2,
+            "promoted": 35,
+            "rescued": 40,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 221,
+            "closed": 218,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.28987288685672613,
-            "maxProbability": 0.7589448924562723,
+            "meanProbability": 0.29707990726925587,
+            "maxProbability": 0.7445808248558129,
             "sequence": {
-              "variant": "combined",
+              "variant": "ride-acoustic",
               "decay": {
-                "enabled": false,
-                "changed": 0,
-                "tailEnabled": false,
-                "cutEnabled": false,
-                "tailUsed": 0,
-                "cutUsed": 0,
-                "trustedOpen": 3,
-                "trustedClosed": 187,
-                "tailOpenMedian": 0.5795576906797386,
-                "tailClosedMedian": 0.2803043238445747,
-                "cutOpenMedian": null,
-                "cutClosedMedian": null
+                "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
                 "enabled": true,
-                "used": 41,
-                "changed": 3,
-                "consensusRejected": 1,
-                "genres": [
-                  {
-                    "genre": "punk",
-                    "similarity": 0.9856948795824232,
-                    "weight": 0.3600249984038955
-                  },
-                  {
-                    "genre": "afrocuban",
-                    "similarity": 0.9674409532051977,
-                    "weight": 0.321828470046499
-                  },
-                  {
-                    "genre": "soul",
-                    "similarity": 0.965587399593089,
-                    "weight": 0.3181465315496056
-                  }
-                ],
-                "transitionBlend": 0.6
+                "mode": "acoustic-42-46",
+                "candidates": 191,
+                "open": 21,
+                "closed": 170,
+                "meanProbability": 0.43057998706363454
               },
               "gmdRescue": {
                 "enabled": false
@@ -1899,17 +2877,17 @@
                 "enabled": false
               },
               "basePromoted": 35,
-              "reclassified": -3
+              "reclassified": 0
             },
             "overlay": {
               "enabled": true,
               "gate": true,
-              "candidates": 1172,
-              "rescued": 2,
-              "physicalSkipped": 45,
-              "maxProbability": 0.9151156447588773,
-              "maxRepeatScore": 0.9051557710059615,
-              "scoreThreshold": 0.8575637179507616,
+              "candidates": 981,
+              "rescued": 40,
+              "physicalSkipped": 0,
+              "maxProbability": 0.8710680360317008,
+              "maxRepeatScore": 0.8607352143138869,
+              "scoreThreshold": 0.8227064925705063,
               "modelTrees": 280,
               "modelFeatures": 29,
               "policy": "repeat_gate_2hands"
@@ -1920,19 +2898,19 @@
           "song": "kaiju",
           "closed": {
             "tp": 521,
-            "predicted": 575,
+            "predicted": 574,
             "reference": 572,
-            "precision": 0.9060869565217391,
+            "precision": 0.9076655052264808,
             "recall": 0.9108391608391608,
-            "f1": 0.9084568439407149
+            "f1": 0.9092495636998255
           },
           "open": {
-            "tp": 10,
-            "predicted": 10,
+            "tp": 11,
+            "predicted": 11,
             "reference": 22,
             "precision": 1.0,
-            "recall": 0.45454545454545453,
-            "f1": 0.625
+            "recall": 0.5,
+            "f1": 0.6666666666666666
           },
           "kick": {
             "tp": 387,
@@ -1960,56 +2938,35 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "combined",
+            "variant": "ride-acoustic",
             "candidates": 585,
-            "promoted": 10,
+            "promoted": 11,
             "rescued": 0,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 575,
+            "closed": 574,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.1682189829804839,
-            "maxProbability": 0.6992194168415807,
+            "meanProbability": 0.16896704496976986,
+            "maxProbability": 0.7047577818472184,
             "sequence": {
-              "variant": "combined",
+              "variant": "ride-acoustic",
               "decay": {
-                "enabled": false,
-                "changed": 0,
-                "tailEnabled": false,
-                "cutEnabled": false,
-                "tailUsed": 0,
-                "cutUsed": 0,
-                "trustedOpen": 0,
-                "trustedClosed": 560,
-                "tailOpenMedian": null,
-                "tailClosedMedian": 0.037722781894319345,
-                "cutOpenMedian": null,
-                "cutClosedMedian": null
+                "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
                 "enabled": true,
-                "used": 16,
-                "changed": 1,
-                "consensusRejected": 0,
-                "genres": [
-                  {
-                    "genre": "punk",
-                    "similarity": 0.9957542134451957,
-                    "weight": 0.3559017989126599
-                  },
-                  {
-                    "genre": "latin",
-                    "similarity": 0.97933002587153,
-                    "weight": 0.3221007133335183
-                  },
-                  {
-                    "genre": "afrocuban",
-                    "similarity": 0.9792777102411132,
-                    "weight": 0.32199748775382186
-                  }
-                ],
-                "transitionBlend": 0.6
+                "mode": "acoustic-42-46",
+                "candidates": 0,
+                "open": 0,
+                "closed": 0,
+                "meanProbability": 0
               },
               "gmdRescue": {
                 "enabled": false
@@ -2018,7 +2975,7 @@
                 "enabled": false
               },
               "basePromoted": 11,
-              "reclassified": -1
+              "reclassified": 0
             },
             "overlay": {
               "enabled": true,
@@ -2038,20 +2995,20 @@
         {
           "song": "nanairo",
           "closed": {
-            "tp": 691,
-            "predicted": 748,
+            "tp": 688,
+            "predicted": 744,
             "reference": 823,
-            "precision": 0.9237967914438503,
-            "recall": 0.8396111786148238,
-            "f1": 0.8796944621260344
+            "precision": 0.9247311827956989,
+            "recall": 0.8359659781287971,
+            "f1": 0.8781110402042118
           },
           "open": {
-            "tp": 238,
-            "predicted": 259,
+            "tp": 239,
+            "predicted": 263,
             "reference": 240,
-            "precision": 0.918918918918919,
-            "recall": 0.9916666666666667,
-            "f1": 0.9539078156312625
+            "precision": 0.908745247148289,
+            "recall": 0.9958333333333333,
+            "f1": 0.9502982107355865
           },
           "kick": {
             "tp": 486,
@@ -2079,56 +3036,35 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "combined",
+            "variant": "ride-acoustic",
             "candidates": 1007,
-            "promoted": 259,
+            "promoted": 263,
             "rescued": 0,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 748,
+            "closed": 744,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.31452777412129956,
+            "meanProbability": 0.31854490080576797,
             "maxProbability": 0.9498351538287506,
             "sequence": {
-              "variant": "combined",
+              "variant": "ride-acoustic",
               "decay": {
-                "enabled": true,
-                "changed": 0,
-                "tailEnabled": true,
-                "cutEnabled": false,
-                "tailUsed": 56,
-                "cutUsed": 0,
-                "trustedOpen": 249,
-                "trustedClosed": 695,
-                "tailOpenMedian": 0.3393203116853364,
-                "tailClosedMedian": 0.1333525629921664,
-                "cutOpenMedian": 0.8206063833804751,
-                "cutClosedMedian": 0.5423783846610191
+                "enabled": false
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
                 "enabled": true,
-                "used": 35,
-                "changed": 4,
-                "consensusRejected": 6,
-                "genres": [
-                  {
-                    "genre": "hiphop",
-                    "similarity": 0.962827385141725,
-                    "weight": 0.35819976261887904
-                  },
-                  {
-                    "genre": "reggae",
-                    "similarity": 0.9482404350747755,
-                    "weight": 0.32684775978564784
-                  },
-                  {
-                    "genre": "neworleans",
-                    "similarity": 0.9423995210675853,
-                    "weight": 0.31495247759547307
-                  }
-                ],
-                "transitionBlend": 0.6
+                "mode": "acoustic-42-46",
+                "candidates": 0,
+                "open": 0,
+                "closed": 0,
+                "meanProbability": 0
               },
               "gmdRescue": {
                 "enabled": false
@@ -2137,7 +3073,7 @@
                 "enabled": false
               },
               "basePromoted": 263,
-              "reclassified": -4
+              "reclassified": 0
             },
             "overlay": {
               "enabled": true,
@@ -2165,12 +3101,12 @@
             "f1": 0.8482370975983649
           },
           "open": {
-            "tp": 264,
-            "predicted": 404,
+            "tp": 265,
+            "predicted": 405,
             "reference": 322,
-            "precision": 0.6534653465346535,
-            "recall": 0.8198757763975155,
-            "f1": 0.7272727272727273
+            "precision": 0.654320987654321,
+            "recall": 0.8229813664596274,
+            "f1": 0.7290233837689133
           },
           "kick": {
             "tp": 520,
@@ -2198,19 +3134,578 @@
           },
           "openHatInfo": {
             "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
-            "variant": "combined",
+            "variant": "ride-acoustic",
             "candidates": 1286,
-            "promoted": 404,
+            "promoted": 405,
             "rescued": 0,
             "enabled": true,
             "threshold": 0.575,
-            "closed": 882,
+            "closed": 881,
             "modelTrees": 320,
             "modelFeatures": 26,
-            "meanProbability": 0.3244879214758122,
+            "meanProbability": 0.3239282890738748,
             "maxProbability": 0.9229658076454778,
             "sequence": {
-              "variant": "combined",
+              "variant": "ride-acoustic",
+              "decay": {
+                "enabled": false
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "acoustic-42-46",
+                "candidates": 1,
+                "open": 0,
+                "closed": 1,
+                "meanProbability": 0.17119517278172613
+              },
+              "basePromoted": 405,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 327,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7951525091839008,
+              "maxRepeatScore": 0.6909142764430711,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        }
+      ],
+      "deltaVsBase": {
+        "macroHatF1": 0.00518281931373743,
+        "closedF1": -0.024478679945531767,
+        "openF1": 0.034844318573006516,
+        "kickF1": 0.0,
+        "snareF1": 0.0,
+        "tomF1": 0.0
+      }
+    },
+    "ride-decay": {
+      "summary": {
+        "closed": {
+          "tp": 2359,
+          "predicted": 2837,
+          "reference": 2923,
+          "precision": 0.8315121607331688,
+          "recall": 0.8070475538829969,
+          "f1": 0.8190972222222223
+        },
+        "open": {
+          "tp": 625,
+          "predicted": 799,
+          "reference": 1179,
+          "precision": 0.7822277847309136,
+          "recall": 0.5301102629346904,
+          "f1": 0.6319514661274014
+        },
+        "kick": {
+          "tp": 2639,
+          "predicted": 2768,
+          "reference": 2712,
+          "precision": 0.9533959537572254,
+          "recall": 0.9730825958702065,
+          "f1": 0.9631386861313869
+        },
+        "snare": {
+          "tp": 1306,
+          "predicted": 1426,
+          "reference": 1470,
+          "precision": 0.9158485273492286,
+          "recall": 0.8884353741496599,
+          "f1": 0.9019337016574586
+        },
+        "tom": {
+          "tp": 70,
+          "predicted": 85,
+          "reference": 92,
+          "precision": 0.8235294117647058,
+          "recall": 0.7608695652173914,
+          "f1": 0.7909604519774012
+        },
+        "macroHatF1": 0.7255243441748118
+      },
+      "songs": [
+        {
+          "song": "arcaround",
+          "closed": {
+            "tp": 116,
+            "predicted": 251,
+            "reference": 200,
+            "precision": 0.46215139442231074,
+            "recall": 0.58,
+            "f1": 0.5144124168514412
+          },
+          "open": {
+            "tp": 21,
+            "predicted": 22,
+            "reference": 93,
+            "precision": 0.9545454545454546,
+            "recall": 0.22580645161290322,
+            "f1": 0.3652173913043478
+          },
+          "kick": {
+            "tp": 558,
+            "predicted": 590,
+            "reference": 576,
+            "precision": 0.9457627118644067,
+            "recall": 0.96875,
+            "f1": 0.9571183533447685
+          },
+          "snare": {
+            "tp": 171,
+            "predicted": 191,
+            "reference": 292,
+            "precision": 0.8952879581151832,
+            "recall": 0.5856164383561644,
+            "f1": 0.7080745341614907
+          },
+          "tom": {
+            "tp": 8,
+            "predicted": 18,
+            "reference": 12,
+            "precision": 0.4444444444444444,
+            "recall": 0.6666666666666666,
+            "f1": 0.5333333333333333
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-decay",
+            "candidates": 272,
+            "promoted": 22,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 250,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.26680141985809014,
+            "maxProbability": 0.7624211329389078,
+            "sequence": {
+              "variant": "ride-decay",
+              "decay": {
+                "enabled": false,
+                "changed": 0,
+                "tailEnabled": false,
+                "cutEnabled": false,
+                "tailUsed": 0,
+                "cutUsed": 0,
+                "trustedOpen": 1,
+                "trustedClosed": 196,
+                "tailOpenMedian": 0.42930498791131766,
+                "tailClosedMedian": 0.3341628832978292,
+                "cutOpenMedian": null,
+                "cutClosedMedian": null
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "acoustic-42-46",
+                "candidates": 1,
+                "open": 0,
+                "closed": 1,
+                "meanProbability": 0.1265776699113551
+              },
+              "basePromoted": 22,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 606,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7366163924060422,
+              "maxRepeatScore": 0.6128324810755131,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "diamondvirgin",
+          "closed": {
+            "tp": 204,
+            "predicted": 388,
+            "reference": 253,
+            "precision": 0.5257731958762887,
+            "recall": 0.8063241106719368,
+            "f1": 0.6365054602184087
+          },
+          "open": {
+            "tp": 87,
+            "predicted": 96,
+            "reference": 502,
+            "precision": 0.90625,
+            "recall": 0.17330677290836655,
+            "f1": 0.2909698996655518
+          },
+          "kick": {
+            "tp": 688,
+            "predicted": 715,
+            "reference": 740,
+            "precision": 0.9622377622377623,
+            "recall": 0.9297297297297298,
+            "f1": 0.9457044673539519
+          },
+          "snare": {
+            "tp": 588,
+            "predicted": 610,
+            "reference": 608,
+            "precision": 0.9639344262295082,
+            "recall": 0.9671052631578947,
+            "f1": 0.9655172413793104
+          },
+          "tom": {
+            "tp": 40,
+            "predicted": 45,
+            "reference": 57,
+            "precision": 0.8888888888888888,
+            "recall": 0.7017543859649122,
+            "f1": 0.7843137254901961
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-decay",
+            "candidates": 253,
+            "promoted": 35,
+            "rescued": 40,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 218,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.29707990726925587,
+            "maxProbability": 0.7445808248558129,
+            "sequence": {
+              "variant": "ride-decay",
+              "decay": {
+                "enabled": false,
+                "changed": 0,
+                "tailEnabled": false,
+                "cutEnabled": false,
+                "tailUsed": 0,
+                "cutUsed": 0,
+                "trustedOpen": 3,
+                "trustedClosed": 187,
+                "tailOpenMedian": 0.5795576906797386,
+                "tailClosedMedian": 0.2803043238445747,
+                "cutOpenMedian": null,
+                "cutClosedMedian": null
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "acoustic-42-46",
+                "candidates": 191,
+                "open": 21,
+                "closed": 170,
+                "meanProbability": 0.43057998706363454
+              },
+              "basePromoted": 35,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": true,
+              "candidates": 981,
+              "rescued": 40,
+              "physicalSkipped": 0,
+              "maxProbability": 0.8710680360317008,
+              "maxRepeatScore": 0.8607352143138869,
+              "scoreThreshold": 0.8227064925705063,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "kaiju",
+          "closed": {
+            "tp": 521,
+            "predicted": 574,
+            "reference": 572,
+            "precision": 0.9076655052264808,
+            "recall": 0.9108391608391608,
+            "f1": 0.9092495636998255
+          },
+          "open": {
+            "tp": 11,
+            "predicted": 11,
+            "reference": 22,
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666
+          },
+          "kick": {
+            "tp": 387,
+            "predicted": 390,
+            "reference": 390,
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1": 0.9923076923076923
+          },
+          "snare": {
+            "tp": 200,
+            "predicted": 205,
+            "reference": 205,
+            "precision": 0.975609756097561,
+            "recall": 0.975609756097561,
+            "f1": 0.975609756097561
+          },
+          "tom": {
+            "tp": 22,
+            "predicted": 22,
+            "reference": 23,
+            "precision": 1.0,
+            "recall": 0.9565217391304348,
+            "f1": 0.9777777777777777
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-decay",
+            "candidates": 585,
+            "promoted": 11,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 574,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.16896704496976986,
+            "maxProbability": 0.7047577818472184,
+            "sequence": {
+              "variant": "ride-decay",
+              "decay": {
+                "enabled": false,
+                "changed": 0,
+                "tailEnabled": false,
+                "cutEnabled": false,
+                "tailUsed": 0,
+                "cutUsed": 0,
+                "trustedOpen": 0,
+                "trustedClosed": 560,
+                "tailOpenMedian": null,
+                "tailClosedMedian": 0.037722781894319345,
+                "cutOpenMedian": null,
+                "cutClosedMedian": null
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "acoustic-42-46",
+                "candidates": 0,
+                "open": 0,
+                "closed": 0,
+                "meanProbability": 0
+              },
+              "basePromoted": 11,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 260,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.7334829986594743,
+              "maxRepeatScore": 0.6564306745630188,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "nanairo",
+          "closed": {
+            "tp": 688,
+            "predicted": 744,
+            "reference": 823,
+            "precision": 0.9247311827956989,
+            "recall": 0.8359659781287971,
+            "f1": 0.8781110402042118
+          },
+          "open": {
+            "tp": 239,
+            "predicted": 263,
+            "reference": 240,
+            "precision": 0.908745247148289,
+            "recall": 0.9958333333333333,
+            "f1": 0.9502982107355865
+          },
+          "kick": {
+            "tp": 486,
+            "predicted": 486,
+            "reference": 486,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "snare": {
+            "tp": 144,
+            "predicted": 217,
+            "reference": 155,
+            "precision": 0.663594470046083,
+            "recall": 0.9290322580645162,
+            "f1": 0.7741935483870968
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-decay",
+            "candidates": 1007,
+            "promoted": 263,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 744,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.3160369508483727,
+            "maxProbability": 0.9498351538287506,
+            "sequence": {
+              "variant": "ride-decay",
+              "decay": {
+                "enabled": true,
+                "changed": 0,
+                "tailEnabled": true,
+                "cutEnabled": false,
+                "tailUsed": 56,
+                "cutUsed": 0,
+                "trustedOpen": 249,
+                "trustedClosed": 695,
+                "tailOpenMedian": 0.3393203116853364,
+                "tailClosedMedian": 0.1333525629921664,
+                "cutOpenMedian": 0.8206063833804751,
+                "cutClosedMedian": 0.5423783846610191
+              },
+              "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
+                "enabled": true,
+                "mode": "acoustic-42-46",
+                "candidates": 0,
+                "open": 0,
+                "closed": 0,
+                "meanProbability": 0
+              },
+              "basePromoted": 263,
+              "reclassified": 0
+            },
+            "overlay": {
+              "enabled": true,
+              "gate": false,
+              "candidates": 318,
+              "rescued": 0,
+              "physicalSkipped": 0,
+              "maxProbability": 0.4804905128346508,
+              "maxRepeatScore": 0.35675522251174563,
+              "scoreThreshold": 0.68,
+              "modelTrees": 280,
+              "modelFeatures": 29,
+              "policy": "repeat_gate_2hands"
+            }
+          }
+        },
+        {
+          "song": "ray",
+          "closed": {
+            "tp": 830,
+            "predicted": 880,
+            "reference": 1075,
+            "precision": 0.9431818181818182,
+            "recall": 0.772093023255814,
+            "f1": 0.8491048593350383
+          },
+          "open": {
+            "tp": 267,
+            "predicted": 407,
+            "reference": 322,
+            "precision": 0.6560196560196561,
+            "recall": 0.8291925465838509,
+            "f1": 0.7325102880658436
+          },
+          "kick": {
+            "tp": 520,
+            "predicted": 587,
+            "reference": 520,
+            "precision": 0.8858603066439523,
+            "recall": 1.0,
+            "f1": 0.9394760614272809
+          },
+          "snare": {
+            "tp": 203,
+            "predicted": 203,
+            "reference": 210,
+            "precision": 1.0,
+            "recall": 0.9666666666666667,
+            "f1": 0.9830508474576272
+          },
+          "tom": {
+            "tp": 0,
+            "predicted": 0,
+            "reference": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "openHatInfo": {
+            "mode": "open-hat-extra-trees-v2-gmd128+overlay-v1",
+            "variant": "ride-decay",
+            "candidates": 1286,
+            "promoted": 407,
+            "rescued": 0,
+            "enabled": true,
+            "threshold": 0.575,
+            "closed": 879,
+            "modelTrees": 320,
+            "modelFeatures": 26,
+            "meanProbability": 0.3251833748694645,
+            "maxProbability": 0.9229658076454778,
+            "sequence": {
+              "variant": "ride-decay",
               "decay": {
                 "enabled": true,
                 "changed": 4,
@@ -2226,28 +3721,18 @@
                 "cutClosedMedian": 0.709280749078965
               },
               "gmd": {
+                "enabled": false
+              },
+              "gmdRescue": {
+                "enabled": false
+              },
+              "ride": {
                 "enabled": true,
-                "used": 18,
-                "changed": 3,
-                "consensusRejected": 0,
-                "genres": [
-                  {
-                    "genre": "hiphop",
-                    "similarity": 0.9211666558276802,
-                    "weight": 0.38529137130648966
-                  },
-                  {
-                    "genre": "reggae",
-                    "similarity": 0.8888013742425097,
-                    "weight": 0.3108768144258495
-                  },
-                  {
-                    "genre": "afrocuban",
-                    "similarity": 0.8854122706035572,
-                    "weight": 0.3038318142676607
-                  }
-                ],
-                "transitionBlend": 0.6
+                "mode": "acoustic-42-46",
+                "candidates": 1,
+                "open": 0,
+                "closed": 1,
+                "meanProbability": 0.17119517278172613
               },
               "gmdRescue": {
                 "enabled": false
@@ -2256,12 +3741,12 @@
                 "enabled": false
               },
               "basePromoted": 405,
-              "reclassified": -1
+              "reclassified": 2
             },
             "overlay": {
               "enabled": true,
               "gate": false,
-              "candidates": 328,
+              "candidates": 327,
               "rescued": 0,
               "physicalSkipped": 0,
               "maxProbability": 0.7951525091839008,
@@ -2275,9 +3760,9 @@
         }
       ],
       "deltaVsBase": {
-        "macroHatF1": -0.0011788919880890703,
-        "closedF1": 7.329445808901269e-05,
-        "openF1": -0.0024310784342673752,
+        "macroHatF1": 0.0060173065871977904,
+        "closedF1": -0.024194369906579194,
+        "openF1": 0.036228983080974664,
         "kickF1": 0.0,
         "snareF1": 0.0,
         "tomF1": 0.0
