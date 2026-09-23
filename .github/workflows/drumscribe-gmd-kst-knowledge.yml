@@ -45,8 +45,10 @@ jobs:
         run: |
           node --check drumscribe/section-analysis.js
           node --check drumscribe/gmd-kst-prior.js
+          node --check drumscribe/gmd-kst-genre.js
           node drumscribe/experiments/gmd-kst/test_section_analysis.mjs
           node drumscribe/experiments/gmd-kst/test_gmd_kst_prior.mjs
+          node drumscribe/experiments/gmd-kst/test_gmd_kst_genre.mjs
       - name: Install ffmpeg
         run: |
           sudo apt-get update
