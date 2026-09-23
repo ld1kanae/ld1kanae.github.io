@@ -1312,3 +1312,12 @@ production既定を `ride-open-decay-rescue` に更新。
 - The microphone button toggles to a stop state while listening. Unsupported browsers disable the button; permission/no-speech errors are shown in the review status line.
 - Closing the editor or saving aborts any active recognizer while preserving the text currently visible in the textarea.
 - Browser smoke injects a fake SpeechRecognition implementation and verifies recognized Japanese text reaches `#reviewText`.
+
+## 2026-09-24 — review-trained alternating HH runtime removal
+
+- The review-specific alternating hi-hat repair from v50-v52 was removed from the production runtime, not merely disabled.
+- Removed production import/call of `hat-sequence.js` from `transcribe.js`.
+- Removed `drumscribe/hat-sequence.js` and `models/alternating-hi-hat-review-v1.json` from runtime locations; historical copies live only under `drumscribe/experiments/archive/`.
+- Reason: the sequence algorithm could choose the opposite alternating phase (Open→Closed where the performance is Closed→Open). It is not a valid general transcription rule.
+- Also fixed stale browser cache keys: `app.js` now imports `transcribe.js?v=20260924-remove-review-hat-v67`, and `index.html` points to the corresponding fresh `app.js` URL.
+- Production Open/Closed work must use general per-hit acoustic models trained/validated on synchronized multi-song data; no review-song parity/range is permitted.
