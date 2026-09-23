@@ -1,6 +1,6 @@
 import {transcribe} from './transcribe.js?v=20260923-egmd-kst-v4';
-import {midiFile} from './midi.js?v=20260923-grid-v28';
-import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-grid-v28';
+import {midiFile} from './midi.js?v=20260923-grid-v29';
+import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-grid-v29';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
 let file=null,decoded=null,events=[],midiEvents=[],context=null,playing=false,position=0,startAt=0,timer=0,next=0,source=null,active=[],samples=new Map(),loadingSamples=null,downloadUrl=null;
