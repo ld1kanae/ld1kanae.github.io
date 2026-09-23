@@ -1,5 +1,50 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 E-GMD domain calibration v45 / Open-hat strict v46
+
+### K/S/T domain calibration v45
+
+目的:
+- E-GMD probabilityの絶対閾値ではなく、曲内・楽器内rank / robust-zでdomain shiftを補正。
+- fixed v39Dの既存9 TP / 0 FPは必ず保持し、追加救済だけ許可。
+
+結果:
+- fixed v39D: KST F1 0.938852, 9 TP / 0 FP
+- C1 rank extreme: 0.938852, 9 / 0
+- C2 robust extreme: **0.938976**, **10 TP / 0 FP**
+  - diamondvirgin Kick 219.05sを1音追加で正解救済
+  - Kick F1 0.963139 -> **0.963328**
+- C3 soft-rank LOOCV: 0.938852, 9 / 0
+
+判断:
+- 曲内robust calibration自体には有効信号あり。
+- ただし改善したC2はhand-set static heuristicで、song-held-out C3では追加救済0。一般化確認前なのでproduction未採用。
+- 次回はC2条件を新曲/外部holdoutで再確認するか、held-outで学べるだけのpaired songを増やす。
+
+資産:
+- `experiments/ARRANGEMENT_DOMAIN_CALIBRATION_V45.md`
+- `experiments/results-arrangement-domain-calibration-v45.json`
+
+### Open-hat default vs combined v46
+
+fresh browserでstrict Rideを含めて再採点。
+
+| variant | Closed F1 | Open F1 | Ride F1 | Hat macro | Metal macro incl Ride | collapsed hat/ride onset F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| default decay-rescue | 0.843895 | 0.598647 | 0.246117 | 0.721271 | 0.562886 | 0.812081 |
+| ride-open-decay-rescue | 0.843895 | **0.647770** | **0.000000** | 0.745832 | 0.497222 | 0.817466 |
+
+解釈:
+- Open F1 +0.0491 / hat macro +0.0246 は大きい。
+- しかしcombinedはride候補をall-to-openで丸めるためRide F1が0になり、metal macroは -0.0657。
+- Open改善のかなりの部分がRide->Open relabeling。**combined v46はproduction不採用**。
+- collapsed onset F1は +0.0054 なので、onset検出自体には改善余地あり。
+- 次の有望方向は「Rideを全部Openへ変える」のではなく、Rideを維持しつつ、強いOpen音響証拠 + decay + repeated articulation evidenceがある候補だけ42/46再分類すること。
+
+資産:
+- `experiments/OPENHAT_DEFAULT_VS_COMBINED_V46.md`
+- `experiments/results-openhat-default-vs-combined-v46.json`
+
 ## CURRENT AUTHORITATIVE STATUS — Open/Closed Hi-Hat v47
 
 - production既定: `ride-open-decay-rescue`
