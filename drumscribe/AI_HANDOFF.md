@@ -1,5 +1,9 @@
 # DrumScribe AI Handoff
 
+## CURRENT AUTHORITATIVE STATUS — Threshold multiplier range 0.0–2.0 (2026-09-24)
+
+ユーザー調整用の全閾値倍率は **0.0–2.0 / step 0.05 / default 1.0**。0.0は対象閾値を0倍、2.0は2倍にする。UIだけでなく adtof/transcribe/hat-forest/open-hat の内部バリデーションも0を有効値として通す。空欄は0ではなく1.0へフォールバックする。Ride→Openは単一UI倍率を音色gateと文脈gateの両方へ共有する。
+
 ## CURRENT AUTHORITATIVE STATUS — Ride→Open HH threshold UI merge (2026-09-24)
 
 ユーザー向けUIでは `Ride→Open HH` と `Ride文脈→Open HH` を別表示しない。両者は内部的には別段階（音色モデル側の約0.60 gate / context-choke rescue側の0.99 gate）だが、最終動作はいずれも Ride候補をOpen HHへ丸めるため、UIは **「Ride→Open HH（音色＋文脈）」1項目** に統合する。
