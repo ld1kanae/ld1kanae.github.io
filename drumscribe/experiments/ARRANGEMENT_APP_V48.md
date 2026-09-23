@@ -4,7 +4,7 @@ Actual `index.html -> app.js` UI path was exercised in fresh Chromium for all fi
 
 - policy: `family-gmd-plus-egmd-residual-v46r1`
 - K/S/T F1: **0.939224**
-- all-class F1: **0.819080**
+- all-class F1: **0.804890**
 - rescued notes: **12**
 - E-GMD residual Snare rescues: **3**
 - max grid residual ticks: **0**
