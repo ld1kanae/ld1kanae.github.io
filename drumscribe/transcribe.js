@@ -1,7 +1,7 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
-import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';
+import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';\nimport {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
@@ -922,7 +922,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
 
   // Crash experiments are deliberately post-gated after the existing two-hand
   // selection, so changing crash precision cannot change kick/snare/tom retention.
-  const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto','hat-accent-080','hat-accent-100','hat-accent-120','competition-open-state','competition-template','competition-hybrid'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
+  const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto','hat-accent-080','hat-accent-100','hat-accent-120','competition-open-state','competition-template','competition-hybrid','collision-lowmid-final','collision-lowmid-struct','collision-lowmid-run'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
   const crashConfidenceThreshold=({'confidence-115':1.15,'confidence-125':1.25,'confidence-135':1.35,'confidence-gated':1.45}[cymbalVariant]??1.45);
   const structuralHatTimes=structural
     .filter(e=>e.group==='hat'||e.group==='pedal_hat')
@@ -1184,6 +1184,12 @@ export async function transcribe(decoded,report=()=>{},options={}){
     });
   }
   adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashCompetition};
+
+  // v57: high-resolution low/mid tail competition, scoped to ambiguous
+  // bar-head Crash/Hat-family overlaps. Runs after all K/S/T decisions.
+  const crashTail=await filterCrashHatTail(decoded,pruned,cymbalVariant);
+  pruned=crashTail.events;
+  adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashTailCompetition:crashTail.info};
 
   const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:44,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
