@@ -7,16 +7,16 @@ Production guard: **PASS**
 
 | variant | Closed F1 | Open F1 | Ride F1 | HH macro | collapsed onset |
 |---|---:|---:|---:|---:|---:|
-| off | 0.850749 | 0.609907 | 0.266150 | 0.730328 | 0.813038 |
-| production | 0.850749 | 0.635674 | 0.052980 | 0.743211 | 0.813038 |
+| off | 0.848910 | 0.602285 | 0.266150 | 0.725598 | 0.813038 |
+| production | 0.848910 | 0.628817 | 0.052980 | 0.738864 | 0.813038 |
 
-- Δ HH macro: +0.012883
-- Δ Open F1: +0.025767
+- Δ HH macro: +0.013266
+- Δ Open F1: +0.026532
 - Δ Closed F1: +0.000000
 - Δ K/S/T: +0.000000 / +0.000000 / +0.000000
 - Δ collapsed onset: +0.000000
 
 ## Per-song HH macro
 
-- off: arcaround=0.476099, diamondvirgin=0.520482, kaiju=0.814238, nanairo=0.912904, ray=0.795022
-- production: arcaround=0.476099, diamondvirgin=0.609254, kaiju=0.814238, nanairo=0.912904, ray=0.795022
+- off: arcaround=0.468501, diamondvirgin=0.505017, kaiju=0.787958, nanairo=0.914205, ray=0.791025
+- production: arcaround=0.468501, diamondvirgin=0.597619, kaiju=0.787958, nanairo=0.914205, ray=0.791025
