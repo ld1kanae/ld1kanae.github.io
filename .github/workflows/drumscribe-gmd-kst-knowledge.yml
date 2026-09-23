@@ -1,0 +1,43 @@
+name: DrumScribe GMD KST knowledge build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - drumscribe-gmd-kst-section-v1-20260923
+    paths:
+      - "drumscribe/experiments/gmd-kst/**"
+      - "drumscribe/models/gmd-kst/**"
+      - ".github/workflows/drumscribe-gmd-kst-knowledge.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install MIDI dependency
+        run: pip install mido
+      - name: Build train-only genre knowledge
+        run: |
+          python drumscribe/experiments/gmd-kst/build_gmd_kst_knowledge.py \
+            --output-dir drumscribe/models/gmd-kst
+      - name: Verify generated files
+        run: |
+          test -s drumscribe/models/gmd-kst/knowledge-v1.json
+          test -s drumscribe/models/gmd-kst/heldout-manifest-v1.json
+          test -s drumscribe/models/gmd-kst/manifest-v1.json
+          python -m json.tool drumscribe/models/gmd-kst/knowledge-v1.json >/dev/null
+          python -m json.tool drumscribe/models/gmd-kst/heldout-manifest-v1.json >/dev/null
+      - name: Upload generated knowledge
+        uses: actions/upload-artifact@v4
+        with:
+          name: drumscribe-gmd-kst-knowledge-v1
+          path: |
+            drumscribe/models/gmd-kst/knowledge-v1.json
+            drumscribe/models/gmd-kst/heldout-manifest-v1.json
+            drumscribe/models/gmd-kst/manifest-v1.json
+          retention-days: 30
