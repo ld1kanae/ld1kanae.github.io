@@ -33,7 +33,7 @@ jobs:
         run: |
           python3 -m http.server 8000 > /tmp/drumscribe-http.log 2>&1 &
           for i in $(seq 1 30); do
-            if curl -fsSL "http://127.0.0.1:8000/drumscribe/feedback.html" | grep -q "feedback.js?v=20260923-timeline-v6"; then
+            if curl -fsSL "http://127.0.0.1:8000/drumscribe/feedback.html" | grep -q "feedback.js?v=20260923-timeline-v7"; then
               exit 0
             fi
             sleep 1
