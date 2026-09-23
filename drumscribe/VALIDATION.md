@@ -2297,3 +2297,37 @@ production:
 - `experiments/results-egmd-kst-transfer-v4.json`
 - `.github/workflows/drumscribe-main-kst-validation.yml`
 
+
+
+---
+
+## 2026-09-23: arrangement structural recurrence labels A / A' / A''
+
+目的:
+- Aメロ/Bメロ/サビ等のsemantic名称を推定せず、offvocal/instrumentalから得た構造区間に「まとまり」と再登場関係を持たせる。
+- 後続のGMD/採譜妥当性priorで、同一構造ファミリ内の反復を直接比較できるようにする。
+
+実装:
+- `drumscribe/arrangement/section-analysis.js`
+- `section.group`: stable family key (`A`, `B`, ...)
+- `section.label`: occurrence label (`A`, `A'`, `A''`, ...)
+- `section.occurrence`: family内の1-based出現回数
+- `repeatSimilarity`: 従来どおり構造類似度
+
+重要:
+- `A` はAメロを意味しない。
+- `A'` は「Aと同じ構造ファミリの再登場」を意味する。
+- downstreamでA/A'を同じfamilyとして比較できるよう、`group` は両者とも `A` のままにする。
+
+合成検証:
+- input structure: `A -> B -> A -> B`
+- boundaries: `[0, 6, 12, 18, 24]` sec
+- groups: `[A, B, A, B]`
+- labels: `[A, B, A', B']`
+- occurrences: `[1, 1, 2, 2]`
+- repeat similarity: A' ≈ 0.9943, B' ≈ 0.99998
+
+現状:
+- shared arrangement moduleの出力仕様として採用。
+- production transcriptionへのnote追加/削除にはまだ接続しない。
+- 次段は同一familyの反復patternとsection boundary周辺のdrum evidenceを、候補rescoring用priorとして評価する。
