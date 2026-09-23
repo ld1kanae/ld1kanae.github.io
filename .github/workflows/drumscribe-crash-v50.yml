@@ -1,0 +1,48 @@
+name: DrumScribe crash confidence sweep v50
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/transcribe.js"
+      - "drumscribe/experiments/browser_validate_crash_v50.mjs"
+      - "drumscribe/experiments/compare_crash_v50.py"
+      - ".github/workflows/drumscribe-crash-v50.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Fresh-generate confidence variants
+        run: node drumscribe/experiments/browser_validate_crash_v50.mjs
+      - name: Score crash and non-regression
+        run: python drumscribe/experiments/compare_crash_v50.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-crash-v50.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "drumscribe: record crash confidence sweep v50"
+          git pull --rebase origin main
+          git push origin HEAD:main
