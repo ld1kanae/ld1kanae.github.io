@@ -1,4 +1,4 @@
-import {transcribe} from './transcribe.js';
+import {transcribe} from './transcribe.js?v=20260923-egmd-kst-v3';
 import {midiFile} from './midi.js';
 import {inferBars,parseBeatThis} from './meter.js';
 const $=id=>document.getElementById(id), status=$('status');
