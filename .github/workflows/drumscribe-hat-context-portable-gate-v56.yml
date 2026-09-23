@@ -1,0 +1,40 @@
+name: DrumScribe hat context portable gate v56
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/experiments/evaluate_hat_context_portable_gate_v56.py"
+      - ".github/workflows/drumscribe-hat-context-portable-gate-v56.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install scorer dependency
+        run: pip install mido
+      - name: Evaluate reference-free Ride-count gate
+        run: python drumscribe/experiments/evaluate_hat_context_portable_gate_v56.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-hat-context-portable-gate-v56.json
+          git add drumscribe/experiments/HAT_CONTEXT_PORTABLE_GATE_V56.md
+          if git diff --cached --quiet; then
+            echo "No result changes"
+          else
+            git commit -m "drumscribe: record portable Ride gate v56 results"
+            git pull --rebase origin main
+            git push
+          fi
