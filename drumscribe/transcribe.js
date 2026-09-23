@@ -4,6 +4,7 @@ import {promoteOpenHats} from './open-hat.js?v=20260924-threshold-controls-v1';
 import {rescueRideOpenV57,rescoreHatArticulationFusionV61,rescoreHatSyncCandidateV66,rescoreHatMp3DomainV68} from './hat-context-v57.js?v=20260924-mp3-domain-v68';
 import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
+import {assignTomPitches} from './tom-pitch.js?v=20260924-tom-pitch-v1';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;
@@ -1255,11 +1256,17 @@ export async function transcribe(decoded,report=()=>{},options={}){
   pruned=crashTail.events;
   adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashTailCompetition:crashTail.info};
 
+  // Second-stage tom pitch subdivision. This only annotates already accepted tom hits;
+  // it never creates/removes/re-times K/S/T events.
+  const tomPitchResult=assignTomPitches(samples,pruned);
+  pruned=tomPitchResult.events;
+  adtofInfo.tomPitch=tomPitchResult.info;
+
   // Pedal hi-hat may remain as an internal articulation/context cue, but the
   // user-facing transcription intentionally collapses it to Closed HH (GM42).
   const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:42,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
-    time:e.time,note:noteOf[e.group],group:e.group==='pedal_hat'?'hat':e.group,
+    time:e.time,note:e.group==='tom'&&[41,45,47,50].includes(e.tomNote)?e.tomNote:noteOf[e.group],group:e.group==='pedal_hat'?'hat':e.group,
     velocity:Math.max(40,Math.min(120,Math.round(80+15*Math.log1p(e.score)))),
     ...(Number.isFinite(Number(e.openHatProbability))?{openHatProbability:Number(e.openHatProbability)}:{}),
     ...(Number.isFinite(Number(e.openHatBaseProbability))?{openHatBaseProbability:Number(e.openHatBaseProbability)}:{}),
@@ -1284,7 +1291,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
         score:Number(e.score)||0,
         confidence:Number(e.confidence)||0,
         rescuedSnare:Boolean(e.rescuedSnare),
-        egmdRescued:Boolean(e.egmdRescued)
+        egmdRescued:Boolean(e.egmdRescued),
+        ...(e.group==='tom'?{tomNote:Number(e.tomNote)||45,tomPitchHz:Number(e.tomPitchHz)||0}:{})
       })),
       egmdSnareSupport:egmdSnareSupport.map(e=>({
         time:e.time,
