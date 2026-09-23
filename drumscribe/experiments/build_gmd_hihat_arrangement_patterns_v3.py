@@ -64,31 +64,37 @@ def addb(c,states):
     c["openHat"]+=int("open" in states);c["closedHat"]+=int("closed" in states)
 
 def init():
-    return {"sequences":0,"beats":0,"fills":0,"openHits":0,"closedHits":0,
+    return {"sequences":0,"hatSequences":0,"beats":0,"fills":0,"openHits":0,"closedHits":0,
       "transitions":Counter(),"transitionGap16":defaultdict(Counter),"openRunLength":Counter(),
       "bars":0,"repeat":{1:Counter(),2:Counter(),4:Counter()},"boundary":defaultdict(bc)}
 
 def addseq(st,tpb,notes,beat_type):
     st["sequences"]+=1;st["beats" if beat_type=="beat" else "fills"]+=1
-    by=defaultdict(set);mx=0
+    by=defaultdict(set);hat_tick=defaultdict(set);mx=0
     for tick,p,_ in notes:
         z=state(p)
         if z is None:continue
         s=qslot(tick,tpb)
         if s<0:continue
         by[s].add(z);mx=max(mx,s)
+        if z in ("open","closed"):hat_tick[int(tick)].add(z)
+
+    # Event-sequence statistics collapse only truly simultaneous hat messages.
+    # They do NOT collapse separate microtimed hits that quantize to one 16th.
     hats=[]
-    for s in sorted(by):
-        ss=by[s]
-        if "open" in ss:hats.append((s,"O"));st["openHits"]+=1
-        elif "closed" in ss:hats.append((s,"C"));st["closedHits"]+=1
+    for tick,ss in sorted(hat_tick.items()):
+        a="O" if "open" in ss else "C"
+        hats.append((int(tick),a))
+        st["openHits" if a=="O" else "closedHits"]+=1
+    if hats:st["hatSequences"]+=1
     run=0
-    for i,(s,a) in enumerate(hats):
+    for i,(tick,a) in enumerate(hats):
         if a=="O":run+=1
         elif run:st["openRunLength"][str(min(run,32))]+=1;run=0
         if i+1<len(hats):
-            ns,b=hats[i+1];k=a+">"+b;st["transitions"][k]+=1
-            st["transitionGap16"][k][str(max(0,min(32,ns-s)))]+=1
+            nt,b=hats[i+1];k=a+">"+b;st["transitions"][k]+=1
+            gap=max(0,min(32,qslot(nt-tick,tpb)))
+            st["transitionGap16"][k][str(gap)]+=1
     if run:st["openRunLength"][str(min(run,32))]+=1
     if beat_type!="beat":return
 
@@ -137,7 +143,7 @@ def finalize(st):
           "similar75Rate":r["similar75"]/n if n else None,"similar60Rate":r["similar60"]/n if n else None,
           "meanSimilarity":r["simMilliSum"]/(1000*n) if n else None}
     tr={k:int(v) for k,v in st["transitions"].items()};tn=sum(tr.values())
-    return {"sequences":int(st["sequences"]),"beats":int(st["beats"]),"fills":int(st["fills"]),
+    return {"sequences":int(st["sequences"]),"hatSequences":int(st["hatSequences"]),"beats":int(st["beats"]),"fills":int(st["fills"]),
       "bars":int(st["bars"]),"openHits":o,"closedHits":c,"openRate":o/(o+c) if o+c else 0.,
       "transitions":tr,"transitionProb":{k:v/tn for k,v in tr.items()} if tn else {},
       "transitionGap16":{k:{str(g):int(n) for g,n in sorted(v.items(),key=lambda q:int(q[0]))}
