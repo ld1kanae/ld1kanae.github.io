@@ -1,0 +1,164 @@
+name: DrumScribe E-GMD v5 strict frozen transfer
+
+on:
+  push:
+    branches:
+      - drumscribe-egmd-kst-v5-current-eval-20260923
+    paths:
+      - "drumscribe/experiments/results-egmd-kst-v5-snare-calibration.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  thresholds:
+    runs-on: ubuntu-latest
+    outputs:
+      p975: ${{ steps.read.outputs.p975 }}
+      p990: ${{ steps.read.outputs.p990 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+      - id: read
+        name: Read E-GMD-only precision tiers
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          d=json.load(open("drumscribe/experiments/results-egmd-kst-v5-snare-calibration.json"))
+          assert d["druMasterUsedForSelection"] is False
+          for key,out in [("0.975","p975"),("0.99","p990")]:
+              x=d["precisionTiers"][key]
+              assert x["eligible"]
+              print(f"{out}={x['threshold']}")
+          PY
+
+  evaluate:
+    needs: thresholds
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: v4-baseline
+            policy: v4-baseline
+            tier: none
+          - variant: v5-replace-p975
+            policy: v5-replace
+            tier: p975
+          - variant: v5-replace-p990
+            policy: v5-replace
+            tier: p990
+          - variant: v4-v5-intersection-p975
+            policy: v4-v5-intersection
+            tier: p975
+          - variant: v4-v5-supplement-p975
+            policy: v4-v5-high-supplement
+            tier: p975
+          - variant: v4-v5-supplement-p990
+            policy: v4-v5-high-supplement
+            tier: p990
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Select frozen policy and E-GMD-only threshold
+        env:
+          POLICY: ${{ matrix.policy }}
+          TIER: ${{ matrix.tier }}
+          P975: ${{ needs.thresholds.outputs.p975 }}
+          P990: ${{ needs.thresholds.outputs.p990 }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, re
+          policy=os.environ["POLICY"]; tier=os.environ["TIER"]
+          threshold=None
+          if tier=="p975": threshold=float(os.environ["P975"])
+          elif tier=="p990": threshold=float(os.environ["P990"])
+
+          p=pathlib.Path("drumscribe/transcribe.js")
+          s=p.read_text()
+          s,n=re.subn(r"const EGMD_EVAL_POLICY='[^']+';",f"const EGMD_EVAL_POLICY='{policy}';",s,count=1)
+          if n!=1: raise SystemExit("EGMD_EVAL_POLICY marker not found")
+
+          if policy=="v4-v5-high-supplement":
+              if threshold is None: raise SystemExit("supplement needs threshold")
+              s,n=re.subn(r"const v5High=\(e\.probabilityV5\|\|0\)>=\.90;",
+                          f"const v5High=(e.probabilityV5||0)>={threshold:.6f};",s,count=1)
+              if n!=1: raise SystemExit("v5High threshold marker not found")
+          p.write_text(s)
+
+          if policy in ("v5-replace","v4-v5-intersection"):
+              if threshold is None: raise SystemExit("v5 policy needs threshold")
+              mp=pathlib.Path("drumscribe/models/egmd-kst-reclassifier-v5.json")
+              m=json.loads(mp.read_text())
+              m["models"]["snare"]["threshold"]=threshold
+              mp.write_text(json.dumps(m,separators=(",",":"))+"\n")
+          print("policy",policy,"tier",tier,"threshold",threshold)
+          PY
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate MIDI in real Chromium
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Score generated MIDI
+        run: python drumscribe/experiments/compare_browser.py
+      - name: Stage artifact
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          mkdir -p artifact/sidecars
+          cp drumscribe/experiments/results-v2-browser.json artifact/result.json
+          cp drumscribe/experiments/generated-v2-browser/*.json artifact/sidecars/
+          printf '%s\n' "$VARIANT" > artifact/variant.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: egmd-v5-strict-${{ matrix.variant }}
+          path: artifact
+          retention-days: 7
+
+  record:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: egmd-v5-strict-*
+          path: downloaded
+      - name: Record strict-transfer results
+        run: |
+          rm -rf drumscribe/experiments/egmd-kst-v5-strict-transfer
+          mkdir -p drumscribe/experiments/egmd-kst-v5-strict-transfer
+          for d in downloaded/egmd-v5-strict-*; do
+            variant=$(cat "$d/variant.txt")
+            mkdir -p "drumscribe/experiments/egmd-kst-v5-strict-transfer/$variant"
+            cp "$d/result.json" "drumscribe/experiments/egmd-kst-v5-strict-transfer/$variant/result.json"
+            cp -r "$d/sidecars" "drumscribe/experiments/egmd-kst-v5-strict-transfer/$variant/"
+          done
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-egmd-kst-v5-current-eval-20260923
+          git add drumscribe/experiments/egmd-kst-v5-strict-transfer
+          git diff --cached --quiet && exit 0
+          git commit -m "Record E-GMD v5 strict frozen transfer [skip ci]"
+          git push origin HEAD:drumscribe-egmd-kst-v5-current-eval-20260923
