@@ -94,7 +94,7 @@ function saveThresholdProfile(lastResult){
     fileSize:Number(file.size)||null,
     updatedAt:new Date().toISOString(),
     values,
-    ...(lastResult?{lastResult}:{prev.lastResult?{lastResult:prev.lastResult}:{}})
+    ...(lastResult?{lastResult}:(prev.lastResult?{lastResult:prev.lastResult}:{}))
   };
   store[key]=profile;
   if(saveThresholdProfileStore(store)){
