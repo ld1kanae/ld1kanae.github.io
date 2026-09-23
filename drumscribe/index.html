@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1220">
   <title>DrumScribe — ドラム音源からMIDIへ</title>
-  <link rel="stylesheet" href="style.css?v=20260924-threshold-copy-v4">
+  <link rel="stylesheet" href="style.css?v=20260924-threshold-memory-v5">
 </head>
 <body>
 <main>
@@ -37,6 +37,7 @@
         <label><span class="threshold-name">シンバル打点検出<small>0 ← 出やすい / 出にくい → 2</small></span><input id="thresholdCymbal" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
         <label><span class="threshold-name">Crash最終ゲート<small>0 ← 通しやすい / 厳しくする → 2（対応モード時）</small></span><input id="thresholdCymbalGate" type="number" min="0.0" max="2.0" step="0.05" value="1.0" inputmode="decimal"></label>
       </div></div>
+      <div class="threshold-profile"><span id="thresholdProfileStatus">音源を選ぶと、このブラウザに感度設定を自動保存します。</span><button type="button" id="thresholdForget" disabled>この音源の記録を削除</button></div>
       <div class="threshold-actions"><button type="button" id="thresholdReset">すべて 1.0 に戻す</button></div>
     </details>
     <div class="import-bottom"><label for="example">検証用データ</label><select id="example"><option value="">選択してください</option><option value="arcaround">アルクアラウンド</option><option value="diamondvirgin">ダイヤモンドヴァージン</option><option value="kaiju">怪獣</option><option value="nanairo">なないろ</option><option value="ray">Ray</option></select><label class="bpm-field" for="bpm">BPM補正（任意） <input id="bpm" type="number" min="30" max="300" step="0.01" inputmode="decimal" placeholder="自動推定"></label><button id="analyze" class="primary" disabled>自動採譜する <span>→</span></button></div>
@@ -55,5 +56,5 @@
   <footer><span>DRUMSCRIBE / PROTOTYPE</span><a href="https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe">ソースと検証履歴 ↗</a></footer>
 </main>
 <script src="vendor/ort/ort.wasm.min.js?v=1.30.0"></script>
-<script type="module" src="app.js?v=20260924-threshold-copy-v4"></script>
+<script type="module" src="app.js?v=20260924-threshold-memory-v5"></script>
 </body></html>
