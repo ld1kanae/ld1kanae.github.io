@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1220">
   <title>DrumScribe Review — 範囲レビュー</title>
-  <link rel="stylesheet" href="style.css?v=20260923-timeline-v7">
+  <link rel="stylesheet" href="style.css?v=20260923-timeline-v8">
 </head>
 <body data-review-mode="1">
 <main>
@@ -16,6 +16,7 @@
   <section class="card import" aria-labelledby="import-title">
     <div class="section-title"><span class="number">01</span><div><h2 id="import-title">音源を選ぶ</h2><p>WAV / MP3 / M4A / OGG など、ブラウザで再生できるドラム音源</p></div></div>
     <label class="drop" id="drop"><input type="file" id="file" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac"><span class="drop-icon">↥</span><strong id="fileName">クリックして選択、またはここにドロップ</strong><small>ファイルはサーバーに送信されません</small></label>
+    <div class="arrangement-source"><label class="arrangement-file-button">構造解析用 offvocal / 伴奏（任意）<input type="file" id="arrangementFile" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac"></label><span id="arrangementFileName">未選択 — ドラム音源のみでも採譜できます</span></div>
     <div class="import-bottom"><label for="example">検証用データ</label><select id="example"><option value="">選択してください</option><option value="arcaround">アルクアラウンド</option><option value="diamondvirgin">ダイヤモンドヴァージン</option><option value="kaiju">怪獣</option><option value="nanairo">なないろ</option><option value="ray">Ray</option></select><label class="bpm-field" for="bpm">BPM補正（任意） <input id="bpm" type="number" min="30" max="300" step="0.01" inputmode="decimal" placeholder="自動推定"></label><button id="analyze" class="primary" disabled>自動採譜する <span>→</span></button></div>
     <p class="status" id="status" role="status" aria-live="polite">音源を選択してください。</p><progress id="progress" max="100" value="0" hidden></progress>
   </section>
@@ -49,6 +50,6 @@
 <footer><span>DRUMSCRIBE / PROTOTYPE</span><a href="https://github.com/ld1kanae/ld1kanae.github.io/tree/main/drumscribe">ソースと検証履歴 ↗</a></footer>
 </main>
 <script src="vendor/ort/ort.wasm.min.js?v=1.30.0"></script>
-<script type="module" src="app.js?v=20260923-timeline-v7-openhat-v42"></script>
-<script src="feedback.js?v=20260923-timeline-v7"></script>
+<script type="module" src="app.js?v=20260923-timeline-v8"></script>
+<script src="feedback.js?v=20260923-timeline-v8"></script>
 </body></html>
