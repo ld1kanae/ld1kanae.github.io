@@ -1,6 +1,7 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
+import {repairAlternatingHiHats} from './hat-sequence.js?v=20260923-review-v1';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
@@ -629,6 +630,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   const cym=base.filter(e=>e.group==='cymbal_raw');
   let structural=base.filter(e=>e.group!=='cymbal_raw');
   let adtofCymbal=[];
+  let adtofBroadMetal=[];
   let adtofSnareRescue=[];
   let egmdSnareSupport=[];
   let diagnosticKstCandidates=null;
@@ -639,6 +641,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       report(message,mapped);
     },{thresholdScale:1.15,diagnosticKst:options.diagnosticKst===true});
     const replacement=ad.events.filter(e=>e.group!=='cymbal');
+    adtofBroadMetal=ad.events.filter(e=>e.group==='hat'||e.group==='cymbal');
     adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
     adtofSnareRescue=ad.snareRescue||[];
     egmdSnareSupport=ad.egmdSnareSupport||[];
@@ -1048,6 +1051,12 @@ export async function transcribe(decoded,report=()=>{},options={}){
   });
   pruned=openHat.events;
   adtofInfo.openHat=openHat.info;
+
+  // Review-trained alternating-eighth repair is experiment-gated. It may
+  // alter metal articulation/onsets only; kick/snare/tom are never changed.
+  const hatSequence=await repairAlternatingHiHats(decoded,pruned,adtofBroadMetal,bpm,barInfo.phaseSec,options.hatSequenceVariant||'off');
+  pruned=hatSequence.events;
+  adtofInfo.hatSequence=hatSequence.info;
 
   const noteOf={kick:36,snare:38,hat:42,open_hat:46,pedal_hat:44,tom:45,crash:49,ride:51};
   const events=pruned.filter(e=>noteOf[e.group]).map(e=>({
