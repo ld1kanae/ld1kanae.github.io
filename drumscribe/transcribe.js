@@ -657,19 +657,36 @@ export async function transcribe(decoded,report=()=>{},options={}){
       }
       return n;
     };
+    let gmdKstPrior=null;
+    if(adaptiveSnareRescue){
+      try{
+        gmdKstPrior=await fetch('models/gmd-kst-prior.json').then(r=>{if(!r.ok)throw Error('GMD KST priorを読み込めません');return r.json();});
+      }catch(err){
+        console.warn('GMD KST prior fallback',err);
+      }
+    }
+    const gmdSnareGivenKick=t=>{
+      if(!gmdKstPrior)return 0;
+      const tab=gmdKstPrior.groups?.all?.conditional?.kick;
+      return Number(tab?.[String(slot16(t))]?.snare)||0;
+    };
     const rescued=[];
+    let gmdPriorRescued=0;
     for(const e of lowSnare){
       const k=nearEvent(kickEvents,e.time,.035);
       if(!k)continue;
       const repeat=repeatedAtSlot(e.time);
-      if(e.score<.12||e.score<.25*(k.score||0)||repeat<2)continue;
-      rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat});
+      const gmdPrior=gmdSnareGivenKick(e.time);
+      const structuralSupport=repeat>=2||(repeat>=1&&gmdPrior>=.45);
+      if(e.score<.12||e.score<.25*(k.score||0)||!structuralSupport)continue;
+      if(repeat<2&&gmdPrior>=.45)gmdPriorRescued++;
+      rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat,gmdSnareGivenKick:gmdPrior});
     }
     if(rescued.length)structural.push(...rescued);
 
-    // Kick/tom simultaneity is rare in the reference corpus, while a large
-    // share of current tom false positives are kick bleed. Suppress only weak,
-    // isolated toms that collide with a kick; keep strong toms and tom runs.
+    // The current five-song set contains kick/tom bleed false positives.
+    // GMD shows kick+tom is not globally rare, so keep this veto deliberately
+    // narrow: only weak, isolated toms colliding with a kick are suppressed.
     const toms=structural.filter(e=>e.group==='tom');
     let tomKickRemoved=0;
     structural=structural.filter(e=>{
@@ -691,6 +708,9 @@ export async function transcribe(decoded,report=()=>{},options={}){
       snareMinActivation:.12,
       snareKickRatio:.25,
       snareRepeatBars:2,
+      gmdKstPrior:!!gmdKstPrior,
+      gmdPriorSnareMin:.45,
+      gmdPriorRescued,
       tomKickRemoved,
       tomStrongKeep:1.45,
       tomRunWindowSec:.24
