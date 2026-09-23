@@ -643,7 +643,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const barIndex=t=>Math.floor((t-phase)/bar);
     const rescueDensity=adtofSnareRescue.length/Math.max(1,snareEvents.length);
     const snareKickDensity=snareEvents.length/Math.max(1,kickEvents.length);
-    const adaptiveSnareRescue=rescueDensity>=1.40&&snareKickDensity<=.30;
+    const adaptiveSnareRescue=rescueDensity>=1.24&&snareKickDensity<=.30;
     const lowSnare=adaptiveSnareRescue
       ? adtofSnareRescue.filter(e=>!nearEvent(snareEvents,e.time,.035)&&nearEvent(kickEvents,e.time,.040))
       : [];
