@@ -1,0 +1,728 @@
+{
+  "schema": 1,
+  "description": "Nested leave-one-song-out downbeat classifier from predicted drum events. Held chart MIDI is scoring-only. Models train only on the other songs.",
+  "candidates": {
+    "logistic_p0.25": {
+      "model": "logistic",
+      "penalty3": 0.25,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 1.2915760978116637,
+          "p95_abs_bar_error_beats": 1.9861601467960597,
+          "max_abs_bar_error_beats": 1.9862904625775242,
+          "bar_recall_025": 0.16778523489932887,
+          "signature_bar_accuracy_025": 0.09395973154362416,
+          "three_four_recall": 0.35,
+          "false_three_four_bars": 43,
+          "pred_three_four_bars": 50,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.48805739818673355,
+          "top_prob": 0.999987112549662
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.3114429076705962,
+          "p95_abs_bar_error_beats": 1.0096673551624378,
+          "max_abs_bar_error_beats": 1.9858121199885235,
+          "bar_recall_025": 0.7039473684210527,
+          "signature_bar_accuracy_025": 0.631578947368421,
+          "three_four_recall": null,
+          "false_three_four_bars": 41,
+          "pred_three_four_bars": 41,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.31003433842273476,
+          "top_prob": 0.9999996943362057
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.024308876940777015,
+          "p95_abs_bar_error_beats": 0.024444234306778296,
+          "max_abs_bar_error_beats": 1.00647785159959,
+          "bar_recall_025": 0.9891891891891892,
+          "signature_bar_accuracy_025": 0.9837837837837838,
+          "three_four_recall": null,
+          "false_three_four_bars": 8,
+          "pred_three_four_bars": 8,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3444802937626159,
+          "top_prob": 0.9997356200472645
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.2539529615638814,
+          "p95_abs_bar_error_beats": 1.9276511476639997,
+          "max_abs_bar_error_beats": 1.9770530933629735,
+          "bar_recall_025": 0.8666666666666667,
+          "signature_bar_accuracy_025": 0.837037037037037,
+          "three_four_recall": null,
+          "false_three_four_bars": 20,
+          "pred_three_four_bars": 20,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.37927274379231757,
+          "top_prob": 0.9998633003893959
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.229072876220521,
+          "p95_abs_bar_error_beats": 1.0058127584108931,
+          "max_abs_bar_error_beats": 1.9942485575426214,
+          "bar_recall_025": 0.7894736842105263,
+          "signature_bar_accuracy_025": 0.7368421052631579,
+          "three_four_recall": null,
+          "false_three_four_bars": 35,
+          "pred_three_four_bars": 35,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.353137916300145,
+          "top_prob": 0.9983274295972667
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.42207074404148787,
+        "mean_bar_recall_025": 0.7034124286773528,
+        "mean_signature_accuracy_025": 0.6566403209992048,
+        "three_four_recall": 0.35,
+        "false_three_four_bars": 147,
+        "objective": -1.1411253385241145
+      }
+    },
+    "logistic_p0.45": {
+      "model": "logistic",
+      "penalty3": 0.45,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 1.3953671554040912,
+          "p95_abs_bar_error_beats": 1.9861601467960597,
+          "max_abs_bar_error_beats": 1.9862904625775242,
+          "bar_recall_025": 0.174496644295302,
+          "signature_bar_accuracy_025": 0.12080536912751678,
+          "three_four_recall": 0.35,
+          "false_three_four_bars": 31,
+          "pred_three_four_bars": 38,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.48805739818673355,
+          "top_prob": 0.999987112549662
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.3114429076705962,
+          "p95_abs_bar_error_beats": 1.0096673551624378,
+          "max_abs_bar_error_beats": 1.9858121199885235,
+          "bar_recall_025": 0.7039473684210527,
+          "signature_bar_accuracy_025": 0.631578947368421,
+          "three_four_recall": null,
+          "false_three_four_bars": 41,
+          "pred_three_four_bars": 41,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.31003433842273476,
+          "top_prob": 0.9999996943362057
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.024308876940777015,
+          "p95_abs_bar_error_beats": 0.024444234306778296,
+          "max_abs_bar_error_beats": 1.00647785159959,
+          "bar_recall_025": 0.9891891891891892,
+          "signature_bar_accuracy_025": 0.9837837837837838,
+          "three_four_recall": null,
+          "false_three_four_bars": 8,
+          "pred_three_four_bars": 8,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3444802937626159,
+          "top_prob": 0.9997356200472645
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.1820482090671221,
+          "p95_abs_bar_error_beats": 1.0256445627642692,
+          "max_abs_bar_error_beats": 1.9770530933629735,
+          "bar_recall_025": 0.9111111111111111,
+          "signature_bar_accuracy_025": 0.8888888888888888,
+          "three_four_recall": null,
+          "false_three_four_bars": 16,
+          "pred_three_four_bars": 16,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.37927274379231757,
+          "top_prob": 0.9998633003893959
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.229072876220521,
+          "p95_abs_bar_error_beats": 1.0058127584108931,
+          "max_abs_bar_error_beats": 1.9942485575426214,
+          "bar_recall_025": 0.7894736842105263,
+          "signature_bar_accuracy_025": 0.7368421052631579,
+          "three_four_recall": null,
+          "false_three_four_bars": 35,
+          "pred_three_four_bars": 35,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.353137916300145,
+          "top_prob": 0.9983274295972667
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.42844800506062153,
+        "mean_bar_recall_025": 0.7136435994454363,
+        "mean_signature_accuracy_025": 0.6723798188863537,
+        "three_four_recall": 0.35,
+        "false_three_four_bars": 131,
+        "objective": -0.9338960215184962
+      }
+    },
+    "logistic_p0.65": {
+      "model": "logistic",
+      "penalty3": 0.65,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 1.4217046408092908,
+          "p95_abs_bar_error_beats": 1.9861601467960597,
+          "max_abs_bar_error_beats": 1.9862904625775242,
+          "bar_recall_025": 0.16778523489932887,
+          "signature_bar_accuracy_025": 0.12080536912751678,
+          "three_four_recall": 0.35,
+          "false_three_four_bars": 27,
+          "pred_three_four_bars": 34,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.48805739818673355,
+          "top_prob": 0.999987112549662
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.31047368664033226,
+          "p95_abs_bar_error_beats": 1.0016898136650803,
+          "max_abs_bar_error_beats": 1.9858121199885235,
+          "bar_recall_025": 0.7039473684210527,
+          "signature_bar_accuracy_025": 0.6447368421052632,
+          "three_four_recall": null,
+          "false_three_four_bars": 33,
+          "pred_three_four_bars": 33,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.31003433842273476,
+          "top_prob": 0.9999996943362057
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.013601269502731075,
+          "p95_abs_bar_error_beats": 0.024267384939401986,
+          "max_abs_bar_error_beats": 0.17678476843886148,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3444802937626159,
+          "top_prob": 0.9997356200472645
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.1270471727950328,
+          "p95_abs_bar_error_beats": 0.11877003459430033,
+          "max_abs_bar_error_beats": 1.9770530933629735,
+          "bar_recall_025": 0.9555555555555556,
+          "signature_bar_accuracy_025": 0.9481481481481482,
+          "three_four_recall": null,
+          "false_three_four_bars": 8,
+          "pred_three_four_bars": 8,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.37927274379231757,
+          "top_prob": 0.9998633003893959
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.18983268880886692,
+          "p95_abs_bar_error_beats": 1.005800735674897,
+          "max_abs_bar_error_beats": 1.994170409758678,
+          "bar_recall_025": 0.8223684210526315,
+          "signature_bar_accuracy_025": 0.7828947368421053,
+          "three_four_recall": null,
+          "false_three_four_bars": 27,
+          "pred_three_four_bars": 27,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.353137916300145,
+          "top_prob": 0.9983274295972667
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.41253189171125076,
+        "mean_bar_recall_025": 0.7299313159857137,
+        "mean_signature_accuracy_025": 0.6993170192446068,
+        "three_four_recall": 0.35,
+        "false_three_four_bars": 99,
+        "objective": -0.5216855320922933
+      }
+    },
+    "extra_trees_p0.25": {
+      "model": "extra_trees",
+      "penalty3": 0.25,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 0.9009628326207487,
+          "p95_abs_bar_error_beats": 1.9861114131823712,
+          "max_abs_bar_error_beats": 1.9862196471707796,
+          "bar_recall_025": 0.4966442953020134,
+          "signature_bar_accuracy_025": 0.46308724832214765,
+          "three_four_recall": 0.3,
+          "false_three_four_bars": 6,
+          "pred_three_four_bars": 12,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.46395612033218153,
+          "top_prob": 0.9966118250568744
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.05349159884619045,
+          "p95_abs_bar_error_beats": 0.05007500047593842,
+          "max_abs_bar_error_beats": 1.0295679383838832,
+          "bar_recall_025": 0.9605263157894737,
+          "signature_bar_accuracy_025": 0.9539473684210527,
+          "three_four_recall": null,
+          "false_three_four_bars": 6,
+          "pred_three_four_bars": 6,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.36683860545176816,
+          "top_prob": 0.9971611767708329
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.013601269502731075,
+          "p95_abs_bar_error_beats": 0.024267384939401986,
+          "max_abs_bar_error_beats": 0.17678476843886148,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3534823324722766,
+          "top_prob": 0.9973768173457818
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.0688118546342042,
+          "p95_abs_bar_error_beats": 0.11426545671305524,
+          "max_abs_bar_error_beats": 0.11929677485377001,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.41051175221153163,
+          "top_prob": 0.9935458796800758
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.006155459976895416,
+          "p95_abs_bar_error_beats": 0.006274130912836897,
+          "max_abs_bar_error_beats": 0.05036934853795628,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 3,
+          "pred_three_four_bars": 3,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3819763048862448,
+          "top_prob": 0.9982991545234354
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.20860460311615397,
+        "mean_bar_recall_025": 0.8914341222182974,
+        "mean_signature_accuracy_025": 0.8834069233486399,
+        "three_four_recall": 0.3,
+        "false_three_four_bars": 23,
+        "objective": 0.5907185550993476
+      }
+    },
+    "extra_trees_p0.45": {
+      "model": "extra_trees",
+      "penalty3": 0.45,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 0.9009628326207487,
+          "p95_abs_bar_error_beats": 1.9861114131823712,
+          "max_abs_bar_error_beats": 1.9862196471707796,
+          "bar_recall_025": 0.4966442953020134,
+          "signature_bar_accuracy_025": 0.46308724832214765,
+          "three_four_recall": 0.3,
+          "false_three_four_bars": 6,
+          "pred_three_four_bars": 12,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.46395612033218153,
+          "top_prob": 0.9966118250568744
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.015727801173317523,
+          "p95_abs_bar_error_beats": 0.03633424356153805,
+          "max_abs_bar_error_beats": 0.051544322746977705,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 2,
+          "pred_three_four_bars": 2,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.36683860545176816,
+          "top_prob": 0.9971611767708329
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.013601269502731075,
+          "p95_abs_bar_error_beats": 0.024267384939401986,
+          "max_abs_bar_error_beats": 0.17678476843886148,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3534823324722766,
+          "top_prob": 0.9973768173457818
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.0688118546342042,
+          "p95_abs_bar_error_beats": 0.11426545671305524,
+          "max_abs_bar_error_beats": 0.11929677485377001,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.41051175221153163,
+          "top_prob": 0.9935458796800756
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.006155459976895416,
+          "p95_abs_bar_error_beats": 0.006274130912836897,
+          "max_abs_bar_error_beats": 0.05036934853795628,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 3,
+          "pred_three_four_bars": 3,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3819763048862448,
+          "top_prob": 0.9982991545234354
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.2010518435815794,
+        "mean_bar_recall_025": 0.8993288590604027,
+        "mean_signature_accuracy_025": 0.8926174496644295,
+        "three_four_recall": 0.3,
+        "false_three_four_bars": 19,
+        "objective": 0.6485333021779032
+      }
+    },
+    "extra_trees_p0.65": {
+      "model": "extra_trees",
+      "penalty3": 0.65,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 0.9009628326207487,
+          "p95_abs_bar_error_beats": 1.9861114131823712,
+          "max_abs_bar_error_beats": 1.9862196471707796,
+          "bar_recall_025": 0.4966442953020134,
+          "signature_bar_accuracy_025": 0.46308724832214765,
+          "three_four_recall": 0.3,
+          "false_three_four_bars": 6,
+          "pred_three_four_bars": 12,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.46395612033218153,
+          "top_prob": 0.9966118250568744
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.015727801173317523,
+          "p95_abs_bar_error_beats": 0.03633424356153805,
+          "max_abs_bar_error_beats": 0.051544322746977705,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 2,
+          "pred_three_four_bars": 2,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.36683860545176816,
+          "top_prob": 0.9971611767708329
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.013601269502731075,
+          "p95_abs_bar_error_beats": 0.024267384939401986,
+          "max_abs_bar_error_beats": 0.17678476843886148,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3534823324722766,
+          "top_prob": 0.9973768173457818
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.0688118546342042,
+          "p95_abs_bar_error_beats": 0.11426545671305524,
+          "max_abs_bar_error_beats": 0.11929677485377001,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.41051175221153163,
+          "top_prob": 0.9935458796800756
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.006155459976895416,
+          "p95_abs_bar_error_beats": 0.006274130912836897,
+          "max_abs_bar_error_beats": 0.05036934853795628,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 3,
+          "pred_three_four_bars": 3,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.3819763048862448,
+          "top_prob": 0.9982991545234354
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.2010518435815794,
+        "mean_bar_recall_025": 0.8993288590604027,
+        "mean_signature_accuracy_025": 0.8926174496644295,
+        "three_four_recall": 0.3,
+        "false_three_four_bars": 19,
+        "objective": 0.6485333021779032
+      }
+    },
+    "hist_gb_p0.25": {
+      "model": "hist_gb",
+      "penalty3": 0.25,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 0.5609114138944153,
+          "p95_abs_bar_error_beats": 1.9860507343874936,
+          "max_abs_bar_error_beats": 1.9862196471707796,
+          "bar_recall_025": 0.6241610738255033,
+          "signature_bar_accuracy_025": 0.5771812080536913,
+          "three_four_recall": 0.3,
+          "false_three_four_bars": 26,
+          "pred_three_four_bars": 32,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.25483921994450176,
+          "top_prob": 0.9943133466957124
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.11043345826015673,
+          "p95_abs_bar_error_beats": 0.9785946952202366,
+          "max_abs_bar_error_beats": 1.0302986741552558,
+          "bar_recall_025": 0.9013157894736842,
+          "signature_bar_accuracy_025": 0.875,
+          "three_four_recall": null,
+          "false_three_four_bars": 13,
+          "pred_three_four_bars": 13,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.2897362562001274,
+          "top_prob": 0.9949254098094572
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.10966096956593184,
+          "p95_abs_bar_error_beats": 0.9945406780023222,
+          "max_abs_bar_error_beats": 1.9847948049387305,
+          "bar_recall_025": 0.918918918918919,
+          "signature_bar_accuracy_025": 0.8972972972972973,
+          "three_four_recall": null,
+          "false_three_four_bars": 20,
+          "pred_three_four_bars": 20,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.22520054834112163,
+          "top_prob": 0.995010322955366
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.291080235666797,
+          "p95_abs_bar_error_beats": 1.0319381768617557,
+          "max_abs_bar_error_beats": 1.038470734172259,
+          "bar_recall_025": 0.7777777777777778,
+          "signature_bar_accuracy_025": 0.7777777777777778,
+          "three_four_recall": null,
+          "false_three_four_bars": 5,
+          "pred_three_four_bars": 5,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.20176386494253187,
+          "top_prob": 0.9872049585227554
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.2025600338667748,
+          "p95_abs_bar_error_beats": 1.9942512626582205,
+          "max_abs_bar_error_beats": 1.9945070463664047,
+          "bar_recall_025": 0.868421052631579,
+          "signature_bar_accuracy_025": 0.8486842105263158,
+          "three_four_recall": null,
+          "false_three_four_bars": 15,
+          "pred_three_four_bars": 15,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.22396689286563037,
+          "top_prob": 0.9894204261444118
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.25492922225081516,
+        "mean_bar_recall_025": 0.8181189225254926,
+        "mean_signature_accuracy_025": 0.7951880987310165,
+        "three_four_recall": 0.3,
+        "false_three_four_bars": 79,
+        "objective": -0.1732062390490488
+      }
+    },
+    "hist_gb_p0.45": {
+      "model": "hist_gb",
+      "penalty3": 0.45,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 0.5598814231571797,
+          "p95_abs_bar_error_beats": 1.9860507343874936,
+          "max_abs_bar_error_beats": 1.9862196471707796,
+          "bar_recall_025": 0.6308724832214765,
+          "signature_bar_accuracy_025": 0.5771812080536913,
+          "three_four_recall": 0.3,
+          "false_three_four_bars": 22,
+          "pred_three_four_bars": 28,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.25483921994450176,
+          "top_prob": 0.9943133466957124
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.07791084256114458,
+          "p95_abs_bar_error_beats": 0.9643480102681647,
+          "max_abs_bar_error_beats": 1.0295679383838832,
+          "bar_recall_025": 0.9342105263157895,
+          "signature_bar_accuracy_025": 0.9210526315789473,
+          "three_four_recall": null,
+          "false_three_four_bars": 5,
+          "pred_three_four_bars": 5,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.2897362562001274,
+          "top_prob": 0.9949254098094572
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.04016951898427442,
+          "p95_abs_bar_error_beats": 0.025727200719511956,
+          "max_abs_bar_error_beats": 1.9847948049387305,
+          "bar_recall_025": 0.9783783783783784,
+          "signature_bar_accuracy_025": 0.972972972972973,
+          "three_four_recall": null,
+          "false_three_four_bars": 8,
+          "pred_three_four_bars": 8,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.22520054834112163,
+          "top_prob": 0.995010322955366
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.291080235666797,
+          "p95_abs_bar_error_beats": 1.0319381768617557,
+          "max_abs_bar_error_beats": 1.038470734172259,
+          "bar_recall_025": 0.7777777777777778,
+          "signature_bar_accuracy_025": 0.7777777777777778,
+          "three_four_recall": null,
+          "false_three_four_bars": 5,
+          "pred_three_four_bars": 5,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.20176386494253187,
+          "top_prob": 0.9872049585227554
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.2025600338667748,
+          "p95_abs_bar_error_beats": 1.9942512626582205,
+          "max_abs_bar_error_beats": 1.9945070463664047,
+          "bar_recall_025": 0.868421052631579,
+          "signature_bar_accuracy_025": 0.8486842105263158,
+          "three_four_recall": null,
+          "false_three_four_bars": 15,
+          "pred_three_four_bars": 15,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.22396689286563037,
+          "top_prob": 0.9894204261444118
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.2343204108472341,
+        "mean_bar_recall_025": 0.8379320436650002,
+        "mean_signature_accuracy_025": 0.819533760181941,
+        "three_four_recall": 0.3,
+        "false_three_four_bars": 55,
+        "objective": 0.14078812731416226
+      }
+    },
+    "hist_gb_p0.65": {
+      "model": "hist_gb",
+      "penalty3": 0.65,
+      "songs": {
+        "arcaround": {
+          "mean_abs_bar_error_beats": 0.5598814231571797,
+          "p95_abs_bar_error_beats": 1.9860507343874936,
+          "max_abs_bar_error_beats": 1.9862196471707796,
+          "bar_recall_025": 0.6308724832214765,
+          "signature_bar_accuracy_025": 0.5771812080536913,
+          "three_four_recall": 0.3,
+          "false_three_four_bars": 22,
+          "pred_three_four_bars": 28,
+          "ref_three_four_bars": 20,
+          "mean_downbeat_prob": 0.25483921994450176,
+          "top_prob": 0.9943133466957124
+        },
+        "diamondvirgin": {
+          "mean_abs_bar_error_beats": 0.07791084256114458,
+          "p95_abs_bar_error_beats": 0.9643480102681647,
+          "max_abs_bar_error_beats": 1.0295679383838832,
+          "bar_recall_025": 0.9342105263157895,
+          "signature_bar_accuracy_025": 0.9210526315789473,
+          "three_four_recall": null,
+          "false_three_four_bars": 5,
+          "pred_three_four_bars": 5,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.2897362562001274,
+          "top_prob": 0.9949254098094572
+        },
+        "kaiju": {
+          "mean_abs_bar_error_beats": 0.013601269502731075,
+          "p95_abs_bar_error_beats": 0.024267384939401986,
+          "max_abs_bar_error_beats": 0.17678476843886148,
+          "bar_recall_025": 1.0,
+          "signature_bar_accuracy_025": 1.0,
+          "three_four_recall": null,
+          "false_three_four_bars": 4,
+          "pred_three_four_bars": 4,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.22520054834112163,
+          "top_prob": 0.995010322955366
+        },
+        "nanairo": {
+          "mean_abs_bar_error_beats": 0.291080235666797,
+          "p95_abs_bar_error_beats": 1.0319381768617557,
+          "max_abs_bar_error_beats": 1.038470734172259,
+          "bar_recall_025": 0.7777777777777778,
+          "signature_bar_accuracy_025": 0.7777777777777778,
+          "three_four_recall": null,
+          "false_three_four_bars": 5,
+          "pred_three_four_bars": 5,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.20176386494253187,
+          "top_prob": 0.9872049585227554
+        },
+        "ray": {
+          "mean_abs_bar_error_beats": 0.2025600338667748,
+          "p95_abs_bar_error_beats": 1.9942512626582205,
+          "max_abs_bar_error_beats": 1.9945070463664047,
+          "bar_recall_025": 0.868421052631579,
+          "signature_bar_accuracy_025": 0.8486842105263158,
+          "three_four_recall": null,
+          "false_three_four_bars": 15,
+          "pred_three_four_bars": 15,
+          "ref_three_four_bars": 0,
+          "mean_downbeat_prob": 0.22396689286563037,
+          "top_prob": 0.9894204261444118
+        }
+      },
+      "summary": {
+        "mean_bar_error_beats": 0.22900676095092543,
+        "mean_bar_recall_025": 0.8422563679893246,
+        "mean_signature_accuracy_025": 0.8249391655873465,
+        "three_four_recall": 0.3,
+        "false_three_four_bars": 51,
+        "objective": 0.19461862471127245
+      }
+    }
+  },
+  "ranking": [
+    "extra_trees_p0.45",
+    "extra_trees_p0.65",
+    "extra_trees_p0.25",
+    "hist_gb_p0.65",
+    "hist_gb_p0.45",
+    "hist_gb_p0.25",
+    "logistic_p0.65",
+    "logistic_p0.45",
+    "logistic_p0.25"
+  ]
+}
