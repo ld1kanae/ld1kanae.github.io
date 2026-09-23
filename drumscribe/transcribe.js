@@ -1,6 +1,7 @@
 import {transcribeAdtof} from './adtof.js?v=20260923-egmd-kst-v4';
 import {filterHighResHats} from './hat-forest.js';
 import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v2';
+import {applyKstSupplementPolicy} from './kst-supplement.js?v=20260923-gmd-kst-section-v1';
 // Browser port of experiments/evaluate.py's band-precision candidate detector.
 // Reference MIDI is never read here. Times are measured from the audio file start.
 const RATE=11025, SIZE=1024, HOP=110, BINS=513;
@@ -606,6 +607,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   let adtofCymbal=[];
   let adtofSnareRescue=[];
   let egmdSnareSupport=[];
+  let egmdKstSupport={kick:[],snare:[],tom:[]};
   let adtofInfo={enabled:false,fallback:true};
   try{
     const ad=await transcribeAdtof(decoded,(message,p)=>{
@@ -616,6 +618,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
     adtofSnareRescue=ad.snareRescue||[];
     egmdSnareSupport=ad.egmdSnareSupport||[];
+    egmdKstSupport=ad.egmdKstSupport||{kick:[],snare:egmdSnareSupport,tom:[]};
     if(replacement.length){
       structural=replacement;
       adtofInfo={
@@ -624,6 +627,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
         snareRescueScale:ad.snareRescueScale,
         snareRescueCandidates:adtofSnareRescue.length,
         egmdSnareCandidates:egmdSnareSupport.length,
+        egmdKstCandidates:Object.fromEntries(['kick','snare','tom'].map(g=>[g,(egmdKstSupport[g]||[]).length])),
         egmdKstModel:ad.egmdKstModel||null,
         backend:ad.backend,
         frames:ad.frames,
@@ -751,6 +755,22 @@ export async function transcribe(decoded,report=()=>{},options={}){
       tomStrongKeep:1.45,
       tomRunWindowSec:.24
     };
+
+    // Evaluation-only structural supplements. Baseline is the default and is
+    // bit-for-bit unchanged. Kick/tom candidate thresholds come from the
+    // frozen external E-GMD v4 model; GMD variants add symbolic evidence only.
+    const kstSupplement=await applyKstSupplementPolicy({
+      structural,
+      egmdKstSupport,
+      offvocalDecoded:options?.offvocalDecoded||null,
+      bpm,
+      barPhaseSec:barInfo.phaseSec,
+      numerator:4,
+      denominator:4,
+      policy:String(options?.kstPolicy||'baseline')
+    });
+    structural=kstSupplement.events;
+    adtofInfo.kstSupplement=kstSupplement.info;
   }
 
   // Fixed hi-hat overtrigger suppressor selected by the current
