@@ -2459,3 +2459,53 @@ v43:
 - `experiments/results-arrangement-kst-learned-v43.json`
 - `experiments/ARRANGEMENT_KST_LEARNED_V42.md`
 - `experiments/ARRANGEMENT_KST_LEARNED_V43.md`
+
+
+---
+
+## 2026-09-23: Arrangement + E-GMD K/S/T fusion v44
+
+目的:
+- E-GMD v4で学習済みのK/S/T acoustic probabilityを、A/A'構造rescoringへ融合できるか検証。
+- fresh Chromiumで5曲を再採譜し、低閾値候補へE-GMD probabilityを付与。
+- chart.midはbrowser prediction stageでは読まず、生成後の採点だけ。
+
+E-GMD v4 external training candidate counts:
+- Kick 4,422
+- Snare 6,580
+- Tom 7,934
+- 合計18,936
+
+5曲transfer pool:
+- 141 candidates
+- Kick 11 / positive 9
+- Snare 68 / positive 14
+- Tom 62 / positive 2
+
+| variant | K/S/T F1 | delta | added TP/FP |
+|---|---:|---:|---:|
+| fixed v39D | **0.938852** | **+0.001118** | **9 / 0** |
+| E-GMD acoustic only | 0.933968 | -0.003766 | 18 / 55 |
+| A/A' + E-GMD hard gate | 0.938231 | +0.000497 | 4 / 0 |
+| Logistic fusion LOOCV | 0.936762 | -0.000972 | 1 / 10 |
+| Extra Trees fusion LOOCV | 0.938012 | +0.000278 | 4 / 2 |
+
+部位別H1単独:
+- Kick F1 delta +0.000960
+- Snare -0.010316
+- Tom -0.020650
+
+観察:
+- E-GMD acoustic modelは外部held-outでは有効でも、DruMaster曲へそのまま移すとSnare/Tomでfalse positiveが多い。
+- E-GMDをhard gateにするとfalse positiveは抑えられるが、fixed v39Dで正しかった真陽性を落とす。
+- fixed v39Dの正解Kick/Snareの一部はE-GMD threshold未満であり、E-GMD probabilityをvetoとして使うのは不適切。
+- Extra Trees fusionはv43より前進したがfixed v39Dを上回らない。
+
+結論:
+- v44はproduction不採用。
+- E-GMD probabilityは今後soft feature / calibration用途に限定して研究する。
+- production runtimeはfixed v39D-style A/A' rescoringを維持。
+
+詳細:
+- `experiments/ARRANGEMENT_EGMD_FUSION_V44.md`
+- `experiments/results-arrangement-egmd-fusion-v44.json`
