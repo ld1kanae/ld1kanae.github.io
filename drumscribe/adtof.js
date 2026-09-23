@@ -229,7 +229,7 @@ function egmdProbability(kstModel,st,group,classIndex,frame){
   if(!model||!st)return {probability:null,modelThreshold:null,hypothesis:null};
   return {
     probability:logisticPredict(model,kstFeature(st,frame,classIndex)),
-    modelThreshold:(Number(model.threshold)||.6)*thresholdMultiplier,
+    modelThreshold:Number(model.threshold)||.6,
     hypothesis:model.hypothesis||null
   };
 }
@@ -246,7 +246,7 @@ function egmdSnareCandidates(acts,kstModel,thresholdMultiplier=1){
     score:p.activation,
     residual:p.residual,
     probability:logisticPredict(model,kstFeature(st,p.frame,1)),
-    modelThreshold:Number(model.threshold)||.6,
+    modelThreshold:(Number(model.threshold)||.6)*thresholdMultiplier,
     kickActivation:st.cols[0][p.frame],
     snareActivation:st.cols[1][p.frame],
     tomActivation:st.cols[2][p.frame],
