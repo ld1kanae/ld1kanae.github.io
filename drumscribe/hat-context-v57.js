@@ -151,3 +151,117 @@ export async function rescoreHatContextGeneralV59(decoded,events,variant='off'){
     probabilityMax:probs.length?Math.max(...probs):null
   }};
 }
+
+
+let fusionModelPromiseV61=null;
+async function loadHatFusionModelV61(){
+  if(!fusionModelPromiseV61){
+    fusionModelPromiseV61=fetch(new URL('./models/hat-articulation-fusion-v61.json',import.meta.url))
+      .then(r=>{if(!r.ok)throw Error('ハイハット音響融合モデルを読み込めません');return r.json();});
+  }
+  return fusionModelPromiseV61;
+}
+function rank01(values){
+  const n=values.length,out=new Float64Array(n);
+  if(n<=1)return out;
+  const order=values.map((v,i)=>({v:Number(v)||0,i})).sort((a,b)=>a.v-b.v||a.i-b.i);
+  for(let r=0;r<n;r++)out[order[r].i]=r/(n-1);
+  return out;
+}
+function robustZ01(values){
+  if(!values.length)return new Float64Array(0);
+  const xs=values.map(Number).sort((a,b)=>a-b);
+  const q=(p)=>{
+    const x=(xs.length-1)*p,lo=Math.floor(x),hi=Math.ceil(x),f=x-lo;
+    return xs[lo]*(1-f)+xs[hi]*f;
+  };
+  const med=q(.5),dev=values.map(v=>Math.abs(Number(v)-med)).sort((a,b)=>a-b);
+  const dm=(dev.length-1)*.5,dlo=Math.floor(dm),dhi=Math.ceil(dm),df=dm-dlo;
+  const mad=dev[dlo]*(1-df)+dev[dhi]*df;
+  const scale=Math.max(1e-6,1.4826*mad);
+  return Float64Array.from(values,v=>Math.max(-8,Math.min(8,(Number(v)-med)/scale)));
+}
+function fusionTreeProbability(tree,x){
+  let node=0;
+  while(tree.left[node]!==-1){
+    const f=tree.feature[node];
+    node=x[f]<=tree.threshold[node]?tree.left[node]:tree.right[node];
+  }
+  return Number(tree.prob1[node])||0;
+}
+function fusionForestProbability(model,row){
+  const x=model.features.map(k=>Number(row[k])||0);
+  let sum=0;
+  for(const tree of model.trees)sum+=fusionTreeProbability(tree,x);
+  return sum/Math.max(1,model.trees.length);
+}
+
+// Production Open/Closed classifier selected by five-song leave-one-song-out
+// validation. This is per-hit acoustic classification, not pattern inference:
+// single-hit timbre + tail persistence + next-hit choke context are fused.
+// It never reads review ranges, song identity or alternating-grid parity.
+export async function rescoreHatArticulationFusionV61(decoded,events,options={}){
+  const enabled=options.enabled!==false;
+  if(!enabled)return {events,info:{enabled:false,variant:'off'}};
+  const candidates=events.filter(e=>
+    (e.group==='hat'||e.group==='open_hat')&&Number.isFinite(Number(e.openHatProbability))
+  );
+  if(candidates.length<2)return {events,info:{enabled:false,reason:'insufficient-hat-candidates',candidates:candidates.length}};
+  const [model,samples]=await Promise.all([loadHatFusionModelV61(),monoAt44100(decoded)]);
+  const w=workspace();
+  const art=events.filter(e=>['hat','open_hat','pedal_hat','ride'].includes(e.group))
+    .slice().sort((a,b)=>a.time-b.time);
+  const nextMap=new Map();
+  for(let i=0;i<art.length;i++)nextMap.set(art[i],art[i+1]?.time);
+  const base=candidates.map(e=>Number(e.openHatProbability));
+  const context=candidates.map(e=>probability(features(samples,e.time,nextMap.get(e),w)));
+  const baseRank=rank01(base),contextRank=rank01(context);
+  const baseZ=robustZ01(base),contextZ=robustZ01(context);
+  const candidateIndex=new Map(candidates.map((e,i)=>[e,i]));
+  let promoted=0,demoted=0,changed=0,scored=0;
+  const openThreshold=Number(model.confidenceThreshold)||.55;
+  const closedThreshold=Number(model.closedThreshold)||.45;
+  const out=events.map(e=>{
+    const i=candidateIndex.get(e);
+    if(i==null)return e;
+    const nt=nextMap.get(e);
+    const row={
+      base_p:base[i],
+      ctx_p:context[i],
+      base_rank:baseRank[i],
+      ctx_rank:contextRank[i],
+      base_z:baseZ[i],
+      ctx_z:contextZ[i],
+      logit_diff:logit(context[i])-logit(base[i]),
+      next_gap:Number.isFinite(nt)?Math.max(0,Math.min(1.5,nt-e.time)):1.5,
+      score:Number(e.score)||0,
+      confidence:Number(e.confidence)||0,
+      current_open:e.group==='open_hat'?1:0
+    };
+    const p=fusionForestProbability(model,row);
+    scored++;
+    const meta={
+      hatFusionProbability:p,
+      hatFusionBaseProbability:base[i],
+      hatFusionContextProbability:context[i],
+      hatFusionV61:true
+    };
+    if(p>=openThreshold&&e.group!=='open_hat'){
+      promoted++;changed++;
+      return {...e,...meta,group:'open_hat',note:46};
+    }
+    if(p<=closedThreshold&&e.group==='open_hat'){
+      demoted++;changed++;
+      return {...e,...meta,group:'hat',note:42};
+    }
+    return {...e,...meta};
+  });
+  return {events:out,info:{
+    enabled:true,variant:'acoustic-fusion-v61',
+    candidates:candidates.length,scored,changed,promoted,demoted,
+    openThreshold,closedThreshold,
+    modelTrees:Number(model.treeCount)||model.trees.length,
+    reviewSpecificInputsUsed:false,
+    patternParityUsed:false
+  }};
+}
