@@ -1,5 +1,39 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 Arrangement KST v40/v41 — production採用済み
+
+v38/v39のA/A' acoustic candidate rescueを、通常のrhythm-grid/MIDI exportまで通すfresh Chromiumで再検証し、production appへ統合済み。
+
+採用方式:
+- offvocal/伴奏を任意の構造解析補助入力として使用
+- 検証5曲では `DruMaster/songs/<id>/offvocal.mp3` を自動読込
+- sensitive segmentation: frame .75s / hop .375s / context 3s / minSection 6s / noveltyStd .55 / maxSections 28
+- A/A' family support + GMD 16分slot prior + post-filter-origin guard
+- **他区間からnoteをcopyしない。対象時刻に低閾値K/S/T acoustic candidateが存在するときだけ昇格**
+- Snare/Tomはproduction閾値以上なのに後段で落ちたcandidateをarrangementだけで復活させない
+- 二手制約を維持
+
+fresh Chromium v40:
+- baseline KST F1 0.937734 -> **0.938852** (+0.001118)
+- kick F1 0.962571 -> **0.963139** (+0.000568)
+- snare F1 0.900035 -> **0.901934** (+0.001899)
+- tom F1 0.784091 -> **0.790960** (+0.006870)
+- all-class F1 0.818306 -> **0.818886** (+0.000581)
+- rescued 9 notes
+- max grid residual ticks 0
+- hand-grid violation delta 0
+- meter changed songs: none
+
+runtime:
+- `app.js` -> `arrangement/index.js` / `rescoreKstByArrangement()`
+- `models/gmd-kst/slot-prior-v1.json`
+- UI: `#arrangementFile` から offvocal / 伴奏を任意指定可能
+- offvocal未指定時は従来baselineのドラム単独採譜を維持
+
+検証:
+- `experiments/ARRANGEMENT_KST_V40.md`
+- `experiments/results-arrangement-kst-runtime-v40.json`
+
 ## 2026-09-23 Arrangement KST v38/v39 — A/A' acoustic rescue
 
 v37で確認したsame-family repetitionを、実ブラウザの低閾値K/S/T acoustic candidate rescoringへ接続して検証。
@@ -29,9 +63,9 @@ v39 post-filter:
 - reusable API: `arrangement/rescoreKstByArrangement()`
 - compact GMD prior: `models/gmd-kst/slot-prior-v1.json`
 
-未完了:
-- v40で二手制約 + normal rhythm-grid/MIDI exportまで通したfresh Chromium non-regressionを確認する。
-- v40合格前にproduction appへ常時有効化しない。
+完了:
+- v40で二手制約 + normal rhythm-grid/MIDI exportまで通したfresh Chromium non-regressionを確認済み。
+- v39D系をproduction appへ統合済み。offvocal/伴奏が与えられた場合だけarrangement assistを有効化する。
 
 詳細:
 - `experiments/ARRANGEMENT_KST_V38.md`
@@ -99,7 +133,7 @@ import {analyzeSections, extractSectionFeatures} from './arrangement/index.js';
 
 重要:
 - `A/B/C/A'/...` は構造ラベルであり、**Aメロ/Bメロ/サビの意味ラベルではない**
-- production transcription pathにはまだ接続していない
+- production transcription pathへ接続済み。offvocal/伴奏が与えられた場合にのみA/A'構造をK/S/T acoustic candidate rescoringへ使用
 - Proof v34では同系統の解析をinstrumentalの補助的な小節位相検証に使用した
 - 将来semantic section classifierを実装する場合はこのmoduleの出力を入力にし、特徴抽出や境界検出を重複実装しない
 
