@@ -73,6 +73,7 @@ index.html
           -> hat-forest.js
           -> fft-worker.js
       -> meter.js
+      -> rhythm-grid.js
       -> midi.js
 ```
 
@@ -152,6 +153,7 @@ index.html
               -> models/open-hat-extra-trees-v2.json
               -> models/open-hat-overlay-extra-trees-v1.json
       -> meter.js (example songs only: variable-meter inference path)
+      -> rhythm-grid.js (score-grid quantization + local tempo map)
       -> midi.js
       -> preview playback using ../DruMaster/assets/drums/{note}.wav
 ```
@@ -171,7 +173,8 @@ index.html
 | `hat-forest.js` | 44.1 kHz ExtraTreesでhi-hat過検出を削る最終フィルタ |
 | `open-hat.js` | 残ったhatを42/46へ分類し、2-hand/repetition guard下で欠落Openを保守的に追加 |
 | `meter.js` | 外部beat/downbeat補助を使った 4/4・3/4 の小節列推定 |
-| `midi.js` | SMF type 0 / PPQ 480。tempo、time signature、pickup/bar alignment、drum note出力 |
+| `rhythm-grid.js` | straight/triplet格子判定、16分基本＋限定32分、局所phase drift→tempo map、note tick量子化 |
+| `midi.js` | SMF type 0 / PPQ 480。quantized note tick、複数tempo meta-event、time signature、pickup/bar alignment、drum note出力 |
 | `review.html/js/css` | 候補MIDIを音源と同期試聴する比較UI。研究候補レビュー用 |
 | `review-manifest.json` | レビューUIの候補一覧。**履歴候補を含み、現行runtime manifestではない** |
 | `VALIDATION.md` | 全実験ログ。**履歴であり、書かれている全候補が現行採用とは限らない** |
@@ -502,19 +505,27 @@ MIDI preview音源:
 
 ## 11. MIDI export
 
+`rhythm-grid.js`:
+- straight / triplet grid適合度を比較
+- straightは16分を基本とし、16分から0.10 beat超かつ32分点から0.035 beat以内の打点だけ32分保持
+- note startはscore gridへsnap
+- 局所grid phase driftをtempo mapへ変換
+- BPMは基準BPM±3%へclamp
+
 `midi.js`:
 - Standard MIDI File type 0
 - channel 10 percussion
 - PPQ 480
-- tempo meta event
+- quantized note tick
+- 複数のtempo meta event
 - time signature meta event
 - variable meter changesをbar boundaryへ書く
 - detected bar phaseをMIDI measure boundaryへalign
 - downbeatより前のnoteはpickup measureとしてwhole-bar pad
 - note lengthは約70 ms
 
-preview event timeはaudio timelineのまま。
-exportだけ `barPhaseSec` に基づきmusical gridへずらす。
+`app.js` はraw `events` を保持したまま、同じ `rhythmGrid.eventTicks` と `timeForScore()` から `midiEvents` を作る。
+プレビュー/タイムラインは `midiEvents`、download MIDIも同じ `rhythmGrid` を使うため、previewとexportのtiming経路は一致する。
 
 ---
 
@@ -582,6 +593,19 @@ exportだけ `barPhaseSec` に基づきmusical gridへずらす。
 
 
 ---
+
+## 2026-09-23 Grid / Tempo v31 fresh browser validation
+
+- `DruMaster/songs` 5曲を現行mainの実Playwright Chromiumでfresh acoustic transcription。
+- workflow run `35833299223`、head `dd048ea92c2df1fb6e1b1e999379acd647cdda6c`、success。
+- 5曲すべて選択gridからのMIDI note tick残差 **0 ticks**。
+- runtime報告tempo event数とMIDI内 `set_tempo` 数が5曲すべて一致。
+- raw検出→tempo-map preview差: median最大 5.72 ms、p95最大 17.82 ms。
+- aggregate chart score: TP 7492 / Pred 8225 / Ref 10086、P 0.911 / R 0.743 / F1 0.818。
+- `experiments/validate_grid_browser.py` をCIへ追加。
+- `rhythm-grid.js` / `midi.js` の変更でも5曲fresh browser validationが自動起動するようworkflow triggerを修正。
+- raw result: `experiments/results-grid-tempo-five-fresh-v31.json`
+- detailed handoff: `AI_HANDOFF_GRID_V31.md`
 
 ## 2026-09-23 Open HH / DrumSep 最新追記
 
