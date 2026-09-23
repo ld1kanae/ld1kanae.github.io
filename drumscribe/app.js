@@ -22,8 +22,8 @@ const thresholdControlIds={
 function readThresholdMultipliers(){
   const out={};
   for(const [key,id] of Object.entries(thresholdControlIds)){
-    const el=$(id),v=Number(el?.value);
-    out[key]=Number.isFinite(v)&&v>=.50&&v<=1.50?v:1;
+    const el=$(id),raw=el?.value?.trim?.()??'',v=raw===''?NaN:Number(raw);
+    out[key]=Number.isFinite(v)&&v>=0&&v<=2?v:1;
     if(el&&!Number.isFinite(v))el.value='1.0';
   }
   // Ride→Open has two internal gates (timbre and context/choke), but the
