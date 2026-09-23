@@ -1,5 +1,60 @@
 # DrumScribe AI Handoff
 
+## 2026-09-23 Arrangement + E-GMD KST v44-v48 — production v46R1採用
+
+E-GMD v4の外部音響reclassifierを5曲の低閾値K/S/T候補へ付与し、A/A' fixed rescoringとの統合を検証。
+
+外部E-GMD v4:
+- training candidate total 18,936
+- Kick 4,422 / Snare 6,580 / Tom 7,934
+- E-GMDモデルはDruMaster chartを見ずに凍結済み
+
+v44:
+- E-GMD acoustic-onlyはK/S/T F1 0.933968で悪化。不採用。
+- A/A' + E-GMDをmandatory gateにすると0.938231でfixed v39D 0.938852未満。不採用。
+- 理由: fixed v39Dの正解候補の一部はE-GMD probabilityが低く、E-GMDを必須条件にすると良い救済を落とす。
+
+v45 residual Snare:
+- fixed v39Dを凍結し、その後に残ったSnare候補だけE-GMDで追加救済。
+- residual pool 63 / recoverable positive 9。
+- Extra Trees song-LOOCV: K/S/T F1 0.939100、fixed比 +0.000248、11 TP / 0 FP。
+
+v46 portable R1:
+- Extra Treesのheld-out傾向を小さいruntime gateへ圧縮。
+- residual Snare条件: E-GMD p>=0.93 / acoustic confidence>=0.55 / GMD snare slot lift>=1.65。
+- fixed v39Dへadditive-only。Kick/Tomは変更しない。
+- 5曲dev上: K/S/T F1 **0.939224**、Snare F1 **0.903070**、12 TP / 0 FP。
+- 追加のresidual Snareは arcaround 204.44s、ray 67.74s / 247.74s の3音。
+- **注意:** R1条件はv45の同じ5曲を観察した後に仮定したため、未知曲一般化の独立証拠ではない。
+
+v47 fresh runtime:
+- baseline K/S/T 0.937734
+- V39D 0.938852
+- V46R1 **0.939224** (+0.001490 vs baseline)
+- Kick 0.963139 / Snare **0.903070** / Tom 0.790960
+- all-class F1 **0.819080**
+- rescued 12 (A/A' family 9 + E-GMD residual Snare 3)
+- max grid residual 0 / hand-grid violation 0 / meter change none
+- two-hand guardなしvariantと結果同一。productionではguardを維持。
+
+v48 actual production UI:
+- `index.html -> app.js` の実経路で5曲を選択・offvocal自動読込・採譜・MIDI downloadまでfresh Chromium実行。
+- policy `family-gmd-plus-egmd-residual-v46r1` を全曲で確認。
+- exported MIDI TP/pred/refがv47と完全一致。
+- K/S/T F1 **0.939224** / all F1 **0.819080** / rescued 12 / residual Snare 3。
+
+現行runtime:
+- `arrangementKstPolicyCurrent = arrangementKstPolicyV46R1`
+- offvocal/伴奏がある場合のみ arrangement KST assistを使用。未指定時は従来baseline。
+- chart.midはpredictionで読まない。
+
+詳細:
+- `experiments/ARRANGEMENT_EGMD_FUSION_V44.md`
+- `experiments/ARRANGEMENT_EGMD_RESIDUAL_V45.md`
+- `experiments/ARRANGEMENT_EGMD_PORTABLE_V46.md`
+- `experiments/ARRANGEMENT_KST_V47.md`
+- `experiments/ARRANGEMENT_APP_V48.md`
+
 ## 2026-09-23 Arrangement + E-GMD KST fusion v44 — production据え置き
 
 目的:
