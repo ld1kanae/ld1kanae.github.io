@@ -1,0 +1,111 @@
+name: DrumScribe E-GMD KST v5 current-main browser matrix
+
+on:
+  push:
+    branches:
+      - drumscribe-egmd-kst-v5-current-eval-20260923
+    paths:
+      - "drumscribe/adtof.js"
+      - "drumscribe/transcribe.js"
+      - "drumscribe/models/egmd-kst-reclassifier-v5.json"
+      - ".github/workflows/drumscribe-egmd-kst-v5-current-matrix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    strategy:
+      fail-fast: false
+      matrix:
+        policy:
+          - v4-baseline
+          - v5-replace
+          - v4-v5-intersection
+          - v4-v5-high-supplement
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy
+      - name: Select frozen transfer policy
+        env:
+          POLICY: ${{ matrix.policy }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, re
+          p=pathlib.Path("drumscribe/transcribe.js")
+          s=p.read_text()
+          policy=os.environ["POLICY"]
+          s,n=re.subn(r"const EGMD_EVAL_POLICY='[^']+';",f"const EGMD_EVAL_POLICY='{policy}';",s,count=1)
+          if n!=1:
+              raise SystemExit("EGMD_EVAL_POLICY marker not found")
+          p.write_text(s)
+          print("policy",policy)
+          PY
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Generate MIDI in real Chromium
+        run: node drumscribe/experiments/browser_validate.mjs
+      - name: Score generated MIDI
+        run: python drumscribe/experiments/compare_browser.py
+      - name: Stage artifact
+        env:
+          POLICY: ${{ matrix.policy }}
+        run: |
+          mkdir -p artifact/sidecars
+          cp drumscribe/experiments/results-v2-browser.json artifact/result.json
+          cp drumscribe/experiments/generated-v2-browser/*.json artifact/sidecars/
+          printf '%s\n' "$POLICY" > artifact/policy.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: egmd-v5-${{ matrix.policy }}
+          path: artifact
+          retention-days: 7
+
+  record:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: egmd-v5-*
+          path: downloaded
+      - name: Record matrix results
+        run: |
+          rm -rf drumscribe/experiments/egmd-kst-v5-current-matrix
+          mkdir -p drumscribe/experiments/egmd-kst-v5-current-matrix
+          for d in downloaded/egmd-v5-*; do
+            policy=$(cat "$d/policy.txt")
+            mkdir -p "drumscribe/experiments/egmd-kst-v5-current-matrix/$policy"
+            cp "$d/result.json" "drumscribe/experiments/egmd-kst-v5-current-matrix/$policy/result.json"
+            cp -r "$d/sidecars" "drumscribe/experiments/egmd-kst-v5-current-matrix/$policy/"
+          done
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-egmd-kst-v5-current-eval-20260923
+          git add drumscribe/experiments/egmd-kst-v5-current-matrix
+          git diff --cached --quiet && exit 0
+          git commit -m "Record E-GMD v5 current-main browser matrix [skip ci]"
+          git push origin HEAD:drumscribe-egmd-kst-v5-current-eval-20260923
