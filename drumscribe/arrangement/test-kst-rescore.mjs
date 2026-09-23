@@ -43,6 +43,22 @@ const blocked=rescoreKstByArrangement(
 assert.equal(blocked.additions.length,0);
 assert.equal(blocked.info.rejectedHand,1);
 
+// A rescued tom must keep the audio-only pitch assigned to its diagnostic
+// candidate instead of being collapsed back to GM45.
+const tomPitchPreserved=rescoreKstByArrangement(
+  [{time:13,note:47,group:'tom',velocity:88}],
+  {kstCandidates:{kick:[],snare:[],tom:[
+    {time:5,group:'tom',score:.8,confidence:.8,tomNote:47,tomPitchHz:176.5}
+  ]}},
+  {sections},
+  {bpm:120,numerator:4,denominator:4,slotPrior}
+);
+assert.equal(tomPitchPreserved.additions.length,1);
+assert.equal(tomPitchPreserved.additions[0].group,'tom');
+assert.equal(tomPitchPreserved.additions[0].note,47);
+assert.equal(tomPitchPreserved.additions[0].tomNote,47);
+assert.equal(tomPitchPreserved.info.additions[0].diagnosticTomNote,47);
+
 const residualDiagnostics={kstCandidates:{
   kick:[],
   snare:[{time:5,group:'snare',score:.22,confidence:.70,egmdProbability:.96,egmdModelThreshold:.67}],
@@ -70,5 +86,6 @@ assert.equal(residualLowProbability.additions.length,0);
 console.log(JSON.stringify({
   accepted:accepted.additions.map(e=>({time:e.time,group:e.group,label:e.arrangementLabel})),
   residualAccepted:residualAccepted.additions.map(e=>({time:e.time,group:e.group,p:e.egmdProbability,lift:e.gmdSlotLift})),
+  tomPitchPreserved:tomPitchPreserved.additions.map(e=>({time:e.time,note:e.note,hz:e.tomPitchHz})),
   rejectedHand:blocked.info.rejectedHand,
 }));
