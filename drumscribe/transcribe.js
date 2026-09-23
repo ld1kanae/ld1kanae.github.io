@@ -1,6 +1,6 @@
-import {transcribeAdtof} from './adtof.js?v=20260923-arrangement-kst-v38';
-import {filterHighResHats} from './hat-forest.js';
-import {promoteOpenHats} from './open-hat.js?v=20260923-openhat-v49';
+import {transcribeAdtof} from './adtof.js?v=20260924-threshold-controls-v1';
+import {filterHighResHats} from './hat-forest.js?v=20260924-threshold-controls-v1';
+import {promoteOpenHats} from './open-hat.js?v=20260924-threshold-controls-v1';
 import {rescueRideOpenV57,rescoreHatArticulationFusionV61,rescoreHatSyncCandidateV66,rescoreHatMp3DomainV68} from './hat-context-v57.js?v=20260924-mp3-domain-v68';
 import {filterCrashHatTail} from './crash-competition.js?v=20260923-review-v56';
 import {estimateGmdBarPhase} from './gmd-bar-phase.js?v=20260923-proof-v34';
@@ -13,6 +13,10 @@ const THRESHOLDS=[.58,.70,.19,1.5,1.0];
 const DISTANCES=[.075,.075,.055,.09,.12];
 const EDGES=[35,140,900,3000,5500];
 const wait=()=>new Promise(resolve=>setTimeout(resolve,0));
+function thresholdMul(options,key){
+  const v=Number(options?.thresholdMultipliers?.[key]);
+  return Number.isFinite(v)&&v>0?v:1;
+}
 const TEMPLATE_GROUPS=['kick','snare','hat','tom','crash','ride','pedal_hat'];
 const TEMPLATE_INDEX=Object.fromEntries(TEMPLATE_GROUPS.map((g,i)=>[g,i]));
 
@@ -640,7 +644,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
     const ad=await transcribeAdtof(decoded,(message,p)=>{
       const mapped=92+Math.max(0,Math.min(1,(p-58)/42))*6;
       report(message,mapped);
-    },{thresholdScale:1.15,diagnosticKst:options.diagnosticKst===true});
+    },{thresholdScale:1.15,diagnosticKst:options.diagnosticKst===true,thresholdMultipliers:options.thresholdMultipliers});
     const replacement=ad.events.filter(e=>e.group!=='cymbal');
     adtofBroadMetal=ad.events.filter(e=>e.group==='hat'||e.group==='cymbal');
     adtofCymbal=ad.events.filter(e=>e.group==='cymbal');
@@ -695,11 +699,12 @@ export async function transcribe(decoded,report=()=>{},options={}){
       return n;
     };
     const rescued=[];
+    const snareRescueMin=.12*thresholdMul(options,'snareRescue');
     for(const e of lowSnare){
       const k=nearEvent(kickEvents,e.time,.035);
       if(!k)continue;
       const repeat=repeatedAtSlot(e.time);
-      if(e.score<.12||e.score<.25*(k.score||0)||repeat<2)continue;
+      if(e.score<snareRescueMin||e.score<.25*(k.score||0)||repeat<2)continue;
       rescued.push({...e,group:'snare',confidence:e.confidence,rescuedSnare:true,repeatSupport:repeat});
     }
     if(rescued.length)structural.push(...rescued);
@@ -775,7 +780,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       egmdModel:adtofInfo.egmdKstModel||null,
       egmdDiag,
       egmdRescueDetails:egmdRescued.map(e=>({time:e.time,probability:e.probability,score:e.score,kickActivation:e.kickActivation,repeatSupport:e.repeatSupport})),
-      snareMinActivation:.12,
+      snareMinActivation:snareRescueMin,
       snareKickRatio:.25,
       snareRepeatBars:2,
       tomKickRemoved,
@@ -806,17 +811,19 @@ export async function transcribe(decoded,report=()=>{},options={}){
       return best;
     };
     let removed=0;
+    const hatCollisionMultiplier=thresholdMul(options,'hatCollision');
+    const hatAbsMin=.20*hatCollisionMultiplier,hatCollisionRatio=.70*hatCollisionMultiplier;
     structural=structural.filter(e=>{
       if(e.group!=='hat')return true;
       const fr=Math.max(0,Math.min(frames-1,Math.round(e.time*RATE/HOP)));
       const hs=sim[TEMPLATE_INDEX.hat][fr]||0;
       const body=Math.max(sim[TEMPLATE_INDEX.kick][fr]||0,sim[TEMPLATE_INDEX.snare][fr]||0);
       const rep=repSupport(e.time);
-      if(hs<.20&&rep<2){removed++;return false;}
-      if(nearTime(bodyTimes,e.time,.025)&&hs<.70*Math.max(.03,body)&&rep<4){removed++;return false;}
+      if(hs<hatAbsMin&&rep<2){removed++;return false;}
+      if(nearTime(bodyTimes,e.time,.025)&&hs<hatCollisionRatio*Math.max(.03,body)&&rep<4){removed++;return false;}
       return true;
     });
-    adtofInfo.hatFilter={mode:'collision-periodic-v2',removed,absMin:.20,collisionRatio:.70,collisionWindowSec:.025,periodicRescue:4,weakRescue:2};
+    adtofInfo.hatFilter={mode:'collision-periodic-v2',removed,absMin:hatAbsMin,collisionRatio:hatCollisionRatio,thresholdMultiplier:hatCollisionMultiplier,collisionWindowSec:.025,periodicRescue:4,weakRescue:2};
 
     // GMD train-split symbolic prior + audio decay pedal-hat decoder.
     // Fixed policy selected by the chart-scoring-only benchmark:
@@ -871,7 +878,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
         const others=hatTimes.filter(v=>Math.abs(v-t)>.035);
         const near8=near(others,t-beat/2,.055)||near(others,t+beat/2,.055);
         const score=1.5*Math.log(pp/ph)-.35*Math.min(tail2,3)-.35*Math.min(tail3,3)-.25*(near8?1:0);
-        if(score>=.4){converted++;return {...e,group:'pedal_hat',pedalScore:score};}
+        if(score>=.4*thresholdMul(options,'pedalHat')){converted++;return {...e,group:'pedal_hat',pedalScore:score};}
         return e;
       });
       adtofInfo.pedalPolicy={
@@ -881,7 +888,8 @@ export async function transcribe(decoded,report=()=>{},options={}){
         tail2Weight:.35,
         tail3Weight:.35,
         near8Weight:-.25,
-        threshold:.4
+        threshold:.4*thresholdMul(options,'pedalHat'),
+        thresholdMultiplier:thresholdMul(options,'pedalHat')
       };
     }catch(err){
       console.warn('GMD pedal prior fallback',err);
@@ -924,7 +932,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // Crash experiments are deliberately post-gated after the existing two-hand
   // selection, so changing crash precision cannot change kick/snare/tom retention.
   const cymbalVariant=['legacy','raw-gated','confidence-gated','confidence-115','confidence-125','confidence-135','hat-veto','hat-accent-080','hat-accent-100','hat-accent-120','competition-open-state','competition-template','competition-hybrid','collision-lowmid-final','collision-lowmid-struct','collision-lowmid-run'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
-  const crashConfidenceThreshold=({'confidence-115':1.15,'confidence-125':1.25,'confidence-135':1.35,'confidence-gated':1.45}[cymbalVariant]??1.45);
+  const crashConfidenceThreshold=({'confidence-115':1.15,'confidence-125':1.25,'confidence-135':1.35,'confidence-gated':1.45}[cymbalVariant]??1.45)*thresholdMul(options,'cymbalGate');
   const structuralHatTimes=structural
     .filter(e=>e.group==='hat'||e.group==='pedal_hat')
     .map(e=>e.time).sort((a,b)=>a-b);
@@ -1085,7 +1093,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // Apply after cymbal/pedal classification and the initial two-hand pass,
   // because the model was trained on the final browser event context. It only
   // removes hats, so it cannot create a new hand-polyphony violation.
-  const highHat=await filterHighResHats(decoded,pruned,bpm,barInfo.phaseSec,(message,p)=>report(message,p));
+  const highHat=await filterHighResHats(decoded,pruned,bpm,barInfo.phaseSec,(message,p)=>report(message,p),{thresholdMultiplier:thresholdMul(options,'hatFilter')});
   pruned=highHat.events;
   adtofInfo.hatHighRes=highHat.info;
 
@@ -1094,7 +1102,10 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // Ambiguous events remain closed GM 42.
   const openHat=await promoteOpenHats(decoded,pruned,bpm,(message,p)=>report(message,p),{
     variant:options.openHatVariant||'ride-selective60-decay-rescue',
-    barPhaseSec:barInfo.phaseSec
+    barPhaseSec:barInfo.phaseSec,
+    thresholdMultiplier:thresholdMul(options,'openHat'),
+    rideThresholdMultiplier:thresholdMul(options,'rideOpen'),
+    overlayThresholdMultiplier:thresholdMul(options,'openHatOverlay')
   });
   pruned=openHat.events;
   adtofInfo.openHat=openHat.info;
@@ -1111,7 +1122,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
   // kick, snare or tom events.
   const hatContextVariant=options.hatContextVariant||'global-ride-rescue-v57';
   if(hatContextVariant==='global-ride-rescue-v57'){
-    const hatContext=await rescueRideOpenV57(decoded,pruned,{threshold:.99,minRideCandidates:24});
+    const hatContext=await rescueRideOpenV57(decoded,pruned,{threshold:.99*thresholdMul(options,'rideContextOpen'),minRideCandidates:24});
     pruned=hatContext.events;
     adtofInfo.hatContextV57=hatContext.info;
   }else{
