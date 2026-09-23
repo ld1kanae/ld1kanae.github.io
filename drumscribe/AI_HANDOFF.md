@@ -861,3 +861,11 @@ DrumSep contextual + rhythmic-grid residual:
 - 通常previewとreview pageは同じ `app.js` を使うため、採譜結果分岐なし。
 - appは `globalThis.DrumScribeTimeline` と `drumscribe:* ` custom eventsをreview UIへ公開。
 - 詳細: `drumscribe/UI_REVIEW_WORKFLOW.md`
+
+
+## 2026-09-23 Range review UI v2
+- `feedback.html` now keeps the lower **範囲レビュー** card as a saved-review log only.
+- Dragging on the waveform opens an anchored speech-bubble editor directly over the selected range.
+- Review ranges snap to the preview/export musical beat grid in **1-beat units**. `app.js` exposes beat-boundary helpers based on the same `rhythmGrid.timeForScore()` tempo map used for MIDI preview/export, rather than assuming a fixed seconds-per-beat across the song.
+- Pressing **保存** appends the review to the chronological log and closes the editor. Saved blocks can be played, reopened/rewritten, or deleted.
+- Existing localStorage persistence, 5-level undo/redo, AI prompt copy, and JSON export remain.
