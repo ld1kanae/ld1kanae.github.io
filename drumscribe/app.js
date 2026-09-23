@@ -340,7 +340,7 @@ function draw(){
     c.moveTo(x,ch*.32-peak*ch*.27);c.lineTo(x,ch*.32+peak*ch*.27);
   }
   c.stroke();c.globalAlpha=1;
-  const laneTop=ch*.60,laneH=(ch-laneTop)/4,laneNames=['CYMBAL','HI-HAT / RIDE','SNARE / TOM','KICK'];
+  const laneTop=ch*.60,laneH=(ch-laneTop)/4,laneNames=['シンバル','ハイハット / ライド','スネア / タム','バスドラム'];
   c.font='9px ui-monospace,SFMono-Regular,Consolas,monospace';
   for(let lane=0;lane<4;lane++){
     c.fillStyle=lane%2?'rgba(25,43,59,.72)':'rgba(31,49,68,.72)';
