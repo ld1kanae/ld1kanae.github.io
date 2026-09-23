@@ -148,6 +148,9 @@ index.html
           -> hat / pedal-hat / crash / ride post-processing
           -> hat-forest.js
               -> models/hat-extra-trees-v11.json
+          -> open-hat.js
+              -> models/open-hat-extra-trees-v2.json
+              -> models/open-hat-overlay-extra-trees-v1.json
       -> meter.js (example songs only: variable-meter inference path)
       -> midi.js
       -> preview playback using ../DruMaster/assets/drums/{note}.wav
@@ -166,6 +169,7 @@ index.html
 | `adtof-worker.js` | 2048 FFT + 84-bin filterbank frontend をWeb Workerで計算 |
 | `fft-worker.js` | 11.025 kHz側の 1024 FFT を並列計算 |
 | `hat-forest.js` | 44.1 kHz ExtraTreesでhi-hat過検出を削る最終フィルタ |
+| `open-hat.js` | 残ったhatを42/46へ分類し、2-hand/repetition guard下で欠落Openを保守的に追加 |
 | `meter.js` | 外部beat/downbeat補助を使った 4/4・3/4 の小節列推定 |
 | `midi.js` | SMF type 0 / PPQ 480。tempo、time signature、pickup/bar alignment、drum note出力 |
 | `review.html/js/css` | 候補MIDIを音源と同期試聴する比較UI。研究候補レビュー用 |
@@ -231,11 +235,23 @@ kick/snareを相互排他にはしない。実参照ではkick+snare同時打撃
 3. cymbalはADTOF候補をbar-head/periodicity/raw spectral evidenceで crash/ride に絞る
 4. snare/tom/hat/crash/ride は35 ms cluster内で最大2打（2 hands）。kick/pedal_hatは除外
 5. 最後に `hat-forest.js` の ExtraTrees でhatをさらに削る
+6. `open-hat.js` の GMD128学習モデルで残ったhatを42/46へ分類。threshold 0.575、曖昧ならClosed 42。
+7. `open-hat-overlay-extra-trees-v1.json` は既存kick/snare/metalを置換せず、repeat evidence + 2-hand制約を満たす高信頼欠落OpenだけGM46として追加する。
+
+Open HH production:
+- base articulation: `open-hat-extra-trees-v2.json`
+- external augmentation: GMD 128 open + 128 closed
+- fixed threshold: 0.575
+- missing-candidate rescue: `repeat_gate_2hands`
+- held-out development estimate: Open TP423 / Pred646 / Ref1179, P 0.6548 / R 0.3588 / F1 0.4636
+- Closed F1 0.8065
+- kick/snare/tomはOpen rescueで削除・置換しない
 
 出力note:
 - kick 36
 - snare 38
 - closed hat 42
+- open hat 46
 - pedal hat 44
 - tom 45
 - crash 49
@@ -286,11 +302,17 @@ v26では diamondvirgin / nanairo / ray だけで再検証し、GMDは「beat 1 
 | snare | 1301 / 1421 / 1470 | 0.9156 | 0.8850 | 0.9000 |
 | tom | 69 / 84 / 92 | 0.8214 | 0.7500 | 0.7841 |
 
-all classes:
-- TP 7490 / Pred 8223 / Ref 10086
-- Precision 0.9109
-- Recall 0.7426
-- F1 0.8182
+all classes（Open HH overlayを含む最新main実Chromium）:
+- TP 7492 / Pred 8225 / Ref 10086
+- Precision 約0.911
+- Recall 約0.743
+- F1 約0.818
+
+Open/Closed articulationのmain train-all動作確認:
+- Closed: TP2357 / Pred2667 / Ref2923, P 0.8838 / R 0.8064 / F1 0.8433
+- Open: TP571 / Pred738 / Ref1179, P 0.7737 / R 0.4843 / F1 0.5957
+- macro F1 0.7195
+- これは5曲を含むtrain-allモデルの動作確認値。未知曲相当の判断には上記held-out Open F1 0.4636を優先する。
 
 注意:
 - 同じ5曲を見ながら改善してきたので未知曲保証ではない。
@@ -474,7 +496,7 @@ ADTOF本体やhat filterもproduction modelだがGMD系ではない:
 - MIDI download
 
 MIDI preview音源:
-`../DruMaster/assets/drums/{36,38,42,44,45,49,51}.wav`
+`../DruMaster/assets/drums/{36,38,42,44,45,46,49,51}.wav`
 
 ---
 
@@ -539,6 +561,8 @@ exportだけ `barPhaseSec` に基づきmusical gridへずらす。
 ## 14. 既知の制約
 
 - 基本対象はドラム単独音源。楽曲全体からのstem separationはWeb本体に未搭載。
+- `offvocal.mp3` はOpen HHのteacher/diagnosticとして検証中。production必須入力にはしていない。
+- DrumSep/MDX23CのHH分離はoffline teacherとして有望だが、外部checkpointはWeb本体へ同梱せず蒸留studentを研究中。
 - 現スコアは5曲へ反復最適化しており未知曲保証ではない。
 - tom母数が小さい。
 - E-GMD v4 classifier自体はsequence/kit-held-outで校正したが、最終song-level snare rescue policyは5曲で採否確認しており、未知曲post-selection validationは必要。
