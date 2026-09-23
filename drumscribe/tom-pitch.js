@@ -108,7 +108,7 @@ function silhouette(values,labels,k){
 function absoluteFallback(hz){
   if(hz<110)return 41;
   if(hz<145)return 45;
-  if(hz<190)return 47;
+  if(hz<210)return 47;
   return 50;
 }
 function mappedNotes(k){
@@ -120,11 +120,11 @@ export function assignTomPitches(samples,events){
   const toms=events.filter(e=>e.group==='tom');
   const info={
     enabled:true,
-    method:'resonance-absolute-threshold-v2',
+    method:'resonance-absolute-threshold-v3',
     tomCount:toms.length,
     clusters:0,
     silhouette:0,
-    thresholdsHz:[110,145,190],
+    thresholdsHz:[110,145,210],
     counts:{41:0,45:0,47:0,50:0},
     decisions:[]
   };

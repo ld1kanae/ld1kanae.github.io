@@ -1,4 +1,4 @@
-import {transcribe} from './transcribe.js?v=20260924-tom-pitch-v2';
+import {transcribe} from './transcribe.js?v=20260924-tom-pitch-v3';
 import {analyzeSections,rescoreKstByArrangement,arrangementKstPolicyCurrent} from './arrangement/index.js?v=20260923-arrangement-kst-v47';
 import {midiFile} from './midi.js?v=20260923-tempo-bar-v35';
 import {buildRhythmGrid,GRID_PPQ} from './rhythm-grid.js?v=20260923-tempo-bar-v35';
