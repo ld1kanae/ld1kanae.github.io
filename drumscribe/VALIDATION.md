@@ -1,5 +1,21 @@
 # 採譜アルゴリズムの検証履歴
 
+## 2026-09-23: 可変拍子のMIDI書き出し・全小節評価
+
+検証ブランチで比較した `fullmix_meter_grid_gate_v22.py` の0.50案を、検証用3曲のfullmix音声から事前抽出したBeatThis小節頭と、ドラム音源から推定済みの打点を使う `meter.js` に移植。固定4/4グリッドに対する音声小節頭のずれが中央値0.5拍以上の場合だけ、3/4と4/4の動的計画法を使う。`chart.mid` は推定器とMIDI書き出しには渡さない。小節頭データのない2曲、およびユーザーが持ち込む音源は現状4/4のままであり、任意の伴奏ファイルをWeb画面で解析する処理は未実装。
+
+既存の実Chromium生成MIDIの打点を入力して5曲のMIDIを再書き出し、元MIDIと打点の音高・ベロシティ・時刻が全曲完全一致することを確認。新MIDIを再読込して拍子イベントと全小節線を参照MIDIのテンポマップ・拍子変更・`song.json` のオフセット込みで採点した。生集計は [`results-meter-v23.json`](experiments/results-meter-v23.json)、試聴用MIDIは [`generated-meter-v23/`](experiments/generated-meter-v23/) に保存。試聴ページではこの候補に限り書き出しオフセットを逆補正する。
+
+| 曲 | 小節頭平均誤差（拍） | 0.25拍以内の小節頭割合 | 推定3/4小節 | 誤った3/4小節 |
+|---|---:|---:|---:|---:|
+| arcaround | 0.0805 | 95.30% | 10 / 参照20 | 0 |
+| diamondvirgin | 0.0101 | 100% | 0 | 0 |
+| kaiju | 0.0094 | 100% | 0 | 0 |
+| nanairo | 0.0628 | 100% | 0 | 0 |
+| ray | 0.0005 | 100% | 0 | 0 |
+
+5曲の曲別平均の平均は **0.0327拍**、小節頭の一致割合の平均は **99.06%**。arcaround の3/4再現率は **50%** で、残る10小節は改善対象。既存の打点は変えていないため、打点F1は旧実Chromium結果と同一の **0.815346**。この一周で実Chromiumから採譜を再実行した数値ではない。事前抽出した小節頭と学習・選定済みの5曲での採点であり、未知曲への一般化性能は示さない。
+
 実験に使った元データ: [DruMaster/songs](https://github.com/ld1kanae/ld1kanae.github.io/tree/main/DruMaster/songs) の5曲の `drums.mp3`・`chart.mid`・`song.json`、[DruMaster/assets/drums](https://github.com/ld1kanae/ld1kanae.github.io/tree/main/DruMaster/assets/drums) のサンプル。検証時のリポジトリHEADは `0dd72153931f5a396575be175234a8124bf8fd07`。参照MP3のSHA-256はすべて各 `song.json` の記載値と一致するものを使用した。
 
 ## 時間軸と採点
