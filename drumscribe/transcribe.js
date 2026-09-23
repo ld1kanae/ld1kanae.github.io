@@ -917,6 +917,13 @@ export async function transcribe(decoded,report=()=>{},options={}){
     else if(ride)rawRideEvidence.push(e.time);
   }
 
+  // Crash experiments are deliberately post-gated after the existing two-hand
+  // selection, so changing crash precision cannot change kick/snare/tom retention.
+  const cymbalVariant=['legacy','raw-gated','confidence-gated','hat-veto'].includes(options.cymbalVariant)?options.cymbalVariant:'legacy';
+  const structuralHatTimes=structural
+    .filter(e=>e.group==='hat'||e.group==='pedal_hat')
+    .map(e=>e.time).sort((a,b)=>a-b);
+
   const final=[...structural];
   if(adtofInfo.enabled&&adtofCymbal.length){
     const adTimes=adtofCymbal.map(e=>e.time);
@@ -926,6 +933,7 @@ export async function transcribe(decoded,report=()=>{},options={}){
       const per=periodicSupportTimes(adTimes,e.time);
       const crashSupport=rawCrashEvidence.some(t=>Math.abs(t-e.time)<=.07);
       const rideSupport=rawRideEvidence.some(t=>Math.abs(t-e.time)<=.07);
+      const hatSupport=structuralHatTimes.some(t=>Math.abs(t-e.time)<=.060);
       let group=null;
       // Winner of the corrected audio-time search:
       // head <= .30 beat => crash; otherwise require complete periodic
@@ -934,7 +942,14 @@ export async function transcribe(decoded,report=()=>{},options={}){
       if(headDistance<=.30)group='crash';
       else if(per>=1.0||rideSupport)group='ride';
       else if(crashSupport)group='crash';
-      if(group)selected.push({...e,group,confidence:e.confidence*(1+(group==='crash'?.35:.25)*Math.max(per,headDistance<=.30?1:0))});
+      if(group)selected.push({
+        ...e,group,
+        confidence:e.confidence*(1+(group==='crash'?.35:.25)*Math.max(per,headDistance<=.30?1:0)),
+        cymbalEvidence:{
+          headDistance,periodicSupport:per,crashSupport,rideSupport,hatSupport,
+          baseConfidence:Number(e.confidence)||0
+        }
+      });
     }
     selected.sort((a,b)=>a.time-b.time);
     const ded=[];
@@ -983,6 +998,37 @@ export async function transcribe(decoded,report=()=>{},options={}){
     pruned.push(...exempt,...limb.slice(0,2));
     i=j;
   }
+
+  // Crash precision gate. It runs AFTER the legacy two-hand selection so
+  // K/S/T decisions remain identical to the legacy path. Only bar-head crashes
+  // created by the ADTOF bar-head shortcut are eligible; raw-evidence rescues
+  // outside the bar-head window are preserved.
+  const crashPostGate={
+    variant:cymbalVariant,evaluated:0,removed:0,rawSupported:0,
+    confidenceSupported:0,hatVetoed:0,confidenceThreshold:1.45
+  };
+  if(cymbalVariant!=='legacy'){
+    pruned=pruned.filter(e=>{
+      if(e.group!=='crash'||!e.cymbalEvidence)return true;
+      const ev=e.cymbalEvidence;
+      if(ev.headDistance>.30)return true;
+      crashPostGate.evaluated++;
+      if(ev.crashSupport)crashPostGate.rawSupported++;
+      if(ev.baseConfidence>=1.45)crashPostGate.confidenceSupported++;
+      let keep=true;
+      if(cymbalVariant==='raw-gated'){
+        keep=ev.crashSupport;
+      }else if(cymbalVariant==='confidence-gated'){
+        keep=ev.crashSupport||ev.baseConfidence>=1.45;
+      }else if(cymbalVariant==='hat-veto'){
+        keep=ev.crashSupport||(ev.baseConfidence>=1.45&&!ev.hatSupport);
+        if(!keep&&ev.hatSupport)crashPostGate.hatVetoed++;
+      }
+      if(!keep)crashPostGate.removed++;
+      return keep;
+    });
+  }
+  adtofInfo.cymbalPolicy={...(adtofInfo.cymbalPolicy||{}),crashPostGate};
 
   // Cycles 225-227: fixed-threshold 44.1 kHz ExtraTrees suppressor.
   // Apply after cymbal/pedal classification and the initial two-hand pass,
