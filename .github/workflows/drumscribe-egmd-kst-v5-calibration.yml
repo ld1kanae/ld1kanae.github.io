@@ -1,0 +1,44 @@
+name: DrumScribe E-GMD v5 frozen snare calibration
+
+on:
+  push:
+    branches:
+      - drumscribe-egmd-kst-v5-current-eval-20260923
+    paths:
+      - "drumscribe/experiments/calibrate_egmd_kst_v5_snare.py"
+      - ".github/workflows/drumscribe-egmd-kst-v5-calibration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: drumscribe-egmd-kst-v5-current-eval-20260923
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CPU inference stack
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --no-deps "git+https://github.com/xavriley/ADTOF-pytorch.git"
+          pip install librosa pretty_midi numpy scipy scikit-learn mido remotezip requests
+      - name: Calibrate frozen v5 snare thresholds on E-GMD only
+        run: python drumscribe/experiments/calibrate_egmd_kst_v5_snare.py
+      - name: Commit calibration report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin drumscribe-egmd-kst-v5-current-eval-20260923
+          git add drumscribe/experiments/results-egmd-kst-v5-snare-calibration.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Record frozen E-GMD v5 snare precision tiers [skip ci]"
+          git push origin HEAD:drumscribe-egmd-kst-v5-current-eval-20260923
