@@ -33,9 +33,24 @@
 
 詳細な仮説、各周回、曲別値、失敗した候補、評価上の注意は [検証履歴](VALIDATION.md) を参照してください。
 
+## offvocal / instrumental の曲構造解析
+
+offvocal / instrumental から大きな構造変化を検出する共通モジュールは `drumscribe/arrangement/` に集約しています。
+
+正式なimport入口は:
+
+```js
+import {analyzeSections, extractSectionFeatures} from './arrangement/index.js';
+```
+
+現時点では、音色・エネルギー変化からセクション境界を検出し、反復セクションを `A/B/C/...` の構造グループとしてまとめます。**Aメロ / Bメロ / サビという意味ラベルを付ける処理ではありません。** また、現行production採譜runtimeにはまだ接続しておらず、Proof音源の小節位相検証で補助的に使った解析を再利用可能な共通モジュールとして整理したものです。
+
+詳細は [arrangement/README.md](arrangement/README.md) を参照してください。
+
 ## 主なファイル
 
 - `transcribe.js`: 採譜パイプライン、テンポ/小節推定、構造優先後処理
+- `arrangement/`: offvocal / instrumental の構造境界検出と反復セクショングループ化の共通API（production未接続）
 - `adtof.js` / `adtof-worker.js`: ADTOF ONNX推論
 - `hat-forest.js`: 高解像度hi-hat過検出フィルタ
 - `models/`: ONNX、filterbank、学習済み補助モデル（E-GMD K/S/T再分類器を含む）
