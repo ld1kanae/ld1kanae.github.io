@@ -32,13 +32,24 @@ def metric(pred,ref):
     tp=greedy(pred,ref);p=len(pred);r=len(ref)
     return {'tp':tp,'predicted':p,'reference':r,'precision':tp/p if p else 0.,'recall':tp/r if r else 0.,'f1':2*tp/(p+r) if p+r else 0.}
 
-def score(ev,truth):
+def score(ev,truth,song):
     r={}
+    ignore_ride_times=[t for t,n in truth if n in SETS['ride']] if song=='arcaround' else []
+    def masked_pred(notes):
+        vals=[float(e['time']) for e in ev if int(e['note']) in notes]
+        if song!='arcaround' or not ignore_ride_times:return vals
+        return [t for t in vals if not any(abs(t-u)<=.080 for u in ignore_ride_times)]
     for k in ('closed','open','ride','kick','snare','tom'):
         pn={42} if k=='closed' else ({46} if k=='open' else ({51} if k=='ride' else SETS[k]))
-        r[k]=metric([e['time'] for e in ev if int(e['note']) in pn],[t for t,n in truth if n in SETS[k]])
-    r['hatRideOnset']=metric([e['time'] for e in ev if int(e['note']) in {42,46,51}],
-                             [t for t,n in truth if n in SETS['closed']|SETS['open']|SETS['ride']])
+        pred=masked_pred(pn) if k in ('closed','open','ride') else [e['time'] for e in ev if int(e['note']) in pn]
+        ref=[] if (song=='arcaround' and k=='ride') else [t for t,n in truth if n in SETS[k]]
+        r[k]=metric(pred,ref)
+    onset_pred=[float(e['time']) for e in ev if int(e['note']) in {42,46,51}]
+    onset_ref=[t for t,n in truth if n in SETS['closed']|SETS['open']|SETS['ride']]
+    if song=='arcaround':
+        onset_pred=[t for t in onset_pred if not any(abs(t-u)<=.080 for u in ignore_ride_times)]
+        onset_ref=[t for t,n in truth if n in SETS['closed']|SETS['open']]
+    r['hatRideOnset']=metric(onset_pred,onset_ref)
     r['hatMacroF1']=(r['closed']['f1']+r['open']['f1'])/2
     return r
 
@@ -65,7 +76,7 @@ def main():
                 for e in ev:
                     if e['group']=='ride' and float(e.get('hatContextProbability') or 0)>=TH:
                         e['group']='open_hat';e['note']=46;changed+=1
-            rows.append({'song':song,'rideCandidates':ride_count,'gateEnabled':enabled,'changed':changed,**score(ev,truth[song])})
+            rows.append({'song':song,'rideCandidates':ride_count,'gateEnabled':enabled,'changed':changed,**score(ev,truth[song],song)})
         s={k:aggregate(rows,k) for k in ('closed','open','ride','kick','snare','tom','hatRideOnset')}
         s['hatMacroF1']=(s['closed']['f1']+s['open']['f1'])/2
         variants[name]={'summary':s,'songs':rows}
@@ -74,10 +85,10 @@ def main():
         x=v['summary'];v['delta']={k:x[k]['f1']-base[k]['f1'] for k in ('closed','open','ride','kick','snare','tom','hatRideOnset')}
         v['delta']['hatMacroF1']=x['hatMacroF1']-base['hatMacroF1']
     report={'schema':1,'experiment':'hat-context-portable-gate-v56','threshold':TH,'variants':variants,
-            'note':'Gate uses generated Ride candidate count only. Probabilities remain song-held-out from v55.'}
+            'note':'Gate uses generated Ride candidate count only. Probabilities remain song-held-out from v55. Arcaround reference Ride zones are excluded from HH scoring per project instruction because those Ride notes are arrangement-only.'}
     OUT.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     lines=['# Hat context portable gate v56','',
-      'Uses the v55 song-held-out probabilities. The gate reads only the number of generated Ride candidates; reference MIDI is scoring-only.','',
+      'Uses the v55 song-held-out probabilities. The gate reads only the number of generated Ride candidates; reference MIDI is scoring-only. Arcaround Ride zones are ignored in HH scoring as arrangement-only.','',
       '| variant | Open F1 | Closed F1 | Ride F1 | HH macro | ΔHH macro |',
       '|---|---:|---:|---:|---:|---:|']
     for name,_ in configs:
