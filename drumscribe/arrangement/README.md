@@ -33,7 +33,11 @@ Any future semantic classifier should consume this module's output rather than d
 Import only from:
 
 ```js
-import {analyzeSections, extractSectionFeatures} from './arrangement/index.js';
+import {
+  analyzeSections,
+  extractSectionFeatures,
+  rescoreKstByArrangement,
+} from './arrangement/index.js';
 ```
 
 Example with a WebAudio `AudioBuffer`:
@@ -89,3 +93,27 @@ console.log(result.sections.map(s => ({
 As of 2026-09-23 this module is **available as shared infrastructure but is not part of the production transcription path**. The Proof validation used the same algorithm diagnostically to test whether instrumental structure supported one bar-phase candidate over another.
 
 Do not describe DrumScribe as currently detecting Aメロ/Bメロ/サビ from off-vocal until a semantic classifier has been separately implemented and validated.
+
+
+## Arrangement-aware K/S/T rescoring
+
+`rescoreKstByArrangement()` is the shared entry point for the A/A' repetition experiment.
+
+It accepts:
+- final baseline transcription events,
+- low-threshold acoustic K/S/T diagnostics from `transcribe(..., {diagnosticKst:true})`,
+- `analyzeSections()` output,
+- BPM / meter context,
+- an optional GMD 16th-slot prior.
+
+Guardrails:
+- it never copies a note from A to A';
+- a target-time acoustic candidate must already exist;
+- A/A' remains a structural-family relation, not verse/chorus semantics;
+- Snare/Tom candidates already above the production threshold but removed downstream are not resurrected by default;
+- a two-hand guard rejects a new hand-played event when it would create a third simultaneous hand event.
+
+The compact GMD prior used by the v39D research candidate is:
+`../models/gmd-kst/slot-prior-v1.json`.
+
+As of this documentation update, the rescoring API exists as shared infrastructure. Runtime adoption still depends on fresh-browser non-regression validation.
