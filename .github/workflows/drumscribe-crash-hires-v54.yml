@@ -1,0 +1,51 @@
+name: DrumScribe 44k crash guard v54
+on:
+  push:
+    branches: [main]
+    paths:
+      - "drumscribe/transcribe.js"
+      - "drumscribe/experiments/browser_crash_diagnostics_v51.mjs"
+      - "drumscribe/experiments/train_crash_hires_v54.py"
+      - ".github/workflows/drumscribe-crash-hires-v54.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          pip install numpy scipy scikit-learn
+      - name: Serve repository
+        run: |
+          python -m http.server 8000 >/tmp/drumscribe-http.log 2>&1 &
+          sleep 2
+      - name: Fresh-generate candidates
+        run: |
+          rm -rf drumscribe/experiments/generated-crash-diagnostics-v54
+          sed 's/generated-crash-diagnostics-v51/generated-crash-diagnostics-v54/g' drumscribe/experiments/browser_crash_diagnostics_v51.mjs > /tmp/browser-v54.mjs
+          node /tmp/browser-v54.mjs
+      - name: Train high-resolution selectors
+        run: python drumscribe/experiments/train_crash_hires_v54.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drumscribe/experiments/results-crash-hires-v54.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "drumscribe: record 44k crash guard v54"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 2
+          done
+          exit 1
