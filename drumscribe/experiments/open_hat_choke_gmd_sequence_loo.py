@@ -32,6 +32,21 @@ MODELS = ROOT / "drumscribe/models"
 SONGS = ["arcaround", "diamondvirgin", "kaiju", "nanairo", "ray"]
 THRESHOLDS = [.55, .62, .68, .74, .80, .86, .90, .93, .96, .98, .995, 1.01]
 BASE_SEED = 31000
+BASE_CACHE = {}
+
+
+def baseline_cached(d, held, train, hx, hy, gx, gy, seed):
+    """Return one frozen base transcription for an exact held/train/seed key.
+
+    The same open/closed lists are reused by every variant so a no-op selector
+    is mathematically guaranteed to equal the reported baseline.
+    """
+    key = (held, tuple(train), int(seed))
+    if key not in BASE_CACHE:
+        bo, bc, diag = baseexp.baseline_for(d, held, train, hx, hy, gx, gy, seed)
+        BASE_CACHE[key] = (tuple(bo), tuple(bc), dict(diag))
+    bo, bc, diag = BASE_CACHE[key]
+    return list(bo), list(bc), dict(diag)
 
 
 def loadmod(name, path):
@@ -431,7 +446,7 @@ def choose_threshold(d, items, outer, variant, hx, hy, gx, gy, seed):
             sm, st = fit_songs(items, tr, "Xchoke", seed + i)
             fm, ft = fit_fusion(items, tr, seed + 100 + i)
             train = {"songs": st, "fusion": ft}
-        bo, bc, bdiag = baseexp.baseline_for(d, val, tr, hx, hy, gx, gy, 32000 + SONGS.index(val))
+        bo, bc, bdiag = baseline_cached(d, val, tr, hx, hy, gx, gy, 32000 + SONGS.index(val))
         prob = score_variant(items, val, variant, sm, fm)
         cache[val] = (bo, bc, bdiag, prob, train)
 
@@ -474,7 +489,7 @@ def evaluate(d, items, variant, hx, hy, gx, gy):
             fm, ft = fit_fusion(items, outer, 25000 + oi)
             train = {"songs": st, "fusion": ft}
 
-        bo, bc, bdiag = baseexp.baseline_for(d, held, outer, hx, hy, gx, gy, BASE_SEED + SONGS.index(held))
+        bo, bc, bdiag = baseline_cached(d, held, outer, hx, hy, gx, gy, BASE_SEED + SONGS.index(held))
         prob = score_variant(items, held, variant, sm, fm)
         add = baseexp.select_add(d, held, items[held], prob, th, bo)
         met = ctx.articulation(sorted(bo + add), bc, d[held]["refs"])
@@ -521,7 +536,7 @@ def main():
     base_per = {}
     for i, held in enumerate(SONGS):
         tr = [s for s in SONGS if s != held]
-        bo, bc, _ = baseexp.baseline_for(d, held, tr, hx, hy, gx, gy, BASE_SEED + SONGS.index(held))
+        bo, bc, _ = baseline_cached(d, held, tr, hx, hy, gx, gy, BASE_SEED + SONGS.index(held))
         base_per[held] = ctx.articulation(bo, bc, d[held]["refs"])
     baseline = ctx.aggregate(base_per)
 
