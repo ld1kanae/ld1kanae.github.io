@@ -1,8 +1,9 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),canvas=$('timeline');
-const card=$('reviewCard'),popover=$('reviewPopover'),rangeOut=$('selectionRange'),rangeHint=$('selectionHint'),category=$('reviewCategory'),text=$('reviewText'),save=$('addReview'),list=$('reviewList'),status=$('reviewStatus'),prompt=$('aiPromptPreview'),undoButton=$('reviewUndo'),redoButton=$('reviewRedo');
+const card=$('reviewCard'),popover=$('reviewPopover'),rangeOut=$('selectionRange'),rangeHint=$('selectionHint'),category=$('reviewCategory'),text=$('reviewText'),save=$('addReview'),voiceButton=$('reviewVoice'),list=$('reviewList'),status=$('reviewStatus'),prompt=$('aiPromptPreview'),undoButton=$('reviewUndo'),redoButton=$('reviewRedo');
 let api=null,selection=null,reviews=[],source={fileName:'',exampleId:'',duration:0},undoStack=[],redoStack=[],editingId=null,drag=null,playToken=0;
+let voiceRecognition=null,voiceActive=false,voiceBase='',voiceFinal='',voiceInterim='';
 const HISTORY_LIMIT=5;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -38,6 +39,67 @@ function rawRange(start,end){
   const d=api?.getDuration?.()||0,a=clamp(Number(start)||0,0,d),b=clamp(Number(end)||0,0,d);
   return {start:Math.min(a,b),end:Math.max(a,b),beats:null};
 }
+function voiceCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}
+function setVoiceState(active,label){
+  voiceActive=active;
+  if(!voiceButton)return;
+  voiceButton.disabled=!voiceCtor();
+  voiceButton.setAttribute('aria-pressed',String(active));
+  voiceButton.classList.toggle('listening',active);
+  voiceButton.textContent=label||(active?'■ 音声入力停止':'🎙 音声入力');
+}
+function composeVoiceText(){
+  const spoken=(voiceFinal+voiceInterim).trim();
+  if(!spoken)return voiceBase;
+  return voiceBase+(voiceBase.trim()?'\n':'')+spoken;
+}
+function updateVoiceText(){
+  text.value=composeVoiceText();
+  text.selectionStart=text.selectionEnd=text.value.length;
+}
+function stopVoice(abort=false){
+  if(!voiceRecognition){setVoiceState(false);return}
+  try{abort?voiceRecognition.abort():voiceRecognition.stop()}catch{}
+  setVoiceState(false);
+}
+function startVoice(){
+  const Speech=voiceCtor();
+  if(!Speech){setStatus('このブラウザは音声入力に対応していません。Chrome系ブラウザで利用できます。',true);setVoiceState(false);return}
+  if(voiceActive){stopVoice(false);return}
+  api?.pause?.();playToken++;
+  voiceBase=text.value;voiceFinal='';voiceInterim='';
+  const recognition=new Speech();
+  voiceRecognition=recognition;
+  recognition.lang='ja-JP';
+  recognition.continuous=true;
+  recognition.interimResults=true;
+  recognition.maxAlternatives=1;
+  recognition.onstart=()=>{setVoiceState(true);setStatus('音声入力中です。話した内容をレビュー欄へ追記します。')};
+  recognition.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const transcript=e.results[i]?.[0]?.transcript||'';
+      if(e.results[i].isFinal)voiceFinal+=transcript;
+      else interim+=transcript;
+    }
+    voiceInterim=interim;
+    updateVoiceText();
+  };
+  recognition.onerror=e=>{
+    const msg=e.error==='not-allowed'||e.error==='service-not-allowed'
+      ?'マイクの使用が許可されていません。ブラウザのマイク権限を確認してください。'
+      :e.error==='no-speech'
+        ?'音声を検出できませんでした。もう一度お試しください。'
+        :'音声入力でエラーが発生しました: '+e.error;
+    setStatus(msg,true);setVoiceState(false);
+  };
+  recognition.onend=()=>{
+    updateVoiceText();
+    if(voiceRecognition===recognition)voiceRecognition=null;
+    setVoiceState(false);
+  };
+  try{recognition.start()}catch(err){voiceRecognition=null;setVoiceState(false);setStatus('音声入力を開始できませんでした: '+err.message,true)}
+}
 function positionPopover(){
   if(popover.hidden||!selection||!api)return;
   const stage=$('timelineStage'),view=api.getView?.();
@@ -60,6 +122,7 @@ function setSelection(start,end,focus=false,{open=true}={}){
   if(open){popover.hidden=false;requestAnimationFrame(positionPopover)}
 }
 function closeEditor(clear=true){
+  if(voiceActive||voiceRecognition)stopVoice(true);
   popover.hidden=true;editingId=null;save.textContent='保存';
   text.value='';category.value='採譜ミス';
   if(clear){selection=null;api?.clearSelection?.();}
@@ -96,6 +159,7 @@ function render(){
   prompt.value=buildPrompt();updateHistory();globalThis.__drumscribeReviewPayload=payload();
 }
 function submitReview(){
+  if(voiceActive||voiceRecognition){updateVoiceText();stopVoice(true);}
   const wasEditing=Boolean(editingId);
   const comment=text.value.trim();
   if(!selection||selection.end-selection.start<.005){setStatus('先に波形上でレビュー範囲を選択してください。',true);return}
@@ -178,6 +242,7 @@ function installTimeline(){
   canvas.addEventListener('selectstart',e=>e.preventDefault());
   return true;
 }
+voiceButton?.addEventListener('click',startVoice);
 $('playSelection').addEventListener('click',()=>playRange());
 $('clearSelection').addEventListener('click',()=>closeEditor());
 save.addEventListener('click',submitReview);
@@ -198,6 +263,7 @@ addEventListener('drumscribe:analysis-complete',e=>{
   source={fileName:e.detail.fileName||api?.getFileName?.()||'',exampleId:e.detail.exampleId||'',duration:Number(e.detail.duration)||api?.getDuration?.()||0};
   card.hidden=false;closeEditor();load();setStatus('波形上をドラッグすると、そのままの時間範囲で入力吹き出しを表示します。');
 });
+if(!voiceCtor()){setVoiceState(false);if(voiceButton)voiceButton.title='このブラウザは音声入力に対応していません'}else setVoiceState(false);
 if(!installTimeline()){addEventListener('drumscribe:timeline-ready',installTimeline,{once:true})}
 render();
 })();
