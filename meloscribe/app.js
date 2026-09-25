@@ -105,6 +105,8 @@ $('analyze').addEventListener('click', async () => {
         const onsetNotes = notesFromOnsets(data.rows, data.onsets || []);
         state.raw = onsetNotes.length >= 10 ? onsetNotes : segmentNotes(data.rows);
         state.notes = quantizeNotes(state.raw, state.bpm, state.phase, sub());
+        state.view = Math.max(0, Math.min(state.duration - span, (state.notes[0]?.start || 0) - 2));
+        $('scroll').value = Math.round(state.view * 10);
         const keys = suggestKeys(state.raw);
         $('keyInfo').textContent = keys.length ? `音高分布からのキー候補：${keys.slice(0, 2).map(x => x.name).join(' / ')}（調性の断定ではありません。臨時記号を消す処理には使用しません）` : '';
         $('status').textContent = `完了：${state.notes.length}音符。ピアノロールで確認してください。`;
