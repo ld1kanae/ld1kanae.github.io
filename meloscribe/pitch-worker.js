@@ -1,4 +1,5 @@
 import {fft} from './dsp.js';
+import {detectVocalOnsets} from './onsets.js';
 
 // Autocorrelation formulation of YIN's cumulative mean normalized difference.
 const RATE = 11025, SIZE = 2048, FFT_SIZE = 4096, HOP = 220;
@@ -6,6 +7,7 @@ const MIN_LAG = 12, MAX_LAG = 185;
 
 self.onmessage = async ({data}) => {
   const samples = new Float32Array(data.samples);
+  const onsets = detectVocalOnsets(samples);
   const rows = [];
   const re = new Float64Array(FFT_SIZE), im = new Float64Array(FFT_SIZE);
   const prefix = new Float64Array(SIZE), diff = new Float64Array(MAX_LAG + 1);
@@ -45,5 +47,5 @@ self.onmessage = async ({data}) => {
     rows.push({time: center / RATE, midi, confidence, rms});
     if (frame % 200 === 0) {self.postMessage({progress: frame / total}); await new Promise(resolve => setTimeout(resolve, 0));}
   }
-  self.postMessage({rows, progress: 1});
+  self.postMessage({rows, onsets, progress: 1});
 };

@@ -41,11 +41,23 @@ export function segmentNotes(rows, settings = {}) {
 export function quantizeNotes(notes, bpm, phase, subdivision = 4) {
   const beat = 60 / bpm, quantum = beat / subdivision;
   const snap = t => phase + Math.round((t - phase) / quantum) * quantum;
-  return notes.map(n => {
+  const snapped = notes.map(n => {
     const start = Math.max(0, snap(n.start));
     const end = Math.max(start + quantum, snap(n.end));
     return {...n, start, end};
   }).sort((a, b) => a.start - b.start);
+  const monophonic = [];
+  for (const n of snapped) {
+    const previous = monophonic.at(-1);
+    if (previous && Math.abs(previous.start - n.start) < 1e-7) {
+      if ((n.confidence || 0) * (n.end - n.start) > (previous.confidence || 0) * (previous.end - previous.start))
+        monophonic[monophonic.length - 1] = n;
+      continue;
+    }
+    if (previous && previous.end > n.start) previous.end = Math.max(previous.start + quantum, n.start);
+    monophonic.push(n);
+  }
+  return monophonic;
 }
 
 function u32(n) {return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];}

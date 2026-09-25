@@ -1,5 +1,6 @@
 import {monoAt11025, estimateBeat} from './dsp.js';
 import {segmentNotes, quantizeNotes, midiFile} from './notes.js';
+import {notesFromOnsets, suggestKeys} from './onsets.js';
 
 const $ = id => document.getElementById(id);
 const state = {raw: [], notes: [], duration: 0, bpm: 120, phase: 0, view: 0, worker: null, audio: null, url: null};
@@ -101,8 +102,11 @@ $('analyze').addEventListener('click', async () => {
     state.worker = new Worker('./pitch-worker.js', {type: 'module'});
     state.worker.onmessage = ({data}) => {
       if (data.rows) {
-        state.raw = segmentNotes(data.rows);
+        const onsetNotes = notesFromOnsets(data.rows, data.onsets || []);
+        state.raw = onsetNotes.length >= 10 ? onsetNotes : segmentNotes(data.rows);
         state.notes = quantizeNotes(state.raw, state.bpm, state.phase, sub());
+        const keys = suggestKeys(state.raw);
+        $('keyInfo').textContent = keys.length ? `音高分布からのキー候補：${keys.slice(0, 2).map(x => x.name).join(' / ')}（調性の断定ではありません。臨時記号を消す処理には使用しません）` : '';
         $('status').textContent = `完了：${state.notes.length}音符。ピアノロールで確認してください。`;
         $('analyze').disabled = false; state.worker.terminate(); state.worker = null; refresh();
       } else $('status').textContent = `歌声の音高を解析中… ${Math.round(data.progress * 100)}%`;
