@@ -1,6 +1,6 @@
 import {monoAt11025, estimateBeat} from './dsp.js';
-import {segmentNotes, quantizeNotes, midiFile} from './notes.js';
-import {notesFromOnsets, suggestKeys} from './onsets.js';
+import {segmentNotes, quantizeNotes, midiFile} from './notes.js?v=20260926-onsets-v2';
+import {notesFromOnsets, suggestKeys} from './onsets.js?v=20260926-onsets-v2';
 
 const $ = id => document.getElementById(id);
 const state = {raw: [], notes: [], duration: 0, bpm: 120, phase: 0, view: 0, worker: null, audio: null, url: null};
@@ -99,7 +99,7 @@ $('analyze').addEventListener('click', async () => {
     state.audio = state.url ? new Audio(state.url) : null;
     $('scroll').max = Math.max(0, Math.round((state.duration - span) * 10)); $('scroll').value = 0; state.view = 0;
     $('status').textContent = '歌声の音高を解析中…';
-    state.worker = new Worker('./pitch-worker.js', {type: 'module'});
+    state.worker = new Worker('./pitch-worker.js?v=20260926-onsets-v2', {type: 'module'});
     state.worker.onmessage = ({data}) => {
       if (data.rows) {
         const onsetNotes = notesFromOnsets(data.rows, data.onsets || []);
