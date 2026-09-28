@@ -6,6 +6,7 @@
 
   const MAX_RECORDS=10;
   const LEGACY_STORAGE_KEY='drumasterRankingV3';
+  const LOCAL_TOP_KEY='drumasterLocalTop10V1';
   let renderToken=0;
 
   const currentSongId=()=>globalThis.DruMasterSongs?.current?.id
@@ -54,6 +55,29 @@
           playedAtClient:iso,createdAtLocal:iso,legacyLocal:true
         };
       });
+    }catch{return []}
+  }
+
+  function localTopMirrorRows(){
+    try{
+      const map=JSON.parse(localStorage.getItem(LOCAL_TOP_KEY)||'{}');
+      if(!map||typeof map!=='object'||Array.isArray(map))return [];
+      const rows=[];
+      for(const [songId,list] of Object.entries(map)){
+        if(!Array.isArray(list))continue;
+        for(let i=0;i<list.length;i++){
+          const row=list[i];
+          if(!row||!Number.isFinite(Number(row.score)))continue;
+          rows.push({
+            ...row,
+            playId:row.playId||`local-top:${songId}:${i}`,
+            songId:row.songId||songId,
+            score:Number(row.score)||0,
+            localOnly:true
+          });
+        }
+      }
+      return rows;
     }catch{return []}
   }
 
@@ -116,24 +140,45 @@
     });
   }
 
+  function topRowsForSong(songId,groups){
+    return mergeRows(groups)
+      .filter(p=>(p.songId||'nanairo')===songId)
+      .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.receivedAtServer||a.playedAtClient||'').localeCompare(String(b.receivedAtServer||b.playedAtClient||'')))
+      .slice(0,MAX_RECORDS);
+  }
+
   async function refresh(){
     const token=++renderToken;
     const result=document.querySelector('#result');
     if(!result||result.classList.contains('hidden')||result.classList.contains('autoplay')||result.classList.contains('no-score'))return;
     const songId=currentSongId();
     const visible=visibleResultRow();
-    let local=[];
-    try{local=await globalThis.DruMasterRanking?.getLocalPlays?.()||[]}catch(error){console.warn('Unable to read local ranking history:',error)}
-    if(token!==renderToken)return;
 
-    const primary=[...(visible?[visible]:[]),...local];
+    /* Render from synchronous device-local mirrors first. The result screen must
+       never become blank while IndexedDB is opening, blocked, or unavailable. */
+    const legacy=legacyLocalRows();
+    const localTop=localTopMirrorRows();
+    const immediate=topRowsForSong(songId,[visible?[visible]:[],localTop,legacy]);
+    render(immediate);
+
+    let local=[];
+    try{local=await globalThis.DruMasterRanking?.getLocalPlays?.()||[]}
+    catch(error){
+      console.warn('Unable to read IndexedDB ranking history; keeping local ranking mirror:',error);
+      return;
+    }
+    if(token!==renderToken)return;
+    const currentResult=document.querySelector('#result');
+    if(!currentResult||currentResult.classList.contains('hidden')||currentSongId()!==songId)return;
+
+    const primary=[...(visible?[visible]:[]),...local,...localTop];
     const primaryKeys=new Set(primary.map(dayScoreKey));
-    const fallback=legacyLocalRows().filter(row=>!primaryKeys.has(dayScoreKey(row)));
-    const rows=mergeRows([visible?[visible]:[],local,fallback])
-      .filter(p=>(p.songId||'nanairo')===songId)
-      .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.receivedAtServer||a.playedAtClient||'').localeCompare(String(b.receivedAtServer||b.playedAtClient||'')))
-      .slice(0,MAX_RECORDS);
-    render(rows);
+    const fallback=legacy.filter(row=>!primaryKeys.has(dayScoreKey(row)));
+    const rows=topRowsForSong(songId,[visible?[visible]:[],local,localTop,fallback]);
+
+    /* Never erase a valid locally-rendered table because a later async source
+       returned no rows. This is especially important when Internet sync failed. */
+    if(rows.length||!immediate.length)render(rows);
   }
 
   function install(){
