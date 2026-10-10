@@ -1,9 +1,9 @@
 "use strict";
 
 (()=>{
-  /* Real-time gameplay must never compete with network work. Ranking Internet
-     sync is armed only by the transition into RESULT, and all network APIs stay
-     blocked for the entire active run, including pause. */
+  /* Real-time gameplay must never compete with network work. All required song
+     data is fetched and decoded before running becomes true. Once a run starts,
+     keep normal network access disabled for the entire run, including pause. */
   const isPlaybackLocked=()=>{
     try{
       return typeof running!=="undefined"&&running;
@@ -37,46 +37,4 @@
   }
 
   globalThis.DruMasterOfflinePlayback={isLocked:isPlaybackLocked};
-})();
-
-// Web, Windows and Android all load the exact same local-first ranking engine.
-// During document parsing, synchronous tags guarantee that old cached dynamic
-// loaders later in the page cannot race ahead and install a previous client.
-(()=>{
-  const rankingSrc='js/ranking-sync.js?v=20260914-localdurable1';
-  const bridgeSrc='js/ranking-best-bridge.js?v=20260929-localrender2';
-
-  if(document.readyState==='loading'){
-    if(!globalThis.DruMasterRanking&&!document.querySelector('script[data-drumaster-ranking-sync]')){
-      document.write(`<script src="${rankingSrc}" data-drumaster-ranking-sync="1"><\/script>`);
-    }
-    if(!document.querySelector('script[data-drumaster-ranking-bridge]')){
-      document.write(`<script src="${bridgeSrc}" data-drumaster-ranking-bridge="1"><\/script>`);
-    }
-    return;
-  }
-
-  const loadBridge=()=>{
-    if(document.querySelector('script[data-drumaster-ranking-bridge]'))return;
-    const b=document.createElement('script');
-    b.src=bridgeSrc;
-    b.dataset.drumasterRankingBridge='1';
-    document.head.appendChild(b);
-  };
-
-  if(globalThis.DruMasterRanking){
-    loadBridge();
-    return;
-  }
-  if(document.querySelector('script[data-drumaster-ranking-sync]')){
-    const wait=()=>globalThis.DruMasterRanking?loadBridge():setTimeout(wait,20);
-    wait();
-    return;
-  }
-  const s=document.createElement('script');
-  s.src=rankingSrc;
-  s.async=false;
-  s.dataset.drumasterRankingSync='1';
-  s.onload=loadBridge;
-  document.head.appendChild(s);
 })();

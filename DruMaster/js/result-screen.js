@@ -22,7 +22,6 @@
 
   function clearResultState(){
     resultEl.classList.remove("result-reveal","new-best","new-second","new-third","no-score");
-    delete resultEl.dataset.finalScore;
     const panel=resultEl.querySelector(".ranking-panel");
     panel?.classList.remove("best-achieved","silver-achieved","bronze-achieved");
     const note=resultEl.querySelector("#resultScoreNote");
@@ -251,7 +250,6 @@
     clearResultState();
 
     const final=Math.max(0,Math.round(score));
-    resultEl.dataset.finalScore=String(final);
     document.querySelector("#perfectCount").textContent=counts.perfect;
     document.querySelector("#greatCount").textContent=counts.great;
     document.querySelector("#goodCount").textContent=counts.good;
